@@ -33,9 +33,10 @@ public class AreaDifferencePainter extends AbstractPainter{
 	
 	private ArrayList<Polygon> cell_polygon_list;
 	private ArrayList<Polygon> voronoi_polygon_list;
-	private ArrayList<Color> area_difference_list;
+	private ArrayList<Color> area_difference_color_list;
 	private ArrayList<Double> area_difference_val;
 
+	private int color_scheme;
 	private int time_point;
 	
 	public AreaDifferencePainter(
@@ -45,15 +46,16 @@ public class AreaDifferencePainter extends AbstractPainter{
 		
 		this.cell_polygon_list = cell_polygon_list;
 		this.voronoi_polygon_list = voronoi_polygon_list;
-		this.time_point = time_point;		
+		this.time_point = time_point;
+		this.color_scheme = 2;
 		
-		this.area_difference_list = new ArrayList<Color>(cell_polygon_list.size());
-		this.area_difference_val = new ArrayList<Double>(cell_polygon_list.size());
+		this.area_difference_color_list = new ArrayList<Color>();
+		this.area_difference_val = new ArrayList<Double>();
 		
 		computeAreaDifference();
 	}
 	
-	public void computeAreaDifference(){
+	private void computeAreaDifference(){
 		
 		Iterator<Polygon> cell_it = cell_polygon_list.iterator();
 		Iterator<Polygon> voronoi_it = voronoi_polygon_list.iterator();
@@ -66,19 +68,30 @@ public class AreaDifferencePainter extends AbstractPainter{
 			double cell_area = PolygonUtils.PolygonArea(cell);
 			double voronoi_area = PolygonUtils.PolygonArea(voronoi);
 			double area_difference = cell_area - voronoi_area;
+			area_difference_val.add(area_difference);
 			
+			//Color scheme generation
 			
-			//Color cells according to difference and threshold
+			if(color_scheme == 1){			
+				//Color cells according to threshold into three categories
+				double area_threshold = DIFFERENCE_THRESHOLD;
+				if(area_difference > area_threshold)
+					area_difference_color_list.add(Color.GREEN);
+				else if(area_difference < area_threshold*(-1))
+					area_difference_color_list.add(Color.RED);
+				else
+					area_difference_color_list.add(Color.WHITE);
+			}
+			else{		
+				//color scheme which allows +/- 255 differences (255 being the MAX_DIFF)
+				//magenta (negative diff.) to white (neutral) to light blue (positive)
+				int intensity = 255 - (int)Math.min(Math.abs(area_difference), 255);
+				if(area_difference > 0)
+					area_difference_color_list.add(new Color(intensity,255,255));
+				else
+					area_difference_color_list.add(new Color(255,intensity,255));
+			}
 			
-			double area_threshold = DIFFERENCE_THRESHOLD;
-			if(area_difference > area_threshold)
-			  area_difference_list.add(Color.GREEN);
-			else if(area_difference < area_threshold*(-1))
-				area_difference_list.add(Color.RED);
-			else
-				area_difference_list.add(Color.WHITE);
-			
-			area_difference_val.add(area_difference);	
 		}
 	}
 	
@@ -102,7 +115,7 @@ public class AreaDifferencePainter extends AbstractPainter{
 			
 			//Shade every cell according to found difference
 			Iterator<Polygon> cell_polygon  = cell_polygon_list.iterator();
-			Iterator<Color> cell_color = area_difference_list.iterator();
+			Iterator<Color> cell_color = area_difference_color_list.iterator();
 			while(cell_polygon.hasNext()){
 				g.setColor(cell_color.next());
 				g.fillPolygon(cell_polygon.next());

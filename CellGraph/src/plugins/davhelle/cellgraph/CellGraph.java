@@ -100,10 +100,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanAreaString = new EzVarBoolean("Area differences",false);
 		varBooleanWriteFile = new EzVarBoolean("Write cell coordinates to disk",false);
 		
-		varFile = new EzVarFile("Mesh file", "/Users/davide/Documents/segmentation/samples");
+		varFile = new EzVarFile("Mesh file", "/Users/davide/Documents/segmentation");
 		varSequence = new EzVarSequence("Input sequence");
 		varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
-		varMaxT = new EzVarInteger("Time points to load:",1,0,50,1);
+		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
 		
 		super.addEzComponent(varSequence);
 		super.addEzComponent(varBoolean);
@@ -184,7 +184,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			int ext_start = file_name.indexOf(file_ext);
 			//TODO: proper number read in (no. represented in 2 digit format...)
-			int file_no_start = ext_start - 1;
+			int file_no_start = ext_start - 2;
 			
 			String file_name_wo_no = file_name.substring(0, file_no_start);
 			String file_no_str = file_name.substring(file_no_start, ext_start);
@@ -194,9 +194,15 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//cycle through all time points
 			for(int i = 0; i<time_points; i++){
 				
+				//successive file name generation TODO:make it safe!
 				int current_file_no = start_file_no + i;
-				String abs_path = file_path + file_name_wo_no + current_file_no + file_ext;  
+				String abs_path = "";
 				
+				if(current_file_no < 10)
+					abs_path = file_path + file_name_wo_no + "0" + current_file_no + file_ext;  
+				else
+					abs_path = file_path + file_name_wo_no + current_file_no + file_ext;
+					
 				//System.out.println(abs_path);
 				
 				try{

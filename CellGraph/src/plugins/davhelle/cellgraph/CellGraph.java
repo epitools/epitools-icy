@@ -27,7 +27,7 @@ import icy.sequence.Sequence;
  * Quantitative Image Analysis Unit at Institut Pasteur 
  * 
  * Aim is to access the segmented live imaging samples from fluorescence 
- * confocal microscopy as spatio-temporal graph. Consective time points
+ * confocal microscopy as spatio-temporal graph. Consecutive time points
  * should furthermore be linked by a tracking algorithm.
  * 
  * As the segmentation is usually not perfect the tool should also
@@ -47,7 +47,6 @@ import icy.sequence.Sequence;
  * [http://icy.bioimageanalysis.org/plugin/EzPlug]
  * main implementation follow this tutorial:
  * [from tutorial:http://icy.bioimageanalysis.org/plugin/EzPlug_Tutorial]
-
  * 
  * For various geometric computations two libraries have been used
  * Geometry - by Geotechnical Software Services [no.geosoft.cc.geometry package]
@@ -80,6 +79,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varBooleanWriteFile;
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
+	EzVarDouble					varColorAmp;
 	
 	//Stop flag for advanced thread handling TODO
 	boolean						stopFlag;
@@ -104,6 +104,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varSequence = new EzVarSequence("Input sequence");
 		varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
+		varColorAmp = new EzVarDouble("Color amplification",1, 0, 100, 0.1);
 		
 		super.addEzComponent(varSequence);
 		super.addEzComponent(varBoolean);
@@ -112,8 +113,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		EzGroup groupCellMap = new EzGroup("CELL_MAP elements",varBooleanPolygon,varBooleanCCenter,varBooleanWriteFile);
 		EzGroup groupHeatMap = new EzGroup("HEAT_MAP elements",varMaxZ);
 		EzGroup groupVoronoiMap = new EzGroup("VORONOI_MAP elements",varBooleanCellIDs);
-		EzGroup groupAreaMap = new EzGroup("AREA_MAP elements",varBooleanAreaString);
-
+		EzGroup groupAreaMap = new EzGroup("AREA_MAP elements",varBooleanAreaString,varColorAmp);
+		
 		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
 				"Representation", varFile, varMaxT, varEnum,
@@ -365,10 +366,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 					if(user_choice == PlotEnum.AREA_MAP){
 						ArrayList<Polygon> cell_polygon_list = cell_painter.getPolygons();
 						ArrayList<Polygon> voronoi_polygon_list = voronoi_polygons.getPolygons();		
-
+						double color_amplification = varColorAmp.getValue().doubleValue();
+						
 						AreaDifferencePainter voronoi_area_diff = new AreaDifferencePainter(
 										cell_polygon_list,
 										voronoi_polygon_list,
+										color_amplification,
 										current_file_no);
 
 

@@ -36,18 +36,21 @@ public class AreaDifferencePainter extends AbstractPainter{
 	private ArrayList<Color> area_difference_color_list;
 	private ArrayList<Double> area_difference_val;
 
+	private double color_amplification;
 	private int color_scheme;
 	private int time_point;
 	
 	public AreaDifferencePainter(
 			ArrayList<Polygon> cell_polygon_list,
 			ArrayList<Polygon> voronoi_polygon_list,
+			double color_amplification,
 			int time_point){
 		
 		this.cell_polygon_list = cell_polygon_list;
 		this.voronoi_polygon_list = voronoi_polygon_list;
 		this.time_point = time_point;
 		this.color_scheme = 2;
+		this.color_amplification = color_amplification;
 		
 		this.area_difference_color_list = new ArrayList<Color>();
 		this.area_difference_val = new ArrayList<Double>();
@@ -85,7 +88,8 @@ public class AreaDifferencePainter extends AbstractPainter{
 			else{		
 				//color scheme which allows +/- 255 differences (255 being the MAX_DIFF)
 				//magenta (negative diff.) to white (neutral) to light blue (positive)
-				int intensity = 255 - (int)Math.min(Math.abs(area_difference), 255);
+				int intensity = 255 - (int)Math.min(
+						color_amplification*Math.abs(area_difference), 255);
 				if(area_difference > 0)
 					area_difference_color_list.add(new Color(intensity,255,255));
 				else

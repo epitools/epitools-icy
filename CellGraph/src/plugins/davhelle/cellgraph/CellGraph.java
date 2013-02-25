@@ -98,7 +98,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanCCenter = new EzVarBoolean("Centers", true);
 		varBooleanCellIDs = new EzVarBoolean("Cell ids",false);
 		varBooleanAreaString = new EzVarBoolean("Area differences",false);
-		varBooleanWriteFile = new EzVarBoolean("Write cell coordinates to disk",false);
+		varBooleanWriteFile = new EzVarBoolean("Write cell data to disk",false);
 		
 		varFile = new EzVarFile("Mesh file", "/Users/davide/Documents/segmentation");
 		varSequence = new EzVarSequence("Input sequence");
@@ -113,7 +113,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		EzGroup groupCellMap = new EzGroup("CELL_MAP elements",varBooleanPolygon,varBooleanCCenter,varBooleanWriteFile);
 		EzGroup groupHeatMap = new EzGroup("HEAT_MAP elements",varMaxZ);
 		EzGroup groupVoronoiMap = new EzGroup("VORONOI_MAP elements",varBooleanCellIDs);
-		EzGroup groupAreaMap = new EzGroup("AREA_MAP elements",varBooleanAreaString,varColorAmp);
+		EzGroup groupAreaMap = new EzGroup("AREA_MAP elements",varBooleanAreaString,varBooleanWriteFile,varColorAmp);
 		
 		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
@@ -388,6 +388,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 									current_file_no);
 							
 							sequence.addPainter(area_diff_text);
+						}
+						
+						//optionally write cell area differences to disk
+						if(varBooleanWriteFile.getValue()){
+							ArrayList<Double> area_diff_val = voronoi_area_diff.getAreaDifference();
+							CellWriter cell_area_writer = new CellWriter(file_path+"area_"+file_name_wo_no,current_file_no);
+							cell_area_writer.write_area_diff(area_diff_val);
 						}
 						continue;
 					}

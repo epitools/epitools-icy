@@ -64,5 +64,30 @@ public class CellWriter {
 		}
 		
 	}
+	
+	public void write_area_diff(ArrayList<Double> cell_areas){
+		
+		try{
+			
+			// Create file for mosaic particle tracking
+			FileWriter fstream = new FileWriter(output_file_name);
+			BufferedWriter out = new BufferedWriter(fstream);
+
+			//Follow with all particle coordinates (additional parameters might be added afterwards)
+			for(Double area_i: cell_areas){
+				out.write(area_i.toString()+"\n");
+			}
+
+			//Close the output stream
+			out.close();
+			
+			System.out.println("Wrote successfully to:"+output_file_name);
+			
+		}
+		catch (Exception e){
+			System.err.println("Error: " + e.getMessage());
+		}
+		
+	}
 
 }

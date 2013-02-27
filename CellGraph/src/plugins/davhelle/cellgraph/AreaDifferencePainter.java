@@ -39,6 +39,7 @@ public class AreaDifferencePainter extends AbstractPainter{
 	private double color_amplification;
 	private int color_scheme;
 	private int time_point;
+	private double alpha_level;
 	
 	public AreaDifferencePainter(
 			ArrayList<Polygon> cell_polygon_list,
@@ -51,6 +52,7 @@ public class AreaDifferencePainter extends AbstractPainter{
 		this.time_point = time_point;
 		this.color_scheme = 2;
 		this.color_amplification = color_amplification;
+		this.alpha_level = 0.35;
 		
 		this.area_difference_color_list = new ArrayList<Color>();
 		this.area_difference_val = new ArrayList<Double>();
@@ -108,7 +110,7 @@ public class AreaDifferencePainter extends AbstractPainter{
     {
 		//Set layer to 0.3 opacity
 		Layer current_layer = canvas.getLayer(this);
-		current_layer.setAlpha((float)0.3);		
+		current_layer.setAlpha((float)alpha_level);		
 		
 		//only display when on selected frame
 		if(Icy.getMainInterface().getFirstViewer(sequence).getT() == time_point){

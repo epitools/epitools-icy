@@ -1,9 +1,11 @@
 package plugins.davhelle.cellgraph;
 
 import java.awt.Point;
+import java.awt.Polygon;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 /**
@@ -17,6 +19,10 @@ import java.util.ArrayList;
  * ImageJ macro:VoronoiMacro.ijm written by DH.
  * 
  * @author Davide Heller
+ *
+ */
+/**
+ * @author davide
  *
  */
 public class CellWriter {
@@ -65,6 +71,54 @@ public class CellWriter {
 		
 	}
 	
+	//write out polygon area of cell, corresponding voronoi tessel and their difference.
+	//added cell center coordinates in front of areas.(equal for poly and voro)
+	public void write_area(ArrayList<Point> cell_centers,ArrayList<Polygon> cell_polygon_list,ArrayList<Polygon> voronoi_polygon_list){
+		
+		try{
+			
+			// Create file for mosaic particle tracking
+			FileWriter fstream = new FileWriter(output_file_name);
+			BufferedWriter out = new BufferedWriter(fstream);
+
+			//Start file with headers
+			out.write("cx\tcy\tpoly\tvoronoi\tdiff\n");
+
+			Iterator<Polygon> cell_it = cell_polygon_list.iterator();
+			Iterator<Polygon> voronoi_it = voronoi_polygon_list.iterator();
+			Iterator<Point> cell_center_it = cell_centers.iterator();
+			
+			while(cell_it.hasNext()){
+				Polygon cell = cell_it.next();
+				Polygon voronoi = voronoi_it.next();
+				Point cell_center = cell_center_it.next();
+				
+				//TODO might need to change everything to double as Polygon saves int coordinates!
+				double cell_area = PolygonUtils.PolygonArea(cell);
+				double voronoi_area = PolygonUtils.PolygonArea(voronoi);
+				double area_difference = cell_area - voronoi_area;
+				
+				out.write(String.valueOf(cell_center.x)+"\t");
+				out.write(String.valueOf(cell_center.y)+"\t");
+				out.write(String.valueOf(cell_area)+"\t");
+				out.write(String.valueOf(voronoi_area)+"\t");
+				out.write(String.valueOf(area_difference)+"\n");
+				
+			}
+
+			//Close the output stream
+			out.close();
+			
+			System.out.println("Wrote successfully to:"+output_file_name);
+			
+		}
+		catch (Exception e){
+			System.err.println("Error: " + e.getMessage());
+		}
+		
+	}
+	
+	//former method to only write out area difference
 	public void write_area_diff(ArrayList<Double> cell_areas){
 		
 		try{

@@ -397,7 +397,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 							//ArrayList<Double> area_diff_val = voronoi_area_diff.getAreaDifference();
 							CellWriter cell_area_writer = new CellWriter(file_path+"area_"+file_name_wo_no,current_file_no);
 							//cell_area_writer.write_area_diff(area_diff_val);
-							cell_area_writer.write_area(cell_polygon_list,voronoi_polygon_list);
+							cell_area_writer.write_area(cell_center_list,cell_polygon_list,voronoi_polygon_list);
 						}
 						continue;
 					}

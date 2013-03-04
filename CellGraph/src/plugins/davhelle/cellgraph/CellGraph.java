@@ -13,6 +13,8 @@ import java.util.Map;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
 
+import com.vividsolutions.jts.geom.MultiPolygon;
+
 import be.humphreys.simplevoronoi.GraphEdge;
 import be.humphreys.simplevoronoi.Voronoi;
 
@@ -267,8 +269,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 					Painter heat_map = new MeshPainter(cell_corner_graph, max_z,current_file_no);
 					sequence.addPainter(heat_map);
 					
-					Painter jts_cell_center = new JtsPainter(jts_polys, current_file_no);
+					JtsPainter jts_cell_center = new JtsPainter(jts_polys, current_file_no);
 					sequence.addPainter(jts_cell_center);
+					
+					//Extract polygon structure as MultiPolygon
+					MultiPolygon all_jts_polys = jts_cell_center.getMultiPoly();
+					
+					
 				}
 
 				else{

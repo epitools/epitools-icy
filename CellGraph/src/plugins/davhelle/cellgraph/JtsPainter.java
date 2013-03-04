@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -25,12 +27,14 @@ public class JtsPainter extends AbstractPainter{
 	private Collection geomCol;
 	
 	private ArrayList<Point> cell_center_list;
+	private ArrayList<Polygon> jts_polygons;
 	
 	private int time_point;
 	
 	public JtsPainter(Collection collection,int time_point){
 		
 		geomCol = collection;
+		Polygon[] jts_polys;
 		
 		this.time_point = time_point;
 		
@@ -42,11 +46,20 @@ public class JtsPainter extends AbstractPainter{
 	public void updatePolygonList(){
 		
 		cell_center_list = new ArrayList<Point>();
-		
+		jts_polygons = new ArrayList<Polygon>();
+
 		for(Object ob: geomCol){
 			Polygon cell = (Polygon)ob;
+			jts_polygons.add(cell);
 			cell_center_list.add(cell.getCentroid());
 		}
+	}
+	
+	public MultiPolygon getMultiPoly(){
+		Polygon[] output = new Polygon[jts_polygons.size()];
+		for(int i=0; i<jts_polygons.size(); i++)
+			output[i] = jts_polygons.get(i);
+		return new MultiPolygon(output, new GeometryFactory());
 	}
 	
 	@Override

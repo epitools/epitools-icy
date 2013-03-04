@@ -266,6 +266,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 					Painter heat_map = new MeshPainter(cell_corner_graph, max_z,current_file_no);
 					sequence.addPainter(heat_map);
+					
+					Painter jts_cell_center = new JtsPainter(jts_polys, current_file_no);
+					sequence.addPainter(jts_cell_center);
 				}
 
 				else{

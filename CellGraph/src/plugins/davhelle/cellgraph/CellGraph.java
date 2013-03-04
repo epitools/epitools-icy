@@ -270,12 +270,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 					sequence.addPainter(heat_map);
 					
 					JtsPainter jts_cell_center = new JtsPainter(jts_polys, current_file_no);
-					sequence.addPainter(jts_cell_center);
+					//sequence.addPainter(jts_cell_center);
 					
 					//Extract polygon structure as MultiPolygon
 					MultiPolygon all_jts_polys = jts_cell_center.getMultiPoly();
 					
-					
+					JtsPainter multi_center = new JtsPainter(all_jts_polys, current_file_no);
+					sequence.addPainter(multi_center);
 				}
 
 				else{

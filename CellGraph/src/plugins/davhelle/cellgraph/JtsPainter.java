@@ -43,6 +43,12 @@ public class JtsPainter extends AbstractPainter{
 
 	}
 	
+	public JtsPainter(MultiPolygon all_jts_poly,int time_point){
+		cell_center_list = new ArrayList<Point>();
+		cell_center_list.add(all_jts_poly.getCentroid());
+		this.time_point = time_point;
+	}
+	
 	public void updatePolygonList(){
 		
 		cell_center_list = new ArrayList<Point>();
@@ -75,7 +81,7 @@ public class JtsPainter extends AbstractPainter{
 			while(cell_center_it.hasNext()){
 
 				//Set polygon color
-				g.setColor(Color.RED);
+				g.setColor(Color.BLUE);
 
 				Point cell_center = cell_center_it.next();
 

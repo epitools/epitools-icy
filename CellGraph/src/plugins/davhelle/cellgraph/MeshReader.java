@@ -1,9 +1,15 @@
 package plugins.davhelle.cellgraph;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 
 import vtk.vtkCellArray;
 import vtk.vtkIdTypeArray;
@@ -52,7 +58,7 @@ public class MeshReader {
 	 * @param corner_list list of all the cell corners (points in the vtk structure) (void as for input)
 	 * @param cell_corner_graph graph representation of the vtk mesh (void as for input)
 	 */
-	public void fill_graph(ArrayList<CellCorner> corner_list,ListenableUndirectedGraph<CellCorner, DefaultEdge> cell_corner_graph){
+	public java.util.Collection fill_graph(ArrayList<CellCorner> corner_list,ListenableUndirectedGraph<CellCorner, DefaultEdge> cell_corner_graph){
 		
         //extract point from polydata      
         vtkPoints points = polydata.GetPoints();        
@@ -74,8 +80,13 @@ public class MeshReader {
           
         //extract lines(edges) from polydata
         vtkCellArray lines = polydata.GetLines();
-        vtkIdTypeArray linesId = lines.GetData();     
-        		
+        vtkIdTypeArray linesId = lines.GetData();  
+        Polygonizer polygonizer = new Polygonizer();
+	    //use the default factory, which gives full double-precision
+        GeometryFactory lineFactory = new GeometryFactory();
+        Collection line_collection = new ArrayList();
+        
+        
         //try to extract data as following web site suggests:
         //http://forrestbao.blogspot.ch/2012/06/vtk-polygons-and-other-cells-as.html      
         
@@ -91,15 +102,57 @@ public class MeshReader {
         		corner_idx[j] = linesId.GetValue(i+j+1);
      	
         	//Register the lines, considering also the multiple_point line
-        	if(line_elements > 1) 		
+        	if(line_elements > 1){ 		
         		//Add the edge to the the graph
-        		for(int i1=0; i1 < line_elements-1; i1++)   			
-        			cell_corner_graph.addEdge(corner_list.get(corner_idx[i1]), corner_list.get(corner_idx[i1+1]));    	
-        		
-        	
+        		for(int i1=0; i1 < line_elements-1; i1++){
+        			CellCorner a = corner_list.get(corner_idx[i1]);
+        			CellCorner b = corner_list.get(corner_idx[i1+1]);
+        			Coordinate[] line_coordinates = new Coordinate[]{
+        					new Coordinate(a.getX(), a.getY()),
+        					new Coordinate(b.getX(), b.getY())};
+   
+        			LineString line = lineFactory.createLineString(line_coordinates);
+        			line_collection.add(line);    	
+        			cell_corner_graph.addEdge(corner_list.get(corner_idx[i1]), corner_list.get(corner_idx[i1+1]));    			
+        			
+        		}
+        	}
         	i = i + line_elements;
         	
         }
+        
+        System.out.println("Lines in collection:"+line_collection.size());
+        polygonizer.add(line_collection);
+        
+        //Polgonizer doesn't find anything...
+        Collection polys = polygonizer.getPolygons();
+        //Invalid Ring Lines - edges which form rings which are invalid (e.g. the component lines contain a self-intersection)
+        Collection non_polys = polygonizer.getInvalidRingLines();
+        //Cut edges - edges which are connected at both ends but which do not form part of polygon
+        Collection cut_edges = polygonizer.getCutEdges();
+        //Dangles - edges which have one or both ends which are not incident on another edge endpoint
+        Collection dangles = polygonizer.getDangles();
+        
+        System.out.println("Found polygons:"+polys.size());
+        System.out.println("Found NON-polygons:"+non_polys.size());
+        for(Object np: non_polys){
+        	LineString line = (LineString)np;
+        	System.out.println(line.toText());
+        }
+        System.out.println("Found cutted-edges:"+cut_edges.size());
+        for(Object np: cut_edges){
+        	LineString line = (LineString)np;
+        	System.out.println(line.toText());
+        }
+        System.out.println("Found dangling-lin:"+dangles.size());
+        for(Object np: dangles){
+        	LineString line = (LineString)np;
+        	System.out.println(line.toText());
+        }
+
+        return polys;
+        
+        
 	}
 
 }

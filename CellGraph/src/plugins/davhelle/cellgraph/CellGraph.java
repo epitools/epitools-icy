@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -239,7 +240,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 						new ListenableUndirectedGraph<CellCorner, DefaultEdge>(DefaultEdge.class);
 
 				//Insert polydata information into graph structures
-				vtk_mesh_file_reader.fill_graph(corner_list, cell_corner_graph);
+				Collection jts_polys;
+				jts_polys = vtk_mesh_file_reader.fill_graph(corner_list, cell_corner_graph);
 
 				//identify the image we want to paint on
 				Sequence sequence = varSequence.getValue();
@@ -299,12 +301,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 					
 					if (user_choice == PlotEnum.CELL_MAP){
 						sequence.addPainter(cell_painter);
+						
 
 						//Write center coordinates to disk
 						if(varBooleanWriteCenters.getValue()){
 							ArrayList<Point> cell_centers = cell_painter.getCellCenters();
-							CellWriter cell_center_writer = new CellWriter(file_path+file_name_wo_no,current_file_no);
-							cell_center_writer.write_tracking_file(cell_centers);
+							System.out.println("Poly.no. found by cs:"+cell_centers.size());
+							//CellWriter cell_center_writer = new CellWriter(file_path+file_name_wo_no,current_file_no);
+							//cell_center_writer.write_tracking_file(cell_centers);
 						}
 						continue;
 					}

@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiPolygon;
 
@@ -35,7 +36,7 @@ public class JtsMultiPainter extends AbstractPainter{
 		//cell_center_list.add(all_jts_poly.getCentroid());
 		this.time_point = time_point;
 		
-		com.vividsolutions.jts.geom.Geometry boundary =
+		Geometry boundary =
 				all_jts_poly.getBoundary();
 		
 		System.out.println(boundary.toText());
@@ -47,13 +48,13 @@ public class JtsMultiPainter extends AbstractPainter{
 			border_list.add(coor_i);	
 	}
 	
-	public JtsMultiPainter(com.vividsolutions.jts.geom.Geometry union, int time_point){
+	public JtsMultiPainter(Geometry union, int time_point){
 		this.time_point=time_point;
 		
 		border_list = new ArrayList<Coordinate>();
 
 		
-		com.vividsolutions.jts.geom.Geometry boundary =
+		Geometry boundary =
 				union.getBoundary();
 		
 		borderRing = (LinearRing) boundary;

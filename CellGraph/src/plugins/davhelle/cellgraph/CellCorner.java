@@ -155,7 +155,7 @@ public class CellCorner{
 	 *
 	 */
 	public double compute_angle(CellCorner center, CellCorner destination){
-		return Geometry.computeAngle2D(center.getPosition(), this.getPosition(), destination.getPosition());
+		return GeometryTools.computeAngle2D(center.getPosition(), this.getPosition(), destination.getPosition());
 	}
 	
 	//TODO make it z compatible -> criteria might not work as expected if real z coordinate is given
@@ -167,7 +167,7 @@ public class CellCorner{
 	 * @return vector[center->this] x vector[center->destination]
 	 */
 	public double compute_crossProductZ(CellCorner center, CellCorner destination){
-		return Geometry.computeCPz(center.getPosition(), this.getPosition(), destination.getPosition());
+		return GeometryTools.computeCPz(center.getPosition(), this.getPosition(), destination.getPosition());
 	}
 	
 	
@@ -568,7 +568,7 @@ public class CellCorner{
 				CellCorner v_neighbor = g.getEdgeTarget(v_edge);
 				System.out.print("a connects to: "+v_neighbor.toString());
 				//compute distance between edges
-				System.out.println(" and distances:"+Geometry.length(v1.getPosition(), v_neighbor.getPosition()));
+				System.out.println(" and distances:"+GeometryTools.length(v1.getPosition(), v_neighbor.getPosition()));
 			}
 
 			//output the angle between {a,b,d} and {a,b,f}

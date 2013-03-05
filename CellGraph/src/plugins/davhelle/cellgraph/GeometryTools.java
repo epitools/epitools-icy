@@ -27,7 +27,7 @@ package plugins.davhelle.cellgraph;
  * 
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */   
-public final class Geometry
+public final class GeometryTools
 {
   /**
    * Return true if c is between a and b.
@@ -232,7 +232,7 @@ public final class Geometry
     double[] p0 = {x0, y0, 0.0};
     double[] p1 = {x1, y1, 0.0};
 
-    double[] p = Geometry.computePointOnLine (p0, p1, fractionFrom0);
+    double[] p = GeometryTools.computePointOnLine (p0, p1, fractionFrom0);
 
     double[] r = {p[0], p[1]};
     return r;
@@ -254,13 +254,13 @@ public final class Geometry
   public static void extendLine (double[] p0, double[] p1, double toLength,
                                  double anchor)
   {
-    double[] p = Geometry.computePointOnLine (p0, p1, anchor);
+    double[] p = GeometryTools.computePointOnLine (p0, p1, anchor);
     
     double length0 = toLength * anchor;
     double length1 = toLength * (1.0 - anchor);
     
-    Geometry.extendLine (p, p0, length0);
-    Geometry.extendLine (p, p1, length1);
+    GeometryTools.extendLine (p, p0, length0);
+    GeometryTools.extendLine (p, p1, length1);
   }
 
 
@@ -274,7 +274,7 @@ public final class Geometry
    */
   public static void extendLine (double[] p0, double[] p1, double toLength)
   {
-    double oldLength = Geometry.length (p0, p1);
+    double oldLength = GeometryTools.length (p0, p1);
     double lengthFraction = oldLength != 0.0 ? toLength / oldLength : 0.0;
     
     p1[0] = p0[0] + (p1[0] - p0[0]) * lengthFraction;
@@ -310,7 +310,7 @@ public final class Geometry
    */
   public static double length (double[] p0, double[] p1)
   {
-    double[] v = Geometry.createVector (p0, p1);
+    double[] v = GeometryTools.createVector (p0, p1);
     return length (v);
   }
 
@@ -325,7 +325,7 @@ public final class Geometry
    */
   public static double length (int x0, int y0, int x1, int y1)
   {
-    return Geometry.length ((double) x0, (double) y0,
+    return GeometryTools.length ((double) x0, (double) y0,
                             (double) x1, (double) y1);
   }
 
@@ -362,11 +362,11 @@ public final class Geometry
 
     int nPoints = x.length;
     for (int i = 0; i < nPoints-1; i++)
-      length += Geometry.length (x[i], y[i], x[i+1], y[i+1]);
+      length += GeometryTools.length (x[i], y[i], x[i+1], y[i+1]);
 
     // Add last leg if this is a polygon
     if (isClosed && nPoints > 1)
-      length += Geometry.length (x[nPoints-1], y[nPoints-1], x[0], y[0]);
+      length += GeometryTools.length (x[nPoints-1], y[nPoints-1], x[0], y[0]);
 
     return length;
   }
@@ -389,9 +389,9 @@ public final class Geometry
                                  int x, int y)
   {
     // If x0,y0,x1,y1 is same point, we return distance to that point
-    double length = Geometry.length (x0, y0, x1, y1);
+    double length = GeometryTools.length (x0, y0, x1, y1);
     if (length == 0.0)
-      return Geometry.length (x0, y0, x, y);
+      return GeometryTools.length (x0, y0, x, y);
 
     // If u is [0,1] then (xp,yp) is on the line segment (x0,y0),(x1,y1).
     double u = ((x - x0) * (x1 - x0) + (y - y0) * (y1 - y0)) /
@@ -402,7 +402,7 @@ public final class Geometry
     double xp = x0 + u * (x1 - x0);
     double yp = y0 + u * (y1 - y0);
 
-    length = Geometry.length (xp, yp, x, y);
+    length = GeometryTools.length (xp, yp, x, y);
     return length;
   }
   
@@ -416,13 +416,13 @@ public final class Geometry
    */
   public static double computeAngle (double[] p0, double[] p1, double[] p2)
   {
-    double[] v0 = Geometry.createVector (p0, p1);
-    double[] v1 = Geometry.createVector (p0, p2);
+    double[] v0 = GeometryTools.createVector (p0, p1);
+    double[] v1 = GeometryTools.createVector (p0, p2);
 
-    double dotProduct = Geometry.computeDotProduct (v0, v1);
+    double dotProduct = GeometryTools.computeDotProduct (v0, v1);
 
-    double length1 = Geometry.length (v0);
-    double length2 = Geometry.length (v1);
+    double length1 = GeometryTools.length (v0);
+    double length2 = GeometryTools.length (v1);
 
     double denominator = length1 * length2;
     
@@ -436,13 +436,13 @@ public final class Geometry
   
   public static double computeAngle2D (double[] p0, double[] p1, double[] p2)
   {
-    double[] v0 = Geometry.createVector2D (p0, p1);
-    double[] v1 = Geometry.createVector2D (p0, p2);
+    double[] v0 = GeometryTools.createVector2D (p0, p1);
+    double[] v1 = GeometryTools.createVector2D (p0, p2);
 
-    double dotProduct = Geometry.computeDotProduct2D (v0, v1);
+    double dotProduct = GeometryTools.computeDotProduct2D (v0, v1);
 
-    double length1 = Geometry.length2D(v0);
-    double length2 = Geometry.length2D(v1);
+    double length1 = GeometryTools.length2D(v0);
+    double length2 = GeometryTools.length2D(v1);
 
     double denominator = length1 * length2;
     
@@ -463,8 +463,8 @@ public final class Geometry
    */
   public static double computeCPz (double[] p0, double[] p1, double[] p2)
   {
-    double[] v0 = Geometry.createVector2D (p0, p1);
-    double[] v1 = Geometry.createVector2D (p0, p2);
+    double[] v0 = GeometryTools.createVector2D (p0, p1);
+    double[] v1 = GeometryTools.createVector2D (p0, p2);
 
     //return z component of cross product
     return v0[0] * v1[1] - v0[1] * v1[0];
@@ -610,8 +610,8 @@ public final class Geometry
   public static boolean isLineIntersectingLine (int x0, int y0, int x1, int y1,
                                                 int x2, int y2, int x3, int y3)
   {
-    int s1 = Geometry.sameSide (x0, y0, x1, y1, x2, y2, x3, y3);
-    int s2 = Geometry.sameSide (x2, y2, x3, y3, x0, y0, x1, y1);
+    int s1 = GeometryTools.sameSide (x0, y0, x1, y1, x2, y2, x3, y3);
+    int s2 = GeometryTools.sameSide (x2, y2, x3, y3, x0, y0, x1, y1);
     
     return s1 <= 0 && s2 <= 0;
   }
@@ -635,24 +635,24 @@ public final class Geometry
                                                      int x1, int y1)
   {
     // Is one of the line endpoints inside the rectangle
-    if (Geometry.isPointInsideRectangle (x0, y0, x1, y1, lx0, ly0) ||
-        Geometry.isPointInsideRectangle (x0, y0, x1, y1, lx1, ly1))
+    if (GeometryTools.isPointInsideRectangle (x0, y0, x1, y1, lx0, ly0) ||
+        GeometryTools.isPointInsideRectangle (x0, y0, x1, y1, lx1, ly1))
       return true;
 
     // If it intersects it goes through. Need to check three sides only.
 
     // Check against top rectangle line
-    if (Geometry.isLineIntersectingLine (lx0, ly0, lx1, ly1,
+    if (GeometryTools.isLineIntersectingLine (lx0, ly0, lx1, ly1,
                                          x0, y0, x1, y0))
       return true;
 
     // Check against left rectangle line
-    if (Geometry.isLineIntersectingLine (lx0, ly0, lx1, ly1,
+    if (GeometryTools.isLineIntersectingLine (lx0, ly0, lx1, ly1,
                                          x0, y0, x0, y1))
       return true;
 
     // Check against bottom rectangle line
-    if (Geometry.isLineIntersectingLine (lx0, ly0, lx1, ly1,
+    if (GeometryTools.isLineIntersectingLine (lx0, ly0, lx1, ly1,
                                          x0, y1, x1, y1))
       return true;
 
@@ -677,7 +677,7 @@ public final class Geometry
   {
     if (x.length == 0) return false;
     
-    if (Geometry.isPointInsideRectangle (x[0], y[0], x0, y0, x1, y1))
+    if (GeometryTools.isPointInsideRectangle (x[0], y[0], x0, y0, x1, y1))
       return true;
     
     else if (x.length == 1)
@@ -685,7 +685,7 @@ public final class Geometry
     
     for (int i = 1; i < x.length; i++) {
       if (x[i-1] != x[i] || y[i-1] != y[i])
-        if (Geometry.isLineIntersectingRectangle (x[i-1], y[i-1],
+        if (GeometryTools.isLineIntersectingRectangle (x[i-1], y[i-1],
                                                   x[i], y[i],
                                                   x0, y0, x1, y1))
           return true;
@@ -718,17 +718,17 @@ public final class Geometry
       return false;
     
     if (n == 1)
-      return Geometry.isPointInsideRectangle (x0, y0, x1, y1, x[0], y[0]);
+      return GeometryTools.isPointInsideRectangle (x0, y0, x1, y1, x[0], y[0]);
     
     //
     // If the polyline constituting the polygon intersects the rectangle
     // the polygon does too.
     //
-    if (Geometry.isPolylineIntersectingRectangle (x, y, x0, y0, x1, y1))
+    if (GeometryTools.isPolylineIntersectingRectangle (x, y, x0, y0, x1, y1))
       return true;
   
     // Check last leg as well
-    if (Geometry.isLineIntersectingRectangle (x[n-2], y[n-2], x[n-1], y[n-1],
+    if (GeometryTools.isLineIntersectingRectangle (x[n-2], y[n-2], x[n-1], y[n-1],
                                               x0, y0, x1, y1))
       return true;
 
@@ -736,8 +736,8 @@ public final class Geometry
     // The rectangle and polygon are now completely including each other
     // or separate.
     //
-    if (Geometry.isPointInsidePolygon (x, y, x0, y0) ||
-        Geometry.isPointInsideRectangle (x0, y0, x1, y1, x[0], y[0]))
+    if (GeometryTools.isPointInsidePolygon (x, y, x0, y0) ||
+        GeometryTools.isPointInsideRectangle (x0, y0, x1, y1, x[0], y[0]))
       return true;
   
     // Separate
@@ -834,7 +834,7 @@ public final class Geometry
     cx += (x[n-1] + x[0]) * a;
     cy += (y[n-1] + y[0]) * a;
       
-    double area = Geometry.computePolygonArea (x, y);
+    double area = GeometryTools.computePolygonArea (x, y);
 
     cx /= 6 * area;
     cy /= 6 * area;    
@@ -966,26 +966,26 @@ public final class Geometry
     //
     
     // Slope of the two lines
-    double a0 = Geometry.equals (x0, x1, LIMIT) ?
+    double a0 = GeometryTools.equals (x0, x1, LIMIT) ?
                 INFINITY : (y0 - y1) / (x0 - x1);
-    double a1 = Geometry.equals (x2, x3, LIMIT) ?
+    double a1 = GeometryTools.equals (x2, x3, LIMIT) ?
                 INFINITY : (y2 - y3) / (x2 - x3);
     
     double b0 = y0 - a0 * x0;
     double b1 = y2 - a1 * x2;
     
     // Check if lines are parallel
-    if (Geometry.equals (a0, a1)) {
-      if (!Geometry.equals (b0, b1))
+    if (GeometryTools.equals (a0, a1)) {
+      if (!GeometryTools.equals (b0, b1))
         return -1; // Parallell non-overlapping
       
       else {
-        if (Geometry.equals (x0, x1)) {
+        if (GeometryTools.equals (x0, x1)) {
           if (Math.min (y0, y1) < Math.max (y2, y3) ||
               Math.max (y0, y1) > Math.min (y2, y3)) {
             double twoMiddle = y0 + y1 + y2 + y3 -
-                               Geometry.min (y0, y1, y2, y3) -
-                               Geometry.max (y0, y1, y2, y3);
+                               GeometryTools.min (y0, y1, y2, y3) -
+                               GeometryTools.max (y0, y1, y2, y3);
             y = (twoMiddle) / 2.0;
             x = (y - b0) / a0;
           }
@@ -995,8 +995,8 @@ public final class Geometry
           if (Math.min (x0, x1) < Math.max (x2, x3) ||
               Math.max (x0, x1) > Math.min (x2, x3)) {
             double twoMiddle = x0 + x1 + x2 + x3 -
-                               Geometry.min (x0, x1, x2, x3) -
-                               Geometry.max (x0, x1, x2, x3);
+                               GeometryTools.min (x0, x1, x2, x3) -
+                               GeometryTools.max (x0, x1, x2, x3);
             x = (twoMiddle) / 2.0;
             y = a0 * x + b0;
           }
@@ -1010,11 +1010,11 @@ public final class Geometry
     }
     
     // Find correct intersection point
-    if (Geometry.equals (a0, INFINITY)) {
+    if (GeometryTools.equals (a0, INFINITY)) {
       x = x0;
       y = a1 * x + b1;
     }
-    else if (Geometry.equals (a1, INFINITY)) {
+    else if (GeometryTools.equals (a1, INFINITY)) {
       x = x2;
       y = a0 * x + b0;
     }
@@ -1028,43 +1028,43 @@ public final class Geometry
     
     // Then check if intersection is within line segments
     double distanceFrom1;
-    if (Geometry.equals (x0, x1)) {
+    if (GeometryTools.equals (x0, x1)) {
       if (y0 < y1)
-        distanceFrom1 = y < y0 ? Geometry.length (x, y, x0, y0) :
-                        y > y1 ? Geometry.length (x, y, x1, y1) : 0.0;
+        distanceFrom1 = y < y0 ? GeometryTools.length (x, y, x0, y0) :
+                        y > y1 ? GeometryTools.length (x, y, x1, y1) : 0.0;
       else
-        distanceFrom1 = y < y1 ? Geometry.length (x, y, x1, y1) :
-                        y > y0 ? Geometry.length (x, y, x0, y0) : 0.0;
+        distanceFrom1 = y < y1 ? GeometryTools.length (x, y, x1, y1) :
+                        y > y0 ? GeometryTools.length (x, y, x0, y0) : 0.0;
     }
     else {
       if (x0 < x1)
-        distanceFrom1 = x < x0 ? Geometry.length (x, y, x0, y0) :
-                        x > x1 ? Geometry.length (x, y, x1, y1) : 0.0;
+        distanceFrom1 = x < x0 ? GeometryTools.length (x, y, x0, y0) :
+                        x > x1 ? GeometryTools.length (x, y, x1, y1) : 0.0;
       else
-        distanceFrom1 = x < x1 ? Geometry.length (x, y, x1, y1) :
-                        x > x0 ? Geometry.length (x, y, x0, y0) : 0.0;
+        distanceFrom1 = x < x1 ? GeometryTools.length (x, y, x1, y1) :
+                        x > x0 ? GeometryTools.length (x, y, x0, y0) : 0.0;
     }
     
     double distanceFrom2;
-    if (Geometry.equals (x2, x3)) {
+    if (GeometryTools.equals (x2, x3)) {
       if (y2 < y3)
-        distanceFrom2 = y < y2 ? Geometry.length (x, y, x2, y2) :
-                        y > y3 ? Geometry.length (x, y, x3, y3) : 0.0;
+        distanceFrom2 = y < y2 ? GeometryTools.length (x, y, x2, y2) :
+                        y > y3 ? GeometryTools.length (x, y, x3, y3) : 0.0;
       else
-        distanceFrom2 = y < y3 ? Geometry.length (x, y, x3, y3) :
-                        y > y2 ? Geometry.length (x, y, x2, y2) : 0.0;
+        distanceFrom2 = y < y3 ? GeometryTools.length (x, y, x3, y3) :
+                        y > y2 ? GeometryTools.length (x, y, x2, y2) : 0.0;
     }
     else {
       if (x2 < x3)
-        distanceFrom2 = x < x2 ? Geometry.length (x, y, x2, y2) :
-                        x > x3 ? Geometry.length (x, y, x3, y3) : 0.0;
+        distanceFrom2 = x < x2 ? GeometryTools.length (x, y, x2, y2) :
+                        x > x3 ? GeometryTools.length (x, y, x3, y3) : 0.0;
       else
-        distanceFrom2 = x < x3 ? Geometry.length (x, y, x3, y3) :
-                        x > x2 ? Geometry.length (x, y, x2, y2) : 0.0;
+        distanceFrom2 = x < x3 ? GeometryTools.length (x, y, x3, y3) :
+                        x > x2 ? GeometryTools.length (x, y, x2, y2) : 0.0;
     }
     
-    return Geometry.equals (distanceFrom1, 0.0) &&
-      Geometry.equals (distanceFrom2, 0.0) ? 1 : 0;
+    return GeometryTools.equals (distanceFrom1, 0.0) &&
+      GeometryTools.equals (distanceFrom2, 0.0) ? 1 : 0;
   }
   
   
@@ -1108,10 +1108,10 @@ public final class Geometry
       boolean isIntersecting = false;
       
       // Ignore segments of zero length
-      if (Geometry.equals (x2, x3) && Geometry.equals (y2, y3))
+      if (GeometryTools.equals (x2, x3) && GeometryTools.equals (y2, y3))
         continue;
 
-      int type = Geometry.findLineSegmentIntersection (x0, y0, x1, y1,
+      int type = GeometryTools.findLineSegmentIntersection (x0, y0, x1, y1,
                                                        x2, y2, x3, y3,
                                                        intersection);
       
@@ -1119,7 +1119,7 @@ public final class Geometry
         int p1 = i    == 0           ? nPoints - 1 : i - 1;
         int p2 = next == nPoints - 1 ? 0           : next + 1;
         
-        int side = Geometry.sameSide (x0, y0, x1, y1,
+        int side = GeometryTools.sameSide (x0, y0, x1, y1,
                                       x[p1], y[p1], x[p2], y[p2]);
         
         if (side < 0)
@@ -1179,11 +1179,11 @@ public final class Geometry
     double[] p1 = {(double) x[0], (double) y[0], 0.0};
     double[] p2 = {(double) x[1], (double) y[1], 0.0};
   
-    double axisAngle = Geometry.computeAngle (p0, p1, p2);
+    double axisAngle = GeometryTools.computeAngle (p0, p1, p2);
   
     // dx / dy  
-    double dx = Geometry.length (x0, y0, x[1], y[1]);
-    double dy = Geometry.length (x0, y0, x[0], y[0]) * Math.sin (axisAngle);
+    double dx = GeometryTools.length (x0, y0, x[1], y[1]);
+    double dy = GeometryTools.length (x0, y0, x[0], y[0]) * Math.sin (axisAngle);
     
     // Create geometry for unrotated / unsheared ellipse
     int[] ellipse = createEllipse (x0, y0, (int) Math.round (dx),
@@ -1193,9 +1193,9 @@ public final class Geometry
     // Shear if neccessary. If angle is close to 90 there is no shear.
     // If angle is close to 0 or 180 shear is infinite, and we set
     // it to zero as well.
-    if (!Geometry.equals (axisAngle, Math.PI/2.0, 0.1) && 
-        !Geometry.equals (axisAngle, Math.PI,     0.1) &&
-        !Geometry.equals (axisAngle, 0.0,         0.1)) {
+    if (!GeometryTools.equals (axisAngle, Math.PI/2.0, 0.1) && 
+        !GeometryTools.equals (axisAngle, Math.PI,     0.1) &&
+        !GeometryTools.equals (axisAngle, 0.0,         0.1)) {
       double xShear = 1.0 / Math.tan (axisAngle);
       for (int i = 0; i < nPoints; i++)
         ellipse[i*2 + 0] += Math.round ((ellipse[i*2 + 1] - y0) * xShear);
@@ -1531,7 +1531,7 @@ public final class Geometry
     
     // Find position of interior of the arrow along the polyline
     int[] pos1 = new int[2];
-    Geometry.findPolygonPosition (x, y, length, pos1);
+    GeometryTools.findPolygonPosition (x, y, length, pos1);
 
     // Angles
     double dx = x0 - pos1[0];
@@ -1733,7 +1733,7 @@ public final class Geometry
     
     double accumulatedLength = 0.0;
     for (int i = 1; i < x.length; i++) {
-      double legLength = Geometry.length (x[i-1], y[i-1], x[i], y[i]);
+      double legLength = GeometryTools.length (x[i-1], y[i-1], x[i], y[i]);
       if (legLength + accumulatedLength >= length) {
         double part = length - accumulatedLength;
         double fraction = part / legLength;

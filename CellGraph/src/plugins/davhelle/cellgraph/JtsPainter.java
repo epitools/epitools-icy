@@ -79,6 +79,10 @@ public class JtsPainter extends AbstractPainter{
 		return union;
 	}
 	
+	public ArrayList<Polygon> getJtsPolygons(){
+		return jts_polygons;
+	}
+	
 	@Override
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{

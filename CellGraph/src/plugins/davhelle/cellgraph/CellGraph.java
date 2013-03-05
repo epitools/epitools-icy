@@ -284,6 +284,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 					JtsMultiPainter border_points = new JtsMultiPainter(
 							jts_cell_center.getPolyUnion(), current_file_no);
 					sequence.addPainter(border_points);
+					
+					JtsBorderPolygonPainter fill_border = 
+							new JtsBorderPolygonPainter(
+									jts_cell_center.getJtsPolygons(),
+									border_points.getBorderRing(),
+									current_file_no);
+					
+					sequence.addPainter(fill_border);
 				}
 
 				else{

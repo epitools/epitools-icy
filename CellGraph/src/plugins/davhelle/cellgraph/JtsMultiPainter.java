@@ -8,10 +8,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
 
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
@@ -26,6 +24,7 @@ public class JtsMultiPainter extends AbstractPainter{
 	//		of polygons and/or cell centers.
 	
 	private Collection geomCol;
+	private LinearRing borderRing;
 	
 	private ArrayList<Coordinate> border_list;
 
@@ -57,6 +56,8 @@ public class JtsMultiPainter extends AbstractPainter{
 		com.vividsolutions.jts.geom.Geometry boundary =
 				union.getBoundary();
 		
+		borderRing = (LinearRing) boundary;
+		
 		System.out.println(boundary.toText());
 		//readout suggests MultiLineString
 		
@@ -65,6 +66,10 @@ public class JtsMultiPainter extends AbstractPainter{
 		for(Coordinate coor_i: boundary_coor)
 			border_list.add(coor_i);
 		
+	}
+	
+	public LinearRing getBorderRing(){
+		return borderRing;
 	}
 	
 	

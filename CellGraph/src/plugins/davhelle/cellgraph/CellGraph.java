@@ -271,27 +271,40 @@ public class CellGraph extends EzPlug implements EzStoppable
 					sequence.addPainter(heat_map);
 					
 					JtsPainter jts_cell_center = new JtsPainter(jts_polys, current_file_no);
-					//sequence.addPainter(jts_cell_center);
+//					sequence.addPainter(jts_cell_center);
 					
 					//Extract polygon structure as MultiPolygon
-					MultiPolygon all_jts_polys = jts_cell_center.getMultiPoly();
+//					MultiPolygon all_jts_polys = jts_cell_center.getMultiPoly();
 					
-					JtsPainter multi_center = new JtsPainter(all_jts_polys, current_file_no);
-					sequence.addPainter(multi_center);
+					JtsPainter multi_center = 
+							new JtsPainter(
+									jts_cell_center.getMultiPoly(), 
+									current_file_no);
+//					sequence.addPainter(multi_center);
 					
 					//only does boarder points of all points restart HERE
 					//JtsMultiPainter border_points = new JtsMultiPainter(all_jts_polys, current_file_no);
-					JtsMultiPainter border_points = new JtsMultiPainter(
-							jts_cell_center.getPolyUnion(), current_file_no);
-					sequence.addPainter(border_points);
+					JtsMultiPainter border_points = 
+							new JtsMultiPainter(
+									jts_cell_center.getPolyUnion(),
+									current_file_no);
+//					sequence.addPainter(border_points);
 					
+					//Use jts to evidence outer cells
 					JtsBorderPolygonPainter fill_border = 
 							new JtsBorderPolygonPainter(
 									jts_cell_center.getJtsPolygons(),
 									border_points.getBorderRing(),
 									current_file_no);
+//					sequence.addPainter(fill_border);
 					
-					sequence.addPainter(fill_border);
+					//Builld the voronoi diagram with jts
+					JtsVoronoiPainter jts_voronoi = 
+							new JtsVoronoiPainter(
+									jts_cell_center.getJtsPoints(), 
+									current_file_no);
+					
+					sequence.addPainter(jts_voronoi);
 				}
 
 				else{

@@ -83,6 +83,10 @@ public class JtsPainter extends AbstractPainter{
 		return jts_polygons;
 	}
 	
+	public ArrayList<Point> getJtsPoints(){
+		return cell_center_list;
+	}
+	
 	@Override
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{

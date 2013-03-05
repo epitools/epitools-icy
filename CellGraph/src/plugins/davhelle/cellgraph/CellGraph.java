@@ -242,6 +242,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 						new ListenableUndirectedGraph<CellCorner, DefaultEdge>(DefaultEdge.class);
 
 				//Insert polydata information into graph structures
+				//TODO: remove system.out from jts creation
 				Collection jts_polys;
 				jts_polys = vtk_mesh_file_reader.fill_graph(corner_list, cell_corner_graph);
 
@@ -277,6 +278,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 					
 					JtsPainter multi_center = new JtsPainter(all_jts_polys, current_file_no);
 					sequence.addPainter(multi_center);
+					
+					//only does boarder points of all points restart HERE
+					//JtsMultiPainter border_points = new JtsMultiPainter(all_jts_polys, current_file_no);
+					JtsMultiPainter border_points = new JtsMultiPainter(
+							jts_cell_center.getPolyUnion(), current_file_no);
+					sequence.addPainter(border_points);
 				}
 
 				else{

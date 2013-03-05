@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
@@ -46,7 +48,7 @@ public class JtsPainter extends AbstractPainter{
 	public JtsPainter(MultiPolygon all_jts_poly,int time_point){
 		cell_center_list = new ArrayList<Point>();
 		cell_center_list.add(all_jts_poly.getCentroid());
-		this.time_point = time_point;
+		this.time_point = time_point;		
 	}
 	
 	public void updatePolygonList(){
@@ -66,6 +68,15 @@ public class JtsPainter extends AbstractPainter{
 		for(int i=0; i<jts_polygons.size(); i++)
 			output[i] = jts_polygons.get(i);
 		return new MultiPolygon(output, new GeometryFactory());
+	}
+	
+	public com.vividsolutions.jts.geom.Geometry getPolyUnion(){
+		Polygon[] output = new Polygon[jts_polygons.size()];
+		for(int i=0; i<jts_polygons.size(); i++)
+			output[i] = jts_polygons.get(i);
+		GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+		com.vividsolutions.jts.geom.Geometry union = polygonCollection.buffer(0);
+		return union;
 	}
 	
 	@Override

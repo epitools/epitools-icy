@@ -291,12 +291,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 //					sequence.addPainter(border_points);
 					
 					//Use jts to evidence outer cells
-					JtsBorderPolygonPainter fill_border = 
+					JtsBorderPolygonPainter jts_border_cells = 
 							new JtsBorderPolygonPainter(
 									jts_cell_center.getJtsPolygons(),
 									border_points.getBorderRing(),
 									current_file_no);
-//					sequence.addPainter(fill_border);
+//					sequence.addPainter(jts_border_cells);
 					
 					//Builld the voronoi diagram with jts
 					JtsVoronoiPainter jts_voronoi = 
@@ -304,7 +304,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 									jts_cell_center.getJtsPoints(), 
 									current_file_no);
 					
-					sequence.addPainter(jts_voronoi);
+					//sequence.addPainter(jts_voronoi);
+					
+					//visualize only voronoi cells that do not belong to the border
+					JtsAreaDifferenceMap border_voronoi = 
+							new JtsAreaDifferenceMap(
+									jts_cell_center.getCellCenterPolygonMap(),
+									jts_voronoi.getCellCenterVoronoiPolygonMap(),
+									jts_border_cells.getPolygonBorderMap(),
+									current_file_no);
+					
+					sequence.addPainter(border_voronoi);
+					
 				}
 
 				else{

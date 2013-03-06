@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -30,37 +31,42 @@ public class JtsPainter extends AbstractPainter{
 	
 	private ArrayList<Point> cell_center_list;
 	private ArrayList<Polygon> jts_polygons;
+	private HashMap<Polygon,Point> cc_poly_map;
 	
 	private int time_point;
 	
+	private JtsPainter(int time_point){
+		this.time_point = time_point;
+		this.cell_center_list = new ArrayList<Point>();
+		this.jts_polygons = new ArrayList<Polygon>();
+		this.cc_poly_map = new HashMap<Polygon,Point>();
+	}
+	
 	public JtsPainter(Collection collection,int time_point){
 		
-		geomCol = collection;
+		this(time_point);
+		
+		this.geomCol = collection;
 		Polygon[] jts_polys;
-		
-		this.time_point = time_point;
-		
-		//Use updatehandler?
-		this.updatePolygonList();
+
+		for(Object ob: geomCol){
+			Polygon cell = (Polygon)ob;
+			Point cell_center = cell.getCentroid();
+			jts_polygons.add(cell);
+			cell_center_list.add(cell_center);
+			cc_poly_map.put(cell,cell_center);
+		}
 
 	}
 	
 	public JtsPainter(MultiPolygon all_jts_poly,int time_point){
-		cell_center_list = new ArrayList<Point>();
-		cell_center_list.add(all_jts_poly.getCentroid());
-		this.time_point = time_point;		
+		this(time_point);
+		
+		cell_center_list.add(all_jts_poly.getCentroid());	
 	}
 	
-	public void updatePolygonList(){
-		
-		cell_center_list = new ArrayList<Point>();
-		jts_polygons = new ArrayList<Polygon>();
-
-		for(Object ob: geomCol){
-			Polygon cell = (Polygon)ob;
-			jts_polygons.add(cell);
-			cell_center_list.add(cell.getCentroid());
-		}
+	public HashMap<Polygon,Point> getCellCenterPolygonMap(){
+		return cc_poly_map;
 	}
 	
 	public MultiPolygon getMultiPoly(){

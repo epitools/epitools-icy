@@ -88,25 +88,16 @@ public class JtsVoronoiPainter extends AbstractPainter{
 			//Use JTS awt wrapper to print voronoi diagram
 			ShapeWriter writer = new ShapeWriter();
 			//Complete diagram
-			//g.draw(writer.toShape(voronoi_poly));
-			//Single voronoi cell with (supposed) center/original cell center
-			Iterator<Point> cc_it = cc_voro_map.keySet().iterator();
-			while(cc_it.hasNext()){
-				Point cc = cc_it.next();
-				g.draw(writer.toShape(cc));
-				g.draw(writer.toShape(cc_voro_map.get(cc)));
-				break;
-			}
+			g.draw(writer.toShape(voronoi_poly));
 			
-
-			/*
-			 * Results seem to show that the idx relation is lost
-			 * this requires a quick search for every point to 
-			 * detect in which voronoi polygon it is contained.
-			 * To detect a possible shift one might also investigate
-			 * if by assigning the same color to CENTER and POLYGON
-			 * there is some pattern.
-			 */
+			//POC Single voronoi cell with center/original cell center
+//			Iterator<Point> cc_it = cc_voro_map.keySet().iterator();
+//			while(cc_it.hasNext()){
+//				Point cc = cc_it.next();
+//				g.draw(writer.toShape(cc));
+//				g.draw(writer.toShape(cc_voro_map.get(cc)));
+//				break;
+//			}
 			
 			
 		}

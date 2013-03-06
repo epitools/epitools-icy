@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -18,6 +19,7 @@ import icy.sequence.Sequence;
 
 public class JtsBorderPolygonPainter extends AbstractPainter{
 	
+	HashMap<Polygon,Boolean> border_polygon_map;
 	boolean[] is_border_polygon;
 	ArrayList<Polygon> polygons;
 	int time_point;
@@ -25,14 +27,27 @@ public class JtsBorderPolygonPainter extends AbstractPainter{
 	public JtsBorderPolygonPainter(
 			ArrayList<Polygon> jts_polygons, LinearRing border, int time_point){
 		
+		border_polygon_map = new HashMap<Polygon,Boolean>();
 		is_border_polygon = new boolean[jts_polygons.size()];
 		this.time_point = time_point;
 		polygons = jts_polygons;
 		
-		for(int i=0; i<polygons.size(); i++)
-			is_border_polygon[i] = jts_polygons.get(i).intersects(border);
-		
+		//Check via intersection if polygon is border polygon
+		for(int i=0; i<polygons.size(); i++){
+			
+			Polygon p = jts_polygons.get(i);
+			boolean is_border = p.intersects(border);
+			
+			is_border_polygon[i] = is_border;
+			border_polygon_map.put(p, Boolean.valueOf(is_border));
+			
+		}
 	}
+	
+	public 	HashMap<Polygon,Boolean> getPolygonBorderMap(){
+		return border_polygon_map;
+	}
+
 	
 	@Override
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)

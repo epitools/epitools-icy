@@ -121,17 +121,18 @@ public class MeshReader {
         	
         }
         
-        System.out.println("Lines in collection:"+line_collection.size());
+//        System.out.println("Lines in collection:"+line_collection.size());
         polygonizer.add(line_collection);
         
         //Polgonizer doesn't find anything...
         Collection polys = polygonizer.getPolygons();
-        //Invalid Ring Lines - edges which form rings which are invalid (e.g. the component lines contain a self-intersection)
-        Collection non_polys = polygonizer.getInvalidRingLines();
-        //Cut edges - edges which are connected at both ends but which do not form part of polygon
-        Collection cut_edges = polygonizer.getCutEdges();
-        //Dangles - edges which have one or both ends which are not incident on another edge endpoint
-        Collection dangles = polygonizer.getDangles();
+        
+//        //Invalid Ring Lines - edges which form rings which are invalid (e.g. the component lines contain a self-intersection)
+//        Collection non_polys = polygonizer.getInvalidRingLines();
+//        //Cut edges - edges which are connected at both ends but which do not form part of polygon
+//        Collection cut_edges = polygonizer.getCutEdges();
+//        //Dangles - edges which have one or both ends which are not incident on another edge endpoint
+//        Collection dangles = polygonizer.getDangles();
         
 //        System.out.println("Found polygons:"+polys.size());
 //        System.out.println("Found NON-polygons:"+non_polys.size());

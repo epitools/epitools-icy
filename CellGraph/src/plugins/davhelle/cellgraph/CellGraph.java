@@ -312,6 +312,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 									jts_cell_center.getCellCenterPolygonMap(),
 									jts_voronoi.getCellCenterVoronoiPolygonMap(),
 									jts_border_cells.getPolygonBorderMap(),
+									1,
 									current_file_no);
 					
 					sequence.addPainter(border_voronoi);

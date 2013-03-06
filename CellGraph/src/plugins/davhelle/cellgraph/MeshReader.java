@@ -133,22 +133,22 @@ public class MeshReader {
         //Dangles - edges which have one or both ends which are not incident on another edge endpoint
         Collection dangles = polygonizer.getDangles();
         
-        System.out.println("Found polygons:"+polys.size());
-        System.out.println("Found NON-polygons:"+non_polys.size());
-        for(Object np: non_polys){
-        	LineString line = (LineString)np;
-        	System.out.println(line.toText());
-        }
-        System.out.println("Found cutted-edges:"+cut_edges.size());
-        for(Object np: cut_edges){
-        	LineString line = (LineString)np;
-        	System.out.println(line.toText());
-        }
-        System.out.println("Found dangling-lin:"+dangles.size());
-        for(Object np: dangles){
-        	LineString line = (LineString)np;
-        	System.out.println(line.toText());
-        }
+//        System.out.println("Found polygons:"+polys.size());
+//        System.out.println("Found NON-polygons:"+non_polys.size());
+//        for(Object np: non_polys){
+//        	LineString line = (LineString)np;
+//        	System.out.println(line.toText());
+//        }
+//        System.out.println("Found cutted-edges:"+cut_edges.size());
+//        for(Object np: cut_edges){
+//        	LineString line = (LineString)np;
+//        	System.out.println(line.toText());
+//        }
+//        System.out.println("Found dangling-lin:"+dangles.size());
+//        for(Object np: dangles){
+//        	LineString line = (LineString)np;
+//        	System.out.println(line.toText());
+//        }
 
         return polys;
         

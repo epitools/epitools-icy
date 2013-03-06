@@ -39,7 +39,8 @@ public class JtsMultiPainter extends AbstractPainter{
 		Geometry boundary =
 				all_jts_poly.getBoundary();
 		
-		System.out.println(boundary.toText());
+		//find out what data structure inside geometry
+		//System.out.println(boundary.toText());
 		//readout suggests MultiLineString
 		
 		Coordinate[] boundary_coor = boundary.getCoordinates();
@@ -59,7 +60,8 @@ public class JtsMultiPainter extends AbstractPainter{
 		
 		borderRing = (LinearRing) boundary;
 		
-		System.out.println(boundary.toText());
+		//find out about boundary data type
+		//System.out.println(boundary.toText());
 		//readout suggests MultiLineString
 		
 		Coordinate[] boundary_coor = boundary.getCoordinates();

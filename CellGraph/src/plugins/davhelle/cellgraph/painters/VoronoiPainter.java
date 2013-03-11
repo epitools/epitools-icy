@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.painters;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

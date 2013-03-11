@@ -1,10 +1,12 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.painters;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import plugins.davhelle.cellgraph.nodes.CellCorner;
 
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;

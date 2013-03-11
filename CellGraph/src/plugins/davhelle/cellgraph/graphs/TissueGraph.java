@@ -1,8 +1,10 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.graphs;
 
 import org.jgrapht.alg.NeighborIndex;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
+
+import plugins.davhelle.cellgraph.nodes.NodeType;
 
 /**
  * Tissue Graph represents the polygonal abstraction of a 

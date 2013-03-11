@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.misc;
 
 /*
  * (C) 2004 - Geotechnical Software Services

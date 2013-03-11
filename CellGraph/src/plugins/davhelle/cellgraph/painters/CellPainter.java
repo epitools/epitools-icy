@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.painters;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -11,6 +11,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import plugins.davhelle.cellgraph.misc.PolygonUtils;
+import plugins.davhelle.cellgraph.nodes.CellCorner;
 
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;

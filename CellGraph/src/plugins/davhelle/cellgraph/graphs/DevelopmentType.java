@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.graphs;
 
 /**
  * DevelopmentType represents the entire abstraction

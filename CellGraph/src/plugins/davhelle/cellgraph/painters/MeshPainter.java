@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.painters;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
+
+import plugins.davhelle.cellgraph.nodes.CellCorner;
 
 import icy.canvas.Canvas2D;
 import icy.canvas.IcyCanvas;

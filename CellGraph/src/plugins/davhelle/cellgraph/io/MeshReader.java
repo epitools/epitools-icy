@@ -1,10 +1,12 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.io;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
+
+import plugins.davhelle.cellgraph.nodes.CellCorner;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;

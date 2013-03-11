@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.jts_poc;
 
 import icy.canvas.IcyCanvas;
 import icy.canvas.Layer;

@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.io;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +16,8 @@ import vtk.vtkPolyData;
 import vtk.vtkPolyDataReader;
 
 /**
- * Read a VTK mesh file and returns a Collection of JTS Line segments
+ * Class to read a VTK mesh file and elaborate it into a 
+ * collection of JTS Geometry objects (method dependend)
  * 
  * @author Davide Heller
  *

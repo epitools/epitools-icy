@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.io;
 
 import java.awt.Point;
 import java.awt.Polygon;
@@ -6,6 +6,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import plugins.davhelle.cellgraph.misc.PolygonUtils;
 
 
 /**

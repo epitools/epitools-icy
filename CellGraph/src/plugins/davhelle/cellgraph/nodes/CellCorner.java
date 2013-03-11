@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.nodes;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -12,6 +12,8 @@ import java.util.Set;
 
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
+
+import plugins.davhelle.cellgraph.misc.GeometryTools;
 
 
 /**

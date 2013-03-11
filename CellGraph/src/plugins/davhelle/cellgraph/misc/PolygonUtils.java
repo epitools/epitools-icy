@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.misc;
 
 import java.awt.Point;
 import java.awt.Polygon;

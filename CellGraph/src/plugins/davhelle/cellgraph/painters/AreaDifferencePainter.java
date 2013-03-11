@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph;
+package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
 import icy.canvas.Layer;
@@ -12,6 +12,8 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import plugins.davhelle.cellgraph.misc.PolygonUtils;
 
 
 /**

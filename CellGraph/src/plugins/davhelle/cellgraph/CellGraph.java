@@ -2,11 +2,12 @@ package plugins.davhelle.cellgraph;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.Shape;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,12 +15,16 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 
 import be.humphreys.simplevoronoi.GraphEdge;
 import be.humphreys.simplevoronoi.Voronoi;
 
 import plugins.adufour.ezplug.*;
+import plugins.davhelle.cellgraph.graphs.TissueEvolution;
+import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.io.CellWriter;
+import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.MeshReader;
 import plugins.davhelle.cellgraph.jts_poc.JtsAreaDifferenceMap;
 import plugins.davhelle.cellgraph.jts_poc.JtsBorderPolygonPainter;
@@ -27,12 +32,15 @@ import plugins.davhelle.cellgraph.jts_poc.JtsMultiPainter;
 import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
 import plugins.davhelle.cellgraph.jts_poc.JtsVoronoiPainter;
 import plugins.davhelle.cellgraph.nodes.CellCorner;
+import plugins.davhelle.cellgraph.nodes.CellPolygon;
+import plugins.davhelle.cellgraph.nodes.NodeType;
 import plugins.davhelle.cellgraph.painters.AreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.CellIdPainter;
 import plugins.davhelle.cellgraph.painters.CellPainter;
 import plugins.davhelle.cellgraph.painters.CornerPainter;
 import plugins.davhelle.cellgraph.painters.MeshPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.ShapePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.painter.Painter;
@@ -173,7 +181,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		}
 		else{
 			
-			/******************VTK MESH READ IN SECTION***********************************/
+			/******************FILE NAME GENERATION***********************************/
+			
+			//TODO: proper number read in (no. represented in 2 digit format...)
+			//TODO: do it like fiji-loci-fileImporter : parse Option
+			
 			File mesh_file;
 			
 			try{
@@ -183,28 +195,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 				new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
 				return;
 			}
-			
-			
-			//Display of different time points requires
-			//the sequence to be converted to a time stack
-			//Sequence operation -> convert to frames
-			
+		
 			int time_points = varMaxT.getValue();
-			//MeshReader[] myReaders = new MeshReader[time_points];
-
-			//		System.out.println(varFile.name + " = " + file_name);
-			//		System.out.println(varSequence.name + " = " + varSequence.getValue());
 
 			String file_name = mesh_file.getName();
 			String file_path = mesh_file.getParent() + "/";
 			String file_ext = ".vtk";
 			
-			varFile.setButtonText(file_name);
-			
-			//System.out.println(file_name + "\n" + file_path + "\n" + file_ext);
-			
 			int ext_start = file_name.indexOf(file_ext);
-			//TODO: proper number read in (no. represented in 2 digit format...)
 			int file_no_start = ext_start - 2;
 			
 			String file_name_wo_no = file_name.substring(0, file_no_start);
@@ -212,7 +210,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			int start_file_no = Integer.parseInt(file_no_str);
 			
-			//cycle through all time points
+			varFile.setButtonText(file_name);
+			
+			/******************TISSUE EVOLUTOIN***********************************/
+			
+//			TissueEvolution wing_disc_movie = new TissueEvolution(time_points);
+			TissueEvolution wing_disc_movie = new TissueEvolution();
+			
+			/******************FRAME LOOP***********************************/
 			for(int i = 0; i<time_points; i++){
 				
 				//successive file name generation TODO:make it safe!
@@ -236,257 +241,326 @@ public class CellGraph extends EzPlug implements EzStoppable
 					continue;
 				}
 				
-				//myReaders[i] = new MeshReader();
+				/******************VTK MESH TO POLYGON TRANSFORMATION***********************************/
+
 		
-				MeshReader vtk_mesh_file_reader = new MeshReader(abs_path); 
+				JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
 
 				//check for data correctness        
-				if(vtk_mesh_file_reader.is_not_polydata()){
+				if(polygonReader.is_not_polydata()){
 					new AnnounceFrame("NO Poly data found in: "+file_name);
 					continue;
 				}
 
-				//extract point number from polydata to initialize graph structures         
-				int point_no = vtk_mesh_file_reader.get_point_no();
+				ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons();
+				
+				/******************GRAPH GENERATION***********************************/
+				
+				TissueGraph current_frame = new TissueGraph(current_file_no);
 
-				//Create structure to contain all mesh points, i.e. cell_corners
-				ArrayList<CellCorner> corner_list = new ArrayList<CellCorner>(point_no);  
-
-				//Graph for containing mesh lines as edges
-				ListenableUndirectedGraph<CellCorner, DefaultEdge> cell_corner_graph = 
-						new ListenableUndirectedGraph<CellCorner, DefaultEdge>(DefaultEdge.class);
-
-				//Insert polydata information into graph structures
-				//TODO: remove system.out from jts creation
-				Collection jts_polys;
-				jts_polys = vtk_mesh_file_reader.fill_graph(corner_list, cell_corner_graph);
-
-				//identify the image we want to paint on
-				Sequence sequence = varSequence.getValue();
-				//obtain the painter to be applied
-				PlotEnum user_choice = varEnum.getValue();
-
-				/******************PLOTTING SECTION***********************************/
-
-				//Raw vertices read from vtk file
-				if( user_choice == PlotEnum.CORNER_MAP){
-					Painter corner_map = new CornerPainter(corner_list, current_file_no);
-					sequence.addPainter(corner_map);
+				//insert all polygons into graph as CellPolygons
+				ArrayList<CellPolygon> cellList = new ArrayList<CellPolygon>();
+				Iterator<Polygon> poly_it = polygonMesh.iterator();
+				while(poly_it.hasNext()){
+					CellPolygon c = new CellPolygon(poly_it.next());
+					cellList.add(c);
+					current_frame.addVertex(c);
 				}
 				
-				//Raw edges read from vtk file colored according to z-height (if any)
-				else if( user_choice == PlotEnum.HEAT_MAP){
-					int max_z = varMaxZ.getValue();
+				/* Algorithm to find neighborhood relationships between polygons
+				 * 
+				 * for every polygon
+				 * 	for every non assigned face
+				 * 	 find neighboring polygon
+				 * 	  add edge to graph if neighbor found
+				 * 	  if all faces assigned 
+				 * 	   exclude from list
+				 *    
+				 */
 
-					//TODO Better check for user input
-					if(max_z == 0)
-						max_z = sequence.getSizeZ();
-
-					Painter heat_map = new MeshPainter(cell_corner_graph, max_z,current_file_no);
-					sequence.addPainter(heat_map);
-					
-					JtsPainter jts_cell_center = new JtsPainter(jts_polys, current_file_no);
-//					sequence.addPainter(jts_cell_center);
-					
-					//Extract polygon structure as MultiPolygon
-//					MultiPolygon all_jts_polys = jts_cell_center.getMultiPoly();
-					
-					JtsPainter multi_center = 
-							new JtsPainter(
-									jts_cell_center.getMultiPoly(), 
-									current_file_no);
-//					sequence.addPainter(multi_center);
-					
-					//only does boarder points of all points restart HERE
-					//JtsMultiPainter border_points = new JtsMultiPainter(all_jts_polys, current_file_no);
-					JtsMultiPainter border_points = 
-							new JtsMultiPainter(
-									jts_cell_center.getPolyUnion(),
-									current_file_no);
-//					sequence.addPainter(border_points);
-					
-					//Use jts to evidence outer cells
-					JtsBorderPolygonPainter jts_border_cells = 
-							new JtsBorderPolygonPainter(
-									jts_cell_center.getJtsPolygons(),
-									border_points.getBorderRing(),
-									current_file_no);
-//					sequence.addPainter(jts_border_cells);
-					
-					//Builld the voronoi diagram with jts
-					JtsVoronoiPainter jts_voronoi = 
-							new JtsVoronoiPainter(
-									jts_cell_center.getJtsPoints(), 
-									current_file_no);
-					
-					//sequence.addPainter(jts_voronoi);
-					
-					//visualize only voronoi cells that do not belong to the border
-					JtsAreaDifferenceMap border_voronoi = 
-							new JtsAreaDifferenceMap(
-									jts_cell_center.getCellCenterPolygonMap(),
-									jts_voronoi.getCellCenterVoronoiPolygonMap(),
-									jts_border_cells.getPolygonBorderMap(),
-									1,
-									current_file_no);
-					
-					sequence.addPainter(border_voronoi);
-					
+				//TODO more efficient search
+				Iterator<NodeType> cell_it = current_frame.iterator();
+				
+				while(cell_it.hasNext()){
+					CellPolygon a = (CellPolygon)cell_it.next();
+					Iterator<CellPolygon> neighbor_it = cellList.iterator();
+					while(neighbor_it.hasNext()){
+						CellPolygon b = neighbor_it.next();
+						if(a.getGeometry().touches(b.getGeometry()))
+							current_frame.addEdge(a, b);
+					}
 				}
-
-				else{
-					
-					/******************CELL IDENTIFICATION SECTION***********************************/
-					
-					//Every other visualization assumes the cells to be identified
-					//as set of edges, thus first these sets have to be initiated
-					
-					//Look for cycles in the graph, i.e. find the polygon associated to each cell 
-					Map<Integer, ArrayList<Integer>> cell_map = new HashMap<Integer, ArrayList<Integer>>();
-					
-					for(CellCorner v_next: corner_list)
-						if(cell_corner_graph.degreeOf(v_next)>2)
-							v_next.compute_cycles(cell_corner_graph,cell_map);
-
-					//For performance test
-					//long start_millis = System.currentTimeMillis();
-					//long time_past = System.currentTimeMillis() - start_millis;
-					//System.out.println("Time to search "+v_next.toString()+":"+time_past);
-
-//					System.out.println("Number of cells found:"+cell_map.size());
-//					System.out.println("Cells found"+cell_map.toString());
-//					System.out.println(cell_corner_graph.toString());
-
-					//TODO Might be externalized, no need to add Painter for each choice separately
-					boolean draw_polygons = varBooleanPolygon.getValue();
-					boolean draw_cell_centers = varBooleanCCenter.getValue();
-					
-					//Draw cells as individual entities (Polygons, set of edges)
-					CellPainter cell_painter = new CellPainter(cell_map, 
-							corner_list,draw_polygons,draw_cell_centers,current_file_no);
-					
-					if (user_choice == PlotEnum.CELL_MAP){
-						sequence.addPainter(cell_painter);
 						
+				
+				//wing_disc_movie.setFrame(current_frame, current_file_no);
+				wing_disc_movie.addFrame(current_frame);
+				
+				//test_output
+				//identify the image we want to paint on
+				Sequence sequence = varSequence.getValue();
+				
+				JtsPainter jts_cell_center = new JtsPainter(polygonMesh, current_file_no);
+				sequence.addPainter(jts_cell_center);
+				
+			}
+			
+			System.out.println("Successfully read in "+wing_disc_movie.size()+" movie frames");
+				
+			
+			//select random cell in each frame and display the neighbors
+			
+			for(int frame_i=0; frame_i < wing_disc_movie.size(); frame_i++){
 
-						//Write center coordinates to disk
-						if(varBooleanWriteCenters.getValue()){
-							ArrayList<Point> cell_centers = cell_painter.getCellCenters();
-							System.out.println("Poly.no. found by cs:"+cell_centers.size());
-							//CellWriter cell_center_writer = new CellWriter(file_path+file_name_wo_no,current_file_no);
-							//cell_center_writer.write_tracking_file(cell_centers);
-						}
-						continue;
-					}
-					
-					/******************VORONOI SECTION***********************************/ 
-					 
-					ArrayList<Color> cell_color_list = cell_painter.getCellColors();
-					ArrayList<Point> cell_center_list = cell_painter.getCellCenters();
-					
-					//Conversion to SimpleVoroni input data structure
-					int cell_no = cell_center_list.size();
-					double[] x_coors = new double[cell_no];
-					double[] y_coors = new double[cell_no];
-					
-					for(int j=0; j<cell_no; j++){
-						x_coors[j] = cell_center_list.get(j).getX();
-						y_coors[j] = cell_center_list.get(j).getY();
-					}
-					
-					double minimal_site_distance = 0.5;
-					Voronoi voronoi_generator = new Voronoi(
-							minimal_site_distance);
-					
-					List<GraphEdge> voronoi_edges = voronoi_generator.generateVoronoi(
-							x_coors, y_coors,
-							win_x[0], win_x[1],
-							win_y[0], win_y[1]);
-					
-					boolean PLOT_VORONOI_CELL_IDS = varBooleanCellIDs.getValue();
-					Painter vornoi_painter = new VoronoiPainter(voronoi_edges,PLOT_VORONOI_CELL_IDS,current_file_no);
-					
-					//Plot voronoi edges
-					if (user_choice == PlotEnum.VORONOI_MAP){
-						sequence.addPainter(vornoi_painter);
-						
-						if(PLOT_VORONOI_CELL_IDS){
-							Painter my_cell_ids = new CellIdPainter(cell_center_list,current_file_no);
-							sequence.addPainter(my_cell_ids);
-						}
-						
-						continue;
-					}
-					
-					//recognize and plot voronoi polygons
-					//TODO better recognition of voronoi polygons
-					//and elimination of outer cells clearly distorted 
-					PolygonPainter voronoi_polygons = new PolygonPainter(
-							cell_center_list,
-							voronoi_edges,
-							current_file_no,
-							cell_color_list);
-					
-					if (user_choice == PlotEnum.VORONOI_CELL_MAP){
-						sequence.addPainter(voronoi_polygons);
-						continue;
-					}
-					
-					//Compare native cell area and voronoi cell area
-					//and color cell accordingly (see source)
-					
-					if(user_choice == PlotEnum.AREA_MAP){
-						ArrayList<Polygon> cell_polygon_list = cell_painter.getPolygons();
-						ArrayList<Polygon> voronoi_polygon_list = voronoi_polygons.getPolygons();		
-						double color_amplification = varColorAmp.getValue().doubleValue();
-						
-						AreaDifferencePainter voronoi_area_diff = new AreaDifferencePainter(
-										cell_polygon_list,
-										voronoi_polygon_list,
-										color_amplification,
-										current_file_no);
+				Sequence sequence = varSequence.getValue();	
+				TissueGraph frame = wing_disc_movie.getFrame(frame_i);
 
+				//Min + (int)(Math.random() * ((Max - Min) + 1))
+//				int max_idx = frame.size();
+//				int random_idx = (int)(Math.random() * max_idx);
+				
+				int random_idx = 50;
 
-						sequence.addPainter(voronoi_area_diff);
+				Iterator<NodeType> cell_it = frame.iterator();
+				for(int i=0;i<random_idx-1; i++)
+					if(cell_it.hasNext())
+						cell_it.next();
 
-						//optionally paint area difference string in each correspondent cell center
-						boolean PLOT_DIFFERENCE_STRING = varBooleanAreaString.getValue();
-						if(PLOT_DIFFERENCE_STRING){
-							ArrayList<Double> area_diff_val = voronoi_area_diff.getAreaDifference();
-							
-							Painter area_diff_text = new CellIdPainter(
-									cell_center_list,
-									area_diff_val,
-									current_file_no);
-							
-							sequence.addPainter(area_diff_text);
-						}
-						
-						//optionally write cell area differences to disk
-						if(varBooleanWriteArea.getValue()){
-							//ArrayList<Double> area_diff_val = voronoi_area_diff.getAreaDifference();
-							CellWriter cell_area_writer = new CellWriter(file_path+"area_"+file_name_wo_no,current_file_no);
-							//cell_area_writer.write_area_diff(area_diff_val);
-							cell_area_writer.write_area(cell_center_list,cell_polygon_list,voronoi_polygon_list);
-						}
-						continue;
-					}
-					
+				List<NodeType> cell_neighbors = frame.getNeighborsOf(cell_it.next());
 
+				for(NodeType neighbor: cell_neighbors){
+					ShapePainter neighbor_painter = 
+							new ShapePainter(
+									neighbor.toShape(), frame_i);
+
+					sequence.addPainter(neighbor_painter);
 				}
-
-
-				//TODO: Do waiting without CPU work
-				//		stopFlag = false;
-				//		while (!stopFlag)
-				//		{
-				//			super.getUI().setProgressBarMessage("Waiting...");
-				//			Thread.yield();
-				//		}
-				//		
-				//		myMesh.detachFromAll();
-
-		}
+			}
+				
+				
+//				//obtain the painter to be applied
+//				PlotEnum user_choice = varEnum.getValue();
+//
+//				/******************PLOTTING SECTION***********************************/
+//
+//				//Raw vertices read from vtk file
+//				if( user_choice == PlotEnum.CORNER_MAP){
+//					Painter corner_map = new CornerPainter(corner_list, current_file_no);
+//					sequence.addPainter(corner_map);
+//				}
+//				
+//				//Raw edges read from vtk file colored according to z-height (if any)
+//				else if( user_choice == PlotEnum.HEAT_MAP){
+//					int max_z = varMaxZ.getValue();
+//
+//					//TODO Better check for user input
+//					if(max_z == 0)
+//						max_z = sequence.getSizeZ();
+//
+//					Painter heat_map = new MeshPainter(cell_corner_graph, max_z,current_file_no);
+//					sequence.addPainter(heat_map);
+//					
+//					JtsPainter jts_cell_center = new JtsPainter(jts_polys, current_file_no);
+////					sequence.addPainter(jts_cell_center);
+//					
+//					//Extract polygon structure as MultiPolygon
+////					MultiPolygon all_jts_polys = jts_cell_center.getMultiPoly();
+//					
+//					JtsPainter multi_center = 
+//							new JtsPainter(
+//									jts_cell_center.getMultiPoly(), 
+//									current_file_no);
+////					sequence.addPainter(multi_center);
+//					
+//					//only does boarder points of all points restart HERE
+//					//JtsMultiPainter border_points = new JtsMultiPainter(all_jts_polys, current_file_no);
+//					JtsMultiPainter border_points = 
+//							new JtsMultiPainter(
+//									jts_cell_center.getPolyUnion(),
+//									current_file_no);
+////					sequence.addPainter(border_points);
+//					
+//					//Use jts to evidence outer cells
+//					JtsBorderPolygonPainter jts_border_cells = 
+//							new JtsBorderPolygonPainter(
+//									jts_cell_center.getJtsPolygons(),
+//									border_points.getBorderRing(),
+//									current_file_no);
+////					sequence.addPainter(jts_border_cells);
+//					
+//					//Builld the voronoi diagram with jts
+//					JtsVoronoiPainter jts_voronoi = 
+//							new JtsVoronoiPainter(
+//									jts_cell_center.getJtsPoints(), 
+//									current_file_no);
+//					
+//					//sequence.addPainter(jts_voronoi);
+//					
+//					//visualize only voronoi cells that do not belong to the border
+//					JtsAreaDifferenceMap border_voronoi = 
+//							new JtsAreaDifferenceMap(
+//									jts_cell_center.getCellCenterPolygonMap(),
+//									jts_voronoi.getCellCenterVoronoiPolygonMap(),
+//									jts_border_cells.getPolygonBorderMap(),
+//									1,
+//									current_file_no);
+//					
+//					sequence.addPainter(border_voronoi);
+//					
+//				}
+//
+//				else{
+//					
+//					/******************CELL IDENTIFICATION SECTION***********************************/
+//					
+//					//Every other visualization assumes the cells to be identified
+//					//as set of edges, thus first these sets have to be initiated
+//					
+//					//Look for cycles in the graph, i.e. find the polygon associated to each cell 
+//					Map<Integer, ArrayList<Integer>> cell_map = new HashMap<Integer, ArrayList<Integer>>();
+//					
+//					for(CellCorner v_next: corner_list)
+//						if(cell_corner_graph.degreeOf(v_next)>2)
+//							v_next.compute_cycles(cell_corner_graph,cell_map);
+//
+//					//For performance test
+//					//long start_millis = System.currentTimeMillis();
+//					//long time_past = System.currentTimeMillis() - start_millis;
+//					//System.out.println("Time to search "+v_next.toString()+":"+time_past);
+//
+////					System.out.println("Number of cells found:"+cell_map.size());
+////					System.out.println("Cells found"+cell_map.toString());
+////					System.out.println(cell_corner_graph.toString());
+//
+//					//TODO Might be externalized, no need to add Painter for each choice separately
+//					boolean draw_polygons = varBooleanPolygon.getValue();
+//					boolean draw_cell_centers = varBooleanCCenter.getValue();
+//					
+//					//Draw cells as individual entities (Polygons, set of edges)
+//					CellPainter cell_painter = new CellPainter(cell_map, 
+//							corner_list,draw_polygons,draw_cell_centers,current_file_no);
+//					
+//					if (user_choice == PlotEnum.CELL_MAP){
+//						sequence.addPainter(cell_painter);
+//						
+//
+//						//Write center coordinates to disk
+//						if(varBooleanWriteCenters.getValue()){
+//							ArrayList<Point> cell_centers = cell_painter.getCellCenters();
+//							System.out.println("Poly.no. found by cs:"+cell_centers.size());
+//							//CellWriter cell_center_writer = new CellWriter(file_path+file_name_wo_no,current_file_no);
+//							//cell_center_writer.write_tracking_file(cell_centers);
+//						}
+//						continue;
+//					}
+//					
+//					/******************VORONOI SECTION***********************************/ 
+//					 
+//					ArrayList<Color> cell_color_list = cell_painter.getCellColors();
+//					ArrayList<Point> cell_center_list = cell_painter.getCellCenters();
+//					
+//					//Conversion to SimpleVoroni input data structure
+//					int cell_no = cell_center_list.size();
+//					double[] x_coors = new double[cell_no];
+//					double[] y_coors = new double[cell_no];
+//					
+//					for(int j=0; j<cell_no; j++){
+//						x_coors[j] = cell_center_list.get(j).getX();
+//						y_coors[j] = cell_center_list.get(j).getY();
+//					}
+//					
+//					double minimal_site_distance = 0.5;
+//					Voronoi voronoi_generator = new Voronoi(
+//							minimal_site_distance);
+//					
+//					List<GraphEdge> voronoi_edges = voronoi_generator.generateVoronoi(
+//							x_coors, y_coors,
+//							win_x[0], win_x[1],
+//							win_y[0], win_y[1]);
+//					
+//					boolean PLOT_VORONOI_CELL_IDS = varBooleanCellIDs.getValue();
+//					Painter vornoi_painter = new VoronoiPainter(voronoi_edges,PLOT_VORONOI_CELL_IDS,current_file_no);
+//					
+//					//Plot voronoi edges
+//					if (user_choice == PlotEnum.VORONOI_MAP){
+//						sequence.addPainter(vornoi_painter);
+//						
+//						if(PLOT_VORONOI_CELL_IDS){
+//							Painter my_cell_ids = new CellIdPainter(cell_center_list,current_file_no);
+//							sequence.addPainter(my_cell_ids);
+//						}
+//						
+//						continue;
+//					}
+//					
+//					//recognize and plot voronoi polygons
+//					//TODO better recognition of voronoi polygons
+//					//and elimination of outer cells clearly distorted 
+//					PolygonPainter voronoi_polygons = new PolygonPainter(
+//							cell_center_list,
+//							voronoi_edges,
+//							current_file_no,
+//							cell_color_list);
+//					
+//					if (user_choice == PlotEnum.VORONOI_CELL_MAP){
+//						sequence.addPainter(voronoi_polygons);
+//						continue;
+//					}
+//					
+//					//Compare native cell area and voronoi cell area
+//					//and color cell accordingly (see source)
+//					
+//					if(user_choice == PlotEnum.AREA_MAP){
+//						ArrayList<Polygon> cell_polygon_list = cell_painter.getPolygons();
+//						ArrayList<Polygon> voronoi_polygon_list = voronoi_polygons.getPolygons();		
+//						double color_amplification = varColorAmp.getValue().doubleValue();
+//						
+//						AreaDifferencePainter voronoi_area_diff = new AreaDifferencePainter(
+//										cell_polygon_list,
+//										voronoi_polygon_list,
+//										color_amplification,
+//										current_file_no);
+//
+//
+//						sequence.addPainter(voronoi_area_diff);
+//
+//						//optionally paint area difference string in each correspondent cell center
+//						boolean PLOT_DIFFERENCE_STRING = varBooleanAreaString.getValue();
+//						if(PLOT_DIFFERENCE_STRING){
+//							ArrayList<Double> area_diff_val = voronoi_area_diff.getAreaDifference();
+//							
+//							Painter area_diff_text = new CellIdPainter(
+//									cell_center_list,
+//									area_diff_val,
+//									current_file_no);
+//							
+//							sequence.addPainter(area_diff_text);
+//						}
+//						
+//						//optionally write cell area differences to disk
+//						if(varBooleanWriteArea.getValue()){
+//							//ArrayList<Double> area_diff_val = voronoi_area_diff.getAreaDifference();
+//							CellWriter cell_area_writer = new CellWriter(file_path+"area_"+file_name_wo_no,current_file_no);
+//							//cell_area_writer.write_area_diff(area_diff_val);
+//							cell_area_writer.write_area(cell_center_list,cell_polygon_list,voronoi_polygon_list);
+//						}
+//						continue;
+//					}
+//					
+//
+//				}
+//
+//
+//				//TODO: Do waiting without CPU work
+//				//		stopFlag = false;
+//				//		while (!stopFlag)
+//				//		{
+//				//			super.getUI().setProgressBarMessage("Waiting...");
+//				//			Thread.yield();
+//				//		}
+//				//		
+//				//		myMesh.detachFromAll();
+//
+		
 		}
 
 	}

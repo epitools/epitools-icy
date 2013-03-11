@@ -39,6 +39,10 @@ public class JtsVtkReader {
 		
 	}
 	
+	public boolean is_not_polydata(){
+		return reader.IsFilePolyData() != 1;
+	}
+	
 	/**
 	 * Method to extract the polygons from the linework in the
 	 * vtk mesh. Uses the polygonizer function of JTS library.

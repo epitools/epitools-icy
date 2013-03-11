@@ -46,4 +46,15 @@ public interface DevelopmentType {
 	 * @return if a voronoi diagram has been computed for the nodes
 	 */
 	public boolean hasVoronoi();
+	
+	/** 
+	 * @return changes tracking state
+	 */
+	public void setTracking(boolean new_state);
+	
+	
+	/**
+	 * @return change voronoi state
+	 */
+	public void setVoronoi(boolean new_state);
 }

@@ -1,9 +1,13 @@
 package plugins.davhelle.cellgraph.graphs;
 
+import java.util.Iterator;
+import java.util.ArrayList;
+
 import org.jgrapht.alg.NeighborIndex;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
 
+import plugins.davhelle.cellgraph.nodes.CellPolygon;
 import plugins.davhelle.cellgraph.nodes.NodeType;
 
 /**
@@ -41,6 +45,11 @@ public class TissueGraph extends ListenableUndirectedGraph<NodeType, DefaultEdge
 	public TissueGraph(){
 		this(0);
 	}
+	
+	public Iterator<NodeType> iterator(){
+		return this.vertexSet().iterator();
+	}
+	
 	
 	/**
 	 * Method to quickly access the neighbors of a node

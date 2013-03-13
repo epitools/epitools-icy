@@ -360,27 +360,22 @@ public class CellGraph extends EzPlug implements EzStoppable
 					cell_color.brighter();
 
 					NodeType frame_0_cell = cell_it.next();
-					int track_id = frame_0_cell.getTrackID();
+					NodeType frame_1_cell = frame_0_cell.getNext();
+					
+					int tracking_id = frame_0_cell.getTrackID();
+					
+					//If tracking was assigned plot cells with same color
+					if(tracking_id != -1){
 
-					//TODO improve tracking by direct correspondence!!!!
-					Iterator<NodeType> cell_it_next = wing_disc_movie.getFrame(1).iterator();
+						ShapePainter cell_0 = new ShapePainter(frame_0_cell.toShape(), 0);
+						ShapePainter cell_1 = new ShapePainter(frame_1_cell.toShape(), 1);	
 
-					NodeType frame_1_cell = cell_it_next.next();
-					while(cell_it_next.hasNext()){
-						if(frame_1_cell.getTrackID() == track_id)
-							break;
-						frame_1_cell = cell_it_next.next();
+						cell_0.setColor(cell_color);
+						cell_1.setColor(cell_color);
+
+						sequence.addPainter(cell_0);
+						sequence.addPainter(cell_1);
 					}
-					
-					ShapePainter cell_0 = new ShapePainter(frame_0_cell.toShape(), 0);
-					ShapePainter cell_1 = new ShapePainter(frame_1_cell.toShape(), 1);	
-					
-					cell_0.setColor(cell_color);
-					cell_1.setColor(cell_color);
-					
-					sequence.addPainter(cell_0);
-					sequence.addPainter(cell_1);
-					
 				}
 				
 

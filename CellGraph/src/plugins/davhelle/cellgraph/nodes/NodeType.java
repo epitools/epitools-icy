@@ -16,6 +16,14 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
+/**
+ * @author Davide Heller
+ *
+ */
+/**
+ * @author Davide Heller
+ *
+ */
 public interface NodeType {
 	
 	
@@ -57,6 +65,20 @@ public interface NodeType {
 	 * @param tracking_id
 	 */
 	public void setTrackID(int tracking_id);
+	
+	
+	/**
+	 * Store reference to next node in successive time
+	 * frame
+	 * @param next_node corresponding node in t+1
+	 */
+	public void setNext(NodeType next_node);
+	
+	/**
+	 * Get reference to next node in successive time frame
+	 * @return reference to corresponding node in t+1
+	 */
+	public NodeType getNext();
 	
 	/**
 	 * Transforms the geometrical representation of the node

@@ -21,15 +21,17 @@ import com.vividsolutions.jts.geom.Polygon;
 public class CellPolygon implements NodeType {
 	
 	Polygon cell;
+	NodeType next;
 	int track_id;
 
 	/**
 	 * 
 	 */
 	public CellPolygon(Polygon cell_polygon) {
-		cell = cell_polygon;
+		this.cell = cell_polygon;
+		this.next = null;
 		//default for untracked cell
-		track_id = -1;
+		this.track_id = -1;
 	}
 
 	/* (non-Javadoc)
@@ -80,6 +82,16 @@ public class CellPolygon implements NodeType {
 	public Shape toShape() {
 		ShapeWriter writer = new ShapeWriter();
 		return writer.toShape(cell);
+	}
+
+	@Override
+	public void setNext(NodeType next_node) {
+		this.next = next_node;		
+	}
+
+	@Override
+	public NodeType getNext() {
+		return this.next;
 	}
 
 }

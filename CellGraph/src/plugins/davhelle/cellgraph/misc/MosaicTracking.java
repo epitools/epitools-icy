@@ -130,12 +130,15 @@ public class MosaicTracking {
 				//TODO covers ONLY simple case linkage==1!!!
 				int pNext_idx = p.next[0];
 				
+				System.out.println(pNext_idx);
+				
 				//Only update is valid id inserted, otherwise leave TrackID=-1
 				if(pNext_idx > 0 && 
 						pNext_idx < frames[i+1].getParticles().size()){
 					Particle pNext = frames[i+1].getParticles().get(pNext_idx);
 					NodeType nNext = particle2NodeMap.get(pNext);
 					nNext.setTrackID(n.getTrackID());
+					n.setNext(nNext);
 				}
 			}			
 		}

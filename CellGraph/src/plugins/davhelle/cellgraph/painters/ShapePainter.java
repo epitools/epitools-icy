@@ -14,10 +14,15 @@ public class ShapePainter extends AbstractPainter{
 	
 	private Shape shape;
 	private int time_point;
+	private Color cell_color = Color.green;
 	
 	public ShapePainter(Shape shape, int time_point) {
 		this.shape = shape;
 		this.time_point = time_point;
+	}
+	
+	public void setColor(Color new_color){
+		cell_color = new_color;
 	}
 	
 	@Override
@@ -27,7 +32,7 @@ public class ShapePainter extends AbstractPainter{
 		if(Icy.getMainInterface().getFirstViewer(sequence).getT() == time_point){
 			//Initialize painter
 			g.setStroke(new BasicStroke(1));
-			g.setColor(Color.GREEN);
+			g.setColor(cell_color);
 
 			//Complete diagram
 			g.fill(shape);

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
@@ -31,6 +32,7 @@ import plugins.davhelle.cellgraph.jts_poc.JtsBorderPolygonPainter;
 import plugins.davhelle.cellgraph.jts_poc.JtsMultiPainter;
 import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
 import plugins.davhelle.cellgraph.jts_poc.JtsVoronoiPainter;
+import plugins.davhelle.cellgraph.misc.MosaicTracking;
 import plugins.davhelle.cellgraph.nodes.CellCorner;
 import plugins.davhelle.cellgraph.nodes.CellPolygon;
 import plugins.davhelle.cellgraph.nodes.NodeType;
@@ -306,35 +308,84 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			System.out.println("Successfully read in "+wing_disc_movie.size()+" movie frames");
 				
+			Sequence sequence = varSequence.getValue();	
 			
 			//select random cell in each frame and display the neighbors
+//			for(int frame_i=0; frame_i < wing_disc_movie.size(); frame_i++){
+//				TissueGraph frame = wing_disc_movie.getFrame(frame_i);
+//
+//				//Min + (int)(Math.random() * ((Max - Min) + 1))
+////				int max_idx = frame.size();
+////				int random_idx = (int)(Math.random() * max_idx);
+//				
+//				int random_idx = 50;
+//
+//				Iterator<NodeType> cell_it = frame.iterator();
+//				for(int i=0;i<random_idx-1; i++)
+//					if(cell_it.hasNext())
+//						cell_it.next();
+//
+//				List<NodeType> cell_neighbors = frame.getNeighborsOf(cell_it.next());
+//
+//				for(NodeType neighbor: cell_neighbors){
+//					ShapePainter neighbor_painter = 
+//							new ShapePainter(
+//									neighbor.toShape(), frame_i);
+//
+//					sequence.addPainter(neighbor_painter);
+//				}
+//			}
 			
-			for(int frame_i=0; frame_i < wing_disc_movie.size(); frame_i++){
+			if(time_points >= 2){
+				//Try tracking the graph
+				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
+				//perform tracking TODO trycatch
+				tracker.track();
 
-				Sequence sequence = varSequence.getValue();	
-				TissueGraph frame = wing_disc_movie.getFrame(frame_i);
-
-				//Min + (int)(Math.random() * ((Max - Min) + 1))
-//				int max_idx = frame.size();
-//				int random_idx = (int)(Math.random() * max_idx);
+				//check tracking
+				Iterator<NodeType> cell_it = wing_disc_movie.getFrame(0).iterator();
+				Random rand = new Random();
 				
-				int random_idx = 50;
+				//Assign to every cell in the first
+				//frame a random color and mark with the 
+				//same color all successively linked cells.
+				while(cell_it.hasNext()){
 
-				Iterator<NodeType> cell_it = frame.iterator();
-				for(int i=0;i<random_idx-1; i++)
-					if(cell_it.hasNext())
-						cell_it.next();
+					// Generate random color for cell
+					float r_idx = rand.nextFloat();
+					float g_idx = rand.nextFloat();
+					float b_idx = rand.nextFloat();      
 
-				List<NodeType> cell_neighbors = frame.getNeighborsOf(cell_it.next());
+					Color cell_color = new Color(r_idx, g_idx, b_idx);
+					cell_color.brighter();
 
-				for(NodeType neighbor: cell_neighbors){
-					ShapePainter neighbor_painter = 
-							new ShapePainter(
-									neighbor.toShape(), frame_i);
+					NodeType frame_0_cell = cell_it.next();
+					int track_id = frame_0_cell.getTrackID();
 
-					sequence.addPainter(neighbor_painter);
+					//TODO improve tracking by direct correspondence!!!!
+					Iterator<NodeType> cell_it_next = wing_disc_movie.getFrame(1).iterator();
+
+					NodeType frame_1_cell = cell_it_next.next();
+					while(cell_it_next.hasNext()){
+						if(frame_1_cell.getTrackID() == track_id)
+							break;
+						frame_1_cell = cell_it_next.next();
+					}
+					
+					ShapePainter cell_0 = new ShapePainter(frame_0_cell.toShape(), 0);
+					ShapePainter cell_1 = new ShapePainter(frame_1_cell.toShape(), 1);	
+					
+					cell_0.setColor(cell_color);
+					cell_1.setColor(cell_color);
+					
+					sequence.addPainter(cell_0);
+					sequence.addPainter(cell_1);
+					
 				}
+				
+
 			}
+			
 				
 				
 //				//obtain the painter to be applied

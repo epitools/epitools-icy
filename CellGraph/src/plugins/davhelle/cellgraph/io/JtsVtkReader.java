@@ -60,6 +60,7 @@ public class JtsVtkReader {
         for(int i=0; i<point_no; i++){
         	double[] coor_i = points.GetPoint(i);
         	corner_list.add(new Coordinate(coor_i[0],coor_i[1],coor_i[2]));     	
+        	//System.out.println(coor_i[2]);
         }
           
         //extract lines(edges) from polydata

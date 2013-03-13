@@ -6,8 +6,16 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Vector;
 
+import mosaic.core.detection.Particle;
+
+import com.vividsolutions.jts.geom.Coordinate;
+
+import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.misc.PolygonUtils;
+import plugins.davhelle.cellgraph.nodes.NodeType;
 
 
 /**
@@ -71,6 +79,45 @@ public class CellWriter {
 			System.err.println("Error: " + e.getMessage());
 		}
 		
+	}
+	
+	public void write_tracking_file(DevelopmentType stGraph){
+
+		try{
+
+			// Create file for mosaic particle tracking
+			FileWriter fstream = new FileWriter(output_file_name);
+			BufferedWriter out = new BufferedWriter(fstream);
+
+			//Start file with frame number
+			out.write("frame\t"+time_point+"\n");
+
+			//Extract frame of interest
+			TissueGraph graph_i = stGraph.getFrame(time_point);
+
+			//convert graph nodes to coordinates and write to file
+			for(NodeType n: graph_i.vertexSet()){
+				//JTS coordinate
+				Coordinate centroid = 
+						n.getCentroid().getCoordinate();
+
+				out.write(String.valueOf((int)centroid.x)+"\t");
+				out.write(String.valueOf((int)centroid.y)+"\t");
+
+				//TODO change zInfo with the combined z information of all belonging CellCorners
+				//System.out.println(centroid.z);
+				out.write(String.valueOf(0.0)+"\n");
+			}
+
+			//Close the output stream
+			out.close();
+
+			System.out.println("Wrote successfully to:"+output_file_name);
+
+		}
+		catch (Exception e){
+			System.err.println("Error: " + e.getMessage());
+		}
 	}
 	
 	//write out polygon area of cell, corresponding voronoi tessel and their difference.

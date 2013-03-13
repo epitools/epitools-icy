@@ -83,11 +83,13 @@ public class MosaicTracking {
 				Coordinate centroid = 
 						n.getCentroid().getCoordinate();
 				//MOSAIC particle
+				//centroid.z not available TODO check polygonizer
+				//if used tracker won't work
 				Particle p = 
 						new Particle(
 								(float)centroid.x,
 								(float)centroid.y,
-								(float)centroid.z,
+								(float)0,
 								i,
 								linkrange);
 				//update particle vector
@@ -130,10 +132,10 @@ public class MosaicTracking {
 				//TODO covers ONLY simple case linkage==1!!!
 				int pNext_idx = p.next[0];
 				
-				System.out.println(pNext_idx);
+				//System.out.println(pNext_idx);
 				
 				//Only update is valid id inserted, otherwise leave TrackID=-1
-				if(pNext_idx > 0 && 
+				if(pNext_idx >= 0 && 
 						pNext_idx < frames[i+1].getParticles().size()){
 					Particle pNext = frames[i+1].getParticles().get(pNext_idx);
 					NodeType nNext = particle2NodeMap.get(pNext);

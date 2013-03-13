@@ -336,6 +336,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 //				}
 //			}
 			
+//			for(int i=0; i<wing_disc_movie.size(); i++){
+//				CellWriter writer = new CellWriter(file_path+"frame",i);
+//				writer.write_tracking_file(wing_disc_movie);
+//			}			
+			
+				
 			if(time_points >= 2){
 				//Try tracking the graph
 				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
@@ -365,8 +371,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 					int tracking_id = frame_0_cell.getTrackID();
 					
 					//If tracking was assigned plot cells with same color
-					if(tracking_id != -1){
-
+					if(tracking_id != -1 && frame_1_cell != null){
+						//System.out.println(tracking_id);
+						
 						ShapePainter cell_0 = new ShapePainter(frame_0_cell.toShape(), 0);
 						ShapePainter cell_1 = new ShapePainter(frame_1_cell.toShape(), 1);	
 
@@ -377,8 +384,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 						sequence.addPainter(cell_1);
 					}
 				}
-				
-
 			}
 			
 				

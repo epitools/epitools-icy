@@ -40,6 +40,7 @@ import plugins.davhelle.cellgraph.painters.AreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.CellIdPainter;
 import plugins.davhelle.cellgraph.painters.CellPainter;
 import plugins.davhelle.cellgraph.painters.CornerPainter;
+import plugins.davhelle.cellgraph.painters.TrackPainter;
 import plugins.davhelle.cellgraph.painters.MeshPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.ShapePainter;
@@ -348,42 +349,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//perform tracking TODO trycatch
 				tracker.track();
 
-				//check tracking
-				Iterator<NodeType> cell_it = wing_disc_movie.getFrame(0).iterator();
-				Random rand = new Random();
-				
-				//Assign to every cell in the first
-				//frame a random color and mark with the 
-				//same color all successively linked cells.
-				while(cell_it.hasNext()){
-
-					// Generate random color for cell
-					float r_idx = rand.nextFloat();
-					float g_idx = rand.nextFloat();
-					float b_idx = rand.nextFloat();      
-
-					Color cell_color = new Color(r_idx, g_idx, b_idx);
-					cell_color.brighter();
-
-					NodeType frame_0_cell = cell_it.next();
-					NodeType frame_1_cell = frame_0_cell.getNext();
-					
-					int tracking_id = frame_0_cell.getTrackID();
-					
-					//If tracking was assigned plot cells with same color
-					if(tracking_id != -1 && frame_1_cell != null){
-						//System.out.println(tracking_id);
-						
-						ShapePainter cell_0 = new ShapePainter(frame_0_cell.toShape(), 0);
-						ShapePainter cell_1 = new ShapePainter(frame_1_cell.toShape(), 1);	
-
-						cell_0.setColor(cell_color);
-						cell_1.setColor(cell_color);
-
-						sequence.addPainter(cell_0);
-						sequence.addPainter(cell_1);
-					}
-				}
+				TrackPainter lineage = new TrackPainter(wing_disc_movie);
+				sequence.addPainter(lineage);
 			}
 			
 				

@@ -144,6 +144,8 @@ public class MosaicTracking {
 				}
 			}			
 		}
+		
+		this.stGraph.setTracking(true);
 	}
 
 }

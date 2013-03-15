@@ -37,7 +37,7 @@ public class MosaicTracking {
 	public MosaicTracking(DevelopmentType spatioTemporalGraph) {
 		this.stGraph = spatioTemporalGraph;
 		this.frames_number = spatioTemporalGraph.size();
-		this.linkrange = 1; //TODO tune
+		this.linkrange = 5; //TODO tune
 		this.displacement = 10; //TODO tune
 		this.frames = new MyFrame[frames_number];
 		this.particle2NodeMap = new HashMap<Particle,NodeType>();
@@ -54,11 +54,15 @@ public class MosaicTracking {
 		//create Linker
 		ParticleLinker linker = new ParticleLinker();
 		
+		System.out.println("Initialized ParticleLinker, start tracking..");
 		//execute
 		linker.linkParticles(frames, frames_number, linkrange, displacement);
+		System.out.println("...completed tracking! Linking particles to nodes");
 
 		//update graph structure
 		updateGraph();
+		
+		System.out.println("...done!");
 	}
 	
 	/**
@@ -130,14 +134,22 @@ public class MosaicTracking {
 				NodeType n = particle2NodeMap.get(p);
 				
 				//TODO covers ONLY simple case linkage==1!!!
-				int pNext_idx = p.next[0];
 				
-				//System.out.println(pNext_idx);
+				int pNext_idx = 0;
+				int j=0;
+				for(; j<p.next.length; j++){
+					pNext_idx = p.next[j];
+					if(pNext_idx != -1)
+						break;
+				}
+				
+				int pNextFrame = i + j + 1;
 				
 				//Only update is valid id inserted, otherwise leave TrackID=-1
-				if(pNext_idx >= 0 && 
-						pNext_idx < frames[i+1].getParticles().size()){
-					Particle pNext = frames[i+1].getParticles().get(pNext_idx);
+				if(pNext_idx != -1 && pNextFrame < stGraph.size() && 
+						pNext_idx < frames[pNextFrame].getParticles().size()){
+					
+					Particle pNext = frames[pNextFrame].getParticles().get(pNext_idx);
 					NodeType nNext = particle2NodeMap.get(pNext);
 					nNext.setTrackID(n.getTrackID());
 					n.setNext(nNext);

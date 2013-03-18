@@ -11,6 +11,7 @@ import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
+import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.MosaicTracking;
 import plugins.davhelle.cellgraph.nodes.CellPolygon;
 import plugins.davhelle.cellgraph.nodes.NodeType;
@@ -288,12 +289,16 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 			if(time_points >= 2){
 				
-				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
-				//perform tracking TODO trycatch
-				tracker.track();
-
-				TrackPainter lineage = new TrackPainter(wing_disc_movie);
-				sequence.addPainter(lineage);
+				BorderCells whiteBorder = new BorderCells(wing_disc_movie);
+				
+				sequence.addPainter(whiteBorder);
+				
+//				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
+//				//perform tracking TODO trycatch
+//				tracker.track();
+//
+//				TrackPainter lineage = new TrackPainter(wing_disc_movie);
+//				sequence.addPainter(lineage);
 			}
 		}
 

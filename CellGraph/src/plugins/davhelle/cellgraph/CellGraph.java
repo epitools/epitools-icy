@@ -281,7 +281,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				
 			}
 			
-			System.out.println("Successfully read in "+wing_disc_movie.size()+" movie frames");
+//			System.out.println("Successfully read in "+wing_disc_movie.size()+" movie frames");
 				
 			Sequence sequence = varSequence.getValue();			
 			
@@ -289,9 +289,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 			if(time_points >= 2){
 				
-				BorderCells whiteBorder = new BorderCells(wing_disc_movie);
+				BorderCells borderUpdate = new BorderCells(wing_disc_movie);
+				borderUpdate.applyBoundaryCondition();
 				
-				sequence.addPainter(whiteBorder);
+				sequence.addPainter(borderUpdate);
 				
 //				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
 //				//perform tracking TODO trycatch

@@ -24,16 +24,26 @@ import com.vividsolutions.jts.geom.LinearRing;
 public class BorderCells extends AbstractPainter{
 
 	private DevelopmentType stGraph;
-	private HashMap<NodeType,Boolean> border_cell_map; 
 	private HashMap<TissueGraph,Geometry> frame_ring_map;
 	
 	public BorderCells(DevelopmentType stGraph) {
-		
-		//extract time point
+		//Set data structures
 		this.stGraph = stGraph;
-		this.border_cell_map = new HashMap<NodeType,Boolean>();
 		this.frame_ring_map = new HashMap<TissueGraph,Geometry>();
+	}
+	
+	/**
+	 * The boundary cells of every frame are identified by merging all Node geometries.
+	 * After removing the boundary cells from the graph the Nodes forming the new
+	 * boundary are updated (setBoundary);
+	 * 
+	 * The removed layer is saved as polygon ring union.
+	 * 
+	 * TODO: split the method to allow for separate removal and labeling of boundary cells
+	 */
+	public void applyBoundaryCondition(){
 		
+		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
 			
 			TissueGraph frame_i = stGraph.getFrame(time_point_i);
@@ -98,7 +108,7 @@ public class BorderCells extends AbstractPainter{
 				boolean is_border = p.intersects(polygonRing);
 				
 				//Remember good boundary
-				border_cell_map.put(n, Boolean.valueOf(is_border));
+				n.setBoundary(is_border);
 			}
 		}
 	}
@@ -120,12 +130,10 @@ public class BorderCells extends AbstractPainter{
 			
 			for(NodeType cell: frame_i.vertexSet()){
 
-				if(border_cell_map.containsKey(cell)){
-					if(border_cell_map.get(cell))
-						g.setColor(Color.white);
-					else
-						g.setColor(Color.green);
-				}
+				if(cell.onBoundary())
+					g.setColor(Color.white);
+				else
+					g.setColor(Color.green);
 
 				//Fill cell shape
 				g.fill(cell.toShape());

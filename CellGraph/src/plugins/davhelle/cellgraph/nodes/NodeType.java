@@ -81,6 +81,20 @@ public interface NodeType {
 	public NodeType getNext();
 	
 	/**
+	 * Check whether object lies on the window boundary
+	 * 
+	 * @return true if object is part of boundary
+	 */
+	public boolean onBoundary();
+
+	/**
+	 * Set whether object lies on the window boundary
+	 * 
+	 * @param onBoundary 
+	 */
+	public void setBoundary(boolean onBoundary);
+	
+	/**
 	 * Transforms the geometrical representation of the node
 	 * into an awt.shape.
 	 * 

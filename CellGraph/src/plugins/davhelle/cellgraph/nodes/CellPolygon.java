@@ -20,10 +20,11 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class CellPolygon implements NodeType {
 	
-	Polygon cell;
-	NodeType next;
-	int track_id;
-
+	private Polygon cell;
+	private NodeType next;
+	private int track_id;
+	private boolean is_on_boundary;
+	
 	/**
 	 * 
 	 */
@@ -32,6 +33,7 @@ public class CellPolygon implements NodeType {
 		this.next = null;
 		//default for untracked cell
 		this.track_id = -1;
+		this.is_on_boundary = false;
 	}
 
 	/* (non-Javadoc)
@@ -92,6 +94,17 @@ public class CellPolygon implements NodeType {
 	@Override
 	public NodeType getNext() {
 		return this.next;
+	}
+
+	@Override
+	public boolean onBoundary() {
+		return is_on_boundary;
+	}
+
+	@Override
+	public void setBoundary(boolean onBoundary) {
+		this.is_on_boundary = onBoundary;
+		
 	}
 
 }

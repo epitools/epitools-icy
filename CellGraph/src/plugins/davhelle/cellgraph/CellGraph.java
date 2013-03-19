@@ -9,6 +9,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import plugins.adufour.ezplug.*;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
@@ -291,15 +292,20 @@ public class CellGraph extends EzPlug implements EzStoppable
 				
 				BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 				borderUpdate.applyBoundaryCondition();
+				//borderUpdate.applyBoundaryCondition();
 				
 				sequence.addPainter(borderUpdate);
 				
-//				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
-//				//perform tracking TODO trycatch
-//				tracker.track();
-//
-//				TrackPainter lineage = new TrackPainter(wing_disc_movie);
-//				sequence.addPainter(lineage);
+				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
+				//perform tracking TODO trycatch
+				tracker.track();
+
+				TrackPainter lineage = new TrackPainter(wing_disc_movie);
+				sequence.addPainter(lineage);
+				
+				CsvWriter area_writer = new CsvWriter(wing_disc_movie);
+				area_writer.trackedArea();
+				
 			}
 		}
 

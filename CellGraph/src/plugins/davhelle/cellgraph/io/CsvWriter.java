@@ -9,38 +9,66 @@ import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.nodes.NodeType;
 import icy.gui.dialog.SaveDialog;
 
+/**
+ * Class to ease the generation of data output.
+ * Every method returns a file dialog to ask the user where he wants to save the statistic.
+ * 
+ * @author Davide Heller
+ *
+ */
 public class CsvWriter {
 	
-	private String fileName;
-	private DevelopmentType stGraph;
-	private BufferedWriter out;
-	
-
-	public CsvWriter(DevelopmentType stGraph) {
-
-		this.fileName = SaveDialog.chooseFile();
+	/**
+	 * File dialog generation
+	 * 
+	 * @param statistic_description distinctive name for the statistic to be saved
+	 * @return path to file chosen by user
+	 */
+	private static String chooseFile(String statistic_description){
 		
-		System.out.println(fileName);
+		String fileName = SaveDialog.chooseFile(
+				"Please choose where to save the "+statistic_description+" statistic", 
+				"/Users/davide/Dropbox/IMLS/statistics/",
+				"data",
+				".csv");
+	
+		return fileName;
 	}
 	
-	//TODO make static
-	public boolean trackedArea(){
-		
+	/**
+	 * For every cell write area size for every time point available
+	 * 
+	 * 
+	 * @param stGraph
+	 */
+	public static void trackedArea(DevelopmentType stGraph){
+	
 		// Create file for mosaic particle tracking
 		try{
 			
-			FileWriter fstream = new FileWriter(fileName);
-			out = new BufferedWriter(fstream);
+			String file = chooseFile("area development");
+			
+			FileWriter fstream = new FileWriter(file);
+			BufferedWriter out = new BufferedWriter(fstream);
 			
 			if(stGraph.hasTracking()){
+				
 				TissueGraph frame_0 = stGraph.getFrame(0);
 				Iterator<NodeType> cell_it = frame_0.iterator();
-
+				
+				//out.write("cell_id");
+//				for(int i=0; i<stGraph.size(); i++)
+//					out.write(", "+i);
+//				out.write("\n");
+				
 				while(cell_it.hasNext()){
 					NodeType cell = cell_it.next();
-
-					while(cell.getNext() != null){
-						out.write(Double.toString(cell.getGeometry().getArea())+",");
+					
+					//out.write("c_"+cell.getTrackID()+", ");
+					while(cell != null){
+						double area = cell.getGeometry().getArea();
+						//System.out.println(area);
+						out.write(Double.toString(area)+", ");
 						cell = cell.getNext();
 					}
 
@@ -56,7 +84,48 @@ public class CsvWriter {
 			System.err.println("Error: " + e.getMessage());
 		}
 		
-		return stGraph.hasTracking();
+	}
+	
+	/**
+	 * For each non boundary cell in frame 0, write polygon class (edge no) and 
+	 * the area to a csv file. 
+	 * 
+	 * @param stGraph
+	 */
+	public static void polygonClassAndArea(DevelopmentType stGraph){
+
+		try{
+			
+			String file = chooseFile("area vs pn");
+			
+			FileWriter fstream = new FileWriter(file);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			if(stGraph.hasTracking()){
+				
+				TissueGraph frame_0 = stGraph.getFrame(0);
+				Iterator<NodeType> cell_it = frame_0.iterator();
+				
+				out.write("polygon_no, area\n");
+				
+				while(cell_it.hasNext()){
+					NodeType cell = cell_it.next();
+
+					if(!cell.onBoundary())
+						out.write(frame_0.degreeOf(cell)+","+cell.getGeometry().getArea());
+
+					out.write("\n");
+
+				}
+
+			}
+
+			out.close();
+		}
+		catch (Exception e){
+			System.err.println("Error: " + e.getMessage());
+		}
+		
 	}
 	
 	

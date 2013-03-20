@@ -292,10 +292,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 				
 				BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 				borderUpdate.applyBoundaryCondition();
-				//borderUpdate.applyBoundaryCondition();
 				
-				sequence.addPainter(borderUpdate);
-				
+				//to remove another layer just reapply the method
+//				borderUpdate.applyBoundaryCondition();
+//				
+//				sequence.addPainter(borderUpdate);
+//				
 				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
 				//perform tracking TODO trycatch
 				tracker.track();
@@ -303,8 +305,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				TrackPainter lineage = new TrackPainter(wing_disc_movie);
 				sequence.addPainter(lineage);
 				
-				CsvWriter area_writer = new CsvWriter(wing_disc_movie);
-				area_writer.trackedArea();
+				CsvWriter.trackedArea(wing_disc_movie);
+
 				
 			}
 		}

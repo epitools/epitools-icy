@@ -136,7 +136,9 @@ public class BorderCells extends AbstractPainter{
 					g.setColor(Color.green);
 
 				//Fill cell shape
+				//if(!cell.onBoundary())
 				g.fill(cell.toShape());
+
 			}
 		}
 		

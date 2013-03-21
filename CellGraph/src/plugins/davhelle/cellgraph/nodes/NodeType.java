@@ -68,17 +68,30 @@ public interface NodeType {
 	
 	
 	/**
-	 * Store reference to next node in successive time
+	 * Store reference to same node in successive time
 	 * frame
-	 * @param next_node corresponding node in t+1
+	 * @param next_node corresponding node in t+i (ideally i=1)
 	 */
 	public void setNext(NodeType next_node);
 	
 	/**
-	 * Get reference to next node in successive time frame
-	 * @return reference to corresponding node in t+1
+	 * Store reference to same node in previous time
+	 * frame
+	 * @param next_node corresponding node in t-i (ideally i=1)
+	 */
+	public void setLast(NodeType next_node);
+	
+	/**
+	 * Get reference to same node in successive time frame (first known)
+	 * @return reference to corresponding node in t+i (ideally i=1)
 	 */
 	public NodeType getNext();
+	
+	/**
+	 * Get reference to same node in previous time frame (first known)
+	 * @return reference to corresponding node in t-i (ideally i=1)
+	 */
+	public NodeType getLast();
 	
 	/**
 	 * Check whether object lies on the window boundary

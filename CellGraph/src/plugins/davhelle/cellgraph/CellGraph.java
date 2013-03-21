@@ -16,6 +16,7 @@ import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.MosaicTracking;
 import plugins.davhelle.cellgraph.nodes.CellPolygon;
 import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.painter.Painter;
@@ -275,10 +276,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				/******************ST-GRAPH PAINTING***********************************/
 
 				//identify the image we want to paint on
-				Sequence sequence = varSequence.getValue();
-				
-				JtsPainter jts_cell_center = new JtsPainter(polygonMesh, current_file_no);
-				sequence.addPainter(jts_cell_center);
+//				Sequence sequence = varSequence.getValue();
+//				
+//				JtsPainter jts_cell_center = new JtsPainter(polygonMesh, i);
+//				sequence.addPainter(jts_cell_center);
 				
 			}
 			
@@ -288,27 +289,37 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			/******************ST-GRAPH TRACKING***********************************/
 
-			if(time_points >= 2){
-				
+
+				//Border identification and discarding of outer ring
 				BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 				borderUpdate.applyBoundaryCondition();
 				
 				//to remove another layer just reapply the method
 //				borderUpdate.applyBoundaryCondition();
-//				
+				
+				//Paint border conditions
 //				sequence.addPainter(borderUpdate);
-//				
-				MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
-				//perform tracking TODO trycatch
-				tracker.track();
-
-				TrackPainter lineage = new TrackPainter(wing_disc_movie);
-				sequence.addPainter(lineage);
 				
-				CsvWriter.trackedArea(wing_disc_movie);
+				//Tracking
+				if(wing_disc_movie.size() > 1){
+					MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
+					//perform tracking TODO trycatch
+					tracker.track();
 
+					//Paint corresponding cells in time
+					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
+					sequence.addPainter(correspondence);
+				}
 				
-			}
+				//Area statistics
+//				CsvWriter.trackedArea(wing_disc_movie);
+//				CsvWriter.frameAndArea(wing_disc_movie);
+				
+				//Painter to depict the polygon class within each polygon
+//				PolygonClassPainter pc_painter = new PolygonClassPainter(wing_disc_movie);
+//				sequence.addPainter(pc_painter);
+
+
 		}
 
 	}

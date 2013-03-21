@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.util.Iterator;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.nodes.NodeType;
 import icy.gui.dialog.SaveDialog;
@@ -113,6 +114,41 @@ public class CsvWriter {
 
 					if(!cell.onBoundary())
 						out.write(frame_0.degreeOf(cell)+","+cell.getGeometry().getArea());
+
+					out.write("\n");
+
+				}
+
+			}
+
+			out.close();
+		}
+		catch (Exception e){
+			System.err.println("Error: " + e.getMessage());
+		}
+		
+	}
+
+	public static void frameAndArea(DevelopmentType stGraph) {
+		try{
+			
+			String file = chooseFile("frame and area");
+			
+			FileWriter fstream = new FileWriter(file);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+			out.write("frame, area\n");
+			
+			for(int i=0; i<stGraph.size(); i++){
+				
+				TissueGraph frame_i = stGraph.getFrame(i);
+				Iterator<NodeType> cell_it = frame_i.iterator();	
+				
+				while(cell_it.hasNext()){
+					NodeType cell = cell_it.next();
+
+					if(!cell.onBoundary())
+						out.write(i+","+cell.getGeometry().getArea());
 
 					out.write("\n");
 

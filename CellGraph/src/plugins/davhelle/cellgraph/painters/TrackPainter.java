@@ -77,7 +77,7 @@ public class TrackPainter extends AbstractPainter{
 						g.setColor(Color.black);
 
 					//Fill cell shape
-					g.fill(cell.toShape());
+					g.draw(cell.toShape());
 				}
 			}
 		}

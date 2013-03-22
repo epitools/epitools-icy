@@ -108,6 +108,20 @@ public interface NodeType {
 	public void setBoundary(boolean onBoundary);
 	
 	/**
+	 * Tells whether the node is going to divide in the future
+	 * 
+	 * @return true if the node will divide, otherwise false
+	 */
+	public boolean willDivide();
+	
+	/**
+	 * Set whether the node will divide or not
+	 * 
+	 * @param will_node_divide
+	 */
+	public void setDivisionFlag(boolean will_node_divide);
+	
+	/**
 	 * Transforms the geometrical representation of the node
 	 * into an awt.shape.
 	 * 

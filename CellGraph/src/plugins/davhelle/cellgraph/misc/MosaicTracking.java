@@ -42,7 +42,7 @@ public class MosaicTracking {
 	public MosaicTracking(DevelopmentType spatioTemporalGraph) {
 		this.stGraph = spatioTemporalGraph;
 		this.frames_number = spatioTemporalGraph.size();
-		this.linkrange = 5; //TODO tune
+		this.linkrange = 10; //TODO tune
 		this.displacement = 10; //TODO tune
 		this.frames = new MyFrame[frames_number];
 		this.particle2NodeMap = new HashMap<Particle,NodeType>();

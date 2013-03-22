@@ -1,6 +1,7 @@
 package plugins.davhelle.cellgraph;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -10,6 +11,7 @@ import plugins.adufour.ezplug.*;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.io.CsvWriter;
+import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
@@ -320,6 +322,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 //				PolygonClassPainter pc_painter = new PolygonClassPainter(wing_disc_movie);
 //				sequence.addPainter(pc_painter);
 
+				//Divisions read in 
+				try{
+				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+				sequence.addPainter(division_reader);
+				}
+				catch(IOException e){
+					System.out.println("Something went wrong in division reading");
+				}
 
 		}
 

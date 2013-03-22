@@ -31,6 +31,9 @@ public class CellPolygon implements NodeType {
 	//boundary information
 	private boolean is_on_boundary;
 	
+	//division information
+	private boolean will_divide;
+	
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
 	 */
@@ -44,6 +47,9 @@ public class CellPolygon implements NodeType {
 		
 		//default boundary condition
 		this.is_on_boundary = false;
+		
+		//default division information
+		this.will_divide = false;
 	}
 
 	/* (non-Javadoc)
@@ -125,6 +131,16 @@ public class CellPolygon implements NodeType {
 	@Override
 	public void setLast(NodeType last_node) {
 		this.last = last_node;		
+	}
+
+	@Override
+	public boolean willDivide() {
+		return will_divide;
+	}
+
+	@Override
+	public void setDivisionFlag(boolean will_cell_divide) {
+		this.will_divide = will_cell_divide;
 	}
 
 }

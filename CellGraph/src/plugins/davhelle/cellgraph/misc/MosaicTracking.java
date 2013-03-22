@@ -1,9 +1,14 @@
 package plugins.davhelle.cellgraph.misc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 import mosaic.core.detection.MyFrame;
 import mosaic.core.detection.Particle;
@@ -74,6 +79,7 @@ public class MosaicTracking {
 		
 		//extract single frame and convert to MyFrame
 		//set of Particles
+		Geometry frame_0_union = null;
 		
 		for(int i=0;i<frames_number; i++){
 			//get graph
@@ -81,25 +87,48 @@ public class MosaicTracking {
 			Vector<Particle> particles = new Vector<Particle>();
 			int particle_number = graph_i.size();
 			
+			//Build the union of frame 0 to discard 
+			if(i==0){
+
+				Geometry[] output = new Geometry[graph_i.size()];
+				Iterator<NodeType> node_it = graph_i.iterator();
+				for(int j=0; j<graph_i.size(); j++){
+					output[j] = node_it.next().getGeometry();
+				}		
+
+				//Create union of all polygons
+				GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+				//TODO check if better to add a little buffer
+				frame_0_union = polygonCollection.buffer(0);
+			}
+			
+			
 			//convert graph nodes 
 			for(NodeType n: graph_i.vertexSet()){
 				//JTS coordinate
-				Coordinate centroid = 
-						n.getCentroid().getCoordinate();
-				//MOSAIC particle
-				//centroid.z not available TODO check polygonizer
-				//if used tracker won't work
-				Particle p = 
-						new Particle(
-								(float)centroid.x,
-								(float)centroid.y,
-								(float)0,
-								i,
-								linkrange);
-				//update particle vector
-				particles.add(p);
-				
-				particle2NodeMap.put(p, n);
+				Geometry node_centroid = n.getCentroid();
+
+				//only add particles of nodes within the frame_0 boundary
+				if(frame_0_union.contains(node_centroid)){
+					//mark node as tracked but not necessarily resolved
+					n.setTrackID(-2);
+					
+					Coordinate centroid = node_centroid.getCoordinate();
+					//MOSAIC particle
+					//centroid.z not available TODO check polygonizer
+					//if used tracker won't work
+					Particle p = 
+							new Particle(
+									(float)centroid.x,
+									(float)centroid.y,
+									(float)0,
+									i,
+									linkrange);
+					//update particle vector
+					particles.add(p);
+
+					particle2NodeMap.put(p, n);
+				}
 			}
 			
 			//define MOSAIC myFrame
@@ -133,8 +162,6 @@ public class MosaicTracking {
 			for(Particle p: particles){
 				NodeType n = particle2NodeMap.get(p);
 				
-				//TODO covers ONLY simple case linkage==1!!!
-				
 				int pNext_idx = 0;
 				int j=0;
 				for(; j<p.next.length; j++){
@@ -153,6 +180,7 @@ public class MosaicTracking {
 					NodeType nNext = particle2NodeMap.get(pNext);
 					nNext.setTrackID(n.getTrackID());
 					n.setNext(nNext);
+					nNext.setLast(n);
 				}
 			}			
 		}

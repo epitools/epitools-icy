@@ -106,7 +106,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanWriteCenters = new EzVarBoolean("Write cell centers to disk",false);
 		varBooleanWriteArea = new EzVarBoolean("Write cell area properties to disk",false);
 		
-		varFile = new EzVarFile("Mesh file", "/Users/davide/Documents/segmentation");
+		varFile = new EzVarFile("Mesh file", "/Users/davide/Documents/segmentation/trial");
 		varSequence = new EzVarSequence("Input sequence");
 		varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
@@ -276,10 +276,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 				/******************ST-GRAPH PAINTING***********************************/
 
 				//identify the image we want to paint on
-//				Sequence sequence = varSequence.getValue();
-//				
-//				JtsPainter jts_cell_center = new JtsPainter(polygonMesh, i);
-//				sequence.addPainter(jts_cell_center);
+				Sequence sequence = varSequence.getValue();
+				
+				//TODO this assumes you are always starting with frame 0
+				JtsPainter jts_cell_center = new JtsPainter(polygonMesh, i);
+				sequence.addPainter(jts_cell_center);
 				
 			}
 			

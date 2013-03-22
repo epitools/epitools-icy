@@ -26,12 +26,12 @@ import plugins.davhelle.cellgraph.nodes.NodeType;
 public class TrackPainter extends AbstractPainter{
 	
 	private DevelopmentType stGraph;
-	private HashMap<NodeType,Color> lineage_color;
+	private HashMap<NodeType,Color> correspondence_color;
 
 	public TrackPainter(DevelopmentType stGraph) {
 		
 		//Color for each lineage
-		this.lineage_color = new HashMap<NodeType,Color>();
+		this.correspondence_color = new HashMap<NodeType,Color>();
 		this.stGraph = stGraph;
 		
 		//Assign color to cell lineages starting from first cell
@@ -54,7 +54,7 @@ public class TrackPainter extends AbstractPainter{
 			cell_color.brighter();
 			
 			while(cell != null){
-				lineage_color.put(cell, cell_color);
+				correspondence_color.put(cell, cell_color);
 				cell = cell.getNext();
 			}
 		}
@@ -66,17 +66,19 @@ public class TrackPainter extends AbstractPainter{
 		
 		if(time_point < stGraph.size()){
 			
-		 for(NodeType cell: stGraph.getFrame(time_point).vertexSet()){
+			for(NodeType cell: stGraph.getFrame(time_point).vertexSet()){
 
-			 	if(lineage_color.containsKey(cell))
-			 		//cell is part of registered lineage
-			 		g.setColor(lineage_color.get(cell));
-			 	else
-			 		//no tracking found
-			 		g.setColor(Color.black);
+				if(cell.getTrackID() != -1){
+					if(correspondence_color.containsKey(cell))
+						//cell is part of registered lineage
+						g.setColor(correspondence_color.get(cell));
+					else
+						//no tracking found
+						g.setColor(Color.black);
 
-				//Fill cell shape
-				g.fill(cell.toShape());
+					//Fill cell shape
+					g.fill(cell.toShape());
+				}
 			}
 		}
 	}

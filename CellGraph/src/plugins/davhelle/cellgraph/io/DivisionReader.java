@@ -16,7 +16,7 @@ import icy.gui.dialog.LoadDialog;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
 import icy.sequence.Sequence;
-import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -31,10 +31,10 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class DivisionReader extends AbstractPainter{
 	
-	private DevelopmentType stGraph;
+	private SpatioTemporalGraph stGraph;
 	HashMap<Integer,ArrayList<Point>> division_map;
 
-	public DivisionReader(DevelopmentType spatioTemporalGraph) throws IOException {
+	public DivisionReader(SpatioTemporalGraph spatioTemporalGraph) throws IOException {
 		
 		this.stGraph = spatioTemporalGraph;
 		this.division_map = new HashMap<Integer,ArrayList<Point>>();

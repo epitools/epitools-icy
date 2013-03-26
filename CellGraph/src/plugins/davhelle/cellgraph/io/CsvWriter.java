@@ -4,7 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Iterator;
 
-import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -42,7 +42,7 @@ public class CsvWriter {
 	 * 
 	 * @param stGraph
 	 */
-	public static void trackedArea(DevelopmentType stGraph){
+	public static void trackedArea(SpatioTemporalGraph stGraph){
 	
 		// Create file for mosaic particle tracking
 		try{
@@ -93,7 +93,7 @@ public class CsvWriter {
 	 * 
 	 * @param stGraph
 	 */
-	public static void polygonClassAndArea(DevelopmentType stGraph){
+	public static void polygonClassAndArea(SpatioTemporalGraph stGraph){
 
 		try{
 			
@@ -129,7 +129,7 @@ public class CsvWriter {
 		
 	}
 
-	public static void frameAndArea(DevelopmentType stGraph) {
+	public static void frameAndArea(SpatioTemporalGraph stGraph) {
 		try{
 			
 			String file = chooseFile("frame and area");

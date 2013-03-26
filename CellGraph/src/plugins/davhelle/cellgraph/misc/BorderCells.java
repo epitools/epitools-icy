@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -23,10 +23,10 @@ import com.vividsolutions.jts.geom.LinearRing;
 
 public class BorderCells extends AbstractPainter{
 
-	private DevelopmentType stGraph;
+	private SpatioTemporalGraph stGraph;
 	private HashMap<FrameGraph,Geometry> frame_ring_map;
 	
-	public BorderCells(DevelopmentType stGraph) {
+	public BorderCells(SpatioTemporalGraph stGraph) {
 		//Set data structures
 		this.stGraph = stGraph;
 		this.frame_ring_map = new HashMap<FrameGraph,Geometry>();

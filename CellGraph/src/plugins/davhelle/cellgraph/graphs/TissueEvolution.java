@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * @author Davide Heller
  *
  */
-public class TissueEvolution implements DevelopmentType {
+public class TissueEvolution implements SpatioTemporalGraph {
 
 	private ArrayList<FrameGraph> frames;
 	private boolean has_tracking;

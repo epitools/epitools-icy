@@ -13,16 +13,16 @@ import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 public class PolygonClassPainter extends AbstractPainter{
 	
-	private DevelopmentType stGraph;
+	private SpatioTemporalGraph stGraph;
 	
 	
-	public PolygonClassPainter(DevelopmentType stGraph) {
+	public PolygonClassPainter(SpatioTemporalGraph stGraph) {
 		// TODO Auto-generated constructor stub
 		
 		this.stGraph = stGraph;

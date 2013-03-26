@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
-import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -25,10 +25,10 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class TrackPainter extends AbstractPainter{
 	
-	private DevelopmentType stGraph;
+	private SpatioTemporalGraph stGraph;
 	private HashMap<Node,Color> correspondence_color;
 
-	public TrackPainter(DevelopmentType stGraph) {
+	public TrackPainter(SpatioTemporalGraph stGraph) {
 		
 		//Color for each lineage
 		this.correspondence_color = new HashMap<Node,Color>();

@@ -8,7 +8,7 @@ package plugins.davhelle.cellgraph.graphs;
  * @author Davide Heller
  * 
  */
-public interface DevelopmentType {
+public interface SpatioTemporalGraph {
 	
 	/**
 	 * Method to access a specific TissueGraph by it's temporal

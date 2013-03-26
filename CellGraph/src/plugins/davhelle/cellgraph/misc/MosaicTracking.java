@@ -13,7 +13,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import mosaic.core.detection.MyFrame;
 import mosaic.core.detection.Particle;
 import mosaic.core.particleLinking.ParticleLinker;
-import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -27,7 +27,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class MosaicTracking {
 
-	private DevelopmentType stGraph;
+	private SpatioTemporalGraph stGraph;
 	private MyFrame[] frames;
 	private HashMap<Particle,Node> particle2NodeMap;
 	private int frames_number;
@@ -39,7 +39,7 @@ public class MosaicTracking {
 	 * 
 	 * @param spatioTemporalGraph Spatio temporal graph to be tracked
 	 */
-	public MosaicTracking(DevelopmentType spatioTemporalGraph) {
+	public MosaicTracking(SpatioTemporalGraph spatioTemporalGraph) {
 		this.stGraph = spatioTemporalGraph;
 		this.frames_number = spatioTemporalGraph.size();
 		this.linkrange = 10; //TODO tune

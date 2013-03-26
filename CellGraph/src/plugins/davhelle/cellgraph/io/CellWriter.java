@@ -12,7 +12,7 @@ import mosaic.core.detection.Particle;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-import plugins.davhelle.cellgraph.graphs.DevelopmentType;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.PolygonUtils;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -81,7 +81,7 @@ public class CellWriter {
 		
 	}
 	
-	public void write_tracking_file(DevelopmentType stGraph){
+	public void write_tracking_file(SpatioTemporalGraph stGraph){
 
 		try{
 

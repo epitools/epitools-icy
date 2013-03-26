@@ -81,10 +81,10 @@ public class DivisionReader extends AbstractPainter{
 					for(Node cell: stGraph.getFrame(i).vertexSet())
 						if(cell.getGeometry().contains(division)){
 							//mark cell and all previous associated time points
-							cell.setDivisionFlag(true);
+							cell.setObservedDivision(true);
 							while(cell.getPrevious() != null){
 								cell = cell.getPrevious();
-								cell.setDivisionFlag(true);
+								cell.setObservedDivision(true);
 							}
 						}
 		}
@@ -101,7 +101,7 @@ public class DivisionReader extends AbstractPainter{
 			g.setColor(Color.red);
 	
 			for(Node cell: frame_i.vertexSet())
-				if(cell.willDivide())
+				if(cell.hasObservedDivision())
 //					if(!cell.onBoundary()) TODO: apply correspondence to first frame!
 						g.fill(cell.toShape());
 

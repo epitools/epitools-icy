@@ -100,18 +100,18 @@ public interface Node {
 	public void setBoundary(boolean onBoundary);
 	
 	/**
-	 * Tells whether the node is going to divide in the future
+	 * Tells whether the node has been observed dividing
 	 * 
 	 * @return true if the node will divide, otherwise false
 	 */
-	public boolean willDivide();
+	public boolean hasObservedDivision();
 	
 	/**
-	 * Set whether the node will divide or not
+	 * Set whether the node has been observed dividing
 	 * 
-	 * @param will_node_divide
+	 * @param observedDivision
 	 */
-	public void setDivisionFlag(boolean will_node_divide);
+	public void setObservedDivision(boolean observedDivision);
 	
 	/**
 	 * Transforms the geometrical representation of the node

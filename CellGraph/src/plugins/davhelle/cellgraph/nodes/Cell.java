@@ -32,7 +32,7 @@ public class Cell implements Node {
 	private boolean is_on_boundary;
 	
 	//division information
-	private boolean will_divide;
+	private boolean observedDivision;
 	
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
@@ -49,7 +49,7 @@ public class Cell implements Node {
 		this.is_on_boundary = false;
 		
 		//default division information
-		this.will_divide = false;
+		this.observedDivision = false;
 	}
 
 	/* (non-Javadoc)
@@ -134,13 +134,13 @@ public class Cell implements Node {
 	}
 
 	@Override
-	public boolean willDivide() {
-		return will_divide;
+	public boolean hasObservedDivision() {
+		return observedDivision;
 	}
 
 	@Override
-	public void setDivisionFlag(boolean will_cell_divide) {
-		this.will_divide = will_cell_divide;
+	public void setObservedDivision(boolean will_cell_divide) {
+		this.observedDivision = will_cell_divide;
 	}
 
 }

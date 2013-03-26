@@ -41,7 +41,7 @@ public class CentroidPainter extends AbstractPainter{
 	
 			for(Node cell: frame_i.vertexSet()){
 				Point centroid = cell.getCentroid();
-				g.fillOval((int)centroid.getX(), (int)centroid.getY(), 1, 1);
+				g.fillOval((int)centroid.getX(), (int)centroid.getY(), 2, 2);
 			}
 				
 

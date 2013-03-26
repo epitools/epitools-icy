@@ -13,13 +13,18 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
-import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.MosaicTracking;
+import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
+import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
+import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
+import plugins.davhelle.cellgraph.painters.VoronoiPainter;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
@@ -275,61 +280,84 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//wing_disc_movie.setFrame(current_frame, current_file_no);
 				wing_disc_movie.addFrame(current_frame);
 				
-				/******************ST-GRAPH PAINTING***********************************/
 
-				//identify the image we want to paint on
-				Sequence sequence = varSequence.getValue();
-				
-				//TODO this assumes you are always starting with frame 0
-				JtsPainter jts_cell_center = new JtsPainter(polygonMesh, i);
-				sequence.addPainter(jts_cell_center);
-				
 			}
 			
 //			System.out.println("Successfully read in "+wing_disc_movie.size()+" movie frames");
 				
 			Sequence sequence = varSequence.getValue();			
 			
+			/******************ST-GRAPH BORDER IDENTIFICATION**********************/
+			
+			//Border identification and discarding of outer ring
+			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
+			borderUpdate.applyBoundaryCondition();
+			
+			//to remove another layer just reapply the method
+//			borderUpdate.applyBoundaryCondition();
+			
+			//Paint border conditions
+//			sequence.addPainter(borderUpdate);
+			
 			/******************ST-GRAPH TRACKING***********************************/
 
+			//Tracking
+			//				if(wing_disc_movie.size() > 1){
+			//					MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
+			//					//perform tracking TODO trycatch
+			//					tracker.track();
+			//
+			//					//Paint corresponding cells in time
+			//					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
+			//					sequence.addPainter(correspondence);
+			//				}
 
-				//Border identification and discarding of outer ring
-				BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-				borderUpdate.applyBoundaryCondition();
-				
-				//to remove another layer just reapply the method
-//				borderUpdate.applyBoundaryCondition();
-				
-				//Paint border conditions
-				sequence.addPainter(borderUpdate);
-				
-				//Tracking
-//				if(wing_disc_movie.size() > 1){
-//					MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
-//					//perform tracking TODO trycatch
-//					tracker.track();
-//
-//					//Paint corresponding cells in time
-//					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
-//					sequence.addPainter(correspondence);
-//				}
-				
-				//Area statistics
-//				CsvWriter.trackedArea(wing_disc_movie);
-//				CsvWriter.frameAndArea(wing_disc_movie);
-				
-				//Painter to depict the polygon class within each polygon
-//				PolygonClassPainter pc_painter = new PolygonClassPainter(wing_disc_movie);
-//				sequence.addPainter(pc_painter);
+			/******************ST-GRAPH STATISTICAL READ OUT***********************/
 
-				//Divisions read in 
-//				try{
-//				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-//				sequence.addPainter(division_reader);
-//				}
-//				catch(IOException e){
-//					System.out.println("Something went wrong in division reading");
-//				}
+			//Area statistics
+			//				CsvWriter.trackedArea(wing_disc_movie);
+			//				CsvWriter.frameAndArea(wing_disc_movie);
+
+
+			/******************ST-GRAPH MANUAL DIVISION READ IN********************/
+
+			//Divisions read in 
+			//				try{
+			//				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+			//				sequence.addPainter(division_reader);
+			//				}
+			//				catch(IOException e){
+			//					System.out.println("Something went wrong in division reading");
+			//				}
+
+			/******************ST-GRAPH PAINTING***********************************/
+
+			Painter centroids = new CentroidPainter(wing_disc_movie);
+			sequence.addPainter(centroids);
+
+//			Painter polygons = new PolygonPainter(wing_disc_movie);
+//			sequence.addPainter(polygons);
+			
+//			Painter trackID = new TrackIdPainter(wing_disc_movie);
+//			sequence.addPainter(trackID);
+			
+//			Painter polygonClass = new PolygonClassPainter(wing_disc_movie);
+//			sequence.addPainter(polygonClass);
+			
+			/******************ST-GRAPH VORONOI***********************************/
+			
+			VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie);
+			
+			Painter voronoiCells = new VoronoiPainter(
+					wing_disc_movie, 
+					voronoiDiagram.getNodeVoroniMapping());
+			sequence.addPainter(voronoiCells);
+			
+			Painter voronoiDifference = new VoronoiAreaDifferencePainter(
+					wing_disc_movie, 
+					voronoiDiagram.getAreaDifference());
+			sequence.addPainter(voronoiDifference);
+
 
 		}
 

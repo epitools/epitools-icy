@@ -7,29 +7,25 @@ import icy.sequence.Sequence;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.Map;
+
+import com.vividsolutions.jts.awt.ShapeWriter;
+import com.vividsolutions.jts.geom.Point;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Geometry;;
+public class CentroidPainter extends AbstractPainter{
 
-public class VoronoiPainter extends AbstractPainter {
-
-	private Map<Node, Geometry> nodeVoronoiMap;
-	private ShapeWriter writer;
 	private SpatioTemporalGraph stGraph;
+	private ShapeWriter writer;
 	
-	
-	public VoronoiPainter(SpatioTemporalGraph stGraph, Map<Node,Geometry> nodeVoronoiMap) {
-		// TODO Auto-generated constructor stub
-		this.stGraph = stGraph;
-		this.nodeVoronoiMap = nodeVoronoiMap;
+	public CentroidPainter(SpatioTemporalGraph spatioTemporalGraph){
+		this.stGraph = spatioTemporalGraph;
 		this.writer = new ShapeWriter();
-
+		
 	}
+
 	
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
@@ -37,15 +33,19 @@ public class VoronoiPainter extends AbstractPainter {
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
 
 		if(time_point < stGraph.size()){
+			//TODO include 3D information!
+			//TODO possible performance improvement if map<Node,Point> is created
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.green);
+			g.setColor(Color.blue);
 	
-			for(Node cell: frame_i.vertexSet())
-				if(nodeVoronoiMap.containsKey(cell))
-					g.draw((writer.toShape(nodeVoronoiMap.get(cell))));
+			for(Node cell: frame_i.vertexSet()){
+				Point centroid = cell.getCentroid();
+				g.fillOval((int)centroid.getX(), (int)centroid.getY(), 1, 1);
+			}
+				
+
 			
 		}
     }
-
 }

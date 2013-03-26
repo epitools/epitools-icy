@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
  * Given the first frame as reference, a random color
@@ -26,16 +26,16 @@ import plugins.davhelle.cellgraph.nodes.NodeType;
 public class TrackPainter extends AbstractPainter{
 	
 	private DevelopmentType stGraph;
-	private HashMap<NodeType,Color> correspondence_color;
+	private HashMap<Node,Color> correspondence_color;
 
 	public TrackPainter(DevelopmentType stGraph) {
 		
 		//Color for each lineage
-		this.correspondence_color = new HashMap<NodeType,Color>();
+		this.correspondence_color = new HashMap<Node,Color>();
 		this.stGraph = stGraph;
 		
 		//Assign color to cell lineages starting from first cell
-		Iterator<NodeType> cell_it = stGraph.getFrame(0).iterator();
+		Iterator<Node> cell_it = stGraph.getFrame(0).iterator();
 		Random rand = new Random();
 		
 		//Assign to every cell in the first
@@ -43,7 +43,7 @@ public class TrackPainter extends AbstractPainter{
 		//same color all successively linked cells.
 		while(cell_it.hasNext()){
 			
-			NodeType cell = cell_it.next();
+			Node cell = cell_it.next();
 			
 			// Generate random color for cell
 			float r_idx = rand.nextFloat();
@@ -66,7 +66,7 @@ public class TrackPainter extends AbstractPainter{
 		
 		if(time_point < stGraph.size()){
 			
-			for(NodeType cell: stGraph.getFrame(time_point).vertexSet()){
+			for(Node cell: stGraph.getFrame(time_point).vertexSet()){
 
 				if(cell.getTrackID() != -1){
 					if(correspondence_color.containsKey(cell)){

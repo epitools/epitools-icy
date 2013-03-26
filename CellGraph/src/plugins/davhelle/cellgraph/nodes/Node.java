@@ -6,7 +6,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * NodeType represents the vertex object for the TissueGraph.
+ * Node represents the vertex object for the TissueGraph.
  * Among various implementations examples can be:
  * a Cell type representing the cell relation in the tissue
  * or a Corner type representing the vertex relation.
@@ -16,7 +16,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public interface NodeType {
+public interface Node {
 	
 	
 	/**
@@ -64,26 +64,26 @@ public interface NodeType {
 	 * frame
 	 * @param next_node corresponding node in t+i (ideally i=1)
 	 */
-	public void setNext(NodeType next_node);
+	public void setNext(Node next_node);
 	
 	/**
 	 * Store reference to same node in previous time
 	 * frame
 	 * @param next_node corresponding node in t-i (ideally i=1)
 	 */
-	public void setPrevious(NodeType next_node);
+	public void setPrevious(Node next_node);
 	
 	/**
 	 * Get reference to same node in successive time frame (first known)
 	 * @return reference to corresponding node in t+i (ideally i=1)
 	 */
-	public NodeType getNext();
+	public Node getNext();
 	
 	/**
 	 * Get reference to same node in previous time frame (first known)
 	 * @return reference to corresponding node in t-i (ideally i=1)
 	 */
-	public NodeType getPrevious();
+	public Node getPrevious();
 	
 	/**
 	 * Check whether object lies on the window boundary

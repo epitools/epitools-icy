@@ -18,14 +18,14 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Davide Heller
  *
  */
-public class CellPolygon implements NodeType {
+public class CellPolygon implements Node {
 	
 	//geometry to abstract the Node
 	private Polygon cell;
 	
 	//tracking information
-	private NodeType next;
-	private NodeType previous;
+	private Node next;
+	private Node previous;
 	private int track_id;
 	
 	//boundary information
@@ -103,12 +103,12 @@ public class CellPolygon implements NodeType {
 	}
 
 	@Override
-	public void setNext(NodeType next_node) {
+	public void setNext(Node next_node) {
 		this.next = next_node;		
 	}
 
 	@Override
-	public NodeType getNext() {
+	public Node getNext() {
 		return this.next;
 	}
 
@@ -124,12 +124,12 @@ public class CellPolygon implements NodeType {
 	}
 
 	@Override
-	public NodeType getPrevious() {
+	public Node getPrevious() {
 		return this.previous;
 	}
 
 	@Override
-	public void setPrevious(NodeType last_node) {
+	public void setPrevious(Node last_node) {
 		this.previous = last_node;		
 	}
 

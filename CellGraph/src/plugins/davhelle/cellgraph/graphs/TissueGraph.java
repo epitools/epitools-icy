@@ -8,7 +8,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
 
 import plugins.davhelle.cellgraph.nodes.CellPolygon;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
  * Tissue Graph represents the polygonal abstraction of a 
@@ -22,9 +22,9 @@ import plugins.davhelle.cellgraph.nodes.NodeType;
  * @author Davide Heller
  *
  */
-public class TissueGraph extends ListenableUndirectedGraph<NodeType, DefaultEdge> {
+public class TissueGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	
-	private NeighborIndex<NodeType, DefaultEdge> neighborList;
+	private NeighborIndex<Node, DefaultEdge> neighborList;
 	private int frame_no; 
 	
 	/**
@@ -38,7 +38,7 @@ public class TissueGraph extends ListenableUndirectedGraph<NodeType, DefaultEdge
 		this.frame_no = frame_no;
 		
 		//create the neighborIndexList
-		this.neighborList = new NeighborIndex<NodeType, DefaultEdge>(this);
+		this.neighborList = new NeighborIndex<Node, DefaultEdge>(this);
 		this.addGraphListener(neighborList);
 	}
 	
@@ -46,7 +46,7 @@ public class TissueGraph extends ListenableUndirectedGraph<NodeType, DefaultEdge
 		this(0);
 	}
 	
-	public Iterator<NodeType> iterator(){
+	public Iterator<Node> iterator(){
 		return this.vertexSet().iterator();
 	}
 	
@@ -57,7 +57,7 @@ public class TissueGraph extends ListenableUndirectedGraph<NodeType, DefaultEdge
 	 * @param vertex Node of which to extract the vertices
 	 * @return List of neighboring vertices
 	 */
-	public java.util.List<NodeType> getNeighborsOf(NodeType vertex){
+	public java.util.List<Node> getNeighborsOf(Node vertex){
 		return neighborList.neighborListOf(vertex);
 	}
 	

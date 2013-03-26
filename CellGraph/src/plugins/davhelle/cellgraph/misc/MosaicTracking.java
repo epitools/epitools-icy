@@ -15,7 +15,7 @@ import mosaic.core.detection.Particle;
 import mosaic.core.particleLinking.ParticleLinker;
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
  * Track centroids of node types represented
@@ -29,7 +29,7 @@ public class MosaicTracking {
 
 	private DevelopmentType stGraph;
 	private MyFrame[] frames;
-	private HashMap<Particle,NodeType> particle2NodeMap;
+	private HashMap<Particle,Node> particle2NodeMap;
 	private int frames_number;
 	private int linkrange;
 	private float displacement;
@@ -45,7 +45,7 @@ public class MosaicTracking {
 		this.linkrange = 10; //TODO tune
 		this.displacement = 10; //TODO tune
 		this.frames = new MyFrame[frames_number];
-		this.particle2NodeMap = new HashMap<Particle,NodeType>();
+		this.particle2NodeMap = new HashMap<Particle,Node>();
 		
 		//convert stGraph into MyFrame array
 		particleConversion();
@@ -91,7 +91,7 @@ public class MosaicTracking {
 			if(i==0){
 
 				Geometry[] output = new Geometry[graph_i.size()];
-				Iterator<NodeType> node_it = graph_i.iterator();
+				Iterator<Node> node_it = graph_i.iterator();
 				for(int j=0; j<graph_i.size(); j++){
 					output[j] = node_it.next().getGeometry();
 				}		
@@ -104,7 +104,7 @@ public class MosaicTracking {
 			
 			
 			//convert graph nodes 
-			for(NodeType n: graph_i.vertexSet()){
+			for(Node n: graph_i.vertexSet()){
 				//JTS coordinate
 				Geometry node_centroid = n.getCentroid();
 
@@ -149,7 +149,7 @@ public class MosaicTracking {
 		
 		//first set trackID of first graph (reference)
 		int tracking_id = 0;
-		for(NodeType n: stGraph.getFrame(0).vertexSet())
+		for(Node n: stGraph.getFrame(0).vertexSet())
 			n.setTrackID(tracking_id++);
 		//alternative	n.setTrackID(n.hashCode());	
 
@@ -160,7 +160,7 @@ public class MosaicTracking {
 			
 			//for every particle update the corresponding NodeType
 			for(Particle p: particles){
-				NodeType n = particle2NodeMap.get(p);
+				Node n = particle2NodeMap.get(p);
 				
 				//frame of correspondent particle
 				int next_frame_idx = i;
@@ -173,7 +173,7 @@ public class MosaicTracking {
 						
 						//obtain corresponding particle in future and latter's node
 						Particle pNext = frames[next_frame_idx].getParticles().get(linked_idx);
-						NodeType nNext = particle2NodeMap.get(pNext);
+						Node nNext = particle2NodeMap.get(pNext);
 						
 						//update correspondent particle (will be overwritten multiple times)
 						nNext.setTrackID(n.getTrackID());

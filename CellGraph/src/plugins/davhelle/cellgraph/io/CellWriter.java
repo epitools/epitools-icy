@@ -15,7 +15,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.misc.PolygonUtils;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 
 /**
@@ -96,7 +96,7 @@ public class CellWriter {
 			TissueGraph graph_i = stGraph.getFrame(time_point);
 
 			//convert graph nodes to coordinates and write to file
-			for(NodeType n: graph_i.vertexSet()){
+			for(Node n: graph_i.vertexSet()){
 				//JTS coordinate
 				Coordinate centroid = 
 						n.getCentroid().getCoordinate();

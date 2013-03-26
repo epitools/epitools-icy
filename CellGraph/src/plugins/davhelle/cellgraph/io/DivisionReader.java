@@ -18,7 +18,7 @@ import icy.painter.AbstractPainter;
 import icy.sequence.Sequence;
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
  * CSV File reader to add the division information to cells from
@@ -78,7 +78,7 @@ public class DivisionReader extends AbstractPainter{
 		for(int i =0; i<stGraph.size(); i++){
 			if(division_map.containsKey(i))
 				for(Point division: division_map.get(i))
-					for(NodeType cell: stGraph.getFrame(i).vertexSet())
+					for(Node cell: stGraph.getFrame(i).vertexSet())
 						if(cell.getGeometry().contains(division)){
 							//mark cell and all previous associated time points
 							cell.setDivisionFlag(true);
@@ -100,7 +100,7 @@ public class DivisionReader extends AbstractPainter{
 			TissueGraph frame_i = stGraph.getFrame(time_point);
 			g.setColor(Color.red);
 	
-			for(NodeType cell: frame_i.vertexSet())
+			for(Node cell: frame_i.vertexSet())
 				if(cell.willDivide())
 //					if(!cell.onBoundary()) TODO: apply correspondence to first frame!
 						g.fill(cell.toShape());

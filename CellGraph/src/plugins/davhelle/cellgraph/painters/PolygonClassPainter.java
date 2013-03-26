@@ -15,7 +15,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 public class PolygonClassPainter extends AbstractPainter{
 	
@@ -39,7 +39,7 @@ public class PolygonClassPainter extends AbstractPainter{
 			
 			g.setFont(new Font("TimesRoman", Font.PLAIN, 8));
 			
-			for(NodeType cell: frame_i.vertexSet()){
+			for(Node cell: frame_i.vertexSet()){
 
 //				if(cell.onBoundary())
 //					g.setColor(Color.white);

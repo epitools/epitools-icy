@@ -17,7 +17,7 @@ import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.MosaicTracking;
 import plugins.davhelle.cellgraph.nodes.CellPolygon;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
 import icy.gui.frame.progress.AnnounceFrame;
@@ -259,7 +259,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				 */
 
 				//TODO more efficient search
-				Iterator<NodeType> cell_it = current_frame.iterator();
+				Iterator<Node> cell_it = current_frame.iterator();
 				
 				while(cell_it.hasNext()){
 					CellPolygon a = (CellPolygon)cell_it.next();

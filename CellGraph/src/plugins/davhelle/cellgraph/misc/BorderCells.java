@@ -13,7 +13,7 @@ import java.util.Iterator;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
 import plugins.davhelle.cellgraph.graphs.TissueGraph;
-import plugins.davhelle.cellgraph.nodes.NodeType;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
@@ -51,7 +51,7 @@ public class BorderCells extends AbstractPainter{
 			//set up polygon container
 		
 			Geometry[] output = new Geometry[frame_i.size()];
-			Iterator<NodeType> node_it = frame_i.iterator();
+			Iterator<Node> node_it = frame_i.iterator();
 			for(int i=0; i<frame_i.size(); i++){
 				output[i] = node_it.next().getGeometry();
 			}		
@@ -66,13 +66,13 @@ public class BorderCells extends AbstractPainter{
 
 			
 			//Get first boundary ring (not proper polygons)
-			ArrayList<NodeType> wrong_cells = new ArrayList<NodeType>();
+			ArrayList<Node> wrong_cells = new ArrayList<Node>();
 			
 			//Check via intersection if cell is border cell
 			node_it = frame_i.iterator();
 			for(int i=0; i<frame_i.size(); i++){
 
-				NodeType n = node_it.next();
+				Node n = node_it.next();
 				Geometry p = n.getGeometry();
 				
 				boolean is_border = p.intersects(borderRing);
@@ -86,7 +86,7 @@ public class BorderCells extends AbstractPainter{
 			
 			//Can't remove vertices while iterating so doining it now
 			ArrayList<Geometry> wrong_boundary = new ArrayList<Geometry>();
-			for(NodeType n: wrong_cells)
+			for(Node n: wrong_cells)
 				if(frame_i.removeVertex(n))
 					wrong_boundary.add(n.getGeometry());
 
@@ -102,7 +102,7 @@ public class BorderCells extends AbstractPainter{
 			
 			node_it = frame_i.iterator();
 			for(int i=0; i<frame_i.size(); i++){
-				NodeType n = node_it.next();
+				Node n = node_it.next();
 				Geometry p = n.getGeometry();
 				
 				boolean is_border = p.intersects(polygonRing);
@@ -128,7 +128,7 @@ public class BorderCells extends AbstractPainter{
 			}
 				
 			
-			for(NodeType cell: frame_i.vertexSet()){
+			for(Node cell: frame_i.vertexSet()){
 
 				if(cell.onBoundary())
 					g.setColor(Color.white);

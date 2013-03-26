@@ -16,7 +16,7 @@ import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.jts_poc.JtsPainter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.MosaicTracking;
-import plugins.davhelle.cellgraph.nodes.CellPolygon;
+import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
@@ -239,10 +239,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				TissueGraph current_frame = new TissueGraph(current_file_no);
 
 				//insert all polygons into graph as CellPolygons
-				ArrayList<CellPolygon> cellList = new ArrayList<CellPolygon>();
+				ArrayList<Cell> cellList = new ArrayList<Cell>();
 				Iterator<Polygon> poly_it = polygonMesh.iterator();
 				while(poly_it.hasNext()){
-					CellPolygon c = new CellPolygon(poly_it.next());
+					Cell c = new Cell(poly_it.next());
 					cellList.add(c);
 					current_frame.addVertex(c);
 				}
@@ -262,10 +262,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				Iterator<Node> cell_it = current_frame.iterator();
 				
 				while(cell_it.hasNext()){
-					CellPolygon a = (CellPolygon)cell_it.next();
-					Iterator<CellPolygon> neighbor_it = cellList.iterator();
+					Cell a = (Cell)cell_it.next();
+					Iterator<Cell> neighbor_it = cellList.iterator();
 					while(neighbor_it.hasNext()){
-						CellPolygon b = neighbor_it.next();
+						Cell b = neighbor_it.next();
 						if(a.getGeometry().touches(b.getGeometry()))
 							current_frame.addEdge(a, b);
 					}

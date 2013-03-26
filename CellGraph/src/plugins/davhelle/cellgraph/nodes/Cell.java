@@ -18,10 +18,10 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Davide Heller
  *
  */
-public class CellPolygon implements Node {
+public class Cell implements Node {
 	
 	//geometry to abstract the Node
-	private Polygon cell;
+	private Polygon geometry;
 	
 	//tracking information
 	private Node next;
@@ -37,8 +37,8 @@ public class CellPolygon implements Node {
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
 	 */
-	public CellPolygon(Polygon cell_polygon) {
-		this.cell = cell_polygon;
+	public Cell(Polygon cell_polygon) {
+		this.geometry = cell_polygon;
 		
 		//default for untracked cell
 		this.next = null;
@@ -57,7 +57,7 @@ public class CellPolygon implements Node {
 	 */
 	@Override
 	public Point getCentroid() {
-		return cell.getCentroid();
+		return geometry.getCentroid();
 	}
 
 	/* (non-Javadoc)
@@ -65,7 +65,7 @@ public class CellPolygon implements Node {
 	 */
 	@Override
 	public Geometry getGeometry() {
-		return cell;
+		return geometry;
 	}
 
 	/* (non-Javadoc)
@@ -99,7 +99,7 @@ public class CellPolygon implements Node {
 	@Override
 	public Shape toShape() {
 		ShapeWriter writer = new ShapeWriter();
-		return writer.toShape(cell);
+		return writer.toShape(geometry);
 	}
 
 	@Override

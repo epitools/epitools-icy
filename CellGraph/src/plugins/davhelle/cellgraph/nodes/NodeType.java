@@ -16,14 +16,6 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-/**
- * @author Davide Heller
- *
- */
-/**
- * @author Davide Heller
- *
- */
 public interface NodeType {
 	
 	
@@ -79,7 +71,7 @@ public interface NodeType {
 	 * frame
 	 * @param next_node corresponding node in t-i (ideally i=1)
 	 */
-	public void setLast(NodeType next_node);
+	public void setPrevious(NodeType next_node);
 	
 	/**
 	 * Get reference to same node in successive time frame (first known)
@@ -91,7 +83,7 @@ public interface NodeType {
 	 * Get reference to same node in previous time frame (first known)
 	 * @return reference to corresponding node in t-i (ideally i=1)
 	 */
-	public NodeType getLast();
+	public NodeType getPrevious();
 	
 	/**
 	 * Check whether object lies on the window boundary

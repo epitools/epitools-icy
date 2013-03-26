@@ -69,15 +69,17 @@ public class TrackPainter extends AbstractPainter{
 			for(NodeType cell: stGraph.getFrame(time_point).vertexSet()){
 
 				if(cell.getTrackID() != -1){
-					if(correspondence_color.containsKey(cell))
+					if(correspondence_color.containsKey(cell)){
 						//cell is part of registered lineage
 						g.setColor(correspondence_color.get(cell));
-					else
+						g.fill(cell.toShape());
+					}
+					else{
 						//no tracking found
 						g.setColor(Color.black);
-
+						g.fill(cell.toShape());
+					}
 					//Fill cell shape
-					g.draw(cell.toShape());
 				}
 			}
 		}

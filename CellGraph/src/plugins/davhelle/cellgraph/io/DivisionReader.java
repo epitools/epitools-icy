@@ -2,20 +2,12 @@ package plugins.davhelle.cellgraph.io;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-
-import org.itk.simple.GeodesicActiveContourLevelSetImageFilter;
-
-import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.Point;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -29,7 +21,7 @@ import plugins.davhelle.cellgraph.graphs.TissueGraph;
 import plugins.davhelle.cellgraph.nodes.NodeType;
 
 /**
- * Csv File reader to add the division information to cells from
+ * CSV File reader to add the division information to cells from
  * manually created tracking files [ROI based identification
  * done with FIJI]
  * 
@@ -52,8 +44,9 @@ public class DivisionReader extends AbstractPainter{
 				"/Users/davide/Dropbox/Mosaic/davide_mt/2012_05_16",
 				"divisions", ".xls");
 	
-		
+		//TODO OpenCSV superfluous?
 		CSVReader reader = new CSVReader(new FileReader(divisions_file), '\t');
+		
 		GeometryFactory factory = new GeometryFactory();
 		String [] nextLine = reader.readNext();
 		
@@ -73,13 +66,11 @@ public class DivisionReader extends AbstractPainter{
 			//TODO see whether a multipoint Geometry might be more convenient to be used
 		}
 		
+		reader.close();
+		
 		assignDivisions();
 
 	}
-	
-//	private void readDivisions(){
-//		
-//	}
 	
 	private void assignDivisions(){
 		
@@ -91,8 +82,8 @@ public class DivisionReader extends AbstractPainter{
 						if(cell.getGeometry().contains(division)){
 							//mark cell and all previous associated time points
 							cell.setDivisionFlag(true);
-							while(cell.getLast() != null){
-								cell = cell.getLast();
+							while(cell.getPrevious() != null){
+								cell = cell.getPrevious();
 								cell.setDivisionFlag(true);
 							}
 						}
@@ -111,7 +102,8 @@ public class DivisionReader extends AbstractPainter{
 	
 			for(NodeType cell: frame_i.vertexSet())
 				if(cell.willDivide())
-					g.fill(cell.toShape());
+//					if(!cell.onBoundary()) TODO: apply correspondence to first frame!
+						g.fill(cell.toShape());
 
 			
 		}

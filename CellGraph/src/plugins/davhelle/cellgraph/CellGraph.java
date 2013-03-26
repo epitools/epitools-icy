@@ -301,18 +301,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 //				borderUpdate.applyBoundaryCondition();
 				
 				//Paint border conditions
-//				sequence.addPainter(borderUpdate);
+				sequence.addPainter(borderUpdate);
 				
 				//Tracking
-				if(wing_disc_movie.size() > 1){
-					MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
-					//perform tracking TODO trycatch
-					tracker.track();
-
-					//Paint corresponding cells in time
-					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
-					sequence.addPainter(correspondence);
-				}
+//				if(wing_disc_movie.size() > 1){
+//					MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
+//					//perform tracking TODO trycatch
+//					tracker.track();
+//
+//					//Paint corresponding cells in time
+//					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
+//					sequence.addPainter(correspondence);
+//				}
 				
 				//Area statistics
 //				CsvWriter.trackedArea(wing_disc_movie);
@@ -323,13 +323,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 //				sequence.addPainter(pc_painter);
 
 				//Divisions read in 
-				try{
-				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-				sequence.addPainter(division_reader);
-				}
-				catch(IOException e){
-					System.out.println("Something went wrong in division reading");
-				}
+//				try{
+//				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+//				sequence.addPainter(division_reader);
+//				}
+//				catch(IOException e){
+//					System.out.println("Something went wrong in division reading");
+//				}
 
 		}
 

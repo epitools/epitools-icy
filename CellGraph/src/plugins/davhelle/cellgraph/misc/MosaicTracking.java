@@ -162,25 +162,29 @@ public class MosaicTracking {
 			for(Particle p: particles){
 				NodeType n = particle2NodeMap.get(p);
 				
-				int pNext_idx = 0;
-				int j=0;
-				for(; j<p.next.length; j++){
-					pNext_idx = p.next[j];
-					if(pNext_idx != -1)
-						break;
-				}
+				//frame of correspondent particle
+				int next_frame_idx = i;
+				boolean is_linked = false; 
 				
-				int pNextFrame = i + j + 1;
-				
-				//Only update is valid id inserted, otherwise leave TrackID=-1
-				if(pNext_idx != -1 && pNextFrame < stGraph.size() && 
-						pNext_idx < frames[pNextFrame].getParticles().size()){
-					
-					Particle pNext = frames[pNextFrame].getParticles().get(pNext_idx);
-					NodeType nNext = particle2NodeMap.get(pNext);
-					nNext.setTrackID(n.getTrackID());
-					n.setNext(nNext);
-					nNext.setLast(n);
+				//Update all correspondences in time available
+				for(int linked_idx: p.next){
+					next_frame_idx++;
+					if(linked_idx != -1){
+						
+						//obtain corresponding particle in future and latter's node
+						Particle pNext = frames[next_frame_idx].getParticles().get(linked_idx);
+						NodeType nNext = particle2NodeMap.get(pNext);
+						
+						//update correspondent particle (will be overwritten multiple times)
+						nNext.setTrackID(n.getTrackID());
+						nNext.setPrevious(n);
+						
+						//update current particle with the closest correspondence
+						if(!is_linked){
+							n.setNext(nNext);
+							is_linked = true;
+						}
+					}
 				}
 			}			
 		}

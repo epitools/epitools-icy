@@ -25,7 +25,7 @@ public class CellPolygon implements NodeType {
 	
 	//tracking information
 	private NodeType next;
-	private NodeType last;
+	private NodeType previous;
 	private int track_id;
 	
 	//boundary information
@@ -42,7 +42,7 @@ public class CellPolygon implements NodeType {
 		
 		//default for untracked cell
 		this.next = null;
-		this.last = null;
+		this.previous = null;
 		this.track_id = -1;
 		
 		//default boundary condition
@@ -124,13 +124,13 @@ public class CellPolygon implements NodeType {
 	}
 
 	@Override
-	public NodeType getLast() {
-		return this.last;
+	public NodeType getPrevious() {
+		return this.previous;
 	}
 
 	@Override
-	public void setLast(NodeType last_node) {
-		this.last = last_node;		
+	public void setPrevious(NodeType last_node) {
+		this.previous = last_node;		
 	}
 
 	@Override

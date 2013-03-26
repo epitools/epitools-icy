@@ -1,30 +1,24 @@
 package plugins.davhelle.cellgraph;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import com.vividsolutions.jts.geom.Polygon;
 
 import plugins.adufour.ezplug.*;
+
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
-import plugins.davhelle.cellgraph.io.CsvWriter;
-import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.misc.MosaicTracking;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
-import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
-import plugins.davhelle.cellgraph.painters.PolygonPainter;
-import plugins.davhelle.cellgraph.painters.TrackIdPainter;
-import plugins.davhelle.cellgraph.painters.TrackPainter;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
+
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
@@ -59,9 +53,6 @@ import icy.sequence.Sequence;
  * main implementation follow this tutorial:
  * [from tutorial:http://icy.bioimageanalysis.org/plugin/EzPlug_Tutorial]
  * 
- * For various geometric computations two libraries have been used
- * Geometry - by Geotechnical Software Services [no.geosoft.cc.geometry package]
- * PolygonUtils - from org.shodor.math11.Line
  * 
  * @author Davide Heller
  *

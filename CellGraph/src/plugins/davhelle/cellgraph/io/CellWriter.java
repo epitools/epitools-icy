@@ -13,7 +13,7 @@ import mosaic.core.detection.Particle;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
-import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.PolygonUtils;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -93,7 +93,7 @@ public class CellWriter {
 			out.write("frame\t"+time_point+"\n");
 
 			//Extract frame of interest
-			TissueGraph graph_i = stGraph.getFrame(time_point);
+			FrameGraph graph_i = stGraph.getFrame(time_point);
 
 			//convert graph nodes to coordinates and write to file
 			for(Node n: graph_i.vertexSet()){

@@ -11,8 +11,8 @@ import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
- * Tissue Graph represents the polygonal abstraction of a 
- * segmented image through a graph representation. For 
+ * Frame Graph represents the polygonal abstraction of a 
+ * segmented image (frame) through a graph representation. For 
  * the purpose of higher usability a neighborList is inserted
  * as field and listener of the graph to give more comfort in
  * accessing the graph structure. Usually the segmentation
@@ -22,7 +22,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class TissueGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
+public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	
 	private NeighborIndex<Node, DefaultEdge> neighborList;
 	private int frame_no; 
@@ -31,7 +31,7 @@ public class TissueGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	 * Constructor builds an empty ListenableUndirectedGraph at first
 	 * and then addes the neighborList.
 	 */
-	public TissueGraph(int frame_no){
+	public FrameGraph(int frame_no){
 		super(DefaultEdge.class);
 		
 		//specify the frame no which the graph represents
@@ -42,7 +42,7 @@ public class TissueGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 		this.addGraphListener(neighborList);
 	}
 	
-	public TissueGraph(){
+	public FrameGraph(){
 		this(0);
 	}
 	

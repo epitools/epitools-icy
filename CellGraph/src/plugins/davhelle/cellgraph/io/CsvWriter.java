@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
-import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 import icy.gui.dialog.SaveDialog;
 
@@ -54,7 +54,7 @@ public class CsvWriter {
 			
 			if(stGraph.hasTracking()){
 				
-				TissueGraph frame_0 = stGraph.getFrame(0);
+				FrameGraph frame_0 = stGraph.getFrame(0);
 				Iterator<Node> cell_it = frame_0.iterator();
 				
 				//out.write("cell_id");
@@ -104,7 +104,7 @@ public class CsvWriter {
 			
 			if(stGraph.hasTracking()){
 				
-				TissueGraph frame_0 = stGraph.getFrame(0);
+				FrameGraph frame_0 = stGraph.getFrame(0);
 				Iterator<Node> cell_it = frame_0.iterator();
 				
 				out.write("polygon_no, area\n");
@@ -141,7 +141,7 @@ public class CsvWriter {
 			
 			for(int i=0; i<stGraph.size(); i++){
 				
-				TissueGraph frame_i = stGraph.getFrame(i);
+				FrameGraph frame_i = stGraph.getFrame(i);
 				Iterator<Node> cell_it = frame_i.iterator();	
 				
 				while(cell_it.hasNext()){

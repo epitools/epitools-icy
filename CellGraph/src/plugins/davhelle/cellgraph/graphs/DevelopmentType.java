@@ -17,7 +17,7 @@ public interface DevelopmentType {
 	 * @param frame_no Index of the Tissue Graph to be extracted
 	 * @return The TissueGraph representing the frame number in input
 	 */
-	public TissueGraph getFrame(int frame_no);
+	public FrameGraph getFrame(int frame_no);
 	
 	/**
 	 * Method to set a specific TissueGraph at a given time point
@@ -26,7 +26,7 @@ public interface DevelopmentType {
 	 * @param graph	TissueGraph to be inserted into Time structure
 	 * @param frame_no Time point at which the insertion takes place
 	 */
-	public void setFrame(TissueGraph graph, int frame_no);
+	public void setFrame(FrameGraph graph, int frame_no);
 
 	/**
 	 * Get the number of time points/frames represented

@@ -17,7 +17,7 @@ import icy.main.Icy;
 import icy.painter.AbstractPainter;
 import icy.sequence.Sequence;
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
-import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -97,7 +97,7 @@ public class DivisionReader extends AbstractPainter{
 
 		if(time_point < stGraph.size()){
 			
-			TissueGraph frame_i = stGraph.getFrame(time_point);
+			FrameGraph frame_i = stGraph.getFrame(time_point);
 			g.setColor(Color.red);
 	
 			for(Node cell: frame_i.vertexSet())

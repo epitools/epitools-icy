@@ -14,7 +14,7 @@ import mosaic.core.detection.MyFrame;
 import mosaic.core.detection.Particle;
 import mosaic.core.particleLinking.ParticleLinker;
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
-import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -83,7 +83,7 @@ public class MosaicTracking {
 		
 		for(int i=0;i<frames_number; i++){
 			//get graph
-			TissueGraph graph_i = stGraph.getFrame(i);
+			FrameGraph graph_i = stGraph.getFrame(i);
 			Vector<Particle> particles = new Vector<Particle>();
 			int particle_number = graph_i.size();
 			

@@ -11,7 +11,7 @@ import java.util.ArrayList;
  */
 public class TissueEvolution implements DevelopmentType {
 
-	private ArrayList<TissueGraph> frames;
+	private ArrayList<FrameGraph> frames;
 	private boolean has_tracking;
 	private boolean has_voronoi;
 	
@@ -22,7 +22,7 @@ public class TissueEvolution implements DevelopmentType {
 		// TODO Auto-generated constructor stub
 		this.has_tracking = false;
 		this.has_voronoi = false;
-		this.frames = new ArrayList<TissueGraph>(time_points);
+		this.frames = new ArrayList<FrameGraph>(time_points);
 	}
 	
 	public TissueEvolution(){
@@ -33,7 +33,7 @@ public class TissueEvolution implements DevelopmentType {
 	 * @see plugins.davhelle.cellgraph.graphs.DevelopmentType#getFrame(int)
 	 */
 	@Override
-	public TissueGraph getFrame(int frame_no) {
+	public FrameGraph getFrame(int frame_no) {
 		return frames.get(frame_no);
 	}
 
@@ -41,11 +41,11 @@ public class TissueEvolution implements DevelopmentType {
 	 * @see plugins.davhelle.cellgraph.graphs.DevelopmentType#setFrame(plugins.davhelle.cellgraph.graphs.TissueGraph, int)
 	 */
 	@Override
-	public void setFrame(TissueGraph graph, int frame_no) {
+	public void setFrame(FrameGraph graph, int frame_no) {
 		frames.set(frame_no, graph);
 	}
 	
-	public void addFrame(TissueGraph graph){
+	public void addFrame(FrameGraph graph){
 		frames.add(graph);
 	}
 

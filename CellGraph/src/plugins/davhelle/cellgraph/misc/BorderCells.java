@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
-import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -24,12 +24,12 @@ import com.vividsolutions.jts.geom.LinearRing;
 public class BorderCells extends AbstractPainter{
 
 	private DevelopmentType stGraph;
-	private HashMap<TissueGraph,Geometry> frame_ring_map;
+	private HashMap<FrameGraph,Geometry> frame_ring_map;
 	
 	public BorderCells(DevelopmentType stGraph) {
 		//Set data structures
 		this.stGraph = stGraph;
-		this.frame_ring_map = new HashMap<TissueGraph,Geometry>();
+		this.frame_ring_map = new HashMap<FrameGraph,Geometry>();
 	}
 	
 	/**
@@ -46,7 +46,7 @@ public class BorderCells extends AbstractPainter{
 		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
 			
-			TissueGraph frame_i = stGraph.getFrame(time_point_i);
+			FrameGraph frame_i = stGraph.getFrame(time_point_i);
 
 			//set up polygon container
 		
@@ -119,7 +119,7 @@ public class BorderCells extends AbstractPainter{
 
 		if(time_point < stGraph.size()){
 			
-			TissueGraph frame_i = stGraph.getFrame(time_point);
+			FrameGraph frame_i = stGraph.getFrame(time_point);
 			g.setColor(Color.orange);
 			ShapeWriter shapeWriter = new ShapeWriter();
 			if(frame_ring_map.containsKey(frame_i)){

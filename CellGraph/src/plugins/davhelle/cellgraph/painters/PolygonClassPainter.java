@@ -14,7 +14,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.DevelopmentType;
-import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 public class PolygonClassPainter extends AbstractPainter{
@@ -34,7 +34,7 @@ public class PolygonClassPainter extends AbstractPainter{
 
 		if(time_point < stGraph.size()){
 			
-			TissueGraph frame_i = stGraph.getFrame(time_point);
+			FrameGraph frame_i = stGraph.getFrame(time_point);
 			g.setColor(Color.white);
 			
 			g.setFont(new Font("TimesRoman", Font.PLAIN, 8));

@@ -9,7 +9,7 @@ import com.vividsolutions.jts.geom.Polygon;
 
 import plugins.adufour.ezplug.*;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
-import plugins.davhelle.cellgraph.graphs.TissueGraph;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
@@ -236,7 +236,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				
 				/******************GRAPH GENERATION***********************************/
 				
-				TissueGraph current_frame = new TissueGraph(current_file_no);
+				FrameGraph current_frame = new FrameGraph(current_file_no);
 
 				//insert all polygons into graph as CellPolygons
 				ArrayList<Cell> cellList = new ArrayList<Cell>();

@@ -380,7 +380,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			ArrayList<Cell> cellList = new ArrayList<Cell>();
 			Iterator<Polygon> poly_it = polygonMesh.iterator();
 			while(poly_it.hasNext()){
-				Cell c = new Cell(poly_it.next());
+				Cell c = new Cell(poly_it.next(),current_frame);
 				cellList.add(c);
 				current_frame.addVertex(c);
 			}

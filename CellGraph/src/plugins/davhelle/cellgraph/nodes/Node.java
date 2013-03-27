@@ -1,6 +1,9 @@
 package plugins.davhelle.cellgraph.nodes;
 
 import java.awt.Shape;
+import java.util.List;
+
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -120,4 +123,32 @@ public interface Node {
 	 * @return java.awt.Shape of the node's geometry(JTS)
 	 */
 	public Shape toShape();
+	
+	/**
+	 * Obtain the FrameGraph to which the node belongs
+	 * 
+	 * @return reference to FrameGraph container
+	 */
+	public FrameGraph getBelongingFrame();
+
+	/**
+	 * obtain reference to first frame if tracked
+	 * @return reference to corresponding node in first frame
+	 */
+	public Node getFirst();
+	
+	
+	/**
+	 * set corresponding node in first frame
+	 * 
+	 * @param first corresponding node in first frame
+	 */
+	public void setFirst(Node first);
+	
+	/**
+	 * Get neighbors of node
+	 * 
+	 * @return
+	 */
+	public List<Node> getNeighbors();
 }

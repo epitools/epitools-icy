@@ -3,6 +3,8 @@ package plugins.davhelle.cellgraph.misc;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -149,8 +151,10 @@ public class MosaicTracking {
 		
 		//first set trackID of first graph (reference)
 		int tracking_id = 0;
-		for(Node n: stGraph.getFrame(0).vertexSet())
+		for(Node n: stGraph.getFrame(0).vertexSet()){
 			n.setTrackID(tracking_id++);
+			n.setFirst(n);
+		}
 		//alternative	n.setTrackID(n.hashCode());	
 
 		//for every frame extract all particles
@@ -162,9 +166,73 @@ public class MosaicTracking {
 			for(Particle p: particles){
 				Node n = particle2NodeMap.get(p);
 				
+				//check whether the node is a new node/not tracked
+				//Is it a segmentation error or division? quorum sensing to assign parent
+				if(i > 0 && i < stGraph.size()){
+					if(n.getPrevious() == null){
+						//define newNode
+						Node newNode = n;
+						List<Node> neighbors = n.getNeighbors();
+
+						//quorum sensing List of neighbors to identify newNode's sibling/mother cell
+						Map<Node,Integer> qs_array = new HashMap<Node, Integer>();
+						//initialize qs_array
+						for(Node neighbor: neighbors)
+							if(neighbor.getFirst() != null)
+								qs_array.put(neighbor.getFirst(), 0);
+						
+						//visit all ancestor nodes of neighbors
+						for(Node neighbor: neighbors){
+							//get back to last reference and update qs_array
+							Node ancestor = neighbor.getPrevious();
+							
+							//check if any neighbor of the ancestor node is in the qs_list
+							if(ancestor != null){
+								
+								//for every neighbor of the ancestor
+								for(Node ancestorNeighbor: ancestor.getNeighbors()){
+									
+									//Check whether ancestor's neighbor has correspondence with newNod's neighbors
+									//done using the first field.
+									
+									//System.out.println(ancestorNeighbor.getTrackID());
+									if(qs_array.containsKey(ancestorNeighbor.getFirst())){
+											int count = qs_array.get(ancestorNeighbor.getFirst()).intValue();
+											count++;
+											qs_array.put(ancestorNeighbor.getFirst(), count);
+									}
+								}
+							}
+						}
+						
+						//print map
+						//System.out.println("New node in frame "+i+":"+newNode.getGeometry().toText());
+						Node most_likely_parent = null;
+						for(Node candidate: qs_array.keySet()){
+							//System.out.println(first.getTrackID()+": "+qs_array.get(first).toString());
+							if(most_likely_parent == null)
+								most_likely_parent = candidate;
+							else
+								//check whether the qs score is higher for the candidate (negative comparison result)
+								if(qs_array.get(most_likely_parent).compareTo(qs_array.get(candidate)) < 0)
+									most_likely_parent = candidate;
+						}
+						
+						newNode.setFirst(most_likely_parent);
+//						Node last_known = null;
+//						//strategy to set sibling and parent
+//						if(most_likely_parent != null){
+//							while()
+//						}
+//						
+//						newNode.setPrevious()
+							
+					}
+				}
+				
 				//frame of correspondent particle
 				int next_frame_idx = i;
-				boolean is_linked = false; 
+				boolean is_linked = false;
 				
 				//Update all correspondences in time available
 				for(int linked_idx: p.next){
@@ -177,6 +245,7 @@ public class MosaicTracking {
 						
 						//update correspondent particle (will be overwritten multiple times)
 						nNext.setTrackID(n.getTrackID());
+						nNext.setFirst(n.getFirst());
 						nNext.setPrevious(n);
 						
 						//update current particle with the closest correspondence

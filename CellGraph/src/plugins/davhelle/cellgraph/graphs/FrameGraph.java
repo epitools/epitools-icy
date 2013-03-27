@@ -71,4 +71,8 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 		return this.vertexSet().size();
 	}
 	
+	public int getFrameNo(){
+		return frame_no;
+	}
+	
 }

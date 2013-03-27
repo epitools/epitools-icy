@@ -55,10 +55,10 @@ public class TrackPainter extends AbstractPainter{
 			Color cell_color = new Color(r_idx, g_idx, b_idx);
 			cell_color.brighter();
 			
-			while(cell != null){
+			//while(cell != null){
 				correspondence_color.put(cell, cell_color);
-				cell = cell.getNext();
-			}
+				//cell = cell.getNext();
+			//}
 		}
 	}
 	
@@ -73,10 +73,10 @@ public class TrackPainter extends AbstractPainter{
 			for(Node cell: stGraph.getFrame(time_point).vertexSet()){
 				
 				if(cell.getTrackID() != -1){
-					if(correspondence_color.containsKey(cell)){
+					if(correspondence_color.containsKey(cell.getFirst())){
 						percentage_tracked++;
 						//cell is part of registered correspondence
-						g.setColor(correspondence_color.get(cell));
+						g.setColor(correspondence_color.get(cell.getFirst()));
 						g.fill(cell.toShape());
 					}
 					else{

@@ -4,6 +4,9 @@
 package plugins.davhelle.cellgraph.nodes;
 
 import java.awt.Shape;
+import java.util.List;
+
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -23,9 +26,13 @@ public class Cell implements Node {
 	//geometry to abstract the Node
 	private Polygon geometry;
 	
+	//FrameGraph to which 
+	FrameGraph parent;
+	
 	//tracking information
 	private Node next;
 	private Node previous;
+	private Node first;
 	private int track_id;
 	
 	//boundary information
@@ -37,13 +44,15 @@ public class Cell implements Node {
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
 	 */
-	public Cell(Polygon cell_polygon) {
+	public Cell(Polygon cell_polygon, FrameGraph parent) {
+		this.parent = parent;
 		this.geometry = cell_polygon;
 		
 		//default for untracked cell
 		this.next = null;
 		this.previous = null;
 		this.track_id = -1;
+		this.first = null;
 		
 		//default boundary condition
 		this.is_on_boundary = false;
@@ -141,6 +150,26 @@ public class Cell implements Node {
 	@Override
 	public void setObservedDivision(boolean will_cell_divide) {
 		this.observedDivision = will_cell_divide;
+	}
+
+	@Override
+	public FrameGraph getBelongingFrame() {
+		// TODO Auto-generated method stub
+		return parent;
+	}
+
+	public Node getFirst() {
+		return first;
+	}
+
+	public void setFirst(Node first) {
+		this.first = first;
+	}
+
+	@Override
+	public List<Node> getNeighbors() {
+		// TODO dangerous! what if not yet inserted in graph?
+		return parent.getNeighborsOf(this);
 	}
 
 }

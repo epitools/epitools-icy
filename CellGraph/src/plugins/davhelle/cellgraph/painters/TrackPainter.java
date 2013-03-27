@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
+import com.vividsolutions.jts.geom.Point;
+
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -66,22 +68,34 @@ public class TrackPainter extends AbstractPainter{
 		
 		if(time_point < stGraph.size()){
 			
+			double percentage_tracked = 0;
+			
 			for(Node cell: stGraph.getFrame(time_point).vertexSet()){
-
+				
 				if(cell.getTrackID() != -1){
 					if(correspondence_color.containsKey(cell)){
-						//cell is part of registered lineage
+						percentage_tracked++;
+						//cell is part of registered correspondence
 						g.setColor(correspondence_color.get(cell));
 						g.fill(cell.toShape());
 					}
 					else{
 						//no tracking found
-						g.setColor(Color.black);
+						g.setColor(Color.white);
 						g.fill(cell.toShape());
+						
+						Point lost = cell.getCentroid();
+						g.setColor(Color.red);
+						g.draw(cell.toShape());
+						g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
 					}
-					//Fill cell shape
 				}
 			}
+			
+			percentage_tracked = (percentage_tracked/stGraph.getFrame(0).size())*100;
+			
+			g.setColor(Color.white);
+			g.drawString("Tracked cells: "+(int)percentage_tracked+"%", 10 , 20);
 		}
 	}
 

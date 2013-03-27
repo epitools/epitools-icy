@@ -88,7 +88,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varBooleanWriteArea;
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
-	EzVarDouble					varColorAmp;
+	EzVarInteger				varLinkrange;
+	EzVarFloat					varDisplacement;
 	
 	//Stop flag for advanced thread handling TODO
 	boolean						stopFlag;
@@ -124,11 +125,21 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Voronoi view
 		varBooleanVoronoiDiagram = new EzVarBoolean("Voronoi Diagram", true);
 		varBooleanAreaDifference = new EzVarBoolean("Area difference", false);
-		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", false);
+		
 		EzGroup groupVoronoiMap = new EzGroup("VORONOI elements",
 				varBooleanAreaDifference,
-				varBooleanVoronoiDiagram,
-				varBooleanCellIDs);	
+				varBooleanVoronoiDiagram);	
+		
+		//Track view
+		varLinkrange = new EzVarInteger(
+				"Linkrange (frames)", 5,1,20,1);
+		varDisplacement = new EzVarFloat(
+				"Max. displacement (px)",5,20,(float)0.1);
+		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", false);
+		EzGroup groupTracking = new EzGroup("TRACK elements",
+				varLinkrange,
+				varDisplacement,
+				varBooleanCellIDs);
 		
 		//Which painter should be shown by default
 		varEnum = new EzVarEnum<PlotEnum>("Painter type",PlotEnum.values(),PlotEnum.CELLS);
@@ -136,7 +147,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
 				"Representation", varFile, varMaxT, varEnum,
-				groupCellMap, groupVoronoiMap);
+				groupCellMap, groupVoronoiMap,groupTracking);
 		
 		super.addEzComponent(groupFiles);
 		
@@ -144,6 +155,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupFiles, false);
 		varEnum.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
 		varEnum.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
+		varEnum.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACK);
 		
 	}
 	
@@ -245,7 +257,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 			if(USER_CHOICE == PlotEnum.TRACK){
 			//Tracking
 				if(wing_disc_movie.size() > 1){
-					MosaicTracking tracker = new MosaicTracking(wing_disc_movie);
+					MosaicTracking tracker = new MosaicTracking(
+							wing_disc_movie,
+							varLinkrange.getValue(),
+							varDisplacement.getValue());
+					
 					//perform tracking TODO trycatch
 					tracker.track();
 

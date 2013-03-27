@@ -39,11 +39,11 @@ public class MosaicTracking {
 	 * 
 	 * @param spatioTemporalGraph Spatio temporal graph to be tracked
 	 */
-	public MosaicTracking(SpatioTemporalGraph spatioTemporalGraph) {
+	public MosaicTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, float displacement) {
 		this.stGraph = spatioTemporalGraph;
 		this.frames_number = spatioTemporalGraph.size();
-		this.linkrange = 10; //TODO tune
-		this.displacement = 10; //TODO tune
+		this.linkrange = linkrange; //TODO tune
+		this.displacement = displacement; //TODO tune
 		this.frames = new MyFrame[frames_number];
 		this.particle2NodeMap = new HashMap<Particle,Node>();
 		

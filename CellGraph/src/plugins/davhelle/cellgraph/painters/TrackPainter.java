@@ -6,6 +6,7 @@ import icy.painter.AbstractPainter;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,6 +96,7 @@ public class TrackPainter extends AbstractPainter{
 			percentage_tracked = (percentage_tracked/stGraph.getFrame(0).size())*100;
 			
 			g.setColor(Color.white);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
 			g.drawString("Tracked cells: "+(int)percentage_tracked+"%", 10 , 20);
 		}
 	}

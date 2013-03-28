@@ -134,7 +134,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varLinkrange = new EzVarInteger(
 				"Linkrange (frames)", 5,1,20,1);
 		varDisplacement = new EzVarFloat(
-				"Max. displacement (px)",5,20,(float)0.1);
+				"Max. displacement (px)",1,20,(float)0.1);
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", false);
 		EzGroup groupTracking = new EzGroup("TRACK elements",
 				varLinkrange,

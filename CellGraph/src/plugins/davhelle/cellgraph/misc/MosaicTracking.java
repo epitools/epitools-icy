@@ -258,8 +258,11 @@ public class MosaicTracking {
 							else
 								last_parent_reference = last_known;
 							
-							if(last_parent_reference.getGeometry().contains(newNode.getCentroid())){
+							//apply little buffer
+							if(last_parent_reference.getGeometry().buffer(3).contains(newNode.getCentroid())){
 								System.out.println("\t is contained!");
+								
+								//most_likely_parent.setObservedDivision(true);
 							
 								newNode.setFirst(most_likely_parent);
 								newNode.setTrackID(most_likely_parent.getTrackID());
@@ -285,15 +288,17 @@ public class MosaicTracking {
 						Node nNext = particle2NodeMap.get(pNext);
 						
 						//update correspondent particle (will be overwritten multiple times)
-						nNext.setTrackID(n.getTrackID());
-						nNext.setFirst(n.getFirst());
-						nNext.setPrevious(n);
-						
-						//update current particle with the closest correspondence
-						if(!is_linked){
-							n.setNext(nNext);
-							is_linked = true;
-							//break;
+						if(n.getGeometry().contains(nNext.getCentroid())){
+							nNext.setTrackID(n.getTrackID());
+							nNext.setFirst(n.getFirst());
+							nNext.setPrevious(n);
+
+							//update current particle with the closest correspondence
+							if(!is_linked){
+								n.setNext(nNext);
+								is_linked = true;
+								//break;
+							}
 						}
 					}
 				}

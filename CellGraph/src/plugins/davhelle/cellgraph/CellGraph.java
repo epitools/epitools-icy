@@ -19,6 +19,7 @@ import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
+import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
@@ -265,14 +266,26 @@ public class CellGraph extends EzPlug implements EzStoppable
 					//perform tracking TODO trycatch
 					tracker.track();
 
-					//Paint corresponding cells in time
-					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
-					sequence.addPainter(correspondence);
-
 					if(varBooleanCellIDs.getValue()){
 						Painter trackID = new TrackIdPainter(wing_disc_movie);
 						sequence.addPainter(trackID);
 					}
+					
+					//Paint corresponding cells in time
+//					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
+//					sequence.addPainter(correspondence);
+					
+					
+					//read manual divisions and combine with tracking information
+					try{
+						DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+						Painter divisions = new DivisionPainter(wing_disc_movie);
+						sequence.addPainter(divisions);
+					}
+					catch(IOException e){
+						System.out.println("Something went wrong in division reading");
+					}
+					
 				}
 			}
 

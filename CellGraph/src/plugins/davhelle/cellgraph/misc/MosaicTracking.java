@@ -155,7 +155,8 @@ public class MosaicTracking {
 			n.setTrackID(tracking_id++);
 			n.setFirst(n);
 		}
-		//alternative	n.setTrackID(n.hashCode());	
+		//alternative	n.setTrackID(n.hashCode());
+		
 
 		//for every frame extract all particles
 		for(int i=0;i<frames_number-1; i++){
@@ -168,7 +169,57 @@ public class MosaicTracking {
 				
 				//check whether the node is a new node/not tracked
 				//Is it a segmentation error or division? quorum sensing to assign parent
-				if(i > 0 && i < stGraph.size()){
+				if(i > 0){
+					
+					//choose among the suggested correspondent cells
+					//the most likely
+					
+					List<Node> candidates = n.getParentCandidates();
+					Node most_voted = null;
+					int max_count = 0;
+					
+					if(candidates.size() > 0){
+						Iterator<Node> candidate_it = candidates.iterator();
+						
+						Node voted = candidates.get(0);
+						int count = 1;
+						
+						while(candidate_it.hasNext())
+							if(candidate_it.next() == voted){
+								candidate_it.remove();
+								count++;
+							}
+
+						if(max_count < count){
+							most_voted = voted;
+							max_count = count;
+						}
+
+					}
+					
+					if(most_voted != null){
+						n.setTrackID(most_voted.getTrackID());
+						n.setFirst(most_voted.getFirst());
+						
+						//Obtain most recent correspondence
+						Node last_reference = most_voted;
+						
+						if(last_reference.getNext() != null)
+							while(last_reference.getNext().getBelongingFrame().getFrameNo() < 
+									n.getBelongingFrame().getFrameNo()){
+								last_reference = last_reference.getNext();
+								if(last_reference.getNext() == null)
+									break;
+							}
+						
+						n.setPrevious(last_reference);
+						last_reference.setNext(n);
+							
+					}
+					
+					
+					
+					
 					if(n.getPrevious() == null){
 						//define newNode
 						Node newNode = n;
@@ -237,30 +288,27 @@ public class MosaicTracking {
 						
 						//modify newNodes correspondence fields
 						if(most_likely_parent != null){
-							System.out.println("Division candidate in frame "+i+" with id "+
-									most_likely_parent.getTrackID()+ "(" + 
-									qs_array.get(most_likely_parent).toString() + " vs " + candidate_average + ")" + 									
-									" @ "+
-									newNode.getGeometry().toText());
+//							System.out.println("Division candidate in frame "+i+" with id "+
+//									most_likely_parent.getTrackID()+ "(" + 
+//									qs_array.get(most_likely_parent).toString() + " vs " + candidate_average + ")" + 									
+//									" @ "+
+//									newNode.getGeometry().toText());
 							
 
-							Node last_known = most_likely_parent;
+							Node last_parent_reference = most_likely_parent;
 							//strategy to set sibling and parent
-							while(last_known.getNext() != null){
-								last_known = last_known.getNext();
-							}
-
 							
-							Node last_parent_reference = null;				
-							//identify whether last_known is sibling(same frame) or the parent(previous frame)
-							if(last_known.getBelongingFrame() == newNode.getBelongingFrame())
-								last_parent_reference = last_known.getPrevious();
-							else
-								last_parent_reference = last_known;
+							while(last_parent_reference.getNext().getBelongingFrame().getFrameNo() < 
+									newNode.getBelongingFrame().getFrameNo()){
+								last_parent_reference = last_parent_reference.getNext();
+								if(last_parent_reference.getNext() == null)
+									break;
+								
+							}
 							
 							//apply little buffer
 							if(last_parent_reference.getGeometry().buffer(6).contains(newNode.getCentroid())){
-								System.out.println("\t is contained!");
+								//System.out.println("\t is contained!");
 								
 								//most_likely_parent.setObservedDivision(true);
 							
@@ -269,21 +317,21 @@ public class MosaicTracking {
 								newNode.setPrevious(last_parent_reference);
 							}
 							//in alternative check on the other qs members but with less confidence...Too much propagation
-//							else{
-//								for(Node candidate: qs_array.keySet()){
-//									if(candidate != null){
-//										if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
-//											System.out.println("\t is contained! (less confident!)");
-//
-//											newNode.setFirst(most_likely_parent);
-//											newNode.setTrackID(most_likely_parent.getTrackID());
-//											newNode.setPrevious(last_parent_reference);
-//
-//											break;
-//										}
-//									}
-//								}
-//							}
+							else{
+								for(Node candidate: qs_array.keySet()){
+									if(candidate != null){
+										if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
+											System.out.println("\t is contained! (less confident!)");
+
+											newNode.setFirst(most_likely_parent);
+											newNode.setTrackID(most_likely_parent.getTrackID());
+											newNode.setPrevious(last_parent_reference);
+
+											break;
+										}
+									}
+								}
+							}
 							
 						}
 							
@@ -304,17 +352,16 @@ public class MosaicTracking {
 						Node nNext = particle2NodeMap.get(pNext);
 						
 						//update correspondent particle (will be overwritten multiple times)
-						if(n.getGeometry().buffer(6).contains(nNext.getCentroid())){
-							nNext.setTrackID(n.getTrackID());
-							nNext.setFirst(n.getFirst());
-							nNext.setPrevious(n);
+						if(n.getGeometry().buffer(displacement).contains(nNext.getCentroid())){
+
+							nNext.addParentCandidate(n.getFirst());
 
 							//update current particle with the closest correspondence
-							if(!is_linked){
-								n.setNext(nNext);
-								is_linked = true;
-								//break;
-							}
+//							if(!is_linked){
+//								n.setNext(nNext);
+//								is_linked = true;
+//								//break;
+//							}
 						}
 					}
 				}

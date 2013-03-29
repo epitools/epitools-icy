@@ -23,6 +23,7 @@ import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
@@ -290,12 +291,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//read manual divisions and combine with tracking information
 				try{
 					DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-					Painter divisions = new DivisionPainter(wing_disc_movie);
-					sequence.addPainter(divisions);
+					sequence.addPainter(new DivisionPainter(wing_disc_movie));
 				}
 				catch(IOException e){
 					System.out.println("Something went wrong in division reading");
 				}
+				
+				sequence.addPainter(new SiblingPainter(wing_disc_movie));
 			}
 			else{
 				//Paint corresponding cells in time

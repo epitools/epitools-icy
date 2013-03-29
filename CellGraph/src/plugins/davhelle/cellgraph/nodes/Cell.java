@@ -4,6 +4,7 @@
 package plugins.davhelle.cellgraph.nodes;
 
 import java.awt.Shape;
+import java.util.ArrayList;
 import java.util.List;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -33,6 +34,7 @@ public class Cell implements Node {
 	private Node next;
 	private Node previous;
 	private Node first;
+	private List<Node> first_candidates;
 	private int track_id;
 	
 	//boundary information
@@ -53,6 +55,7 @@ public class Cell implements Node {
 		this.previous = null;
 		this.track_id = -1;
 		this.first = null;
+		this.first_candidates = new ArrayList<Node>();
 		
 		//default boundary condition
 		this.is_on_boundary = false;
@@ -170,6 +173,16 @@ public class Cell implements Node {
 	public List<Node> getNeighbors() {
 		// TODO dangerous! what if not yet inserted in graph?
 		return parent.getNeighborsOf(this);
+	}
+
+	@Override
+	public void addParentCandidate(Node first) {
+		first_candidates.add(first);
+	}
+
+	@Override
+	public List<Node> getParentCandidates() {
+		return first_candidates;
 	}
 
 }

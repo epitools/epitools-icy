@@ -151,4 +151,8 @@ public interface Node {
 	 * @return
 	 */
 	public List<Node> getNeighbors();
+
+	public void addParentCandidate(Node first);
+
+	public List<Node> getParentCandidates();
 }

@@ -259,7 +259,7 @@ public class MosaicTracking {
 								last_parent_reference = last_known;
 							
 							//apply little buffer
-							if(last_parent_reference.getGeometry().buffer(3).contains(newNode.getCentroid())){
+							if(last_parent_reference.getGeometry().buffer(6).contains(newNode.getCentroid())){
 								System.out.println("\t is contained!");
 								
 								//most_likely_parent.setObservedDivision(true);
@@ -268,6 +268,22 @@ public class MosaicTracking {
 								newNode.setTrackID(most_likely_parent.getTrackID());
 								newNode.setPrevious(last_parent_reference);
 							}
+							//in alternative check on the other qs members but with less confidence...Too much propagation
+//							else{
+//								for(Node candidate: qs_array.keySet()){
+//									if(candidate != null){
+//										if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
+//											System.out.println("\t is contained! (less confident!)");
+//
+//											newNode.setFirst(most_likely_parent);
+//											newNode.setTrackID(most_likely_parent.getTrackID());
+//											newNode.setPrevious(last_parent_reference);
+//
+//											break;
+//										}
+//									}
+//								}
+//							}
 							
 						}
 							
@@ -288,7 +304,7 @@ public class MosaicTracking {
 						Node nNext = particle2NodeMap.get(pNext);
 						
 						//update correspondent particle (will be overwritten multiple times)
-						if(n.getGeometry().contains(nNext.getCentroid())){
+						if(n.getGeometry().buffer(6).contains(nNext.getCentroid())){
 							nNext.setTrackID(n.getTrackID());
 							nNext.setFirst(n.getFirst());
 							nNext.setPrevious(n);

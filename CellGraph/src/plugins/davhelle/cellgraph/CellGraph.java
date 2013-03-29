@@ -9,6 +9,7 @@ import com.vividsolutions.jts.geom.Polygon;
 
 import plugins.adufour.ezplug.*;
 
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
@@ -87,6 +88,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varBooleanVoronoiDiagram;
 	EzVarBoolean				varBooleanWriteCenters;
 	EzVarBoolean				varBooleanWriteArea;
+	EzVarBoolean				varBooleanLoadDivisions;
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
 	EzVarInteger				varLinkrange;
@@ -94,6 +96,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//Stop flag for advanced thread handling TODO
 	boolean						stopFlag;
+	
+	//sequence to paint on 
+	Sequence sequence;
 	
 	
 	@Override
@@ -135,12 +140,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varLinkrange = new EzVarInteger(
 				"Linkrange (frames)", 5,1,20,1);
 		varDisplacement = new EzVarFloat(
-				"Max. displacement (px)",1,20,(float)0.1);
-		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", false);
+				"Max. displacement (px)",3,1,20,(float)0.1);
+		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
+		varBooleanLoadDivisions = new EzVarBoolean("Load division file", false);
 		EzGroup groupTracking = new EzGroup("TRACK elements",
 				varLinkrange,
 				varDisplacement,
-				varBooleanCellIDs);
+				varBooleanCellIDs,
+				varBooleanLoadDivisions);
 		
 		//Which painter should be shown by default
 		varEnum = new EzVarEnum<PlotEnum>("Painter type",PlotEnum.values(),PlotEnum.CELLS);
@@ -165,155 +172,143 @@ public class CellGraph extends EzPlug implements EzStoppable
 	{
 		// main plugin code goes here, and runs in a separate thread
 
+		//check that input sequence is present
+		sequence = varSequence.getValue();
+		if(sequence == null){
+			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
+			return;
+		}
+		
 		//First boolean choice to remove previous painters
-		//on the same sequence
 		if(varRemovePainterFromSequence.getValue()){
-			Sequence sequence = varSequence.getValue();
-			
-			if(sequence != null){
-				// remove previous painters
-				List<Painter> painters = sequence.getPainters();
-				//List<Painter> painters = coverSequence.getPainters(ContourPainter2.class);
-				for (Painter painter : painters) {
-					sequence.removePainter(painter);
-					sequence.painterChanged(painter);    				
-				}
+			List<Painter> painters = sequence.getPainters();
+			for (Painter painter : painters) {
+				sequence.removePainter(painter);
+				sequence.painterChanged(painter);    				
 			}
-			
 		}
 		else{
 			
-			/******************SPATIO TEMPORAL(ST) GRAPH CREATION***********************************/
+			//Create spatio temporal graph from mesh files
 			
-			TissueEvolution wing_disc_movie = new TissueEvolution();
-			
+			TissueEvolution wing_disc_movie = new TissueEvolution();	
 			generateSpatioTemporalGraph(wing_disc_movie);
-
-//			System.out.println("Successfully read in "+wing_disc_movie.size()+" movie frames");
-				
-			Sequence sequence = varSequence.getValue();
-			
-			PlotEnum USER_CHOICE = varEnum.getValue();
-			
-			/******************ST-GRAPH BORDER IDENTIFICATION**********************/
 			
 			//Border identification and discarding of outer ring
 			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 			borderUpdate.applyBoundaryCondition();
 			
 			//to remove another layer just reapply the method
-//			borderUpdate.applyBoundaryCondition();
-			
-			if(USER_CHOICE == PlotEnum.BORDER){
-				//Paint border conditions
-				sequence.addPainter(borderUpdate);
-			}
-			
-			/******************ST-GRAPH PAINTING***********************************/
+			//borderUpdate.applyBoundaryCondition();
 
-			if(USER_CHOICE == PlotEnum.CELLS){
-				
-				if(varBooleanCCenter.getValue()){
-					Painter centroids = new CentroidPainter(wing_disc_movie);
-					sequence.addPainter(centroids);
-				}
-				
-				if(varBooleanPolygon.getValue()){
-					Painter polygons = new PolygonPainter(wing_disc_movie);
-					sequence.addPainter(polygons);
-				}
+			//Display results according to user choice
 			
-			}
+			PlotEnum USER_CHOICE = varEnum.getValue();
 			
-			if(USER_CHOICE == PlotEnum.POLYGON_CLASS){
-				Painter polygonClass = new PolygonClassPainter(wing_disc_movie);
-				sequence.addPainter(polygonClass);
-			}
-			
-			/******************ST-GRAPH VORONOI***********************************/
-			
-			if(USER_CHOICE == PlotEnum.VORONOI){
-			
-				VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie);
-
-				if(varBooleanVoronoiDiagram.getValue()){
-					Painter voronoiCells = new VoronoiPainter(
-							wing_disc_movie, 
-							voronoiDiagram.getNodeVoroniMapping());
-					sequence.addPainter(voronoiCells);
-				}
-
-				if(varBooleanAreaDifference.getValue()){
-					Painter voronoiDifference = new VoronoiAreaDifferencePainter(
-							wing_disc_movie, 
-							voronoiDiagram.getAreaDifference());
-					sequence.addPainter(voronoiDifference);	
-				}
-				
-			}
-			
-			
-			/******************ST-GRAPH TRACKING***********************************/
-			
-			if(USER_CHOICE == PlotEnum.TRACK){
-			//Tracking
-				if(wing_disc_movie.size() > 1){
-					MosaicTracking tracker = new MosaicTracking(
-							wing_disc_movie,
-							varLinkrange.getValue(),
-							varDisplacement.getValue());
-					
-					//perform tracking TODO trycatch
-					tracker.track();
-
-					if(varBooleanCellIDs.getValue()){
-						Painter trackID = new TrackIdPainter(wing_disc_movie);
-						sequence.addPainter(trackID);
-					}
-					
-					//Paint corresponding cells in time
-//					TrackPainter correspondence = new TrackPainter(wing_disc_movie);
-//					sequence.addPainter(correspondence);
-					
-					
-					//read manual divisions and combine with tracking information
-					try{
-						DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-						Painter divisions = new DivisionPainter(wing_disc_movie);
-						sequence.addPainter(divisions);
-					}
-					catch(IOException e){
-						System.out.println("Something went wrong in division reading");
-					}
-					
-				}
+			switch (USER_CHOICE){
+				case BORDER: sequence.addPainter(borderUpdate);
+					break;
+				case CELLS: cellMode(wing_disc_movie);
+					break;
+				case POLYGON_CLASS: sequence.addPainter(new PolygonClassPainter(wing_disc_movie));
+					break;
+				case READ_DIVISIONS: divisionMode(wing_disc_movie);
+					break;
+				case TRACK: trackingMode(wing_disc_movie);
+					break;
+				case VORONOI: voronoiMode(wing_disc_movie);
+					break;
 			}
 
-			/******************ST-GRAPH STATISTICAL READ OUT***********************/
-
-			//Area statistics
+			//future statical output statistics
 			//				CsvWriter.trackedArea(wing_disc_movie);
 			//				CsvWriter.frameAndArea(wing_disc_movie);
-
-
-			/******************ST-GRAPH MANUAL DIVISION READ IN********************/
-
-			if(USER_CHOICE == PlotEnum.READ_DIVISIONS){
-			//Divisions read in 
-				try{
-					DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-					sequence.addPainter(division_reader);
-				}
-				catch(IOException e){
-					System.out.println("Something went wrong in division reading");
-				}
-			}
 
 		}
 
 	}
 	
-	private void generateSpatioTemporalGraph(TissueEvolution wing_disc_movie) {
+	private void divisionMode(SpatioTemporalGraph wing_disc_movie){
+		//Divisions read in 
+		try{
+			DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+			sequence.addPainter(division_reader);
+		}
+		catch(IOException e){
+			System.out.println("Something went wrong in division reading");
+		}
+	}
+	
+	private void cellMode(SpatioTemporalGraph wing_disc_movie){
+		if(varBooleanCCenter.getValue()){
+			Painter centroids = new CentroidPainter(wing_disc_movie);
+			sequence.addPainter(centroids);
+		}
+		
+		if(varBooleanPolygon.getValue()){
+			Painter polygons = new PolygonPainter(wing_disc_movie);
+			sequence.addPainter(polygons);
+		}
+	}
+	
+	private void voronoiMode(SpatioTemporalGraph wing_disc_movie){
+		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie);
+
+		if(varBooleanVoronoiDiagram.getValue()){
+			Painter voronoiCells = new VoronoiPainter(
+					wing_disc_movie, 
+					voronoiDiagram.getNodeVoroniMapping());
+			sequence.addPainter(voronoiCells);
+		}
+
+		if(varBooleanAreaDifference.getValue()){
+			Painter voronoiDifference = new VoronoiAreaDifferencePainter(
+					wing_disc_movie, 
+					voronoiDiagram.getAreaDifference());
+			sequence.addPainter(voronoiDifference);	
+		}
+	}
+	
+	private void trackingMode(SpatioTemporalGraph wing_disc_movie){
+		//Tracking
+		if(wing_disc_movie.size() > 1){
+			MosaicTracking tracker = new MosaicTracking(
+					wing_disc_movie,
+					varLinkrange.getValue(),
+					varDisplacement.getValue());
+			
+			// TODO perform tracking trycatch
+			tracker.track();
+
+			if(varBooleanCellIDs.getValue()){
+				Painter trackID = new TrackIdPainter(wing_disc_movie);
+				sequence.addPainter(trackID);
+			}
+			
+			
+			if(varBooleanLoadDivisions.getValue()){
+				//read manual divisions and combine with tracking information
+				try{
+					DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+					Painter divisions = new DivisionPainter(wing_disc_movie);
+					sequence.addPainter(divisions);
+				}
+				catch(IOException e){
+					System.out.println("Something went wrong in division reading");
+				}
+			}
+			else{
+				//Paint corresponding cells in time
+				TrackPainter correspondence = new TrackPainter(wing_disc_movie);
+				sequence.addPainter(correspondence);
+			}
+		}
+		else{
+			new AnnounceFrame("Tracking requires at least two time points! Please increase time points to load");
+		}
+	}
+	
+ 	private void generateSpatioTemporalGraph(TissueEvolution wing_disc_movie) {
 		
 		/******************FILE NAME GENERATION***********************************/
 		

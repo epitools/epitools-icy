@@ -42,7 +42,7 @@ public class DivisionReader extends AbstractPainter{
 		String divisions_file = LoadDialog.chooseFile(
 				"Please select division file to load...", 
 				"/Users/davide/Dropbox/Mosaic/davide_mt/2012_05_16",
-				"divisions", ".xls");
+				"divisions_2012_05_16", ".xls");
 	
 		//TODO OpenCSV superfluous?
 		CSVReader reader = new CSVReader(new FileReader(divisions_file), '\t');

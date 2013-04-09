@@ -19,6 +19,7 @@ import plugins.davhelle.cellgraph.misc.MosaicTracking;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
@@ -90,6 +91,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varBooleanWriteCenters;
 	EzVarBoolean				varBooleanWriteArea;
 	EzVarBoolean				varBooleanLoadDivisions;
+	EzVarBoolean 				varBooleanDrawDisplacement;
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
 	EzVarInteger				varLinkrange;
@@ -100,7 +102,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//sequence to paint on 
 	Sequence sequence;
-	
+
 	
 	@Override
 	protected void initialize()
@@ -139,16 +141,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Track view
 		varLinkrange = new EzVarInteger(
-				"Linkrange (frames)", 5,1,20,1);
+				"Linkrange (frames)", 5,1,100,1);
 		varDisplacement = new EzVarFloat(
 				"Max. displacement (px)",3,1,20,(float)0.1);
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
 		varBooleanLoadDivisions = new EzVarBoolean("Load division file", false);
+		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		EzGroup groupTracking = new EzGroup("TRACK elements",
 				varLinkrange,
 				varDisplacement,
 				varBooleanCellIDs,
-				varBooleanLoadDivisions);
+				varBooleanLoadDivisions,
+				varBooleanDrawDisplacement);
 		
 		//Which painter should be shown by default
 		varEnum = new EzVarEnum<PlotEnum>("Painter type",PlotEnum.values(),PlotEnum.CELLS);
@@ -165,6 +169,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varEnum.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
 		varEnum.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
 		varEnum.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACK);
+		
+		this.setTimeDisplay(true);
 		
 	}
 	
@@ -221,9 +227,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 					break;
 			}
 
-			//future statical output statistics
-			//				CsvWriter.trackedArea(wing_disc_movie);
-			//				CsvWriter.frameAndArea(wing_disc_movie);
+			//future statistical output statistics
+//			CsvWriter.trackedArea(wing_disc_movie);
+//			CsvWriter.frameAndArea(wing_disc_movie);
 
 		}
 
@@ -281,9 +287,15 @@ public class CellGraph extends EzPlug implements EzStoppable
 			// TODO perform tracking trycatch
 			tracker.track();
 
+
 			if(varBooleanCellIDs.getValue()){
 				Painter trackID = new TrackIdPainter(wing_disc_movie);
 				sequence.addPainter(trackID);
+			}
+			
+			if(varBooleanDrawDisplacement.getValue()){
+				Painter displacementSegments = new ArrowPainter(wing_disc_movie, varDisplacement.getValue());
+				sequence.addPainter(displacementSegments);
 			}
 			
 			
@@ -304,6 +316,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				TrackPainter correspondence = new TrackPainter(wing_disc_movie);
 				sequence.addPainter(correspondence);
 			}
+			
+
 		}
 		else{
 			new AnnounceFrame("Tracking requires at least two time points! Please increase time points to load");

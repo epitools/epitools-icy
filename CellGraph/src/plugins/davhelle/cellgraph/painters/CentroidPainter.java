@@ -37,7 +37,7 @@ public class CentroidPainter extends AbstractPainter{
 			//TODO possible performance improvement if map<Node,Point> is created
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.blue);
+			g.setColor(Color.green);
 	
 			for(Node cell: frame_i.vertexSet()){
 				Point centroid = cell.getCentroid();

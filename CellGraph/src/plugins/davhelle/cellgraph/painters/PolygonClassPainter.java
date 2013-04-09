@@ -48,7 +48,7 @@ public class PolygonClassPainter extends AbstractPainter{
 
 				//Fill cell shape
 				//if(!cell.onBoundary())
-				g.draw(cell.toShape());
+				//g.draw(cell.toShape());
 				
 				Coordinate centroid = 
 						cell.getCentroid().getCoordinate();

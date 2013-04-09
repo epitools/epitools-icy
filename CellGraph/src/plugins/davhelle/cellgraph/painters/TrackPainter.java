@@ -83,7 +83,7 @@ public class TrackPainter extends AbstractPainter{
 					else{
 						//no tracking found
 						g.setColor(Color.white);
-						g.fill(cell.toShape());
+						g.draw(cell.toShape());
 						
 						Point lost = cell.getCentroid();
 						g.setColor(Color.red);

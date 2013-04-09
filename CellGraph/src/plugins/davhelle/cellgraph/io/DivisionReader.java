@@ -100,7 +100,7 @@ public class DivisionReader extends AbstractPainter{
 		if(time_point < stGraph.size()){
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
-			
+			g.setColor(Color.red);
 	
 			for(Node cell: frame_i.vertexSet())
 				if(cell.hasObservedDivision())

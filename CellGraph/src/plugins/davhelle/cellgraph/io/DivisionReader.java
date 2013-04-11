@@ -67,12 +67,10 @@ public class DivisionReader extends AbstractPainter{
 		}
 		
 		reader.close();
-		
-		assignDivisions();
 
 	}
 	
-	private void assignDivisions(){
+	public void assignDivisions(){
 		
 		//for all time points
 		for(int i =0; i<stGraph.size(); i++){
@@ -80,17 +78,53 @@ public class DivisionReader extends AbstractPainter{
 				for(Point division: division_map.get(i))
 					for(Node cell: stGraph.getFrame(i).vertexSet())
 						if(cell.getGeometry().contains(division)){
-							//mark cell and all previous associated time points
-							if(cell.getFirst() != null)
-								cell.getFirst().setObservedDivision(true);
-							else
-								while(cell.getPrevious() != null){
-									cell = cell.getPrevious();
-									cell.setObservedDivision(true);
-								}
+							//mark cell 
+							cell.setObservedDivision(true);
+							
+							
+							//use tracking information if present to propagate
+							//information (given we are only interested into
+							//seeing 
+//							if(cell.getFirst() != null)
+//								cell.getFirst().setObservedDivision(true);
+//							else
+							
+							while(cell.getPrevious() != null){
+								cell = cell.getPrevious();
+								cell.setObservedDivision(true);
+							}
 						}
 		}
 
+	}
+	
+	public void backtrackDivisions(){
+		//bruteforce backtrack strategy: given the cell center of the dividing cell
+		//find the corresponding cell in the previous frame and propagate the 
+		//division information
+		
+		//for all time points
+		for(int i =0; i<stGraph.size(); i++){
+			System.out.println("Processing divisions at frame "+i);
+			if(division_map.containsKey(i))
+				for(Point division: division_map.get(i))
+					for(Node cell: stGraph.getFrame(i).vertexSet())
+						if(cell.getGeometry().contains(division)){
+							//mark cell that has divided 
+							cell.setObservedDivision(true);
+							
+							//Search all previous frames for correspondence
+							Point centroid = cell.getCentroid();
+							for(int j=i-1; j>=0; j--)
+								for(Node candidate: stGraph.getFrame(j).vertexSet())
+									if(candidate.getGeometry().contains(centroid)){
+										candidate.setObservedDivision(true);
+										centroid = candidate.getCentroid();
+									}
+								
+						}
+		}
+		
 	}
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)

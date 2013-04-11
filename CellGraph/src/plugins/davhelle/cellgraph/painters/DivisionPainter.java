@@ -35,7 +35,7 @@ public class DivisionPainter extends AbstractPainter {
 					
 					if(cell.getFirst().hasObservedDivision()){
 						division_no++;
-						g.setColor(Color.red);
+						g.setColor(Color.green);
 //						if(!cell.onBoundary()) TODO: apply correspondence to first frame!
 						g.draw(cell.toShape());
 					}	

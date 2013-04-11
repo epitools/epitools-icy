@@ -213,8 +213,8 @@ public class MosaicTracking {
 //								break;
 //							}
 						}
-						else
-							System.out.println(nNext.getGeometry().toText());
+//						else
+//							System.out.println(nNext.getGeometry().toText());
 					}
 				}
 			}
@@ -229,7 +229,7 @@ public class MosaicTracking {
 					resolveUnassignedNodes(unassigned);
 				}
 			
-			System.out.println();
+//			System.out.println();
 		}
 
 		

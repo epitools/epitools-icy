@@ -239,6 +239,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Divisions read in 
 		try{
 			DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+			division_reader.backtrackDivisions();
 			sequence.addPainter(division_reader);
 		}
 		catch(IOException e){
@@ -303,6 +304,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//read manual divisions and combine with tracking information
 				try{
 					DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+					division_reader.assignDivisions();
 					sequence.addPainter(new DivisionPainter(wing_disc_movie));
 				}
 				catch(IOException e){

@@ -2,9 +2,11 @@ package plugins.davhelle.cellgraph.misc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -153,8 +155,6 @@ public class MosaicTracking {
 
 		//for every frame extract all particles
 		for(int time_point=0;time_point<frames_number; time_point++){
-
-			System.out.println(time_point);
 			
 			//initialize
 			ArrayList<Node> unassigned_nodes = new ArrayList<Node>();
@@ -167,13 +167,12 @@ public class MosaicTracking {
 				if(time_point > 0){
 					
 					//Given a list of candidates choose the most likely 
-					//corresponding cell in first frame 
-					Node most_voted = chooseMostVotedCorrespondence(n.getParentCandidates());
+					//corresponding cell in first frame and assign the 
+					//most recent correspondence to n.
 					
+					Node most_voted = chooseMostVotedCorrespondence(n.getParentCandidates());
 					if(most_voted != null){
-						//obtain the most recent correspondence wrt n
 						Node most_recent = getMostRecentCorrespondence(n, most_voted);
-						//assign correspondence TODO get boolean return... (no successive unassigned testing)
 						updateCorrespondence(n, most_recent);
 					}
 					else
@@ -185,7 +184,7 @@ public class MosaicTracking {
 				int next_frame_idx = time_point;
 				boolean is_linked = false;
 
-				//Update all correspondences in time available
+				//Update all future correspondences available (linkrange)
 				for(int linked_idx: p.next){
 					next_frame_idx++;
 					if(linked_idx != -1){
@@ -193,32 +192,55 @@ public class MosaicTracking {
 						//obtain corresponding particle in future and latter's node
 						Particle pNext = frames[next_frame_idx].getParticles().get(linked_idx);
 						Node nNext = particle2NodeMap.get(pNext);
+						
+//						if(n.getGeometry().contains(
+//								new GeometryFactory().createPoint(
+//										new Coordinate(280.0,260.0))))
+//							System.out.println(n.getTrackID());
+						
+//						System.out.println(n.getTrackID()+":"+nNext.getGeometry().toText());
 
-						//update correspondent particle (will be overwritten multiple times)
+						//if correspondence is also geometrically sound add candidate
 						if(n.getGeometry().buffer(displacement).contains(nNext.getCentroid())){
-
+							
 							nNext.addParentCandidate(n.getFirst());
 
-							//update current particle with the closest correspondence
+							//alternative strategy update just one cell in the future
 //							if(!is_linked){
 //								updateCorrespondence(nNext, n);
 //								is_linked = true;
-//								//only influence one cell in the future
+//								//only influence one cell in the future or change if clause to nNext.hasPrevious()? 
 //								break;
 //							}
 						}
+						else
+							System.out.println(nNext.getGeometry().toText());
 					}
 				}
 			}
 			
 			//Resolve unassigned nodes (segmentation error or division?)
+			
+			//System.out.print(time_point + ":");
+			
 			if(unassigned_nodes.size() > 0)
-				resolveUnassignedNodes(unassigned_nodes);
+				for(Node unassigned: unassigned_nodes){
+					//System.out.print(unassigned.getTrackID()+",");
+					resolveUnassignedNodes(unassigned);
+				}
+			
+			System.out.println();
 		}
 
+		
+		
 		this.stGraph.setTracking(true);
 	}
 	
+	/**
+	 * Initialize all nodes of the first frame with successive tracking
+	 * IDs and assign a recursive first assignment.
+	 */
 	private void initializeFirstFrame(){
 		//first set trackID of first graph (reference)
 		int tracking_id = 0;
@@ -230,25 +252,43 @@ public class MosaicTracking {
 		}
 	}
 
+	/**
+	 * Link to nodes in a temporal relationship.
+	 * 
+	 * @param next Node in a successive frame
+	 * @param previous Node in a previous frame
+	 */
 	private void updateCorrespondence(Node next, Node previous) {
-
-		//update current node and most recent
 		next.setTrackID(previous.getTrackID());
 		next.setFirst(previous.getFirst());
 		next.setPrevious(previous);
-		previous.setNext(next);
-	
+		
+		//only update linkage from previous cell if not set yet
+		if(previous.getNext() == null)
+			previous.setNext(next);
 	}
 	
+	/**
+	 * Find the closest correspondence in time starting
+	 * from a given node in the first frame. The search stops when
+	 * the time point of the correspondence is in the previous
+	 * frame with respect to n or if the next reference is void. 
+	 * 
+	 * @param n Node with respect to which the time limit is set
+	 * @param first Node in first frame
+	 * @return Closest node to n in time
+	 */
 	private Node getMostRecentCorrespondence(Node n, Node first){
-		//Obtain most recent correspondence
-
-		Node last_parent_reference = first;		
+		
+		Node last_parent_reference = first;
+		Node next_parent_reference = first.getNext();
 		int current_node_frame_no = n.getBelongingFrame().getFrameNo();
 		
-		while(last_parent_reference.getNext() != null)
-			if(last_parent_reference.getBelongingFrame().getFrameNo() < current_node_frame_no)
-				last_parent_reference = last_parent_reference.getNext();
+		while(next_parent_reference != null)
+			if(next_parent_reference.getBelongingFrame().getFrameNo() < current_node_frame_no){
+				last_parent_reference = next_parent_reference;
+				next_parent_reference = next_parent_reference.getNext();
+			}
 			else
 				break;
 		
@@ -257,22 +297,32 @@ public class MosaicTracking {
 	}
 	
 
+	/**
+	 * Given a number of parent node candidates the most 
+	 * voted, i.e. with the highest number of repetitions 
+	 * in the list, is identified and returned.
+	 * 
+	 * @param candidates list of nodes in the first frame
+	 * @return most voted node
+	 */
 	private Node chooseMostVotedCorrespondence(List<Node> candidates){
 
 		Node most_voted = null;
 		int max_count = 0;
 
-		if(candidates.size() > 0){
+		while(candidates.size() > 0 && candidates.size() > max_count){
 			Iterator<Node> candidate_it = candidates.iterator();
 
-			Node voted = candidates.get(0);
+			Node voted = candidate_it.next();
+			candidate_it.remove();
 			int count = 1;
 
-			while(candidate_it.hasNext())
+			while(candidate_it.hasNext()){
 				if(candidate_it.next() == voted){
 					candidate_it.remove();
 					count++;
 				}
+			}
 
 			if(max_count < count){
 				most_voted = voted;
@@ -284,92 +334,108 @@ public class MosaicTracking {
 	}
 	
 
-	private void resolveUnassignedNodes(List<Node> unassigned_nodes){
-		for(Node n:unassigned_nodes){
-			//define newNode
-			Node newNode = n;
+	/**
+	 * Method to classify nodes which have not been assigned 
+	 * to a Node in a previous time frame (previous field..). 
+	 * This can either be due to a segmentation/tracking mistake or
+	 * due to a division event. By quorum sensing the neighborhood
+	 * of the lost nodes the heuristic identifies the most
+	 * likely correspondence in a previous time frame.
+	 * 
+	 * More in detail for every neighbor the heuristic identifies
+	 * a correspondence at a previous time point and uses that
+	 * neighborhood as candidates for the most likely ancestor. 
+	 * Sets are used to avoid nearby cell divisions to bias the voting.
+	 * 
+	 * @param unassignedNode Node with an empty previous field
+	 */
+	private void resolveUnassignedNodes(Node unassignedNode){
 
-			List<Node> neighbors = n.getNeighbors();
+		List<Node> neighbors = unassignedNode.getNeighbors();
+		Set<Node> unique_neighbors = new HashSet<Node>(neighbors);
 
-			//quorum sensing List of neighbors to identify newNode's sibling/mother cell
-			Map<Node,Integer> qs_array = new HashMap<Node, Integer>();
-			//initialize qs_array
-			for(Node neighbor: neighbors)
-				if(neighbor.getFirst() != null)
-					qs_array.put(neighbor.getFirst(), 0);
-
-			//visit all ancestor nodes of neighbors
-			for(Node neighbor: neighbors){
-				//get back to last reference and update qs_array
-				Node ancestor = neighbor.getPrevious();
-
-				//check if any neighbor of the ancestor node is in the qs_list
-				if(ancestor != null){
-
-					//for every neighbor of the ancestor
-					for(Node ancestorNeighbor: ancestor.getNeighbors()){
-
-						//Check whether ancestor's neighbor has correspondence with newNod's neighbors
-						//done using the first field.
-
-						//System.out.println(ancestorNeighbor.getTrackID());
-						if(qs_array.containsKey(ancestorNeighbor.getFirst())){
-							int count = qs_array.get(ancestorNeighbor.getFirst()).intValue();
-							count++;
-							qs_array.put(ancestorNeighbor.getFirst(), count);
-						}
-						else {
-							qs_array.put(ancestorNeighbor.getFirst(), 1);
-						}
-					}
-				}
-			}
-
-			//print map
-			//System.out.println("New node in frame "+i+":"+newNode.getGeometry().toText());
-			Node most_likely_parent = null;
-			int candidate_sum = 0;
-			for(Node candidate: qs_array.keySet()){
-				candidate_sum += qs_array.get(candidate);
-				//System.out.println(candidate.getTrackID()+": "+qs_array.get(candidate).toString());
-				if(most_likely_parent == null)
-					most_likely_parent = candidate;
-				else
-					//check whether the qs score is higher for the candidate (negative comparison result)
-					if(qs_array.get(most_likely_parent).compareTo(qs_array.get(candidate)) < 0)
-						most_likely_parent = candidate;
-			}
-
-			double candidate_average = 0;
-			if(qs_array.size() > 0)
-				candidate_average = candidate_sum / qs_array.size();
-
-			//modify newNodes correspondence fields
-			if(most_likely_parent != null){
-
-				Node last_parent_reference = getMostRecentCorrespondence(newNode, most_likely_parent);
+		//Create quorum sensing map to identify most likely correspondence
+		Map<Node,Integer> qs_map = new HashMap<Node, Integer>();
+		
+		//initialize qs_map
+		for(Node neighbor: neighbors)
+			if(neighbor.getFirst() != null)
+				qs_map.put(neighbor.getFirst(), 0);
 			
-				//apply little buffer when testing geometrical correspondence
-				if(last_parent_reference.getGeometry().buffer(6).contains(newNode.getCentroid()))
-					updateCorrespondence(newNode, last_parent_reference);
+		//Neighborhood quorum sensing
+		for(Node neighbor: unique_neighbors){
+			
+			Node ancestor = neighbor.getPrevious();
+			if(ancestor != null){
 				
-				//less conservative assignment
-//				else{
-//					for(Node candidate: qs_array.keySet()){
-//						if(candidate != null){
-//							if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
-//								System.out.println("\t is contained! (less confident!)");
-//
-//								newNode.setFirst(most_likely_parent);
-//								newNode.setTrackID(most_likely_parent.getTrackID());
-//								newNode.setPrevious(last_parent_reference);
-//
-//								break;
-//							}
-//						}
-//					}
-//				}
+				Set<Node> unique_ancestor_neighbors = new HashSet<Node>();
+				
+				//for unique neighbors of the ancestor
+				for(Node ancestorNeighbor: ancestor.getNeighbors())
+					if(ancestorNeighbor.getFirst() != null)
+						unique_ancestor_neighbors.add(ancestorNeighbor.getFirst());
+				
+				//Use the set elements as candidates for the qs voting
+				for(Node candidate: unique_ancestor_neighbors)
+					if(qs_map.containsKey(candidate)){
+						int count = qs_map.get(candidate).intValue();
+						count++;
+						qs_map.put(candidate.getFirst(), count); //ev. ++count
+					}
+					else {
+						if(candidate.getFirst() != null)
+							qs_map.put(candidate.getFirst(), 1);
+					}
 			}
+		}
+
+		//Find most voted candidate, i.e. the most likely parent
+		Node most_likely_parent = null;
+		
+		//TODO might use candidate sum for improving heuristic
+		int candidate_sum = 0;
+		//System.out.println(unassignedNode.getGeometry().toText());
+		for(Node candidate: qs_map.keySet()){
+			candidate_sum += qs_map.get(candidate);
+			//System.out.println("\t"+candidate.getTrackID()+":"+qs_map.get(candidate).toString());
+			if(most_likely_parent == null)
+				most_likely_parent = candidate;
+			else
+				//check whether the qs score is higher for the candidate (negative comparison result)
+				if(qs_map.get(most_likely_parent).compareTo(qs_map.get(candidate)) < 0)
+					most_likely_parent = candidate;
+		}
+
+//		double candidate_average = 0;
+//		if(qs_map.size() > 0)
+//			candidate_average = candidate_sum / qs_map.size();
+
+		//If a parent has been found check whether the most recent correspondence in time is also 
+		//geometrically sound with the hypothesis, if yes update the correspondence.
+		if(most_likely_parent != null){
+
+			Node last_parent_reference = getMostRecentCorrespondence(unassignedNode, most_likely_parent);
+
+			//apply little buffer when testing geometrical correspondence
+			if(last_parent_reference.getGeometry().buffer(6).contains(unassignedNode.getCentroid()))
+				updateCorrespondence(unassignedNode, last_parent_reference);
+
+			//less conservative assignment
+			//				else{
+			//					for(Node candidate: qs_array.keySet()){
+			//						if(candidate != null){
+			//							if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
+			//								System.out.println("\t is contained! (less confident!)");
+			//
+			//								newNode.setFirst(most_likely_parent);
+			//								newNode.setTrackID(most_likely_parent.getTrackID());
+			//								newNode.setPrevious(last_parent_reference);
+			//
+			//								break;
+			//							}
+			//						}
+			//					}
+			//				}
 		}
 	}
 }

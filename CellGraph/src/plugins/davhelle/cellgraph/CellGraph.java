@@ -29,6 +29,7 @@ import plugins.davhelle.cellgraph.painters.TrackPainter;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
 import plugins.davhelle.cellgraph.tracking.MosaicTracking;
+import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import icy.gui.frame.progress.AnnounceFrame;
@@ -74,11 +75,16 @@ public class CellGraph extends EzPlug implements EzStoppable
 {
 	//plotting modes
 	private enum PlotEnum{
-		CELLS,VORONOI, POLYGON_CLASS, BORDER, TRACK, READ_DIVISIONS,
+		CELLS,VORONOI, POLYGON_CLASS, BORDER, TRACKING, READ_DIVISIONS,
+	}
+	
+	private enum TrackEnum{
+		MOSAIC, NN,
 	}
 
 	//Ezplug fields 
-	EzVarEnum<PlotEnum> 		varEnum;
+	EzVarEnum<PlotEnum> 		varPlotting;
+	EzVarEnum<TrackEnum>		varTracking;
 	EzVarFile					varFile;
 	EzVarSequence				varSequence;
 	
@@ -148,7 +154,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
 		varBooleanLoadDivisions = new EzVarBoolean("Load division file", false);
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
-		EzGroup groupTracking = new EzGroup("TRACK elements",
+		varTracking = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
+		EzGroup groupTracking = new EzGroup("TRACKING elements",
+				varTracking,
 				varLinkrange,
 				varDisplacement,
 				varBooleanCellIDs,
@@ -156,20 +164,20 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varBooleanDrawDisplacement);
 		
 		//Which painter should be shown by default
-		varEnum = new EzVarEnum<PlotEnum>("Painter type",PlotEnum.values(),PlotEnum.CELLS);
+		varPlotting = new EzVarEnum<PlotEnum>("Painter type",PlotEnum.values(),PlotEnum.CELLS);
 		
 		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
-				"Representation", varFile, varMaxT, varEnum,
+				"Representation", varFile, varMaxT, varPlotting,
 				groupCellMap, groupVoronoiMap,groupTracking);
 		
 		super.addEzComponent(groupFiles);
 		
 		//set visibility according to choice
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupFiles, false);
-		varEnum.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
-		varEnum.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
-		varEnum.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACK);
+		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
+		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
+		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
 		
 		this.setTimeDisplay(true);
 		
@@ -211,7 +219,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 			//Display results according to user choice
 			
-			PlotEnum USER_CHOICE = varEnum.getValue();
+			PlotEnum USER_CHOICE = varPlotting.getValue();
 			
 			switch (USER_CHOICE){
 				case BORDER: sequence.addPainter(borderUpdate);
@@ -222,7 +230,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 					break;
 				case READ_DIVISIONS: divisionMode(wing_disc_movie);
 					break;
-				case TRACK: trackingMode(wing_disc_movie);
+				case TRACKING: trackingMode(wing_disc_movie);
 					break;
 				case VORONOI: voronoiMode(wing_disc_movie);
 					break;
@@ -281,14 +289,25 @@ public class CellGraph extends EzPlug implements EzStoppable
 	private void trackingMode(SpatioTemporalGraph wing_disc_movie){
 		//Tracking
 		if(wing_disc_movie.size() > 1){
-			TrackingAlgorithm tracker = new MosaicTracking(
-					wing_disc_movie,
-					varLinkrange.getValue(),
-					varDisplacement.getValue());
 			
+			TrackingAlgorithm tracker = null;
+					
+			switch(varTracking.getValue()){
+			
+			case MOSAIC:
+				tracker = new MosaicTracking(
+						wing_disc_movie,
+						varLinkrange.getValue(),
+						varDisplacement.getValue());
+				break;
+			case NN:
+				tracker = new NearestNeighborTracking(
+						wing_disc_movie);
+				break;
+			}
+
 			// TODO perform tracking trycatch
 			tracker.track();
-
 
 			if(varBooleanCellIDs.getValue()){
 				Painter trackID = new TrackIdPainter(wing_disc_movie);

@@ -48,5 +48,22 @@ public abstract class TrackingAlgorithm {
 			n.setFirst(n);
 		}
 	}
+	
+	/**
+	 * Link to nodes in a temporal relationship.
+	 * 
+	 * @param next Node in a successive frame
+	 * @param previous Node in a previous frame
+	 */
+	protected void updateCorrespondence(Node next, Node previous) {
+		next.setTrackID(previous.getTrackID());
+		next.setFirst(previous.getFirst());
+		next.setPrevious(previous);
+		
+		//only update linkage from previous cell if not set yet
+		if(previous.getNext() == null)
+			previous.setNext(next);
+		
+	}
 
 }

@@ -240,36 +240,36 @@ public class MosaicTracking extends TrackingAlgorithm{
 		this.stGraph.setTracking(true);
 	}
 	
-	/**
-	 * Initialize all nodes of the first frame with successive tracking
-	 * IDs and assign a recursive first assignment.
-	 */
-	private void initializeFirstFrame(){
-		//first set trackID of first graph (reference)
-		int tracking_id = 0;
-		
-		for(Node n: stGraph.getFrame(0).vertexSet()){
-			n.setTrackID(tracking_id++);
-			//alternative:	n.setTrackID(n.hashCode());
-			n.setFirst(n);
-		}
-	}
+//	/**
+//	 * Initialize all nodes of the first frame with successive tracking
+//	 * IDs and assign a recursive first assignment.
+//	 */
+//	private void initializeFirstFrame(){
+//		//first set trackID of first graph (reference)
+//		int tracking_id = 0;
+//		
+//		for(Node n: stGraph.getFrame(0).vertexSet()){
+//			n.setTrackID(tracking_id++);
+//			//alternative:	n.setTrackID(n.hashCode());
+//			n.setFirst(n);
+//		}
+//	}
 
-	/**
-	 * Link to nodes in a temporal relationship.
-	 * 
-	 * @param next Node in a successive frame
-	 * @param previous Node in a previous frame
-	 */
-	private void updateCorrespondence(Node next, Node previous) {
-		next.setTrackID(previous.getTrackID());
-		next.setFirst(previous.getFirst());
-		next.setPrevious(previous);
-		
-		//only update linkage from previous cell if not set yet
-		if(previous.getNext() == null)
-			previous.setNext(next);
-	}
+//	/**
+//	 * Link to nodes in a temporal relationship.
+//	 * 
+//	 * @param next Node in a successive frame
+//	 * @param previous Node in a previous frame
+//	 */
+//	private void updateCorrespondence(Node next, Node previous) {
+//		next.setTrackID(previous.getTrackID());
+//		next.setFirst(previous.getFirst());
+//		next.setPrevious(previous);
+//		
+//		//only update linkage from previous cell if not set yet
+//		if(previous.getNext() == null)
+//			previous.setNext(next);
+//	}
 	
 	/**
 	 * Find the closest correspondence in time starting

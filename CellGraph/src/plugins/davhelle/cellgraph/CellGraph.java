@@ -302,7 +302,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				break;
 			case NN:
 				tracker = new NearestNeighborTracking(
-						wing_disc_movie);
+						wing_disc_movie, varLinkrange.getValue());
 				break;
 			}
 

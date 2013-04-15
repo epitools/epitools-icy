@@ -65,5 +65,33 @@ public abstract class TrackingAlgorithm {
 			previous.setNext(next);
 		
 	}
+	
+	/**
+	 * Find the closest correspondence in time starting
+	 * from a given node in the first frame. The search stops when
+	 * the time point of the correspondence is in the previous
+	 * frame with respect to n or if the next reference is void. 
+	 * 
+	 * @param n Node with respect to which the time limit is set
+	 * @param first Node in first frame
+	 * @return Closest node to n in time
+	 */
+	protected Node getMostRecentCorrespondence(Node n, Node first){
+		
+		Node last_parent_reference = first;
+		Node next_parent_reference = first.getNext();
+		int current_node_frame_no = n.getBelongingFrame().getFrameNo();
+		
+		while(next_parent_reference != null)
+			if(next_parent_reference.getBelongingFrame().getFrameNo() < current_node_frame_no){
+				last_parent_reference = next_parent_reference;
+				next_parent_reference = next_parent_reference.getNext();
+			}
+			else
+				break;
+		
+		return last_parent_reference;
+
+	}
 
 }

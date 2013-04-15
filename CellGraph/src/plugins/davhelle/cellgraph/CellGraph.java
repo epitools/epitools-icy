@@ -15,7 +15,6 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.misc.MosaicTracking;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -29,6 +28,8 @@ import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
+import plugins.davhelle.cellgraph.tracking.MosaicTracking;
+import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.painter.Painter;
@@ -280,7 +281,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	private void trackingMode(SpatioTemporalGraph wing_disc_movie){
 		//Tracking
 		if(wing_disc_movie.size() > 1){
-			MosaicTracking tracker = new MosaicTracking(
+			TrackingAlgorithm tracker = new MosaicTracking(
 					wing_disc_movie,
 					varLinkrange.getValue(),
 					varDisplacement.getValue());

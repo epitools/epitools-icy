@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph.misc;
+package plugins.davhelle.cellgraph.tracking;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,9 +29,9 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class MosaicTracking {
+public class MosaicTracking extends TrackingAlgorithm{
 
-	private SpatioTemporalGraph stGraph;
+
 	private MyFrame[] frames;
 	private HashMap<Particle,Node> particle2NodeMap;
 	private int frames_number;
@@ -44,7 +44,9 @@ public class MosaicTracking {
 	 * @param spatioTemporalGraph Spatio temporal graph to be tracked
 	 */
 	public MosaicTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, float displacement) {
-		this.stGraph = spatioTemporalGraph;
+		
+		super(spatioTemporalGraph);
+		
 		this.frames_number = spatioTemporalGraph.size();
 		this.linkrange = linkrange; //TODO tune
 		this.displacement = displacement; //TODO tune
@@ -59,6 +61,7 @@ public class MosaicTracking {
 	/**
 	 * Run tracking and update tracking IDs of graph nodes (NodeType)
 	 */
+	@Override
 	public void track(){
 		//create Linker
 		ParticleLinker linker = new ParticleLinker();
@@ -115,7 +118,7 @@ public class MosaicTracking {
 				//only add particles of nodes within the frame_0 boundary
 				if(frame_0_union.contains(node_centroid)){
 					//mark node as tracked but not necessarily resolved
-					n.setTrackID(-2);
+					if(n.getTrackID() == -1) n.setTrackID(-2);
 
 					Coordinate centroid = node_centroid.getCoordinate();
 					//MOSAIC particle
@@ -151,7 +154,7 @@ public class MosaicTracking {
 	 */
 	private void updateGraph(){
 		
-		initializeFirstFrame();
+        //initializeFirstFrame();
 
 		//for every frame extract all particles
 		for(int time_point=0;time_point<frames_number; time_point++){

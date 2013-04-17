@@ -88,6 +88,12 @@ public class Cell implements Node {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public void setProperty(Object property) {
+		// TODO Auto-generated method stub
+		
+	}
 
 	/* (non-Javadoc)
 	 * @see plugins.davhelle.cellgraph.NodeType#getTrackID()

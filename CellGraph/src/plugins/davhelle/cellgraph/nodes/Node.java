@@ -19,7 +19,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public interface Node {
+public interface Node{
 	
 	
 	/**
@@ -44,6 +44,16 @@ public interface Node {
 	 * @return a defined property of the implementation 
 	 */
 	public Object getProperty();
+	
+	/**
+	 * Abstract feature of a NodeType. For example for 
+	 * a polygonal cell representation this might include
+	 * the voroni tesselation.  
+	 * 
+	 * @param property to be set
+	 */
+	public void setProperty(Object property);
+	
 	
 	/**
 	 * Given that the HyperGraph structure has been tracked

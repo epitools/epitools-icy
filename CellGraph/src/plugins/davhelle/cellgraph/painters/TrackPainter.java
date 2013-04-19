@@ -79,6 +79,15 @@ public class TrackPainter extends AbstractPainter{
 						//cell is part of registered correspondence
 						g.setColor(correspondence_color.get(cell.getFirst()));
 						g.fill(cell.toShape());
+						
+						//not associated in next frame
+						if(cell.getTrackID() == -3){
+							Point lost = cell.getCentroid();
+							
+							g.setColor(Color.yellow);
+							g.draw(cell.toShape());
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+						}
 					}
 					else{
 						//no tracking found
@@ -86,9 +95,27 @@ public class TrackPainter extends AbstractPainter{
 						g.draw(cell.toShape());
 						
 						Point lost = cell.getCentroid();
-						g.setColor(Color.red);
-						g.draw(cell.toShape());
-						g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+						
+						//not previously associated
+						if(cell.getTrackID() == -2){
+							g.setColor(Color.red);
+							g.draw(cell.toShape());
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+						}
+						
+						//not associated in next frame
+						if(cell.getTrackID() == -3){
+							g.setColor(Color.yellow);
+							g.draw(cell.toShape());
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+						}
+						
+						//neither previous nor next is associated
+						if(cell.getTrackID() == -4){
+							g.setColor(Color.green);
+							g.draw(cell.toShape());
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+						}
 					}
 				}
 			}
@@ -98,6 +125,18 @@ public class TrackPainter extends AbstractPainter{
 			g.setColor(Color.white);
 			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
 			g.drawString("Tracked cells: "+(int)percentage_tracked+"%", 10 , 20);
+			
+			g.setColor(Color.red);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
+			g.drawString("previous", 10 , 30);
+			
+			g.setColor(Color.yellow);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
+			g.drawString("next", 60 , 30);
+			
+			g.setColor(Color.green);
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
+			g.drawString("none", 90 , 30);
 		}
 	}
 

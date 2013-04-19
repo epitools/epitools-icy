@@ -1,5 +1,12 @@
 package plugins.davhelle.cellgraph.tracking;
 
+import java.util.Iterator;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
+
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -13,6 +20,8 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public abstract class TrackingAlgorithm {
 
 	protected SpatioTemporalGraph stGraph;
+	protected Geometry frame_0_union;
+	protected int tracking_id;
 	
 	/**
 	 * Constructor methods should always initialize the spatio temporal graph
@@ -23,6 +32,7 @@ public abstract class TrackingAlgorithm {
 	public TrackingAlgorithm(SpatioTemporalGraph spatioTemporalGraph) {
 		this.stGraph = spatioTemporalGraph;
 		initializeFirstFrame();
+	
 	}
 	
 	/**
@@ -36,17 +46,37 @@ public abstract class TrackingAlgorithm {
 	
 	/**
 	 * Initialize all nodes of the first frame with successive tracking
-	 * IDs and assign a recursive first assignment.
+	 * IDs and assign a recursive first assignment. And build the geometrical
+	 * object representing all tracked cells in the first frame.
 	 */
 	private void initializeFirstFrame(){
-		//first set trackID of first graph (reference)
-		int tracking_id = 0;
 		
-		for(Node n: stGraph.getFrame(0).vertexSet()){
-			n.setTrackID(tracking_id++);
-			//alternative:	n.setTrackID(n.hashCode());
+		//first set trackID and geometry of first graph (reference)
+		tracking_id = 0;
+		FrameGraph first_frame = stGraph.getFrame(0);
+		Geometry[] output = new Geometry[first_frame.size()];
+		
+		//iterate trought all nodes and initialize fields and obtain geometry
+		//alternative:	n.setTrackID(n.hashCode());
+		
+		Iterator<Node> node_it = first_frame.vertexSet().iterator();
+		while(node_it.hasNext()){
+			Node n = node_it.next();
+			
+			//initialize fields
+			n.setTrackID(tracking_id);
 			n.setFirst(n);
+			
+			//extract geometry
+			output[tracking_id] = n.getGeometry();
+			
+			tracking_id++;
 		}
+
+		//Create union of all polygons, TODO check if little buffer should be added
+		GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+		frame_0_union = polygonCollection.buffer(0);
+		
 	}
 	
 	/**
@@ -80,7 +110,42 @@ public abstract class TrackingAlgorithm {
 		
 		Node last_parent_reference = first;
 		Node next_parent_reference = first.getNext();
+		
+//		Node next_parent_reference = null;
+//		if(first.getNext() == null)
+//			next_parent_reference = first;
+//		else
+//			next_parent_reference = first.getNext();
+			
 		int current_node_frame_no = n.getBelongingFrame().getFrameNo();
+		
+		while(next_parent_reference != null)
+			if(next_parent_reference.getBelongingFrame().getFrameNo() < current_node_frame_no){
+				last_parent_reference = next_parent_reference;
+				next_parent_reference = next_parent_reference.getNext();
+			}
+			else
+				break;
+		
+		return last_parent_reference;
+
+	}
+	
+	/**
+	 * Find the closest correspondence in time starting
+	 * from a given node in the first frame. The search stops when
+	 * the time point of the correspondence is in the previous
+	 * frame of the given time point. 
+	 * 
+	 * @param time_point frame no with respect to which the most recent node is found
+	 * @param first Node in first frame
+	 * @return Closest node to n in time
+	 */
+	protected Node getMostRecentCorrespondence(int time_point, Node first){
+		
+		Node last_parent_reference = first;
+		Node next_parent_reference = first.getNext();
+		int current_node_frame_no = time_point;
 		
 		while(next_parent_reference != null)
 			if(next_parent_reference.getBelongingFrame().getFrameNo() < current_node_frame_no){

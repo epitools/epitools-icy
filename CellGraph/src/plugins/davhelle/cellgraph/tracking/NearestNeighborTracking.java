@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -54,10 +53,12 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		 * solve the marriage problem for the current frame.
 		*/
 		
+		ArrayList<Node> lost_previous = new ArrayList<Node>();
+		ArrayList<Node> lost_next = new ArrayList<Node>();
 		
 		//for every frame extract all particles
 		for(int time_point=0;time_point<stGraph.size(); time_point++){
-			System.out.println("Linking frame "+time_point);
+			System.out.print("Linking frame "+time_point);
 			
 			if(time_point > 0){
 
@@ -134,7 +135,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					}
 
 					//if groom has no more bride candidates eliminate from list
-					if(grooms.get(groom).isEmpty())
+					if(!marriage.containsValue(groom) && grooms.get(groom).isEmpty())
 						nochoice_grooms.push(groom);
 
 				}
@@ -144,8 +145,22 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					Node groom = marriage.get(bride);
 					updateCorrespondence(bride, getMostRecentCorrespondence(bride, groom));
 				}
+				
+				//add loss information
+				//-2 could not be associated in current frame
+				System.out.print(" uB:"+ unmarried_brides.size());
+				while(!unmarried_brides.empty())
+					lost_previous.add(unmarried_brides.pop());
+				
+				//-3 will be lost in next frame
+				System.out.print(" uG:"+ nochoice_grooms.size());
+				while(!nochoice_grooms.empty())
+					lost_next.add(getMostRecentCorrespondence(time_point, nochoice_grooms.pop()));
+
 			}
 
+			System.out.println();
+			
 			//Compute candidates for successive nodes in [linkrange] time frames (one and only assignment x node x frame)
 			for(Node current: stGraph.getFrame(time_point).vertexSet())
 				for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
@@ -158,6 +173,19 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//TODO division object
 
 		}
+		
+		
+		//Update loss information (done now since otherwise the 
+		//information is not propagated correctly while tracking)
+		for(Node lost: lost_previous)
+			lost.setTrackID(-2);
+		
+		for(Node lost: lost_next)
+			if(lost_previous.contains(lost))
+				lost.setTrackID(-4);
+			else
+				lost.setTrackID(-3);
+		
 	}
 
 	/**
@@ -214,56 +242,68 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//based on individual nodes linking to the same first() node.
 			
 			List<Node> candidates = current.getParentCandidates();
-			while(candidates.size() > 0){
-
-				Iterator<Node> candidate_it = candidates.iterator();
-
-				Node voted = candidate_it.next();
-				Node first = voted.getFirst();
-				candidate_it.remove();
-
-				//Cell could be either new (division/seg.error), 
-				//thus not associated to any first node
-				if(first == null)
-					continue;
-
-				//compute average distance
-				int count = 1;
-				double sum = DistanceOp.distance(
-						voted.getCentroid(),
-						current_cell_center);
-
-				while(candidate_it.hasNext()){
-					voted = candidate_it.next();
-					if( voted.getFirst() == first){
-						candidate_it.remove();
-						sum +=  DistanceOp.distance(
-								voted.getCentroid(),
-								current_cell_center);
-						count++;
-					}
-				}
-
-				double avg = sum / count;
-
-				//assign candidate to both maps with the respective distance
-				
-				//first -> current
-				if(!first_map.containsKey(first))
-					first_map.put(first, new ArrayList<ComparableNode>());
-
-				ComparableNode candidate_distance = new ComparableNode(current,avg);
-				first_map.get(first).add(candidate_distance);
-
-				//current -> first
-				if(!current_map.containsKey(current))
+			
+			//if no candidates are given add it as "lost bride"
+			if(candidates.size() == 0){
+				if(frame_0_union.contains(current_cell_center))
 					current_map.put(current, new ArrayList<ComparableNode>());
-
-				current_map.get(current).add(new ComparableNode(first, avg));
-				
-				//the two maps will be latter matched by solving an abstracted
-				//stable marriage problem
 			}
+			else
+				while(candidates.size() > 0){
+
+					Iterator<Node> candidate_it = candidates.iterator();
+
+					Node voted = candidate_it.next();
+					Node first = voted.getFirst();
+					candidate_it.remove();
+					
+					Point voted_centroid = voted.getCentroid();
+
+					//Cell could be either new (division/seg.error), 
+					//thus not associated to any first node
+					if(first == null){
+						if(frame_0_union.contains(voted_centroid))
+							current_map.put(current, new ArrayList<ComparableNode>());
+						continue;
+					}
+
+					//compute average distance
+					int count = 1;
+					double sum = DistanceOp.distance(
+							voted_centroid,
+							current_cell_center);
+
+					while(candidate_it.hasNext()){
+						voted = candidate_it.next();
+						if( voted.getFirst() == first){
+							candidate_it.remove();
+							sum +=  DistanceOp.distance(
+									voted_centroid,
+									current_cell_center);
+							count++;
+						}
+					}
+
+					double avg = sum / count;
+
+					//assign candidate to both maps with the respective distance
+
+					//first -> current
+					if(!first_map.containsKey(first))
+						first_map.put(first, new ArrayList<ComparableNode>());
+
+					ComparableNode candidate_distance = new ComparableNode(current,avg);
+					first_map.get(first).add(candidate_distance);
+
+					//current -> first
+					if(!current_map.containsKey(current))
+						current_map.put(current, new ArrayList<ComparableNode>());
+
+					current_map.get(current).add(new ComparableNode(first, avg));
+
+					//the two maps will be latter matched by solving an abstracted
+					//stable marriage problem
+				}
 		}	
 	}
 }

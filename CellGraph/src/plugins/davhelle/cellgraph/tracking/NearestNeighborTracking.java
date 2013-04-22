@@ -60,109 +60,99 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		for(int time_point=0;time_point<stGraph.size(); time_point++){
 			System.out.println("Linking frame "+time_point);
 			
+			//link only from the second time point on
 			if(time_point > 0){
 
-				//Build two maps to store the evaluated candidates (evaluation <> distance from center)
-				Map<Node, List<ComparableNode>> grooms = new HashMap<Node, List<ComparableNode>>();
-				Map<Node, List<ComparableNode>> brides = new HashMap<Node, List<ComparableNode>>();;
-
-				//Evaluate the distances of the candidates of each node in current time frame
-				evaluateCandidates(grooms, brides, time_point);
-
-				//Order the evaluated candidates in ascending mannor (smallest distances first) 
-				orderCandidates(grooms);
-				orderCandidates(brides);
-
-				//Initialize data structures
-				Map<Node, Node> marriage = new HashMap<Node,Node>();
-
-				Stack<Node> unmarried_grooms = new Stack<Node>();
-				Stack<Node> unmarried_brides = new Stack<Node>();
-				Stack<Node>	nochoice_grooms = new Stack<Node>();
-
-				//Fill candidates
-				unmarried_grooms.addAll(grooms.keySet());
-				unmarried_brides.addAll(brides.keySet());
-
-				//Stable marriage problem (Gale–Shapley algorithm)
-				while(!unmarried_grooms.empty()){
-					//take groom candidate from stack and try to assign
-					Node groom = unmarried_grooms.pop();
-
-					//get preference list of groom 
-					Iterator<ComparableNode> bride_it = grooms.get(groom).iterator();
-					boolean married = false;
-
-					//loop util groom has preferences and is not married
-					while(bride_it.hasNext() && !married){
-
-						//get bride candidate and mark her as visited
-						Node bride = bride_it.next().getNode();
-						bride_it.remove();
-
-						//check if wanted bride is married at all
-						if(!marriage.containsKey(bride)){
-							unmarried_brides.remove(bride);
-
-							marriage.put(bride, groom);
-							married = true;
-						}
-
-						//if already married see if current groom is better fit
-						else{
-
-							Node old_groom = marriage.get(bride);
-							Iterator<ComparableNode> grooms_it = brides.get(bride).iterator();
-
-							//cycle preferences (ascending order, best first)
-							while(grooms_it.hasNext()){
-								Node preffered_groom = grooms_it.next().getNode();
-
-								//current husband has better rating
-								if(preffered_groom == old_groom)
-									break;
-
-								//new husband has better rating!
-								if(preffered_groom == groom){
-									unmarried_grooms.push(old_groom);
-
-									marriage.put(bride, groom);
-									married = true;
-									break;
-								}
-							}
-						}
-					}
-
-					//if groom has no more bride candidates eliminate from list
-					if(!marriage.containsValue(groom) && grooms.get(groom).isEmpty())
-						nochoice_grooms.push(groom);
-
-				}
-
-				//finally update node correspondences
-				for(Node bride: marriage.keySet()){
-					Node groom = marriage.get(bride);
-					updateCorrespondence(bride, getMostRecentCorrespondence(bride, groom));
-				}
+				//launch linking
+				Map<String, Stack<Node>> unmarried = linkTimePoint(time_point);
 				
-				//add loss information
-				//-2 could not be associated in current frame
-				System.out.print(" uB:"+ unmarried_brides.size());
+				//obtain separate unmarried stacks
+				Stack<Node> unmarried_brides = unmarried.get("brides");
+				Stack<Node> unmarried_grooms = unmarried.get("grooms");
+				
+				//analyze unmarried brides, i.e. current nodes without previously linked node
+				//System.out.println(" uB:"+ unmarried_brides.size());
 				while(!unmarried_brides.empty()){
 					Node lost = unmarried_brides.pop();
-					detectDivisionCandidate(lost);
-					lost_previous.add(lost);
+
+					//Make a rescue attempt on lost node
+					//i.e. determine whether a division or
+					//major image shift could have happened.
+					Node rescued = rescueCandidate(lost);
+					
+					if(rescued != null){
+						//check whether linking missed candidate due to excessive movement
+						//TODO add conditional for division case, mother node should
+						//not be further searched after division happended..
+						Node lastCorrespondence = getMostRecentCorrespondence(time_point, rescued);
+						
+						if(unmarried_grooms.contains(rescued)){
+							updateCorrespondence(lost, lastCorrespondence);
+							unmarried_grooms.remove(rescued);
+							
+							//visual feedback
+							System.out.println("Rescue of "+rescued.getTrackID());
+							lost_previous.add(lost);
+						}
+						else{
+							//check whether lost node is result of a division process
+							//by looking if the center was inside the rescue node at 
+							//the previous time point
+							//TODO decide whether to add .buffer(6).
+							if(lastCorrespondence.getGeometry().contains(lost.getCentroid())){
+								
+								//initialize division assumption
+								Node mother = rescued;
+								Node brother = null;
+								boolean has_brother = false;
+								
+								
+								//get brother cell by checking neighbors
+								for(Node neighbor: lost.getNeighbors())
+									if(neighbor.getFirst() == rescued 
+									&& lastCorrespondence.getGeometry().contains(neighbor.getCentroid())){
+										has_brother = true;
+										brother = neighbor;
+									}
+								
+								if(has_brother){
+									//initialize new cells
+									lost.setFirst(lost);
+									lost.setTrackID(tracking_id++);
+									
+									brother.setFirst(brother);
+									brother.setTrackID(tracking_id++);
+									
+									//Report division to user
+									System.out.println(
+											"Division:"+mother.getTrackID()+
+											"->("+lost.getTrackID()+","+brother.getTrackID()+")");
+								}
+								else{
+									lost_previous.add(lost);
+									System.out.println("@User: failed division - "+rescued.getTrackID());
+								}
+								
+								//TODO create division object
+							}
+							else{
+								lost_previous.add(lost);
+								System.out.println("@User: outside previous geometry - "+rescued.getTrackID());
+							}
+						}	
+					}				
+					else{
+						lost_previous.add(lost);
+						System.out.println("@User: no rescue candidate");
+					}
 				}
 				
-				//-3 will be lost in next frame
-				System.out.print(" uG:"+ nochoice_grooms.size());
-				while(!nochoice_grooms.empty())
-					lost_next.add(getMostRecentCorrespondence(time_point, nochoice_grooms.pop()));
+				//analyze unmarried grooms, i.e. first nodes not been associated to current frame
+				//System.out.println(" uG:"+ unmarried_grooms.size());
+				while(!unmarried_grooms.empty())
+					lost_next.add(getMostRecentCorrespondence(time_point, unmarried_grooms.pop()));
 
 			}
-
-			System.out.println();
 			
 			//Compute candidates for successive nodes in [linkrange] time frames (one and only assignment x node x frame)
 			for(Node current: stGraph.getFrame(time_point).vertexSet())
@@ -171,24 +161,126 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						if(next.getGeometry().contains(current.getCentroid()))
 							next.addParentCandidate(current);
 
-
-
-			//TODO division object
-
 		}
 		
 		
 		//Update loss information (done now since otherwise the 
 		//information is not propagated correctly while tracking)
+		//add loss information
+		//-2 could not be associated in current frame
 		for(Node lost: lost_previous)
 			lost.setTrackID(-2);
 		
+		//-3 will be lost in next frame 
 		for(Node lost: lost_next)
 			if(lost_previous.contains(lost))
 				lost.setTrackID(-4);
 			else
 				lost.setTrackID(-3);
 		
+	}
+
+	/**
+	 * Linking algorithm based on the stable marriage problem. 
+	 * The nodes in the current frame are addressed as "brides"
+	 * while the brooms are the candidates from the first frame (expept for divisions).
+	 * 
+	 * @param time_point of frame to be linked
+	 * @return returns 2 Stacks containing the unlinked nodes, accessible trough a map interface ("brides", "grooms")
+	 */
+	private Map<String, Stack<Node>> linkTimePoint(int time_point) {
+		
+		//Build two maps to store the evaluated candidates (evaluation <> distance from center)
+		Map<Node, List<ComparableNode>> grooms = new HashMap<Node, List<ComparableNode>>();
+		Map<Node, List<ComparableNode>> brides = new HashMap<Node, List<ComparableNode>>();;
+
+		//Evaluate the distances of the candidates of each node in current time frame
+		evaluateCandidates(grooms, brides, time_point);
+
+		//Order the evaluated candidates in ascending mannor (smallest distances first) 
+		orderCandidates(grooms);
+		orderCandidates(brides);
+
+		//Initialize data structures
+		Map<Node, Node> marriage = new HashMap<Node,Node>();
+
+		Stack<Node> unmarried_grooms = new Stack<Node>();
+		Stack<Node> unmarried_brides = new Stack<Node>();
+		Stack<Node>	nochoice_grooms = new Stack<Node>();
+
+		//Fill candidates
+		unmarried_grooms.addAll(grooms.keySet());
+		unmarried_brides.addAll(brides.keySet());
+
+		//Stable marriage problem (Gale–Shapley algorithm)
+		while(!unmarried_grooms.empty()){
+			//take groom candidate from stack and try to assign
+			Node groom = unmarried_grooms.pop();
+
+			//get preference list of groom 
+			Iterator<ComparableNode> bride_it = grooms.get(groom).iterator();
+			boolean married = false;
+
+			//loop util groom has preferences and is not married
+			while(bride_it.hasNext() && !married){
+
+				//get bride candidate and mark her as visited
+				Node bride = bride_it.next().getNode();
+				bride_it.remove();
+
+				//check if wanted bride is married at all
+				if(!marriage.containsKey(bride)){
+					unmarried_brides.remove(bride);
+
+					marriage.put(bride, groom);
+					married = true;
+				}
+
+				//if already married see if current groom is better fit
+				else{
+
+					Node old_groom = marriage.get(bride);
+					Iterator<ComparableNode> grooms_it = brides.get(bride).iterator();
+
+					//cycle preferences (ascending order, best first)
+					while(grooms_it.hasNext()){
+						Node preffered_groom = grooms_it.next().getNode();
+
+						//current husband has better rating
+						if(preffered_groom == old_groom)
+							break;
+
+						//new husband has better rating!
+						if(preffered_groom == groom){
+							unmarried_grooms.push(old_groom);
+
+							marriage.put(bride, groom);
+							married = true;
+							break;
+						}
+					}
+				}
+			}
+
+			//if groom has no more bride candidates eliminate from list
+			if(!marriage.containsValue(groom) && grooms.get(groom).isEmpty())
+				nochoice_grooms.push(groom);
+
+		}
+
+		//finally update node correspondences
+		for(Node bride: marriage.keySet()){
+			Node groom = marriage.get(bride);
+			updateCorrespondence(bride, getMostRecentCorrespondence(bride, groom));
+		}
+		
+		
+		Map<String, Stack<Node>> unmarried = new HashMap<String, Stack<Node>>();
+		
+		unmarried.put("brides", unmarried_brides);
+		unmarried.put("grooms", nochoice_grooms);
+		
+		return unmarried;
 	}
 
 	/**
@@ -210,7 +302,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//ascending sort
 			ComparableNode[] candidate_array = candidate_list.toArray(new ComparableNode[candidate_no]);
 			Arrays.sort(candidate_array);
-			System.out.print(first.getTrackID()+":"+Arrays.toString(candidate_array));
+//			System.out.print(first.getTrackID()+":"+Arrays.toString(candidate_array));
 		
 			
 			//List conversion
@@ -221,7 +313,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 
 		}
 		
-		System.out.println();
+//		System.out.println();
 
 	}
 
@@ -277,28 +369,9 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						continue;
 					}
 
-					// or average distance criteria
-					int count = 1;
-					double sum = DistanceOp.distance(
-							voted_centroid,
-							current_cell_center);
-
-					while(candidate_it.hasNext()){
-						voted = candidate_it.next();
-						if( voted.getFirst() == first){
-							candidate_it.remove();
-							sum +=  DistanceOp.distance(
-									voted_centroid,
-									current_cell_center);
-							count++;
-						}
-					}
-
-					double avg = sum / count;
-					
-					
-//					//min search criteria
-//					double min = DistanceOp.distance(
+//					// or average distance criteria
+//					int count = 1;
+//					double sum = DistanceOp.distance(
 //							voted_centroid,
 //							current_cell_center);
 //
@@ -306,16 +379,35 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 //						voted = candidate_it.next();
 //						if( voted.getFirst() == first){
 //							candidate_it.remove();
-//							double candidate_dist = DistanceOp.distance(
+//							sum +=  DistanceOp.distance(
 //									voted_centroid,
 //									current_cell_center);
-//							if(min > candidate_dist)
-//								min = candidate_dist;
-//
+//							count++;
 //						}
 //					}
-//					
-//					double avg = min;
+//
+//					double avg = sum / count;
+					
+					
+					//min search criteria
+					double min = DistanceOp.distance(
+							voted_centroid,
+							current_cell_center);
+
+					while(candidate_it.hasNext()){
+						voted = candidate_it.next();
+						if( voted.getFirst() == first){
+							candidate_it.remove();
+							double candidate_dist = DistanceOp.distance(
+									voted_centroid,
+									current_cell_center);
+							if(min > candidate_dist)
+								min = candidate_dist;
+
+						}
+					}
+					
+					double avg = min;
 
 					//assign candidate to both maps with the respective distance
 

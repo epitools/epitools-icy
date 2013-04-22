@@ -174,7 +174,9 @@ public abstract class TrackingAlgorithm {
 	 * 
 	 * @param unassignedNode Node with an empty previous field
 	 */
-	protected void detectDivisionCandidate(Node unassignedNode){
+	protected Node rescueCandidate(Node unassignedNode){
+		
+		boolean is_division = false;
 
 		List<Node> neighbors = unassignedNode.getNeighbors();
 		Set<Node> unique_neighbors = new HashSet<Node>(neighbors);
@@ -234,36 +236,41 @@ public abstract class TrackingAlgorithm {
 //		double candidate_average = 0;
 //		if(qs_map.size() > 0)
 //			candidate_average = candidate_sum / qs_map.size();
+		
+		return most_likely_parent;
 
 		//If a parent has been found check whether the most recent correspondence in time is also 
 		//geometrically sound with the hypothesis, if yes update the correspondence.
-		if(most_likely_parent != null){
-
-			Node last_parent_reference = getMostRecentCorrespondence(unassignedNode, most_likely_parent);
-
-			//apply little buffer when testing geometrical correspondence
-			if(last_parent_reference.getGeometry().buffer(6).contains(unassignedNode.getCentroid()))
-				
-
-				System.out.println(last_parent_reference.getTrackID()+":"+last_parent_reference.getGeometry().toText());
-
-			//less conservative assignment
-			//				else{
-			//					for(Node candidate: qs_array.keySet()){
-			//						if(candidate != null){
-			//							if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
-			//								System.out.println("\t is contained! (less confident!)");
-			//
-			//								newNode.setFirst(most_likely_parent);
-			//								newNode.setTrackID(most_likely_parent.getTrackID());
-			//								newNode.setPrevious(last_parent_reference);
-			//
-			//								break;
-			//							}
-			//						}
-			//					}
-			//				}
-		}
+		
+//		if(most_likely_parent != null){
+//
+//			Node last_parent_reference = getMostRecentCorrespondence(unassignedNode, most_likely_parent);
+//
+//			//apply little buffer when testing geometrical correspondence
+//			if(last_parent_reference.getGeometry().buffer(6).contains(unassignedNode.getCentroid())){
+//				System.out.println(last_parent_reference.getTrackID()+" -> "+unassignedNode.getGeometry().toText());
+//				is_division = true;
+//			}
+//
+//			//less conservative assignment
+//			//				else{
+//			//					for(Node candidate: qs_array.keySet()){
+//			//						if(candidate != null){
+//			//							if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
+//			//								System.out.println("\t is contained! (less confident!)");
+//			//
+//			//								newNode.setFirst(most_likely_parent);
+//			//								newNode.setTrackID(most_likely_parent.getTrackID());
+//			//								newNode.setPrevious(last_parent_reference);
+//			//
+//			//								break;
+//			//							}
+//			//						}
+//			//					}
+//			//				}
+//		}
+//		
+//		return is_division;
 	}
 
 }

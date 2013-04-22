@@ -80,11 +80,26 @@ public class TrackPainter extends AbstractPainter{
 						g.setColor(correspondence_color.get(cell.getFirst()));
 						g.fill(cell.toShape());
 						
+						Point lost = cell.getCentroid();
+						
+						//not associated in next frame
+						//not previously associated
+						if(cell.getTrackID() == -2){
+							g.setColor(Color.red);
+							g.draw(cell.toShape());
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
+						}
+						
 						//not associated in next frame
 						if(cell.getTrackID() == -3){
-							Point lost = cell.getCentroid();
-							
 							g.setColor(Color.yellow);
+							g.draw(cell.toShape());
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+						}
+						
+						//neither previous nor next is associated
+						if(cell.getTrackID() == -4){
+							g.setColor(Color.green);
 							g.draw(cell.toShape());
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
 						}
@@ -100,7 +115,7 @@ public class TrackPainter extends AbstractPainter{
 						if(cell.getTrackID() == -2){
 							g.setColor(Color.red);
 							g.draw(cell.toShape());
-							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
 						}
 						
 						//not associated in next frame

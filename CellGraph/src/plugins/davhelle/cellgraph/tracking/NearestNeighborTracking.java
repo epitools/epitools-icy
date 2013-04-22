@@ -127,23 +127,30 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 									System.out.println(
 											"Division:"+mother.getTrackID()+
 											"->("+lost.getTrackID()+","+brother.getTrackID()+")");
+									
+									//TODO create division object
+									//TODO prevent brother from resulting without_previous.. 
 								}
 								else{
 									lost_previous.add(lost);
-									System.out.println("@User: failed division - "+rescued.getTrackID());
+									System.out.println("\t@User: failed division - "+rescued.getTrackID() + 
+											"@[" + Math.round(rescued.getCentroid().getX()) + 
+											"," + Math.round(rescued.getCentroid().getY()) + "]");
 								}
 								
-								//TODO create division object
+								
 							}
 							else{
 								lost_previous.add(lost);
-								System.out.println("@User: outside previous geometry - "+rescued.getTrackID());
+								System.out.println("\t@User: outside previous geometry - "+rescued.getTrackID() + 
+										"@[" + Math.round(rescued.getCentroid().getX()) + 
+										"," + Math.round(rescued.getCentroid().getY()) + "]");
 							}
 						}	
 					}				
 					else{
 						lost_previous.add(lost);
-						System.out.println("@User: no rescue candidate");
+						System.out.println("\t@User: no rescue candidate");
 					}
 				}
 				
@@ -398,6 +405,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						voted = candidate_it.next();
 						if( voted.getFirst() == first){
 							candidate_it.remove();
+							voted_centroid = voted.getCentroid();
 							double candidate_dist = DistanceOp.distance(
 									voted_centroid,
 									current_cell_center);

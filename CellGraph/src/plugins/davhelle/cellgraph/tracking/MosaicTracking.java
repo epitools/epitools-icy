@@ -84,31 +84,13 @@ public class MosaicTracking extends TrackingAlgorithm{
 	 */
 	private void particleConversion(){
 
-		//extract single Graph Frame and convert to MyFrame
-		//set of Particles
-		Geometry frame_0_union = null;
+		//extract single Graph Frame and convert to MyFrame set of Particles
 
 		for(int time_point=0;time_point<frames_number; time_point++){
 			//get graph
 			FrameGraph graph_i = stGraph.getFrame(time_point);
 			Vector<Particle> particles = new Vector<Particle>();
 			int particle_number = graph_i.size();
-
-			//Build the union of frame 0 to discard 
-			if(time_point==0){
-
-				Geometry[] output = new Geometry[graph_i.size()];
-				Iterator<Node> node_it = graph_i.iterator();
-				for(int j=0; j<graph_i.size(); j++){
-					output[j] = node_it.next().getGeometry();
-				}		
-
-				//Create union of all polygons
-				GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-				//TODO check if better to add a little buffer
-				frame_0_union = polygonCollection.buffer(0);
-			}
-
 
 			//convert graph nodes 
 			for(Node n: graph_i.vertexSet()){

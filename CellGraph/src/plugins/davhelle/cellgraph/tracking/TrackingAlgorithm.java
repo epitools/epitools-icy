@@ -1,6 +1,11 @@
 package plugins.davhelle.cellgraph.tracking;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
@@ -110,12 +115,6 @@ public abstract class TrackingAlgorithm {
 		
 		Node last_parent_reference = first;
 		Node next_parent_reference = first.getNext();
-		
-//		Node next_parent_reference = null;
-//		if(first.getNext() == null)
-//			next_parent_reference = first;
-//		else
-//			next_parent_reference = first.getNext();
 			
 		int current_node_frame_no = n.getBelongingFrame().getFrameNo();
 		
@@ -157,6 +156,114 @@ public abstract class TrackingAlgorithm {
 		
 		return last_parent_reference;
 
+	}
+	
+	
+	/**
+	 * Method to classify nodes which have not been assigned 
+	 * to a Node in a previous time frame (previous field..). 
+	 * This can either be due to a segmentation/tracking mistake or
+	 * due to a division event. By quorum sensing the neighborhood
+	 * of the lost nodes the heuristic identifies the most
+	 * likely correspondence in a previous time frame.
+	 * 
+	 * More in detail for every neighbor the heuristic identifies
+	 * a correspondence at a previous time point and uses that
+	 * neighborhood as candidates for the most likely ancestor. 
+	 * Sets are used to avoid nearby cell divisions to bias the voting.
+	 * 
+	 * @param unassignedNode Node with an empty previous field
+	 */
+	protected void detectDivisionCandidate(Node unassignedNode){
+
+		List<Node> neighbors = unassignedNode.getNeighbors();
+		Set<Node> unique_neighbors = new HashSet<Node>(neighbors);
+
+		//Create quorum sensing map to identify most likely correspondence
+		Map<Node,Integer> qs_map = new HashMap<Node, Integer>();
+		
+		//initialize qs_map
+		for(Node neighbor: neighbors)
+			if(neighbor.getFirst() != null)
+				qs_map.put(neighbor.getFirst(), 0);
+			
+		//Neighborhood quorum sensing
+		for(Node neighbor: unique_neighbors){
+			
+			Node ancestor = neighbor.getPrevious();
+			if(ancestor != null){
+				
+				Set<Node> unique_ancestor_neighbors = new HashSet<Node>();
+				
+				//for unique neighbors of the ancestor
+				for(Node ancestorNeighbor: ancestor.getNeighbors())
+					if(ancestorNeighbor.getFirst() != null)
+						unique_ancestor_neighbors.add(ancestorNeighbor.getFirst());
+				
+				//Use the set elements as candidates for the qs voting
+				for(Node candidate: unique_ancestor_neighbors)
+					if(qs_map.containsKey(candidate)){
+						int count = qs_map.get(candidate).intValue();
+						count++;
+						qs_map.put(candidate.getFirst(), count); //ev. ++count
+					}
+					else {
+						if(candidate.getFirst() != null)
+							qs_map.put(candidate.getFirst(), 1);
+					}
+			}
+		}
+
+		//Find most voted candidate, i.e. the most likely parent
+		Node most_likely_parent = null;
+		
+		//TODO might use candidate sum for improving heuristic
+		int candidate_sum = 0;
+		//System.out.println(unassignedNode.getGeometry().toText());
+		for(Node candidate: qs_map.keySet()){
+			candidate_sum += qs_map.get(candidate);
+			//System.out.println("\t"+candidate.getTrackID()+":"+qs_map.get(candidate).toString());
+			if(most_likely_parent == null)
+				most_likely_parent = candidate;
+			else
+				//check whether the qs score is higher for the candidate (negative comparison result)
+				if(qs_map.get(most_likely_parent).compareTo(qs_map.get(candidate)) < 0)
+					most_likely_parent = candidate;
+		}
+
+//		double candidate_average = 0;
+//		if(qs_map.size() > 0)
+//			candidate_average = candidate_sum / qs_map.size();
+
+		//If a parent has been found check whether the most recent correspondence in time is also 
+		//geometrically sound with the hypothesis, if yes update the correspondence.
+		if(most_likely_parent != null){
+
+			Node last_parent_reference = getMostRecentCorrespondence(unassignedNode, most_likely_parent);
+
+			//apply little buffer when testing geometrical correspondence
+			if(last_parent_reference.getGeometry().buffer(6).contains(unassignedNode.getCentroid()))
+				
+
+				System.out.println(last_parent_reference.getTrackID()+":"+last_parent_reference.getGeometry().toText());
+
+			//less conservative assignment
+			//				else{
+			//					for(Node candidate: qs_array.keySet()){
+			//						if(candidate != null){
+			//							if(candidate.getGeometry().buffer(6).contains(newNode.getCentroid())){
+			//								System.out.println("\t is contained! (less confident!)");
+			//
+			//								newNode.setFirst(most_likely_parent);
+			//								newNode.setTrackID(most_likely_parent.getTrackID());
+			//								newNode.setPrevious(last_parent_reference);
+			//
+			//								break;
+			//							}
+			//						}
+			//					}
+			//				}
+		}
 	}
 
 }

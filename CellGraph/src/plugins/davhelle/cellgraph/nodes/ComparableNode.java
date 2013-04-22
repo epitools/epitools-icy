@@ -1,5 +1,7 @@
 package plugins.davhelle.cellgraph.nodes;
 
+import java.text.DecimalFormat;
+
 /**
  * ComparableNode is a utility class to access sort operations
  * and relatives using the java.util.Arrays methods.
@@ -29,7 +31,7 @@ public class ComparableNode implements Comparable<ComparableNode> {
 	}
 	
 	public String toString(){
-		return key.getTrackID()+":"+value.toString();
+		return key.getTrackID()+":"+String.format("%.2g", value.doubleValue());
 	}
 
 }

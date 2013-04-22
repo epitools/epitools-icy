@@ -58,7 +58,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		
 		//for every frame extract all particles
 		for(int time_point=0;time_point<stGraph.size(); time_point++){
-			System.out.print("Linking frame "+time_point);
+			System.out.println("Linking frame "+time_point);
 			
 			if(time_point > 0){
 
@@ -149,8 +149,11 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				//add loss information
 				//-2 could not be associated in current frame
 				System.out.print(" uB:"+ unmarried_brides.size());
-				while(!unmarried_brides.empty())
-					lost_previous.add(unmarried_brides.pop());
+				while(!unmarried_brides.empty()){
+					Node lost = unmarried_brides.pop();
+					detectDivisionCandidate(lost);
+					lost_previous.add(lost);
+				}
 				
 				//-3 will be lost in next frame
 				System.out.print(" uG:"+ nochoice_grooms.size());
@@ -207,11 +210,18 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//ascending sort
 			ComparableNode[] candidate_array = candidate_list.toArray(new ComparableNode[candidate_no]);
 			Arrays.sort(candidate_array);
+			System.out.print(first.getTrackID()+":"+Arrays.toString(candidate_array));
+		
+			
+			//List conversion
+			candidate_list = new ArrayList<ComparableNode>(Arrays.asList(candidate_array));
 			
 			//update (requires change from immutable java.util.Arrays$Arraylist to mutable ArrayList object)
-			node_map.put(first, new ArrayList<ComparableNode>(Arrays.asList(candidate_array)));
+			node_map.put(first, candidate_list);
 
 		}
+		
+		System.out.println();
 
 	}
 
@@ -267,7 +277,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						continue;
 					}
 
-					//compute average distance
+					// or average distance criteria
 					int count = 1;
 					double sum = DistanceOp.distance(
 							voted_centroid,
@@ -285,6 +295,27 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					}
 
 					double avg = sum / count;
+					
+					
+//					//min search criteria
+//					double min = DistanceOp.distance(
+//							voted_centroid,
+//							current_cell_center);
+//
+//					while(candidate_it.hasNext()){
+//						voted = candidate_it.next();
+//						if( voted.getFirst() == first){
+//							candidate_it.remove();
+//							double candidate_dist = DistanceOp.distance(
+//									voted_centroid,
+//									current_cell_center);
+//							if(min > candidate_dist)
+//								min = candidate_dist;
+//
+//						}
+//					}
+//					
+//					double avg = min;
 
 					//assign candidate to both maps with the respective distance
 

@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 
 import com.vividsolutions.jts.geom.Point;
@@ -31,6 +32,7 @@ public class TrackPainter extends AbstractPainter{
 	
 	private SpatioTemporalGraph stGraph;
 	private HashMap<Node,Color> correspondence_color;
+	private Map<Integer, Color> errorMap;
 
 	public TrackPainter(SpatioTemporalGraph stGraph) {
 		
@@ -42,9 +44,8 @@ public class TrackPainter extends AbstractPainter{
 		Iterator<Node> cell_it = stGraph.getFrame(0).iterator();
 		Random rand = new Random();
 		
-		//Assign to every cell in the first
-		//frame a random color and mark with the 
-		//same color all successively linked cells.
+		//Assign to every first cell a random color, also 
+		//attach the same color to ev. children
 		while(cell_it.hasNext()){
 			
 			Node cell = cell_it.next();
@@ -59,6 +60,13 @@ public class TrackPainter extends AbstractPainter{
 			}
 
 		}
+		
+		//define the color map for error indication
+		this.errorMap = new HashMap<Integer, Color>();
+		errorMap.put(-2, Color.red);	//missing previous
+		errorMap.put(-3, Color.yellow);	//missing next
+		errorMap.put(-4, Color.green);	//missing both
+		errorMap.put(-5, Color.black);	//dividing in next frame
 	}
 	
 	/**
@@ -97,35 +105,13 @@ public class TrackPainter extends AbstractPainter{
 						g.fill(cell.toShape());
 						
 						Point lost = cell.getCentroid();
-						
-						//not associated in next frame
-						//not previously associated
-						if(cell.getTrackID() == -2){
-							g.setColor(Color.red);
+
+						if(errorMap.containsKey(cell.getTrackID())){
+							g.setColor(errorMap.get(cell.getTrackID()));
 							g.draw(cell.toShape());
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
 						}
-						
-						//not associated in next frame
-						if(cell.getTrackID() == -3){
-							g.setColor(Color.yellow);
-							g.draw(cell.toShape());
-							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
-						}
-						
-						//neither previous nor next is associated
-						if(cell.getTrackID() == -4){
-							g.setColor(Color.green);
-							g.draw(cell.toShape());
-							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
-						}
-						
-						//dividing in next frame
-						if(cell.getTrackID() == -5){
-							g.setColor(Color.black);
-							g.draw(cell.toShape());
-							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
-						}
+
 					}
 					else{
 						//no tracking found
@@ -134,25 +120,10 @@ public class TrackPainter extends AbstractPainter{
 						
 						Point lost = cell.getCentroid();
 						
-						//not previously associated
-						if(cell.getTrackID() == -2){
-							g.setColor(Color.red);
+						if(errorMap.containsKey(cell.getTrackID())){
+							g.setColor(errorMap.get(cell.getTrackID()));
 							g.draw(cell.toShape());
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
-						}
-						
-						//not associated in next frame
-						if(cell.getTrackID() == -3){
-							g.setColor(Color.yellow);
-							g.draw(cell.toShape());
-							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
-						}
-						
-						//neither previous nor next is associated
-						if(cell.getTrackID() == -4){
-							g.setColor(Color.green);
-							g.draw(cell.toShape());
-							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
 						}
 					}
 				}
@@ -160,20 +131,19 @@ public class TrackPainter extends AbstractPainter{
 			
 			percentage_tracked = (percentage_tracked/stGraph.getFrame(0).size())*100;
 			
-			g.setColor(Color.white);
+			//Text headline
 			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
+			
+			g.setColor(Color.white);
 			g.drawString("Tracked cells: "+(int)percentage_tracked+"%", 10 , 20);
 			
 			g.setColor(Color.red);
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
 			g.drawString("previous", 10 , 30);
 			
 			g.setColor(Color.yellow);
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
 			g.drawString("next", 60 , 30);
 			
 			g.setColor(Color.green);
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
 			g.drawString("none", 90 , 30);
 		}
 	}

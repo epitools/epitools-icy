@@ -13,6 +13,7 @@ import com.vividsolutions.jts.operation.distance.DistanceOp;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.ComparableNode;
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -123,17 +124,15 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 									brother.setFirst(brother);
 									brother.setTrackID(tracking_id++);
 									
-									//Report division to user
-									System.out.println(
-											"Division:"+mother.getTrackID()+
-											"->("+lost.getTrackID()+","+brother.getTrackID()+")");
-									
-									//TODO create division object
-									//TODO prevent brother from resulting without_previous.. 
+									//create division object
+									Division division = new Division(lastCorrespondence, lost, brother, time_point);
+									System.out.println(division.toString());
+
 								}
 								else{
 									lost_previous.add(lost);
-									System.out.println("\t@User: failed division - "+rescued.getTrackID() + 
+									System.out.println(
+											"\t@User: failed division - "+rescued.getTrackID() + 
 											"@[" + Math.round(rescued.getCentroid().getX()) + 
 											"," + Math.round(rescued.getCentroid().getY()) + "]");
 								}
@@ -366,6 +365,20 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					Node first = voted.getFirst();
 					candidate_it.remove();
 					
+					//Check whether the cell is part of a division, if yes to 
+					//avoid that the candidate approach is biased by the mother
+					//cell 
+					//TODO rethink naming -> hasDivision (what if child node divide twice...)
+					if(voted.hasObservedDivision()){
+						Division division = voted.getDivision();
+						if(time_point > division.getTimePoint())
+							if(division.isMother(voted)){
+								//TODO might want to eliminate all mother cells at once
+								//from the candidate list
+								continue;
+						}
+					}
+					
 					Point voted_centroid = voted.getCentroid();
 
 					//Cell could be either new (division/seg.error), 
@@ -375,7 +388,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 							current_map.put(current, new ArrayList<ComparableNode>());
 						continue;
 					}
-
+					
 //					// or average distance criteria
 //					int count = 1;
 //					double sum = DistanceOp.distance(
@@ -386,6 +399,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 //						voted = candidate_it.next();
 //						if( voted.getFirst() == first){
 //							candidate_it.remove();
+//							voted_centroid = voted.getCentroid();
 //							sum +=  DistanceOp.distance(
 //									voted_centroid,
 //									current_cell_center);
@@ -395,6 +409,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 //
 //					double avg = sum / count;
 					
+					//TODO make switch for criteria
 					
 					//min search criteria
 					double min = DistanceOp.distance(

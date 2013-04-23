@@ -16,6 +16,7 @@ import java.util.Random;
 import com.vividsolutions.jts.geom.Point;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -47,20 +48,35 @@ public class TrackPainter extends AbstractPainter{
 		while(cell_it.hasNext()){
 			
 			Node cell = cell_it.next();
+			Color cell_color = newColor(rand);
+			correspondence_color.put(cell, cell_color);
 			
-			// Generate random color for cell
-			float r_idx = rand.nextFloat();
-			float g_idx = rand.nextFloat();
-			float b_idx = rand.nextFloat();      
+			if(cell.hasObservedDivision()){
+				Division division = cell.getDivision();
+				
+				correspondence_color.put(division.getChild1(),cell_color);
+				correspondence_color.put(division.getChild2(),cell_color);
+			}
 
-			Color cell_color = new Color(r_idx, g_idx, b_idx);
-			cell_color.brighter();
-			
-			//while(cell != null){
-				correspondence_color.put(cell, cell_color);
-				//cell = cell.getNext();
-			//}
 		}
+	}
+	
+	/**
+	 * Generate random color for cell
+	 * 
+	 * @param rand Random number generator
+	 * @return random bright color
+	 */
+	private Color newColor(Random rand){
+		float r_idx = rand.nextFloat();
+		float g_idx = rand.nextFloat();
+		float b_idx = rand.nextFloat();      
+
+		Color cell_color = new Color(r_idx, g_idx, b_idx);
+		cell_color.brighter();
+		
+		
+		return cell_color;
 	}
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
@@ -100,6 +116,13 @@ public class TrackPainter extends AbstractPainter{
 						//neither previous nor next is associated
 						if(cell.getTrackID() == -4){
 							g.setColor(Color.green);
+							g.draw(cell.toShape());
+							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
+						}
+						
+						//dividing in next frame
+						if(cell.getTrackID() == -5){
+							g.setColor(Color.black);
 							g.draw(cell.toShape());
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 3, 3);
 						}

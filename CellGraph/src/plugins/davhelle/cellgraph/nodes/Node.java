@@ -127,6 +127,21 @@ public interface Node{
 	public void setObservedDivision(boolean observedDivision);
 	
 	/**
+	 * Associate a division with the node. Relationship can
+	 * be either being a child or the mother cell.
+	 * 
+	 * @param division
+	 */
+	public void setDivision(Division division);
+	
+	/**
+	 * Get the associated Division object
+	 * 
+	 * @return the Division object describing the event
+	 */
+	public Division getDivision();
+	
+	/**
 	 * Transforms the geometrical representation of the node
 	 * into an awt.shape.
 	 * 

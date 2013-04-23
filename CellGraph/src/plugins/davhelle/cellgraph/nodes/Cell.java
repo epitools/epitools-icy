@@ -42,6 +42,7 @@ public class Cell implements Node {
 	
 	//division information
 	private boolean observedDivision;
+	private Division division;
 	
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
@@ -62,6 +63,7 @@ public class Cell implements Node {
 		
 		//default division information
 		this.observedDivision = false;
+		this.division = null;
 	}
 
 	/* (non-Javadoc)
@@ -189,6 +191,18 @@ public class Cell implements Node {
 	@Override
 	public List<Node> getParentCandidates() {
 		return first_candidates;
+	}
+
+	@Override
+	public void setDivision(Division division) {
+		this.division = division;
+		this.observedDivision = true;
+	}
+
+	@Override
+	public Division getDivision() {
+		// TODO Auto-generated method stub
+		return division;
 	}
 
 }

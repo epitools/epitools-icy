@@ -95,6 +95,10 @@ public abstract class TrackingAlgorithm {
 		next.setFirst(previous.getFirst());
 		next.setPrevious(previous);
 		
+		//propagate division
+		if(previous.hasObservedDivision())
+			next.setDivision(previous.getDivision());
+		
 		//only update linkage from previous cell if not set yet
 		if(previous.getNext() == null)
 			previous.setNext(next);

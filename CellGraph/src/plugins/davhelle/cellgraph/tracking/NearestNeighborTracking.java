@@ -92,8 +92,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 							unmarried_grooms.remove(rescued);
 							
 							//visual feedback
-							System.out.println("Rescue of "+rescued.getTrackID());
-							lost_previous.add(lost);
+							System.out.println("\tRescue of "+rescued.getTrackID());
+							//lost_previous.add(lost);
 						}
 						else{
 							//check whether lost node is result of a division process
@@ -166,7 +166,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					for(Node next: stGraph.getFrame(time_point + i).vertexSet())
 						if(next.getGeometry().contains(current.getCentroid()))
 							next.addParentCandidate(current);
-
+			
 		}
 		
 		
@@ -175,14 +175,32 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		//add loss information
 		//-2 could not be associated in current frame
 		for(Node lost: lost_previous)
-			lost.setTrackID(-2);
+			lost.setErrorTag(-2);
 		
 		//-3 will be lost in next frame 
 		for(Node lost: lost_next)
 			if(lost_previous.contains(lost))
-				lost.setTrackID(-4);
+				lost.setErrorTag(-4);
 			else
-				lost.setTrackID(-3);
+				lost.setErrorTag(-3);
+		
+		//mark if division brother cells are not found both
+		for(int time_point=0;time_point<stGraph.size(); time_point++)
+			for(Node cell: stGraph.getFrame(time_point).vertexSet())
+				if(cell.hasObservedDivision())
+					if(time_point > cell.getDivision().getTimePoint()){
+						Division division = cell.getDivision();
+						//assuming the cell is a child 
+						Node brother = division.getBrother(cell);
+						boolean found_brother = false;
+						for(Node neighbor: cell.getNeighbors())
+							if(neighbor.getFirst() == brother)
+								found_brother = true;
+						
+						if(!found_brother)
+							cell.setErrorTag(-6);
+					}
+						
 		
 	}
 
@@ -351,9 +369,9 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			
 			List<Node> candidates = current.getParentCandidates();
 			
-			//if no candidates are given add it as "lost bride"
+			//if no candidates are given add it as "lost bride", TODO .buffer(-10.0)?
 			if(candidates.size() == 0){
-				if(frame_0_union.contains(current_cell_center))
+				if(frame_0_union.contains(current_cell_center) && !current.onBoundary())
 					current_map.put(current, new ArrayList<ComparableNode>());
 			}
 			else
@@ -382,9 +400,9 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					Point voted_centroid = voted.getCentroid();
 
 					//Cell could be either new (division/seg.error), 
-					//thus not associated to any first node
+					//thus not associated to any first node //TODO .buffer(-10.0)?
 					if(first == null){
-						if(frame_0_union.contains(voted_centroid))
+						if(frame_0_union.contains(voted_centroid) && !voted.onBoundary())
 							current_map.put(current, new ArrayList<ComparableNode>());
 						continue;
 					}

@@ -177,7 +177,35 @@ public interface Node{
 	 */
 	public List<Node> getNeighbors();
 
+	/**
+	 * Add candidate to the list of nodes that 
+	 * could be the ancestor of this node
+	 * 
+	 * @param first candidate note
+	 */
 	public void addParentCandidate(Node first);
 
+	/**
+	 * Get the list of candidate nodes that
+	 * could be the ancestor of this node
+	 * 
+	 * @return the list of candidate nodes
+	 */
 	public List<Node> getParentCandidates();
+	
+	
+	/**
+	 * Add an error tag to the node for
+	 * user feedback
+	 * 
+	 * @param errorTag
+	 */
+	public void setErrorTag(int errorTag);
+	
+	/**
+	 * Obtain the error tag
+	 * 
+	 * @return error tag
+	 */
+	public int getErrorTag();
 }

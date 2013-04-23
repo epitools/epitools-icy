@@ -54,7 +54,7 @@ public class TrackPainter extends AbstractPainter{
 			
 			if(cell.hasObservedDivision()){
 				Division division = cell.getDivision();
-				
+				//same color for children or cell_color = newColor(rand);
 				correspondence_color.put(division.getChild1(),cell_color);
 				correspondence_color.put(division.getChild2(),cell_color);
 			}
@@ -66,7 +66,8 @@ public class TrackPainter extends AbstractPainter{
 		errorMap.put(-2, Color.red);	//missing previous
 		errorMap.put(-3, Color.yellow);	//missing next
 		errorMap.put(-4, Color.green);	//missing both
-		errorMap.put(-5, Color.black);	//dividing in next frame
+		errorMap.put(-5, Color.blue);	//dividing in next frame
+		errorMap.put(-6, Color.magenta);//brother cell missing
 	}
 	
 	/**
@@ -102,13 +103,13 @@ public class TrackPainter extends AbstractPainter{
 						percentage_tracked++;
 						//cell is part of registered correspondence
 						g.setColor(correspondence_color.get(cell.getFirst()));
-						g.fill(cell.toShape());
+						g.draw(cell.toShape());
 						
 						Point lost = cell.getCentroid();
 
-						if(errorMap.containsKey(cell.getTrackID())){
-							g.setColor(errorMap.get(cell.getTrackID()));
-							g.draw(cell.toShape());
+						if(errorMap.containsKey(cell.getErrorTag())){
+							g.setColor(errorMap.get(cell.getErrorTag()));
+							g.fill(cell.toShape());
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
 						}
 
@@ -120,9 +121,9 @@ public class TrackPainter extends AbstractPainter{
 						
 						Point lost = cell.getCentroid();
 						
-						if(errorMap.containsKey(cell.getTrackID())){
-							g.setColor(errorMap.get(cell.getTrackID()));
-							g.draw(cell.toShape());
+						if(errorMap.containsKey(cell.getErrorTag())){
+							g.setColor(errorMap.get(cell.getErrorTag()));
+							g.fill(cell.toShape());
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
 						}
 					}

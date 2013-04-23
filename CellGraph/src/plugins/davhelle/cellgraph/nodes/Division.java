@@ -37,7 +37,7 @@ public class Division {
 		
 		//TODO best choice? or recurrent e.g. like first's first
 		mother.setNext(null);
-		mother.setTrackID(-5);
+		mother.setErrorTag(-5);
 		
 		//division propagation
 		Node ancestor = mother.getPrevious();
@@ -117,7 +117,7 @@ public class Division {
 	 */
 	public Node getBrother(Node participant){
 		if(!isMother(participant)){
-			if(participant == child1)
+			if(participant.getFirst() == child1)
 				return child2;
 			else
 				return child1;
@@ -128,7 +128,7 @@ public class Division {
 	
 	public String toString(){
 		//Report division to user
-		return "Division:"+mother.getTrackID()+"->("+child1.getTrackID()+","+child2.getTrackID()+")";
+		return "\tDivision:"+mother.getTrackID()+"->("+child1.getTrackID()+","+child2.getTrackID()+")";
 	}
 
 

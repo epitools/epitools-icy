@@ -36,7 +36,10 @@ public class Cell implements Node {
 	private Node first;
 	private List<Node> first_candidates;
 	private int track_id;
+	private int errorTag;
 	
+
+
 	//boundary information
 	private boolean is_on_boundary;
 	
@@ -203,6 +206,22 @@ public class Cell implements Node {
 	public Division getDivision() {
 		// TODO Auto-generated method stub
 		return division;
+	}
+	
+	@Override
+	/**
+	 * @return the errorTag
+	 */
+	public int getErrorTag() {
+		return errorTag;
+	}
+
+	@Override
+	/**
+	 * @param errorTag the errorTag to set
+	 */
+	public void setErrorTag(int errorTag) {
+		this.errorTag = errorTag;
 	}
 
 }

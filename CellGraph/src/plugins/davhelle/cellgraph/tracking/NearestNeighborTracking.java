@@ -32,11 +32,22 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class NearestNeighborTracking extends TrackingAlgorithm{
 	
+	//TODO Add weighted distance? decreasing in time, e.g. 1*(t-1) + 0.8*(t-2)....
+	private enum DistanceCriteria{
+		MINIMAL_DISTANCE, AVERAGE_DISTANCE
+	}
+	
 	private int linkrange;
-
+	private DistanceCriteria group_criteria;
+	private double increase_factor;
+	
 	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange) {
 		super(spatioTemporalGraph);
 		this.linkrange = linkrange;
+		
+		//parameter of the algorithm
+		group_criteria = DistanceCriteria.MINIMAL_DISTANCE;
+		increase_factor = 1.5;
 	}
 	
 	@Override
@@ -110,13 +121,32 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 								
 								//get brother cell by checking neighbors
 								for(Node neighbor: lost.getNeighbors())
-									if(neighbor.getFirst() == rescued 
+									if(neighbor.getFirst() == mother 
 									&& lastCorrespondence.getGeometry().contains(neighbor.getCentroid())){
 										has_brother = true;
 										brother = neighbor;
 									}
 								
-								if(has_brother){
+								//check for the presence of an area increase
+								boolean has_area_increase = false;
+								int pastFrameNo = 5;
+								
+								double original_area = mother.getGeometry().getArea();
+								double area_threshold = original_area*increase_factor;
+								Node past_mother = lastCorrespondence;
+								
+								while(past_mother != null && pastFrameNo > 0){
+									if(past_mother.getGeometry().getArea() > area_threshold){
+										has_area_increase = true;
+										break;
+									}
+									else
+										past_mother = past_mother.getPrevious();
+										
+								}
+								
+								//verify division conditions
+								if(has_brother && has_area_increase){
 									//initialize new cells
 									lost.setFirst(lost);
 									lost.setTrackID(tracking_id++);
@@ -174,8 +204,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		//information is not propagated correctly while tracking)
 		//add loss information
 		//-2 could not be associated in current frame
-		for(Node lost: lost_previous)
+		for(Node lost: lost_previous){
+			lost.setTrackID(-2);
 			lost.setErrorTag(-2);
+		}
 		
 		//-3 will be lost in next frame 
 		for(Node lost: lost_next)
@@ -374,7 +406,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				if(frame_0_union.contains(current_cell_center) && !current.onBoundary())
 					current_map.put(current, new ArrayList<ComparableNode>());
 			}
-			else
+			else{
 				while(candidates.size() > 0){
 
 					Iterator<Node> candidate_it = candidates.iterator();
@@ -407,48 +439,61 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						continue;
 					}
 					
-//					// or average distance criteria
-//					int count = 1;
-//					double sum = DistanceOp.distance(
-//							voted_centroid,
-//							current_cell_center);
-//
-//					while(candidate_it.hasNext()){
-//						voted = candidate_it.next();
-//						if( voted.getFirst() == first){
-//							candidate_it.remove();
-//							voted_centroid = voted.getCentroid();
-//							sum +=  DistanceOp.distance(
-//									voted_centroid,
-//									current_cell_center);
-//							count++;
-//						}
-//					}
-//
-//					double avg = sum / count;
 					
-					//TODO make switch for criteria
+					//compute a value for the entire first group
+					double group_value = Double.MAX_VALUE;
 					
-					//min search criteria
-					double min = DistanceOp.distance(
-							voted_centroid,
-							current_cell_center);
+					switch(group_criteria){
+					
+					case AVERAGE_DISTANCE:
+						//compute the average distance out of all
+						//distances with same node (group)
+						int count = 1;
+						double sum = DistanceOp.distance(
+								voted_centroid,
+								current_cell_center);
 
-					while(candidate_it.hasNext()){
-						voted = candidate_it.next();
-						if( voted.getFirst() == first){
-							candidate_it.remove();
-							voted_centroid = voted.getCentroid();
-							double candidate_dist = DistanceOp.distance(
-									voted_centroid,
-									current_cell_center);
-							if(min > candidate_dist)
-								min = candidate_dist;
-
+						while(candidate_it.hasNext()){
+							voted = candidate_it.next();
+							if( voted.getFirst() == first){
+								candidate_it.remove();
+								voted_centroid = voted.getCentroid();
+								sum +=  DistanceOp.distance(
+										voted_centroid,
+										current_cell_center);
+								count++;
+							}
 						}
+
+						double avg = sum / count;
+						group_value = avg;
+						break;
+						
+					case MINIMAL_DISTANCE:
+						//compute the minimal distance out of all
+						//distances with same node (group)
+						double min = DistanceOp.distance(
+								voted_centroid,
+								current_cell_center);
+
+						while(candidate_it.hasNext()){
+							voted = candidate_it.next();
+							if( voted.getFirst() == first){
+								candidate_it.remove();
+								voted_centroid = voted.getCentroid();
+								double candidate_dist = DistanceOp.distance(
+										voted_centroid,
+										current_cell_center);
+								if(min > candidate_dist)
+									min = candidate_dist;
+
+							}
+						}
+
+						group_value = min;
+						break;
 					}
-					
-					double avg = min;
+
 
 					//assign candidate to both maps with the respective distance
 
@@ -456,18 +501,19 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					if(!first_map.containsKey(first))
 						first_map.put(first, new ArrayList<ComparableNode>());
 
-					ComparableNode candidate_distance = new ComparableNode(current,avg);
+					ComparableNode candidate_distance = new ComparableNode(current,group_value);
 					first_map.get(first).add(candidate_distance);
 
 					//current -> first
 					if(!current_map.containsKey(current))
 						current_map.put(current, new ArrayList<ComparableNode>());
 
-					current_map.get(current).add(new ComparableNode(first, avg));
+					current_map.get(current).add(new ComparableNode(first, group_value));
 
-					//the two maps will be latter matched by solving an abstracted
+					//the two maps will be later matched by solving an abstracted
 					//stable marriage problem
 				}
+			}
 		}	
 	}
 }

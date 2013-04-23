@@ -155,6 +155,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanLoadDivisions = new EzVarBoolean("Load division file", false);
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		varTracking = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
+		
 		EzGroup groupTracking = new EzGroup("TRACKING elements",
 				varTracking,
 				varLinkrange,

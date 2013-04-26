@@ -14,6 +14,7 @@ import vtk.vtkIdTypeArray;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataReader;
+import vtk.vtkPolyDataWriter;
 
 /**
  * Class to read a VTK mesh file and elaborate it into a 
@@ -36,6 +37,8 @@ public class JtsVtkReader {
         reader.SetOutput(polydata);
               
         reader.Update();
+        
+       
 		
 	}
 	

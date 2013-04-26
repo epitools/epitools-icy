@@ -14,6 +14,7 @@ import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
+import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
@@ -212,8 +213,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 			generateSpatioTemporalGraph(wing_disc_movie);
 			
 			//Border identification and discarding of outer ring
-			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-			borderUpdate.applyBoundaryCondition();
+//			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
+//			borderUpdate.applyBoundaryCondition();
 			
 			//to remove another layer just reapply the method
 			//borderUpdate.applyBoundaryCondition();
@@ -223,7 +224,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			PlotEnum USER_CHOICE = varPlotting.getValue();
 			
 			switch (USER_CHOICE){
-				case BORDER: sequence.addPainter(borderUpdate);
+				case BORDER: sequence.addPainter(null);
 					break;
 				case CELLS: cellMode(wing_disc_movie);
 					break;
@@ -367,16 +368,16 @@ public class CellGraph extends EzPlug implements EzStoppable
 		int time_points = varMaxT.getValue();
 
 		String file_name = mesh_file.getName();
-		String file_path = mesh_file.getParent() + "/";
-		String file_ext = ".vtk";
-		
-		int ext_start = file_name.indexOf(file_ext);
-		int file_no_start = ext_start - 2;
-		
-		String file_name_wo_no = file_name.substring(0, file_no_start);
-		String file_no_str = file_name.substring(file_no_start, ext_start);
-		
-		int start_file_no = Integer.parseInt(file_no_str);
+//		String file_path = mesh_file.getParent() + "/";
+//		String file_ext = ".vtk";
+//		
+//		int ext_start = file_name.indexOf(file_ext);
+//		int file_no_start = ext_start - 2;
+//		
+//		String file_name_wo_no = file_name.substring(0, file_no_start);
+//		String file_no_str = file_name.substring(file_no_start, ext_start);
+//		
+//		int start_file_no = Integer.parseInt(file_no_str);
 		
 		varFile.setButtonText(file_name);
 		
@@ -385,43 +386,51 @@ public class CellGraph extends EzPlug implements EzStoppable
 		/******************FRAME LOOP***********************************/
 		for(int i = 0; i<time_points; i++){
 			
-			//successive file name generation TODO:make it safe!
-			int current_file_no = start_file_no + i;
-			String abs_path = "";
-			
-			if(current_file_no < 10)
-				abs_path = file_path + file_name_wo_no + "0" + current_file_no + file_ext;  
-			else
-				abs_path = file_path + file_name_wo_no + current_file_no + file_ext;
-				
-			//System.out.println(abs_path);
-			
-			try{
-				File current_file = new File(abs_path);
-				if(!current_file.exists())
-					throw new SecurityException();
-			}
-			catch(Exception e){
-				new AnnounceFrame("Missing time point: " + abs_path);
-				continue;
-			}
+//			//successive file name generation TODO:make it safe!
+//			int current_file_no = start_file_no + i;
+//			String abs_path = "";
+//			
+//			if(current_file_no < 10)
+//				abs_path = file_path + file_name_wo_no + "0" + current_file_no + file_ext;  
+//			else
+//				abs_path = file_path + file_name_wo_no + current_file_no + file_ext;
+//				
+//			//System.out.println(abs_path);
+//			
+//			try{
+//				File current_file = new File(abs_path);
+//				if(!current_file.exists())
+//					throw new SecurityException();
+//			}
+//			catch(Exception e){
+//				new AnnounceFrame("Missing time point: " + abs_path);
+//				continue;
+//			}
 			
 			/******************VTK MESH TO POLYGON TRANSFORMATION***********************************/
 
 	
-			JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
+//			JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
+//
+//			//check for data correctness        
+//			if(polygonReader.is_not_polydata()){
+//				new AnnounceFrame("NO Poly data found in: "+file_name);
+//				continue;
+//			}
+//
+//			ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons();
+//			
+			
+			//direct Skeleton input
+			SkeletonReader skeletonReader = new SkeletonReader(
+					mesh_file.getAbsolutePath(), sequence);
+			
+			ArrayList<Polygon> polygonMesh = skeletonReader.extractPolygons();
 
-			//check for data correctness        
-			if(polygonReader.is_not_polydata()){
-				new AnnounceFrame("NO Poly data found in: "+file_name);
-				continue;
-			}
-
-			ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons();
 			
 			/******************GRAPH GENERATION***********************************/
 			
-			FrameGraph current_frame = new FrameGraph(current_file_no);
+			FrameGraph current_frame = new FrameGraph(i);
 
 			//insert all polygons into graph as CellPolygons
 			ArrayList<Cell> cellList = new ArrayList<Cell>();

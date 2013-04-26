@@ -1,9 +1,11 @@
 package plugins.davhelle.cellgraph.io;
 
 import icy.image.IcyBufferedImage;
+import icy.image.ImageUtil;
 import icy.sequence.Sequence;
 import icy.type.collection.array.Array1DUtil;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -13,20 +15,36 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 
+/**
+ * SkeletonReader allows direct input of Skeleton images which 
+ * are converted into JTK Polygon collection. 
+ * 
+ * @author Davide Heller
+ *
+ */
 public class SkeletonReader {
 
-	GeometryFactory lineFactory;
+	private GeometryFactory lineFactory;
 	
-	int skeleton_width;
-	int skeleton_height;
+	private int skeleton_width;
+	private int skeleton_height;
 	
-	boolean[][] skeleton;
+	private boolean[][] skeleton;
 	
-	public SkeletonReader(String file_name, Sequence sequence){
+	/**
+	 * Constructor converts the input skeleton image
+	 * into a boolean map which represents the presence
+	 * of a white pixel (TODO REFINE) as true value.
+	 * 
+	 * @param file_name File name of the skeleton image
+	 */
+	public SkeletonReader(String file_name){
 
 		lineFactory = new GeometryFactory();
 		
-		IcyBufferedImage img = sequence.getImage(0, 0);
+		BufferedImage raw_img = ImageUtil.load(file_name);
+		
+		IcyBufferedImage img = IcyBufferedImage.createFrom(raw_img);
 		
 		Object imageData = img.getDataXY( 0 );
 		
@@ -42,6 +60,7 @@ public class SkeletonReader {
 		for(int i=1; i<skeleton_height - 1; i++){
 			idx = i * img.getWidth();
 			for(int j=1; j < skeleton_width -1; j++){
+				//TODO what if the white value is not 255
 				if(dataBuffer[idx + j] == 255.0){
 					skeleton[j][i] = true;
 				}
@@ -50,6 +69,20 @@ public class SkeletonReader {
 
 	}
 	
+	/**
+	 * Given the boolean map, first a line collection is 
+	 * build and then the latter is converted into a 
+	 * Polygon collection by the Polygonizer function of JTS.
+	 * 
+	 * A line is added for every two adjacent white pixels.
+	 * Exception are made for oblique connections which have
+	 * to satisfy the criteria that neighboring pixels are
+	 * empty.(Criteria can be violated by horizontal or vertical
+	 * connections, e.g. cross situation)
+	 * 
+	 * 
+	 * @return
+	 */
 	public ArrayList<Polygon> extractPolygons(){
 		
 		Collection line_collection = new ArrayList();
@@ -63,7 +96,7 @@ public class SkeletonReader {
 					if(skeleton[j-1][i+1]) //llx
 						if(!skeleton[j-1][i  ] && !skeleton[j  ][i+1])
 							line_collection.add(buildLine(j,i,j-1,i+1));  
-					if(skeleton[j  ][i+1]) //lcx
+					if(skeleton[j  ][i+1]) //lcx - vertical junction doesn't need check
 						//if(!skeleton[j-1][i+1] && !skeleton[j+1][i+1])
 							line_collection.add(buildLine(j,i,j,i+1));  
 					if(skeleton[j+1][i+1]) //lrw
@@ -86,6 +119,15 @@ public class SkeletonReader {
 	        return jts_polygons;
 	}
 	
+	/**
+	 * Helper method to create a line
+	 * 
+	 * @param x1 starting point x coordinate
+	 * @param y1 starting point y coordinate
+	 * @param x2 ending point x coordinate
+	 * @param y2 ending point y coordinate
+	 * @return
+	 */
 	private LineString buildLine(int x1, int y1, int x2, int y2){
 		Coordinate[] line_coordinates = new Coordinate[]{
 				new Coordinate((double)x1, (double)y1),

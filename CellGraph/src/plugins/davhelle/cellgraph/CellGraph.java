@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.swing.plaf.BorderUIResource;
+
 import com.vividsolutions.jts.geom.Polygon;
 
 import plugins.adufour.ezplug.*;
@@ -45,16 +48,16 @@ import icy.sequence.Sequence;
  * 
  * Aim is to access the segmented live imaging samples from fluorescence 
  * confocal microscopy as spatio-temporal graph. Consecutive time points
- * should furthermore be linked by a tracking algorithm.
+ * will be furthermore linked by a tracking algorithm.
  * 
  * As the segmentation is usually not perfect the tool should also
- * allow for manual correction/experts input to improve the
+ * allow for manual correction/experts input in the future.
  *
  * Finally a statistical analysis might also be included through an R pipeline
  * and Jchart built into ICY.
  * 
- * Current version requires as input a VTK mesh representing the cell membranes and the original
- * image/sequence to be open. 
+ * Current version requires as input either a skeleton (TODO definition)
+ * representing the cell outline or VTK mesh and the original image/sequence to be open. 
  * 
  * Required libraries:
  * - JTS (Java Topology Suite) for the vtkmesh to polygon transformation
@@ -82,10 +85,15 @@ public class CellGraph extends EzPlug implements EzStoppable
 	private enum TrackEnum{
 		MOSAIC, NN,
 	}
+	
+	private enum InputType{
+		VTK_MESH, SKELETON,
+	}
 
 	//Ezplug fields 
 	EzVarEnum<PlotEnum> 		varPlotting;
 	EzVarEnum<TrackEnum>		varTracking;
+	EzVarEnum<InputType>		varInput;
 	EzVarFile					varFile;
 	EzVarSequence				varSequence;
 	
@@ -117,15 +125,19 @@ public class CellGraph extends EzPlug implements EzStoppable
 	{
 		//Ezplug variable initialization
 		//TODO optimize file name display 
-		
+
 		varSequence = new EzVarSequence("Input sequence");
 		varRemovePainterFromSequence = new EzVarBoolean("Remove painter", false);
 		
 		super.addEzComponent(varSequence);
 		super.addEzComponent(varRemovePainterFromSequence);
 		
+		//What input is given
+		varInput = new EzVarEnum<InputType>(
+				"Input type",InputType.values(), InputType.SKELETON);
 		//Constraints on file, time and space
-		varFile = new EzVarFile("Mesh file", "/Users/davide/Documents/segmentation/trial");
+		varFile = new EzVarFile(
+				"Input files", "/Users/davide/Documents/segmentation/trial");
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
 		
@@ -170,7 +182,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
-				"Representation", varFile, varMaxT, varPlotting,
+				"Representation", varInput, varFile, varMaxT, varPlotting,
 				groupCellMap, groupVoronoiMap,groupTracking);
 		
 		super.addEzComponent(groupFiles);
@@ -213,8 +225,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 			generateSpatioTemporalGraph(wing_disc_movie);
 			
 			//Border identification and discarding of outer ring
-//			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-//			borderUpdate.applyBoundaryCondition();
+			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
+			borderUpdate.applyBoundaryCondition();
 			
 			//to remove another layer just reapply the method
 			//borderUpdate.applyBoundaryCondition();
@@ -224,7 +236,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			PlotEnum USER_CHOICE = varPlotting.getValue();
 			
 			switch (USER_CHOICE){
-				case BORDER: sequence.addPainter(null);
+				case BORDER: sequence.addPainter(borderUpdate);
 					break;
 				case CELLS: cellMode(wing_disc_movie);
 					break;
@@ -367,70 +379,78 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 		int time_points = varMaxT.getValue();
 
-		String file_name = mesh_file.getName();
-//		String file_path = mesh_file.getParent() + "/";
-//		String file_ext = ".vtk";
-//		
-//		int ext_start = file_name.indexOf(file_ext);
-//		int file_no_start = ext_start - 2;
-//		
-//		String file_name_wo_no = file_name.substring(0, file_no_start);
-//		String file_no_str = file_name.substring(file_no_start, ext_start);
-//		
-//		int start_file_no = Integer.parseInt(file_no_str);
+		String file_name = mesh_file.getAbsolutePath();
+		int point_idx = file_name.indexOf('.');
+		int file_no_idx = point_idx - 2;
 		
-		varFile.setButtonText(file_name);
+		int start_file_no = 0;
+		
+		if(point_idx > 3){
+			//two space number assuption
+			String file_str_no = file_name.substring(file_no_idx, point_idx);
+			int file_no = Integer.valueOf(file_str_no);
+//			System.out.println(file_str_no+":"+file_no);
+		}
+		
+		varFile.setButtonText(mesh_file.getName());
 		
 		
 		
 		/******************FRAME LOOP***********************************/
 		for(int i = 0; i<time_points; i++){
 			
-//			//successive file name generation TODO:make it safe!
-//			int current_file_no = start_file_no + i;
-//			String abs_path = "";
-//			
-//			if(current_file_no < 10)
-//				abs_path = file_path + file_name_wo_no + "0" + current_file_no + file_ext;  
-//			else
-//				abs_path = file_path + file_name_wo_no + current_file_no + file_ext;
-//				
-//			//System.out.println(abs_path);
-//			
-//			try{
-//				File current_file = new File(abs_path);
-//				if(!current_file.exists())
-//					throw new SecurityException();
-//			}
-//			catch(Exception e){
-//				new AnnounceFrame("Missing time point: " + abs_path);
-//				continue;
-//			}
+			//successive file name generation TODO:make it safe!
+			int current_file_no = start_file_no + i;
+			String file_str_no = Integer.toString(current_file_no);
 			
-			/******************VTK MESH TO POLYGON TRANSFORMATION***********************************/
+			if(current_file_no < 10)
+				file_str_no = "0" + file_str_no;  
+				
+			String abs_path = file_name.substring(0, file_no_idx) + file_str_no + file_name.substring(point_idx);
+			System.out.println(abs_path);
+			
+			try{
+				File current_file = new File(abs_path);
+				if(!current_file.exists())
+					throw new SecurityException();
+			}
+			catch(Exception e){
+				new AnnounceFrame("Missing time point: " + abs_path);
+				continue;
+			}
+			
+			/******************INPUT TO POLYGON TRANSFORMATION***********************************/
 
-	
-//			JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
-//
-//			//check for data correctness        
-//			if(polygonReader.is_not_polydata()){
-//				new AnnounceFrame("NO Poly data found in: "+file_name);
-//				continue;
-//			}
-//
-//			ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons();
-//			
 			
-			//direct Skeleton input
-			SkeletonReader skeletonReader = new SkeletonReader(
-					mesh_file.getAbsolutePath(), sequence);
+			ArrayList<Polygon> polygonMesh = null;
 			
-			ArrayList<Polygon> polygonMesh = skeletonReader.extractPolygons();
+			switch(varInput.getValue()){
+			case SKELETON:
+				SkeletonReader skeletonReader = new SkeletonReader(abs_path);
+				
+				//TODO CHECK FOR DATA CORRECTION
+				
+				polygonMesh = skeletonReader.extractPolygons();
+				
+				break;
+			case VTK_MESH:
+				JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
+
+				//check for data correctness        
+				if(polygonReader.is_not_polydata()){
+					new AnnounceFrame("NO Poly data found in: "+file_name);
+					continue;
+				}
+
+				polygonMesh = polygonReader.extractPolygons();
+				
+				break;	
+			}
 
 			
 			/******************GRAPH GENERATION***********************************/
 			
-			FrameGraph current_frame = new FrameGraph(i);
+			FrameGraph current_frame = new FrameGraph(current_file_no);
 
 			//insert all polygons into graph as CellPolygons
 			ArrayList<Cell> cellList = new ArrayList<Cell>();

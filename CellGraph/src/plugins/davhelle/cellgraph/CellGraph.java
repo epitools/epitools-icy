@@ -100,6 +100,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//EzPlug options
 	EzVarBoolean				varRemovePainterFromSequence;
+	EzVarBoolean				varUpdatePainterMode;
+	EzVarBoolean				varCutBorder;
 	EzVarBoolean				varBooleanPolygon;
 	EzVarBoolean				varBooleanCCenter;
 	EzVarBoolean				varBooleanCellIDs;
@@ -129,6 +131,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 		varSequence = new EzVarSequence("Input sequence");
 		varRemovePainterFromSequence = new EzVarBoolean("Remove painter", false);
+		varUpdatePainterMode = new EzVarBoolean("Update painter", false);
 		
 		super.addEzComponent(varSequence);
 		super.addEzComponent(varRemovePainterFromSequence);
@@ -145,6 +148,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
+		
+		//Border cut
+		varCutBorder = new EzVarBoolean("Eliminate one border line",false);
 	
 		
 		//Cells view
@@ -188,8 +194,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
-				"Representation", varInput, varPackingAnalyzer, varFile, varMaxT, varPlotting,
-				groupCellMap, groupVoronoiMap,groupTracking);
+				"Representation", 
+				varUpdatePainterMode,
+				varInput, 
+				varPackingAnalyzer,
+				varFile, 
+				varMaxT,
+				varCutBorder,
+				varPlotting,
+				groupCellMap,
+				groupVoronoiMap,
+				groupTracking);
 		
 		super.addEzComponent(groupFiles);
 		
@@ -225,6 +240,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 		}
 		else{
 			
+			//Eliminates the previous painter and runs the 
+			//the program (update mode)
+			
+			if(varUpdatePainterMode.getValue()){
+				List<Painter> painters = sequence.getPainters();
+				for (Painter painter : painters) {
+					sequence.removePainter(painter);
+					sequence.painterChanged(painter);    				
+				}
+			}
+			
 			//Create spatio temporal graph from mesh files
 			
 			TissueEvolution wing_disc_movie = new TissueEvolution();	
@@ -232,7 +258,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			//Border identification and discarding of outer ring
 			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-			borderUpdate.applyBoundaryCondition();
+			if(varCutBorder.getValue())
+				borderUpdate.applyBoundaryCondition();
+			else
+				borderUpdate.markOnly();
 			
 			//to remove another layer just reapply the method
 			//borderUpdate.applyBoundaryCondition();
@@ -405,7 +434,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		/******************FRAME LOOP***********************************/
 		for(int i = 0; i<time_points; i++){
 			
-			//successive file name generation TODO see how fiji/LOCI importer does it
+			//successive file name generation
 			int current_file_no = start_file_no + i;
 			String file_str_no = Integer.toString(current_file_no);
 			
@@ -421,7 +450,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			else	
 				abs_path = file_name.substring(0, file_no_idx) + file_str_no + file_name.substring(point_idx);
 			
-			System.out.println("reading: "+ abs_path);
+			System.out.println("reading frame "+i+": "+ abs_path);
 			
 			try{
 				File current_file = new File(abs_path);

@@ -62,7 +62,7 @@ public class BorderCells extends AbstractPainter{
 
 			//Compute boundary ring
 			Geometry boundary = union.getBoundary();
-			LinearRing borderRing = (LinearRing) boundary;
+//			LinearRing borderRing = (LinearRing) boundary;
 
 			
 			//Get first boundary ring (not proper polygons)
@@ -75,7 +75,7 @@ public class BorderCells extends AbstractPainter{
 				Node n = node_it.next();
 				Geometry p = n.getGeometry();
 				
-				boolean is_border = p.intersects(borderRing);
+				boolean is_border = p.intersects(boundary);
 
 				
 				//Cancel wrong boundary
@@ -142,6 +142,50 @@ public class BorderCells extends AbstractPainter{
 			}
 		}
 		
+	}
+
+	/**
+	 * Only mark border cells without eliminating them
+	 * 
+	 * 
+	 */
+	public void markOnly() {
+		
+		//Identify the boundary for every frame
+		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
+			
+			FrameGraph frame_i = stGraph.getFrame(time_point_i);
+
+			//set up polygon container
+		
+			Geometry[] output = new Geometry[frame_i.size()];
+			Iterator<Node> node_it = frame_i.iterator();
+			for(int i=0; i<frame_i.size(); i++){
+				output[i] = node_it.next().getGeometry();
+			}		
+
+			//Create union of all polygons
+			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+			Geometry union = polygonCollection.buffer(0);
+
+			//Compute boundary ring
+			Geometry boundary = union.getBoundary();
+//			LinearRing borderRing = (LinearRing) boundary;
+			
+			//Check via intersection if cell is border cell
+			node_it = frame_i.iterator();
+			for(int i=0; i<frame_i.size(); i++){
+
+				Node n = node_it.next();
+				Geometry p = n.getGeometry();
+				
+				boolean is_border = p.intersects(boundary);
+
+				//Set border flag if intersect
+				if(is_border)
+					n.setBoundary(true);
+			}
+		}
 	}
 
 }

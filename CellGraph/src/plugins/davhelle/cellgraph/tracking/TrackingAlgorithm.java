@@ -100,8 +100,17 @@ public abstract class TrackingAlgorithm {
 			next.setDivision(previous.getDivision());
 		
 		//only update linkage from previous cell if not set yet
-		if(previous.getNext() == null)
+		if(previous.getNext() == null){
 			previous.setNext(next);
+			
+			int previous_frame_no = previous.getBelongingFrame().getFrameNo();
+			int next_frame_no = next.getBelongingFrame().getFrameNo();
+			
+			//check if correspondence is in the immediately successive frame
+			if(next_frame_no - previous_frame_no > 1)
+				previous.setErrorTag(-3);
+			
+		}
 		
 	}
 	

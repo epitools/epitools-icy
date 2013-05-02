@@ -26,6 +26,7 @@ import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
+import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
@@ -37,6 +38,8 @@ import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import icy.gui.frame.progress.AnnounceFrame;
+import icy.image.IcyBufferedImage;
+import icy.main.Icy;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
 
@@ -128,6 +131,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 	{
 		//Ezplug variable initialization
 		//TODO optimize file name display 
+		
+		//TODO open automatically test image!
+		
 
 		varSequence = new EzVarSequence("Input sequence");
 		varRemovePainterFromSequence = new EzVarBoolean("Remove painter", false);
@@ -141,10 +147,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				"Input type",InputType.values(), InputType.SKELETON);
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/Documents/segmentation/trial");
+				"Input files", "/Users/davide/Documents/segmentation/packing_analyser_gammazero");
 		
 		//Flag to access Packing Analyzer Output file system structure
-		varPackingAnalyzer = new EzVarBoolean("from Packing Analyzer", false);
+		varPackingAnalyzer = new EzVarBoolean("from Packing Analyzer", true);
 		
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
@@ -314,7 +320,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 		if(varBooleanPolygon.getValue()){
 			Painter polygons = new PolygonPainter(wing_disc_movie);
 			sequence.addPainter(polygons);
+			
+			if(varInput.getValue() == InputType.SKELETON){
+				Painter polygons2 = new PolygonConverterPainter(wing_disc_movie);
+				sequence.addPainter(polygons2);
+			}
 		}
+		
+		
 	}
 	
 	private void voronoiMode(SpatioTemporalGraph wing_disc_movie){

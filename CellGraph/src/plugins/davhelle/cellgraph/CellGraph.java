@@ -3,6 +3,7 @@ package plugins.davhelle.cellgraph;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
+import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
@@ -510,9 +512,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 			//insert all polygons into graph as CellPolygons
 			ArrayList<Cell> cellList = new ArrayList<Cell>();
-			Iterator<Polygon> poly_it = polygonMesh.iterator();
-			while(poly_it.hasNext()){
-				Cell c = new Cell(poly_it.next(),current_frame);
+			
+			//order polygons according to cell center position
+			ComparablePolygon[] poly_array = new ComparablePolygon[polygonMesh.size()];
+			for(int k=0; k < poly_array.length; k++)
+				poly_array[k] = new ComparablePolygon(polygonMesh.get(k));
+			
+			//order polygons according to comparator class
+			Arrays.sort(poly_array);
+			
+			//obtain the polygons back and create cells
+			for(ComparablePolygon polygon: poly_array){
+				Cell c = new Cell(polygon.getPolygon(),current_frame);
 				cellList.add(c);
 				current_frame.addVertex(c);
 			}

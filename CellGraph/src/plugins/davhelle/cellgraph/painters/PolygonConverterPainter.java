@@ -40,6 +40,8 @@ public class PolygonConverterPainter extends AbstractPainter{
 		GeometryFactory factory = new GeometryFactory();
 
 		for(int time_point=0; time_point < stGraph.size(); time_point++){
+			
+			int wrong_polygons = 0;
 			for(Node n: stGraph.getFrame(time_point).vertexSet()){
 
 				if(n.onBoundary())
@@ -74,7 +76,7 @@ public class PolygonConverterPainter extends AbstractPainter{
 								//found intersection
 								
 								Geometry intersectionAB = aGeo.intersection(bGeo);
-								Geometry intercectionAC = null;
+								Geometry intersectionAC = null;
 								
 								if(!nGeo.intersects(intersectionAB))
 									continue;
@@ -113,26 +115,35 @@ public class PolygonConverterPainter extends AbstractPainter{
 								Geometry intersection = null;
 								
 								if(is_four_way){
+									
+									
+									intersectionAC = aGeo.intersection(cGeo);
+									
 									if(intersectionAB.getNumGeometries() == 1){
 										intersection = nGeo.intersection(intersectionAB);
 										//seed next node
 										a = b;		
-//										System.out.println("Chose B!");
+//										System.out.println("C:"+intersectionAC.getNumGeometries());
+										
+										System.out.println("BX "+ idx + " " + neighbors.size() + " " + intersection.toText());
 									}
 									else{
-										Geometry intersectionAC = aGeo.intersection(cGeo);
 										
 										//Given the first cell was in the middle we have to preserve
 										//one of the lateral cells
 										if(intersectionAC.getNumGeometries() != 1){
-//											System.out.println(idx);
-											firstGeo = bGeo;
+//											System.out.println("B:"+intersectionAB.getNumGeometries());
+											
+											if(idx == 0)
+												firstGeo = bGeo;
 										}
 											
 										//seed next
 										intersection = nGeo.intersection(intersectionAC);
 										a = c;
 										//System.out.println("Chose C!");
+										
+										System.out.println("CX "+ idx + " " + neighbors.size() + " " + intersection.toText());
 									}
 								}
 								else{
@@ -175,10 +186,10 @@ public class PolygonConverterPainter extends AbstractPainter{
 					//find the last intersection
 					//assert idx == nSize - 1: "Connecting point missing, number less than expected!";
 					if(!aGeo.intersects(firstGeo)){
+						System.out.println(ringCoords.get(0).toString());
 						System.out.println(aGeo.getCentroid().toText());
-						System.out.println("and");
 						System.out.println(firstGeo.getCentroid().toText());
-						System.out.println("don't touch");
+						wrong_polygons++;
 					}
 					else{
 						Geometry intersection = nGeo.intersection(aGeo.intersection(firstGeo));
@@ -193,8 +204,10 @@ public class PolygonConverterPainter extends AbstractPainter{
 				
 					//visual output
 					Coordinate[] polygon_coordinates = ringCoords.toArray(new Coordinate[idx]);
-					//System.out.println(Arrays.toString(polygon_coordinates));
 					
+					if(!aGeo.intersects(firstGeo)){
+						System.out.println(Arrays.toString(polygon_coordinates));
+					}
 					
 					//build polygon
 					Polygon nPoly = factory.createPolygon(ringCoords.toArray(new Coordinate[idx]));
@@ -209,6 +222,9 @@ public class PolygonConverterPainter extends AbstractPainter{
 						System.out.println("BAD polygon:"+n.getCentroid().toText());
 				}
 			}
+		
+			System.out.println();
+		System.out.println(wrong_polygons);
 		}
 	}
 

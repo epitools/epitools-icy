@@ -39,14 +39,20 @@ public class PolygonConverterPainter extends AbstractPainter{
 
 		GeometryFactory factory = new GeometryFactory();
 
+		//Cycle through all time points
 		for(int time_point=0; time_point < stGraph.size(); time_point++){
 			
+			//count conflicting polygons
 			int wrong_polygons = 0;
+			
+			//for every node in the frame compute the polygon reduction
 			for(Node n: stGraph.getFrame(time_point).vertexSet()){
 
+				//do not analyze boundary cells
 				if(n.onBoundary())
 					continue;
 					
+				//shortcut for node's geometry
 				Geometry nGeo = n.getGeometry();
 
 				//copy neighbors (n returns a static list)
@@ -61,131 +67,122 @@ public class PolygonConverterPainter extends AbstractPainter{
 					Geometry aGeo = a.getGeometry();
 					Geometry firstGeo = aGeo;
 					int idx = 0;
-					boolean last_neighbor = false;
 					
 					//find an adjacent neighbor and compute the midpoint intersection with n
 					while(!neighbors.isEmpty()){
 						
-						Iterator<Node> node_it = neighbors.iterator();
-						while(node_it.hasNext()){
-							
-							Node b = node_it.next();
-							Geometry bGeo = b.getGeometry();
-							
+						//cycle through all neighbors of n to find a's neighbor b
+						Node b = null;
+						Geometry bGeo = null;	
+						Geometry intersectionAB = null;
+						
+						for(Node neighbor: neighbors){
+							bGeo = neighbor.getGeometry();	
 							if(aGeo.intersects(bGeo)){
-								//found intersection
-								
-								Geometry intersectionAB = aGeo.intersection(bGeo);
-								Geometry intersectionAC = null;
-								
-								if(!nGeo.intersects(intersectionAB))
-									continue;
-								
-								node_it.remove();
-								
-								//Check if it's a four way vertex
-								boolean is_four_way = false;
-								Node c = null;
-								Geometry cGeo = null;
-								
-								if(neighbors.size() > 1){
-									
-									Iterator<Node> left_it = neighbors.iterator();
-									while(left_it.hasNext()){										
-										c = left_it.next();
-										cGeo = c.getGeometry();
-										
-										if(aGeo.intersects(cGeo) && bGeo.intersects(cGeo)){
-//											System.out.println("!!!!!!!!!!!!!!!!------------------------hello");
-											if(nGeo.intersects(aGeo.intersection(cGeo)) && 
-													nGeo.intersects(bGeo.intersection(cGeo))){
-												//four way vertex found!
-												is_four_way = true;
-//												System.out.println("a: "+aGeo.getCentroid().toText());
-//												System.out.println("b: "+bGeo.getCentroid().toText());
-//												System.out.println("c: "+cGeo.getCentroid().toText());
-												left_it.remove();
-												break;				
-											}
-										}
-									}	
+								//non-zero intersection exists
+								intersectionAB = aGeo.intersection(bGeo);
+								//security check with n 
+								if(nGeo.intersects(aGeo.intersection(bGeo))){
+									b = neighbor;
+									break;
 								}
-								
-								//Determine new vertex
-								Geometry intersection = null;
-								
-								if(is_four_way){
-									
-									
-									intersectionAC = aGeo.intersection(cGeo);
-									
-									if(intersectionAB.getNumGeometries() == 1){
-										intersection = nGeo.intersection(intersectionAB);
-										//seed next node
-										a = b;		
-//										System.out.println("C:"+intersectionAC.getNumGeometries());
-										
-										System.out.println("BX "+ idx + " " + neighbors.size() + " " + intersection.toText());
-									}
-									else{
-										
-										//Given the first cell was in the middle we have to preserve
-										//one of the lateral cells
-										if(intersectionAC.getNumGeometries() != 1){
-//											System.out.println("B:"+intersectionAB.getNumGeometries());
-											
-											if(idx == 0)
-												firstGeo = bGeo;
-										}
-											
-										//seed next
-										intersection = nGeo.intersection(intersectionAC);
-										a = c;
-										//System.out.println("Chose C!");
-										
-										System.out.println("CX "+ idx + " " + neighbors.size() + " " + intersection.toText());
-									}
-								}
-								else{
-									intersection = nGeo.intersection(intersectionAB);
-									//set next node
-									a = b;
-								}
-
-								
-								Coordinate intersectionVertex = intersection.getCoordinate();
-								//Save coordinate
-								if(intersectionVertex != null){
-									ringCoords.add(intersectionVertex);
-									idx++;
-								}
-								
-								//update next node
-								aGeo = a.getGeometry();
-								break;
-								
 							}
-//							else{
-//								if(last_neighbor){
-//									System.out.println(aGeo.toText());
-//									System.out.println("and");
-//									System.out.println(bGeo.toText());
-//									System.out.println("don't touch");
-//									neighbors.remove(b);
-//								}
-//							}
 						}
+						
+						if(b == null){
+							System.out.println("ERROR, no suitable b has been found for a:"+aGeo.toText());
+							return;
+						}
+							
+						//remove the corresponding neighbor from list
+						neighbors.remove(b);
+						
+						//Check if it's a four-way vertex(4wv)
+						boolean is_four_way = false;
 
-//						if(idx == nSize - 2){
-//							last_neighbor = true;
-//						}
+						//Thus check within left nodes if there is another correspondence c
+						//which might suggest the presence of a 4wv.
+						Node c = null;
+						Geometry cGeo = null;
+						Geometry intersectionAC = null;
+						
+						for(Node neighbor: neighbors){
+							cGeo = neighbor.getGeometry();
+
+							//first condition for 4wv
+							boolean aTouchesC = aGeo.intersects(cGeo);
+							boolean bTouchesC = bGeo.intersects(cGeo);
+							
+							if(aTouchesC && bTouchesC){
+								
+								//compute intersection and do final check with n
+								intersectionAC = aGeo.intersection(cGeo);
+								
+								boolean nTouchesAC = nGeo.intersects(intersectionAC);
+								boolean nTouchesBC = nGeo.intersects(bGeo.intersection(cGeo));
+								
+								if(nTouchesAC && nTouchesBC){
+									//four way vertex found!
+									is_four_way = true;
+									c = neighbor;
+									break;				
+								}
+							}
+						}	
+								
+								
+						//Determine new vertex and set next
+						Geometry intersection = nGeo.intersection(intersectionAB);
+						a = b;
+						
+						if(is_four_way){
+							
+							neighbors.remove(c);
+							
+//							System.out.println("X @ vertexNo."+ idx + " with " + neighbors.size() + 
+//									" v. left @" + intersection.toText());
+							
+							/*
+							 * If a four way vertex (4wv) occurs attention has to be
+							 * made that the next node seeded is not in the
+							 * middle of the 4wv. That is the node that shares a single
+							 * point with n. Otherwise the same point is inserted
+							 * twice into the polygon
+							 * 
+							 */
+
+							if(intersectionAB.getNumPoints() != 1){
+								a = c;
+								intersection = nGeo.intersection(intersectionAC);
+								
+								if(idx==0 && intersectionAC.getNumPoints() != 1)
+									firstGeo = bGeo; //could be c if a=b, just has not to stay a
+									
+							}
+						}
+						
+
+
+						Coordinate intersectionVertex = intersection.getCoordinate();
+						//Save coordinate
+						if(intersectionVertex != null){
+							ringCoords.add(intersectionVertex);
+							idx++;
+							
+							//and update next node
+							aGeo = a.getGeometry();
+						}
+						else{
+							System.out.println("Failed coordinate creation @"+nGeo.getCentroid().toText());
+							break;	
+						}
 					}
-					
-					
+
 					
 					//find the last intersection
 					//assert idx == nSize - 1: "Connecting point missing, number less than expected!";
 					if(!aGeo.intersects(firstGeo)){
+						System.out.println();
 						System.out.println(ringCoords.get(0).toString());
 						System.out.println(aGeo.getCentroid().toText());
 						System.out.println(firstGeo.getCentroid().toText());
@@ -197,6 +194,7 @@ public class PolygonConverterPainter extends AbstractPainter{
 						idx++;
 					}
 					
+					
 					//complete the linearRing coordinate structure by putting the first coordinate
 					//as last again. (see Polygon doc)			
 					ringCoords.add(ringCoords.get(0));
@@ -207,19 +205,20 @@ public class PolygonConverterPainter extends AbstractPainter{
 					
 					if(!aGeo.intersects(firstGeo)){
 						System.out.println(Arrays.toString(polygon_coordinates));
+						System.out.println();
 					}
 					
-					//build polygon
-					Polygon nPoly = factory.createPolygon(ringCoords.toArray(new Coordinate[idx]));
-
+					Polygon nPoly = null;
 					
-					//System.out.println("Created "+nPoly.toText());
+					//build polygon if safety condition is met
+					if(ringCoords.size() >= 4)
+						nPoly = factory.createPolygon(ringCoords.toArray(new Coordinate[idx]));
 					
 					//add the polygon to the map
 					if(nPoly != null)
 						polyMap.put(n, nPoly);
 					else
-						System.out.println("BAD polygon:"+n.getCentroid().toText());
+						System.out.println("Failed polygon creation @ "+nGeo.getCentroid().toText());
 				}
 			}
 		

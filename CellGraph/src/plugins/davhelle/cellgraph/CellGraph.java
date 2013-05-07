@@ -7,8 +7,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.plaf.BorderUIResource;
-
 import com.vividsolutions.jts.geom.Polygon;
 
 import plugins.adufour.ezplug.*;
@@ -40,8 +38,6 @@ import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import icy.gui.frame.progress.AnnounceFrame;
-import icy.image.IcyBufferedImage;
-import icy.main.Icy;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
 

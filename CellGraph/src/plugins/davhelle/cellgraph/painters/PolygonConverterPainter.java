@@ -10,7 +10,6 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -23,6 +22,16 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+/**
+ * Converter Painter which retrieves the branching points of all cells, 
+ * i.e. the junction between 3 or max. 4 cells
+ * 
+ * Given these points a minimal polygon can be constructed and depicted.
+ * 
+ * 
+ * @author Davide Heller
+ *
+ */
 public class PolygonConverterPainter extends AbstractPainter{
 
 	private SpatioTemporalGraph stGraph;
@@ -41,6 +50,8 @@ public class PolygonConverterPainter extends AbstractPainter{
 
 		//Cycle through all time points
 		for(int time_point=0; time_point < stGraph.size(); time_point++){
+			
+			System.out.println("converting frame "+time_point);
 			
 			//count conflicting polygons
 			int wrong_polygons = 0;
@@ -82,16 +93,22 @@ public class PolygonConverterPainter extends AbstractPainter{
 								//non-zero intersection exists
 								intersectionAB = aGeo.intersection(bGeo);
 								//security check with n 
-								if(nGeo.intersects(aGeo.intersection(bGeo))){
-									b = neighbor;
-									break;
+								try{
+									if(nGeo.intersects(aGeo.intersection(bGeo))){
+										b = neighbor;
+										break;
+									}
+								}
+								catch(java.lang.IllegalArgumentException e){
+									System.out.println("GeometryCollectionError @"+n.getCentroid().toText());
+									System.out.println("Please verify if a nearby 1px - artifact cell is present!");
 								}
 							}
 						}
 						
 						if(b == null){
 							System.out.println("ERROR, no suitable b has been found for a:"+aGeo.toText());
-							return;
+							break;
 						}
 							
 						//remove the corresponding neighbor from list
@@ -117,8 +134,18 @@ public class PolygonConverterPainter extends AbstractPainter{
 								
 								//compute intersection and do final check with n
 								intersectionAC = aGeo.intersection(cGeo);
+//								System.out.println(intersectionAC.toText());
+								boolean nTouchesAC = false;
 								
-								boolean nTouchesAC = nGeo.intersects(intersectionAC);
+								try{
+									nTouchesAC = nGeo.intersects(intersectionAC);
+								}
+								catch(java.lang.IllegalArgumentException e){
+									System.out.println("GeometryCollectionError @"+n.getCentroid().toText());
+									System.out.println("Please verify if a nearby 1px - artifact cell is present!");
+								}
+								
+								
 								boolean nTouchesBC = nGeo.intersects(bGeo.intersection(cGeo));
 								
 								if(nTouchesAC && nTouchesBC){
@@ -222,8 +249,9 @@ public class PolygonConverterPainter extends AbstractPainter{
 				}
 			}
 		
-			System.out.println();
-		System.out.println(wrong_polygons);
+			//System check
+//			System.out.println();
+//		System.out.println(wrong_polygons);
 		}
 	}
 

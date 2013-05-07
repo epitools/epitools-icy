@@ -108,6 +108,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varUpdatePainterMode;
 	EzVarBoolean				varCutBorder;
 	EzVarBoolean				varBooleanPolygon;
+	EzVarBoolean				varBooleanDerivedPolygons;
 	EzVarBoolean				varBooleanCCenter;
 	EzVarBoolean				varBooleanCellIDs;
 	EzVarBoolean				varBooleanAreaDifference;
@@ -165,8 +166,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanPolygon = new EzVarBoolean("Polygons", true);
 		varBooleanCCenter = new EzVarBoolean("Centers", true);
 		varBooleanWriteCenters = new EzVarBoolean("Write cell centers to disk",false);
+		varBooleanDerivedPolygons = new EzVarBoolean("Derived Polygons", false);
 		EzGroup groupCellMap = new EzGroup("CELLS elements",
 				varBooleanPolygon,
+				varBooleanDerivedPolygons,
 				varBooleanCCenter,
 				varBooleanWriteCenters);
 		
@@ -221,7 +224,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
 		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
 		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
-		
+		varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
 		this.setTimeDisplay(true);
 		
 	}
@@ -314,6 +317,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	}
 	
 	private void cellMode(SpatioTemporalGraph wing_disc_movie){
+		
 		if(varBooleanCCenter.getValue()){
 			Painter centroids = new CentroidPainter(wing_disc_movie);
 			sequence.addPainter(centroids);
@@ -322,11 +326,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		if(varBooleanPolygon.getValue()){
 			Painter polygons = new PolygonPainter(wing_disc_movie);
 			sequence.addPainter(polygons);
-			
-			if(varInput.getValue() == InputType.SKELETON){
-				Painter polygons2 = new PolygonConverterPainter(wing_disc_movie);
-				sequence.addPainter(polygons2);
-			}
+		}
+		
+		if(varBooleanDerivedPolygons.getValue() && varInput.getValue() == InputType.SKELETON){
+			Painter derived_polygons = new PolygonConverterPainter(wing_disc_movie);
+			sequence.addPainter(derived_polygons);
 		}
 		
 		
@@ -412,6 +416,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
  	private void generateSpatioTemporalGraph(TissueEvolution wing_disc_movie) {
 		
+ 		//TODO replace with Factory design and possibly with Thread executors!
+ 		
 		/******************FILE NAME GENERATION***********************************/
 		
 		//TODO: proper number read in (no. represented in 2 digit format...)
@@ -439,8 +445,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//two space number assuption
 			String file_str_no = file_name.substring(file_no_idx, point_idx);
 			int file_no = Integer.valueOf(file_str_no);
+			start_file_no = file_no;
 //			System.out.println(file_str_no+":"+file_no);
 		}
+		
+		
 		
 		varFile.setButtonText(mesh_file.getName());
 		

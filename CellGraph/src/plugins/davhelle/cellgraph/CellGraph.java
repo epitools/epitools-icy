@@ -1,3 +1,8 @@
+/*=========================================================================
+ *
+ *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
+ *
+ *=========================================================================*/
 package plugins.davhelle.cellgraph;
 
 import java.io.File;
@@ -112,6 +117,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varBooleanWriteCenters;
 	EzVarBoolean				varBooleanWriteArea;
 	EzVarBoolean				varBooleanLoadDivisions;
+	EzVarBoolean				varBooleanHighlightMistakesBoolean;
 	EzVarBoolean 				varBooleanDrawDisplacement;
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
@@ -146,7 +152,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				"Input type",InputType.values(), InputType.SKELETON);
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/Documents/segmentation/packing_analyser_gammazero");
+				"Input files", "/Users/davide/Dropbox/IMLS/conversion_scripts/packing_analyser_gammazero");
 		
 		//Flag to access Packing Analyzer Output file system structure
 		varPackingAnalyzer = new EzVarBoolean("from Packing Analyzer", true);
@@ -186,6 +192,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
 		varBooleanLoadDivisions = new EzVarBoolean("Load division file", false);
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
+		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		varTracking = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
 		
 		EzGroup groupTracking = new EzGroup("TRACKING elements",
@@ -193,6 +200,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varLinkrange,
 				varDisplacement,
 				varBooleanCellIDs,
+				varBooleanHighlightMistakesBoolean,
 				varBooleanLoadDivisions,
 				varBooleanDrawDisplacement);
 		
@@ -399,7 +407,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 			else{
 				//Paint corresponding cells in time
-				TrackPainter correspondence = new TrackPainter(wing_disc_movie);
+				TrackPainter correspondence = new TrackPainter(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
 				sequence.addPainter(correspondence);
 			}
 			

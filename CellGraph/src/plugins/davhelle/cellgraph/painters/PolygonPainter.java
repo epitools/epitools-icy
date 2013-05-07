@@ -1,3 +1,8 @@
+/*=========================================================================
+ *
+ *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
+ *
+ *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
 import java.awt.Graphics2D;

@@ -33,12 +33,14 @@ public class TrackPainter extends AbstractPainter{
 	private SpatioTemporalGraph stGraph;
 	private HashMap<Node,Color> correspondence_color;
 	private Map<Integer, Color> errorMap;
+	private boolean highlightMistakes;
 
-	public TrackPainter(SpatioTemporalGraph stGraph) {
+	public TrackPainter(SpatioTemporalGraph stGraph, Boolean highlightMistakes) {
 		
 		//Color for each lineage
 		this.correspondence_color = new HashMap<Node,Color>();
 		this.stGraph = stGraph;
+		this.highlightMistakes = highlightMistakes.booleanValue();
 		
 		//Assign color to cell lineages starting from first cell
 		Iterator<Node> cell_it = stGraph.getFrame(0).iterator();
@@ -103,13 +105,23 @@ public class TrackPainter extends AbstractPainter{
 						percentage_tracked++;
 						//cell is part of registered correspondence
 						g.setColor(correspondence_color.get(cell.getFirst()));
-						g.draw(cell.toShape());
+						
+						if(highlightMistakes)
+							g.draw(cell.toShape());
+						else
+							g.fill(cell.toShape());
+					
 						
 						Point lost = cell.getCentroid();
 
 						if(errorMap.containsKey(cell.getErrorTag())){
 							g.setColor(errorMap.get(cell.getErrorTag()));
-							g.fill(cell.toShape());
+							
+							if(highlightMistakes)
+								g.fill(cell.toShape());
+							else
+								g.draw(cell.toShape());
+							
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
 						}
 
@@ -122,8 +134,14 @@ public class TrackPainter extends AbstractPainter{
 						Point lost = cell.getCentroid();
 						
 						if(errorMap.containsKey(cell.getErrorTag())){
+							
 							g.setColor(errorMap.get(cell.getErrorTag()));
-							g.fill(cell.toShape());
+							
+							if(highlightMistakes)
+								g.fill(cell.toShape());
+							else
+								g.draw(cell.toShape());
+							
 							g.drawOval((int)lost.getX(),(int)lost.getY(), 5, 5);
 						}
 					}

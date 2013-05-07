@@ -1,3 +1,8 @@
+/*=========================================================================
+ *
+ *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
+ *
+ *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
 import java.util.ArrayList;

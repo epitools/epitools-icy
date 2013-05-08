@@ -29,6 +29,9 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * is used to identify the perfect matching between the
  * candidates and the node.
  * 
+ * ErrorsTags of nodes are set to highlight likely 
+ * segmentation errors or suggest a division/delamination event.
+ * 
  *  stable-marriage-problem algorithm (Gale–Shapley) source:
  *  http://en.wikipedia.org/wiki/Stable_marriage_problem
  * 
@@ -37,41 +40,49 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class NearestNeighborTracking extends TrackingAlgorithm{
 	
-	//TODO Add weighted distance? decreasing in time, e.g. 1*(t-1) + 0.8*(t-2)....
+	/**
+	 * Distance method names to choose from a candidate list
+	 */
 	private enum DistanceCriteria{
 		MINIMAL_DISTANCE, AVERAGE_DISTANCE
+		//TODO Add weighted distance? decreasing in time, e.g. 1*(t-1) + 0.8*(t-2)....
 	}
+
+	/**
+	 * Holds the number of frames the node information is projected ahead
+	 * @see #linkrange
+	 */
+	private final int linkrange;
+
+	/**
+	 * Holds the kind of distance criteria with which to choose the best parent candidate
+	 * @see #group_criteria
+	 */
+	private final DistanceCriteria group_criteria;
+
+	/**
+	 * Holds the proportion of area increase that a dividing cell must have
+	 * registered to be acknowledged as division.
+	 * @see #increase_factor
+	 */
+	private final double increase_factor;
 	
-	private int linkrange;
-	private DistanceCriteria group_criteria;
-	private double increase_factor;
-	
+	/**
+	 * Initializes Neighbor tracking
+	 * 
+	 * 
+	 * @param spatioTemporalGraph Spatio-temporal graph to be tracked/linked
+	 * @param linkrange the maximum no. of frames the node information is projected ahead
+	 */
 	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange) {
 		super(spatioTemporalGraph);
 		this.linkrange = linkrange;
-		
-		//parameter of the algorithm
-		group_criteria = DistanceCriteria.MINIMAL_DISTANCE;
-		increase_factor = 1.5;
+		this.group_criteria = DistanceCriteria.MINIMAL_DISTANCE;
+		this.increase_factor = 1.5;
 	}
 	
 	@Override
 	public void track(){
-		
-		/* 
-		 * Given the mutually unique relationship between the first frame
-		 * and the current frame. All not assigned nodes can be 
-		 * classified as either:
-		 * + lost or delaminated (first frame only) 
-		 * + segmentation errors
-		 * + divisions (current frame only).
-		 * 
-		 * First node candidates are computed at each time point to 
-		 * solve the marriage problem for the current frame.
-		*/
-		
-		ArrayList<Node> lost_previous = new ArrayList<Node>();
-		ArrayList<Node> lost_next = new ArrayList<Node>();
 		
 		//for every frame extract all particles
 		for(int time_point=0;time_point<stGraph.size(); time_point++){
@@ -79,172 +90,36 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			
 			//link only from the second time point on
 			if(time_point > 0){
-
-				//launch linking
+				
+				//link the current time point
 				Map<String, Stack<Node>> unmarried = linkTimePoint(time_point);
 				
-				//obtain separate unmarried stacks
-				Stack<Node> unmarried_brides = unmarried.get("brides");
-				Stack<Node> unmarried_grooms = unmarried.get("grooms");
+				//analyze unmarried nodes
+				analyze_unmarried(unmarried, time_point);
 				
-				//analyze unmarried brides, i.e. current nodes without previously linked node
-				//System.out.println(" uB:"+ unmarried_brides.size());
-				while(!unmarried_brides.empty()){
-					Node lost = unmarried_brides.pop();
-
-					//Make a rescue attempt on lost node
-					//i.e. determine whether a division or
-					//major image shift could have happened.
-					Node rescued = rescueCandidate(lost);
-					
-					if(rescued != null){
-						//check whether linking missed candidate due to excessive movement
-						//TODO add conditional for division case, mother node should
-						//not be further searched after division happended..
-						Node lastCorrespondence = getMostRecentCorrespondence(time_point, rescued);
-						
-						if(unmarried_grooms.contains(rescued)){
-							updateCorrespondence(lost, lastCorrespondence);
-							unmarried_grooms.remove(rescued);
-							
-							//visual feedback
-							System.out.println("\tRescue of "+rescued.getTrackID());
-							//lost_previous.add(lost);
-						}
-						else{
-							//check whether lost node is result of a division process
-							//by looking if the center was inside the rescue node at 
-							//the previous time point
-							//TODO decide whether to add .buffer(6).
-							if(lastCorrespondence.getGeometry().contains(lost.getCentroid())){
-								
-								//initialize division assumption
-								Node mother = rescued;
-								Node brother = null;
-								boolean has_brother = false;
-								
-								
-								//get brother cell by checking neighbors
-								for(Node neighbor: lost.getNeighbors())
-									if(neighbor.getFirst() == mother 
-									&& lastCorrespondence.getGeometry().contains(neighbor.getCentroid())){
-										has_brother = true;
-										brother = neighbor;
-									}
-								
-								//check for the presence of an area increase
-								boolean has_area_increase = false;
-								int pastFrameNo = 5;
-								
-								double original_area = mother.getGeometry().getArea();
-								double area_threshold = original_area*increase_factor;
-								Node past_mother = lastCorrespondence;
-								
-								while(past_mother != null && pastFrameNo > 0){
-									if(past_mother.getGeometry().getArea() > area_threshold){
-										has_area_increase = true;
-										break;
-									}
-									else
-										past_mother = past_mother.getPrevious();
-										
-								}
-								
-								//verify division conditions
-								if(has_brother && has_area_increase){
-									//initialize new cells
-									lost.setFirst(lost);
-									lost.setTrackID(tracking_id++);
-									
-									brother.setFirst(brother);
-									brother.setTrackID(tracking_id++);
-									
-									//create division object
-									Division division = new Division(lastCorrespondence, lost, brother, time_point);
-									System.out.println(division.toString());
-
-								}
-								else{
-									lost_previous.add(lost);
-									System.out.println(
-											"\t@User: failed division - "+rescued.getTrackID() + 
-											"@[" + Math.round(rescued.getCentroid().getX()) + 
-											"," + Math.round(rescued.getCentroid().getY()) + "]");
-								}
-								
-								
-							}
-							else{
-								lost_previous.add(lost);
-								System.out.println("\t@User: outside previous geometry - "+rescued.getTrackID() + 
-										"@[" + Math.round(rescued.getCentroid().getX()) + 
-										"," + Math.round(rescued.getCentroid().getY()) + "]");
-							}
-						}	
-					}				
-					else{
-						lost_previous.add(lost);
-						System.out.println("\t@User: no rescue candidate");
-					}
-				}
-				
-				//analyze unmarried grooms, i.e. first nodes not been associated to current frame
-				//System.out.println(" uG:"+ unmarried_grooms.size());
-				while(!unmarried_grooms.empty())
-					lost_next.add(getMostRecentCorrespondence(time_point, unmarried_grooms.pop()));
-
 			}
 			
 			//Compute candidates for successive nodes in [linkrange] time frames (one and only assignment x node x frame)
-			for(Node current: stGraph.getFrame(time_point).vertexSet())
+			for(Node current: stGraph.getFrame(time_point).vertexSet()){
 				for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
 					for(Node next: stGraph.getFrame(time_point + i).vertexSet())
 						if(next.getGeometry().contains(current.getCentroid()))
 							next.addParentCandidate(current);
 			
-		}
-		
-		
-		//Update loss information (done now since otherwise the 
-		//information is not propagated correctly while tracking)
-		//add loss information
-		//-2 could not be associated in current frame
-		for(Node lost: lost_previous){
-			lost.setTrackID(-2);
-			lost.setErrorTag(-2);
-		}
-		
-		//-3 will be lost in next frame 
-		for(Node lost: lost_next)
-			if(lost_previous.contains(lost))
-				lost.setErrorTag(-4);
-			else
-				lost.setErrorTag(-3);
-		
-		//mark if division brother cells are not found both
-		for(int time_point=0;time_point<stGraph.size(); time_point++)
-			for(Node cell: stGraph.getFrame(time_point).vertexSet())
-				if(cell.hasObservedDivision())
-					if(time_point > cell.getDivision().getTimePoint()){
-						Division division = cell.getDivision();
-						//assuming the cell is a child 
-						Node brother = division.getBrother(cell);
-						boolean found_brother = false;
-						for(Node neighbor: cell.getNeighbors())
-							if(neighbor.getFirst() == brother)
-								found_brother = true;
-						
-						if(!found_brother)
-							cell.setErrorTag(-6);
-					}
-						
-		
+			
+				//also check in case of a division that the brother cell is present
+				if(current.hasObservedDivision())
+					if(!current.getDivision().isBrotherPresent(current)) //TODO review isBrotherPresent Method input (list would be more logic)
+						current.setErrorTag(TrackingFeedback.BROTHER_CELL_NOT_FOUND.numeric_code);
+			
+			}	
+		}			
 	}
 
 	/**
 	 * Linking algorithm based on the stable marriage problem. 
 	 * The nodes in the current frame are addressed as "brides"
-	 * while the brooms are the candidates from the first frame (expept for divisions).
+	 * while the brooms are the candidates from the first frame (except for divisions).
 	 * 
 	 * @param time_point of frame to be linked
 	 * @return returns 2 Stacks containing the unlinked nodes, accessible trough a map interface ("brides", "grooms")
@@ -342,6 +217,125 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		unmarried.put("grooms", nochoice_grooms);
 		
 		return unmarried;
+	}
+
+	/**
+	 * Analyze nodes that could not be associated because of a division event or a segmentation error.	 * 
+	 * 
+	 * @param unmarried Nodes that have not been associated in the linking process
+	 * @param time_point Time point being analyzed
+	 */
+	private void analyze_unmarried(Map<String, Stack<Node>> unmarried, int time_point) {
+		
+		//obtain separate unmarried stacks
+		Stack<Node> unmarried_brides = unmarried.get("brides");
+		Stack<Node> unmarried_grooms = unmarried.get("grooms");
+		
+		//analyze unmarried brides, i.e. current nodes without previously linked node
+		//System.out.println(" uB:"+ unmarried_brides.size());
+		while(!unmarried_brides.empty()){
+			Node lost = unmarried_brides.pop();
+	
+			//Make a rescue attempt on lost node
+			//i.e. determine whether a division or
+			//major image shift could have happened.
+			Node rescued = rescueCandidate(lost);
+			
+			if(rescued != null){
+				//check whether linking missed candidate due to excessive movement
+				//TODO add conditional for division case, mother node should
+				//not be further searched after division happended..
+				Node lastCorrespondence = getMostRecentCorrespondence(time_point, rescued);
+				
+				if(unmarried_grooms.contains(rescued)){
+					updateCorrespondence(lost, lastCorrespondence);
+					unmarried_grooms.remove(rescued);
+					
+					//visual feedback
+					System.out.println("\tRescue of "+rescued.getTrackID());
+					//lost_previous.add(lost);
+				}
+				else{
+					//check whether lost node is result of a division process
+					//by looking if the center was inside the rescue node at 
+					//the previous time point
+					//TODO decide whether to add .buffer(6).
+					if(lastCorrespondence.getGeometry().contains(lost.getCentroid())){
+						
+						//initialize division assumption
+						Node mother = rescued;
+						Node brother = null;
+						boolean has_brother = false;
+						
+						
+						//get brother cell by checking neighbors
+						for(Node neighbor: lost.getNeighbors())
+							if(neighbor.getFirst() == mother 
+							&& lastCorrespondence.getGeometry().contains(neighbor.getCentroid())){
+								has_brother = true;
+								brother = neighbor;
+							}
+						
+						//check for the presence of an area increase
+						boolean has_area_increase = false;
+						int pastFrameNo = 5;
+						
+						double original_area = mother.getGeometry().getArea();
+						double area_threshold = original_area*increase_factor;
+						Node past_mother = lastCorrespondence;
+						
+						while(past_mother != null && pastFrameNo > 0){
+							if(past_mother.getGeometry().getArea() > area_threshold){
+								has_area_increase = true;
+								break;
+							}
+							else
+								past_mother = past_mother.getPrevious();
+								
+						}
+						
+						//verify division conditions
+						if(has_brother && has_area_increase){							
+							//create division object
+							Division division = new Division(lastCorrespondence, lost, brother, tracking_id);
+							tracking_id = tracking_id + 2;
+							System.out.println(division.toString());
+	
+						}
+						else{
+							lost.setErrorTag(TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code);
+							System.out.println(
+									"\t@User: failed division - "+rescued.getTrackID() + 
+									"@[" + Math.round(rescued.getCentroid().getX()) + 
+									"," + Math.round(rescued.getCentroid().getY()) + "]");
+						}
+						
+						
+					}
+					else{
+						lost.setErrorTag(TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code);
+						System.out.println("\t@User: outside previous geometry - "+rescued.getTrackID() + 
+								"@[" + Math.round(rescued.getCentroid().getX()) + 
+								"," + Math.round(rescued.getCentroid().getY()) + "]");
+					}
+				}	
+			}				
+			else{
+				lost.setErrorTag(TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code);
+				System.out.println("\t@User: no rescue candidate");
+			}
+		}
+		
+		//analyze unmarried grooms, i.e. first nodes not been associated to current frame
+		//System.out.println(" uG:"+ unmarried_grooms.size());
+		while(!unmarried_grooms.empty()){
+			Node last_correspondence = getMostRecentCorrespondence(time_point, unmarried_grooms.pop());
+			if(last_correspondence.getErrorTag() == TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code)
+				last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_BOTH.numeric_code);
+			else
+				last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code);
+		}
+	
 	}
 
 	/**

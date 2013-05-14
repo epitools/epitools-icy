@@ -30,10 +30,13 @@ import com.vividsolutions.jts.geom.Polygon;
 public class Cell implements Node {
 	
 	//geometry to abstract the Node
-	private Polygon geometry;
+	private final Polygon geometry;
+	
+	//avoid redundant centroid computation
+	private final Point centroid;
 	
 	//FrameGraph to which 
-	FrameGraph parent;
+	private final FrameGraph parent;
 	
 	//tracking information
 	private Node next;
@@ -42,8 +45,6 @@ public class Cell implements Node {
 	private List<Node> first_candidates;
 	private int track_id;
 	private int errorTag;
-	
-
 
 	//boundary information
 	private boolean is_on_boundary;
@@ -58,6 +59,7 @@ public class Cell implements Node {
 	public Cell(Polygon cell_polygon, FrameGraph parent) {
 		this.parent = parent;
 		this.geometry = cell_polygon;
+		this.centroid = geometry.getCentroid();
 		
 		//default for untracked cell
 		this.next = null;
@@ -79,7 +81,7 @@ public class Cell implements Node {
 	 */
 	@Override
 	public Point getCentroid() {
-		return geometry.getCentroid();
+		return centroid;
 	}
 
 	/* (non-Javadoc)

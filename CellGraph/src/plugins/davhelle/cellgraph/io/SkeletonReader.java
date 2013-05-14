@@ -9,6 +9,7 @@ import icy.image.IcyBufferedImage;
 import icy.image.ImageUtil;
 import icy.sequence.Sequence;
 import icy.type.collection.array.Array1DUtil;
+import ij.ImagePlus;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -43,11 +44,19 @@ public class SkeletonReader {
 	 * 
 	 * @param file_name File name of the skeleton image
 	 */
-	public SkeletonReader(String file_name){
+	public SkeletonReader(String file_name, boolean REDO_SKELETON){
 
 		lineFactory = new GeometryFactory();
 		
 		BufferedImage raw_img = ImageUtil.load(file_name);
+		
+		//redo skeletonization using imageJ
+		if(REDO_SKELETON){
+			ImagePlus seedwater_skeleton = new ImagePlus(file_name);
+			ij.IJ.run(seedwater_skeleton, "Make Binary", "");
+			ij.IJ.run(seedwater_skeleton, "Skeletonize", "");
+			raw_img = seedwater_skeleton.getBufferedImage();
+		}
 		
 		IcyBufferedImage img = IcyBufferedImage.createFrom(raw_img);
 		

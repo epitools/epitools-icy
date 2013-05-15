@@ -213,7 +213,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varBooleanDrawDisplacement);
 
 		//Decide whether to load into swimming pool the generated stGraph
-		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", false);
+		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
 		
 		EzGroup groupFiles = new EzGroup(
 				"", 

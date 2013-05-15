@@ -7,6 +7,7 @@ package plugins.davhelle.cellgraph;
 
 import java.io.IOException;
 
+import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
@@ -31,6 +32,17 @@ import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
 
+/**
+ * Plugin containing all the visualizations based
+ * on a formerly created spatioTemporal graph
+ * which has been placed into the ICY data sharing
+ * architecture "Swimming Pool".
+ * 
+ * Alpha version!
+ * 
+ * @author Davide Heller
+ *
+ */
 public class CellPainter extends EzPlug {
 	
 	//plotting modes
@@ -113,37 +125,42 @@ public class CellPainter extends EzPlug {
 		
 		// watch if objects are already in the swimming pool:
 		//TODO time_stamp collection?
-		for ( SwimmingObject swimmingObject : 
-			Icy.getMainInterface().getSwimmingPool().getObjects(
-					"stGraph", true) ){
-			
-			if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
-			
-				SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
-				
-				System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
-				System.out.println("CellVisualizer:	first frame has  "+wing_disc_movie.getFrame(0).size()+" cells");
-				
-				PlotEnum USER_CHOICE = varPlotting.getValue();
+		
+		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
+		
+			for ( SwimmingObject swimmingObject : 
+				Icy.getMainInterface().getSwimmingPool().getObjects(
+						"stGraph", true) ){
 
-				switch (USER_CHOICE){
-				case BORDER: sequence.addPainter(new BorderPainter(wing_disc_movie));
-				break;
-				case CELLS: cellMode(wing_disc_movie);
-				break;
-				case POLYGON_CLASS: sequence.addPainter(new PolygonClassPainter(wing_disc_movie));
-				break;
-				case READ_DIVISIONS: divisionMode(wing_disc_movie);
-				break;
-				case VORONOI: voronoiMode(wing_disc_movie);
-				break;
+				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
+
+					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+
+					System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
+					System.out.println("CellVisualizer:	first frame has  "+wing_disc_movie.getFrame(0).size()+" cells");
+
+					PlotEnum USER_CHOICE = varPlotting.getValue();
+
+					switch (USER_CHOICE){
+					case BORDER: sequence.addPainter(new BorderPainter(wing_disc_movie));
+					break;
+					case CELLS: cellMode(wing_disc_movie);
+					break;
+					case POLYGON_CLASS: sequence.addPainter(new PolygonClassPainter(wing_disc_movie));
+					break;
+					case READ_DIVISIONS: divisionMode(wing_disc_movie);
+					break;
+					case VORONOI: voronoiMode(wing_disc_movie);
+					break;
+					}
+
+					//future statistical output statistics
+					//			CsvWriter.trackedArea(wing_disc_movie);
+					//			CsvWriter.frameAndArea(wing_disc_movie);
 				}
-				
-				//future statistical output statistics
-				//			CsvWriter.trackedArea(wing_disc_movie);
-				//			CsvWriter.frameAndArea(wing_disc_movie);
 			}
-		}	
+		else
+			new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
 	}
 
 	@Override

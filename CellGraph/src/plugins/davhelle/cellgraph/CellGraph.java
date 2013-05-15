@@ -25,21 +25,14 @@ import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
-import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
-import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
-import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
-import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
-import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
-import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
-import plugins.davhelle.cellgraph.painters.VoronoiPainter;
 import plugins.davhelle.cellgraph.tracking.MosaicTracking;
 import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
@@ -87,10 +80,6 @@ import icy.swimmingPool.SwimmingObject;
 
 public class CellGraph extends EzPlug implements EzStoppable
 {
-	//plotting modes
-	private enum PlotEnum{
-		CELLS,VORONOI, POLYGON_CLASS, BORDER, TRACKING, READ_DIVISIONS,
-	}
 	
 	private enum TrackEnum{
 		MOSAIC, NN,
@@ -105,7 +94,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	}
 
 	//Ezplug fields 
-	EzVarEnum<PlotEnum> 		varPlotting;
+
 	EzVarEnum<TrackEnum>		varTracking;
 	EzVarEnum<InputType>		varInput;
 	EzVarEnum<SegmentationProgram> varTool;
@@ -113,27 +102,29 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varDirectInput;
 	EzVarSequence				varSequence;
 	
+	//Input limitation
+	EzVarInteger				varMaxZ;
+	EzVarInteger				varMaxT;
+	
 	//EzPlug options
 	EzVarBoolean				varRemovePainterFromSequence;
 	EzVarBoolean				varUpdatePainterMode;
 	EzVarBoolean				varCutBorder;
-	EzVarBoolean				varBooleanPolygon;
-	EzVarBoolean				varBooleanDerivedPolygons;
-	EzVarBoolean				varBooleanCCenter;
-	EzVarBoolean				varBooleanCellIDs;
-	EzVarBoolean				varBooleanAreaDifference;
-	EzVarBoolean				varBooleanVoronoiDiagram;
-	EzVarBoolean				varBooleanWriteCenters;
-	EzVarBoolean				varBooleanWriteArea;
-	EzVarBoolean				varBooleanLoadDivisions;
+	
+	//Tracking Parameters
+	EzVarBoolean 				varDoTracking;
 	EzVarBoolean				varBooleanHighlightMistakesBoolean;
 	EzVarBoolean 				varBooleanDrawDisplacement;
-	EzVarBoolean				varRemoveSmallCells;
-	EzVarDouble					varAreaThreshold;
-	EzVarInteger				varMaxZ;
-	EzVarInteger				varMaxT;
 	EzVarInteger				varLinkrange;
 	EzVarFloat					varDisplacement;
+	EzVarBoolean				varBooleanCellIDs;
+	EzVarBoolean				varBooleanLoadDivisions;
+	
+	//Remove cells
+	EzVarBoolean				varRemoveSmallCells;
+	EzVarDouble					varAreaThreshold;
+	
+	//Load structure into Swimming Pool
 	EzVarBoolean				varUseSwimmingPool;
 	
 	//Stop flag for advanced thread handling TODO
@@ -141,6 +132,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//sequence to paint on 
 	Sequence sequence;
+	
 
 	
 	@Override
@@ -186,27 +178,19 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varAreaThreshold = new EzVarDouble("Area threshold", 10, 0, Double.MAX_VALUE, 0.1);
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
-		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", false);
 		
-		//Cells view
-		varBooleanPolygon = new EzVarBoolean("Polygons", true);
-		varBooleanCCenter = new EzVarBoolean("Centers", true);
-		varBooleanWriteCenters = new EzVarBoolean("Write cell centers to disk",false);
-		varBooleanDerivedPolygons = new EzVarBoolean("Derived Polygons", false);
-		EzGroup groupCellMap = new EzGroup("CELLS elements",
-				varBooleanPolygon,
-				varBooleanDerivedPolygons,
-				varBooleanCCenter,
-				varBooleanWriteCenters);
+		EzGroup groupInputPrameters = new EzGroup("Input Parameters",
+				varInput,
+				varDirectInput,
+				varTool,
+				varFile, 
+				varMaxT,
+				varCutBorder,
+				varRemoveSmallCells,
+				varAreaThreshold		
+				);
 		
-
-		//Voronoi view
-		varBooleanVoronoiDiagram = new EzVarBoolean("Voronoi Diagram", true);
-		varBooleanAreaDifference = new EzVarBoolean("Area difference", false);
-		
-		EzGroup groupVoronoiMap = new EzGroup("VORONOI elements",
-				varBooleanAreaDifference,
-				varBooleanVoronoiDiagram);	
+		varDoTracking = new EzVarBoolean("Do tracking", true);
 		
 		//Track view
 		varLinkrange = new EzVarInteger(
@@ -227,48 +211,26 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varBooleanHighlightMistakesBoolean,
 				varBooleanLoadDivisions,
 				varBooleanDrawDisplacement);
+
+		//Decide whether to load into swimming pool the generated stGraph
+		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", false);
 		
-		//Which painter should be shown by default
-		varPlotting = new EzVarEnum<PlotEnum>("Painter type",PlotEnum.values(),PlotEnum.CELLS);
-		
-		EzGroup groupInputPrameters = new EzGroup("Input Parameters",
-				varInput,
-				varDirectInput,
-				varTool,
-				varFile, 
-				varMaxT,
-				varCutBorder,
-				varRemoveSmallCells,
-				varAreaThreshold		
-				);
-		
-		EzGroup groupPainters = new EzGroup("Painters",
-				varPlotting,
-				groupCellMap,
-				groupVoronoiMap,
-				groupTracking
-				);
-				
-		
-		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
 				"", 
 				varUpdatePainterMode,
 				groupInputPrameters,
-				varUseSwimmingPool,
-				groupPainters
+				varDoTracking,
+				groupTracking,
+				varUseSwimmingPool
 				);
 		
 		super.addEzComponent(groupFiles);
 		
 		//set visibility according to choice
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupFiles, false);
-		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
-		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
-		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
+		
+		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
 		varDirectInput.addVisibilityTriggerTo(varTool, true);
-		varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
-		varUseSwimmingPool.addVisibilityTriggerTo(groupPainters, false);
 		
 		this.setTimeDisplay(true);
 		
@@ -313,107 +275,45 @@ public class CellGraph extends EzPlug implements EzStoppable
 			generateSpatioTemporalGraph(wing_disc_movie);
 			
 			//Border identification and discarding of outer ring
+			//to remove another layer just reapply the method
+			//borderUpdate.applyBoundaryCondition();
+
 			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 			if(varCutBorder.getValue())
 				borderUpdate.applyBoundaryCondition();
 			else
 				borderUpdate.markOnly();
 			
+			sequence.addPainter(borderUpdate);
+
 			
 			//Remove all cells below given threshold if desired
 			SmallCellRemover cellRemover = new SmallCellRemover(wing_disc_movie);
 			if(varRemoveSmallCells.getValue())
 				cellRemover.removeCellsBelow(varAreaThreshold.getValue());
+	
+			//tracking: link the graph in the temporal dimension
+			if(varDoTracking.getValue())
+				trackingMode(wing_disc_movie);
 			
-			
-			//to remove another layer just reapply the method
-			//borderUpdate.applyBoundaryCondition();
-
-			//Display results according to user choice
-			
+			//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 			if(varUseSwimmingPool.getValue()){
+				
+				//remove all formerly present objects 
+				//TODO review, might want to hold multiple object in future
+				Icy.getMainInterface().getSwimmingPool().removeAll();
+				
 				// Put my object in a Swimming Object
-				SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie);
-
+				SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie,"stGraph");
+				
 				// add the object in the swimming pool
 				Icy.getMainInterface().getSwimmingPool().add( swimmingObject );	
-			}
-			else{
-
-				PlotEnum USER_CHOICE = varPlotting.getValue();
-
-				switch (USER_CHOICE){
-				case BORDER: sequence.addPainter(borderUpdate);
-				break;
-				case CELLS: cellMode(wing_disc_movie);
-				break;
-				case POLYGON_CLASS: sequence.addPainter(new PolygonClassPainter(wing_disc_movie));
-				break;
-				case READ_DIVISIONS: divisionMode(wing_disc_movie);
-				break;
-				case TRACKING: trackingMode(wing_disc_movie);
-				break;
-				case VORONOI: voronoiMode(wing_disc_movie);
-				break;
-				}
-
-				//future statistical output statistics
-				//			CsvWriter.trackedArea(wing_disc_movie);
-				//			CsvWriter.frameAndArea(wing_disc_movie);
-
+			
+			
 			}
 		}
 	}
 	
-	private void divisionMode(SpatioTemporalGraph wing_disc_movie){
-		//Divisions read in 
-		try{
-			DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-			division_reader.backtrackDivisions();
-			sequence.addPainter(division_reader);
-		}
-		catch(IOException e){
-			System.out.println("Something went wrong in division reading");
-		}
-	}
-	
-	private void cellMode(SpatioTemporalGraph wing_disc_movie){
-		
-		if(varBooleanCCenter.getValue()){
-			Painter centroids = new CentroidPainter(wing_disc_movie);
-			sequence.addPainter(centroids);
-		}
-		
-		if(varBooleanPolygon.getValue()){
-			Painter polygons = new PolygonPainter(wing_disc_movie);
-			sequence.addPainter(polygons);
-		}
-		
-		if(varBooleanDerivedPolygons.getValue() && varInput.getValue() == InputType.SKELETON){
-			Painter derived_polygons = new PolygonConverterPainter(wing_disc_movie);
-			sequence.addPainter(derived_polygons);
-		}
-		
-		
-	}
-	
-	private void voronoiMode(SpatioTemporalGraph wing_disc_movie){
-		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie);
-
-		if(varBooleanVoronoiDiagram.getValue()){
-			Painter voronoiCells = new VoronoiPainter(
-					wing_disc_movie, 
-					voronoiDiagram.getNodeVoroniMapping());
-			sequence.addPainter(voronoiCells);
-		}
-
-		if(varBooleanAreaDifference.getValue()){
-			Painter voronoiDifference = new VoronoiAreaDifferencePainter(
-					wing_disc_movie, 
-					voronoiDiagram.getAreaDifference());
-			sequence.addPainter(voronoiDifference);	
-		}
-	}
 	
 	private void trackingMode(SpatioTemporalGraph wing_disc_movie){
 		//Tracking

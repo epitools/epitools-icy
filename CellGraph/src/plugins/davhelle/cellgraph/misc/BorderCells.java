@@ -133,18 +133,18 @@ public class BorderCells extends AbstractPainter{
 			}
 				
 			
-			for(Node cell: frame_i.vertexSet()){
-
-				if(cell.onBoundary())
-					g.setColor(Color.white);
-				else
-					g.setColor(Color.green);
-
-				//Fill cell shape
-				//if(!cell.onBoundary())
-				g.fill(cell.toShape());
-
-			}
+//			for(Node cell: frame_i.vertexSet()){
+//
+//				if(cell.onBoundary())
+//					g.setColor(Color.white);
+//				else
+//					g.setColor(Color.green);
+//
+//				//Fill cell shape
+//				//if(!cell.onBoundary())
+//				g.fill(cell.toShape());
+//
+//			}
 		}
 		
 	}

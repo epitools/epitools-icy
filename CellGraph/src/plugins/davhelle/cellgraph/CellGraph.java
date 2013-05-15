@@ -5,6 +5,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
+import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
@@ -124,6 +126,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varBooleanLoadDivisions;
 	EzVarBoolean				varBooleanHighlightMistakesBoolean;
 	EzVarBoolean 				varBooleanDrawDisplacement;
+	EzVarBoolean				varRemoveSmallCells;
+	EzVarDouble					varAreaThreshold;
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
 	EzVarInteger				varLinkrange;
@@ -141,9 +145,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 	{
 		//Ezplug variable initialization
 		//TODO optimize file name display 
+//		this.getUI().setMaximumSize(new Dimension(50, 150));
+//		this.getUI().setResizable(false);
 		
 		//TODO open automatically test image!
-		
 
 		varSequence = new EzVarSequence("Input sequence");
 		varRemovePainterFromSequence = new EzVarBoolean("Remove painter", false);
@@ -172,6 +177,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Border cut
 		varCutBorder = new EzVarBoolean("Eliminate one border line",false);
+		
+		//small cell elimination
+		varRemoveSmallCells = new EzVarBoolean("Remove too small cells", false);
+		varAreaThreshold = new EzVarDouble("Area threshold", 10, 0, Double.MAX_VALUE, 0.1);
+		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
+		
 	
 		
 		//Cells view
@@ -217,16 +228,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Which painter should be shown by default
 		varPlotting = new EzVarEnum<PlotEnum>("Painter type",PlotEnum.values(),PlotEnum.CELLS);
 		
-		//Painter Choice
-		EzGroup groupFiles = new EzGroup(
-				"Representation", 
-				varUpdatePainterMode,
+		EzGroup groupInputPrameters = new EzGroup("Input Parameters",
 				varInput,
 				varDirectInput,
 				varTool,
 				varFile, 
 				varMaxT,
 				varCutBorder,
+				varRemoveSmallCells,
+				varAreaThreshold		
+	);
+				
+		
+		//Painter Choice
+		EzGroup groupFiles = new EzGroup(
+				"Representation", 
+				varUpdatePainterMode,
+				groupInputPrameters,
 				varPlotting,
 				groupCellMap,
 				groupVoronoiMap,
@@ -289,6 +307,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 				borderUpdate.applyBoundaryCondition();
 			else
 				borderUpdate.markOnly();
+			
+			
+			//Remove all cells below given threshold if desired
+			SmallCellRemover cellRemover = new SmallCellRemover(wing_disc_movie);
+			if(varRemoveSmallCells.getValue())
+				cellRemover.removeCellsBelow(varAreaThreshold.getValue());
+			
 			
 			//to remove another layer just reapply the method
 			//borderUpdate.applyBoundaryCondition();

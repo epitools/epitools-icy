@@ -272,9 +272,12 @@ public class PolygonConverterPainter extends AbstractPainter{
 			g.setColor(Color.orange);
 
 			for(Node cell: frame_i.vertexSet())
-				if(polyMap.containsKey(cell))
+				if(polyMap.containsKey(cell)){
 					g.draw((writer.toShape(polyMap.get(cell))));
-			
+					
+					//mark the derived cell center (separate color from normal cell center depiction)
+					//g.fillOval((int)cell.getCentroid().getX(), (int)cell.getCentroid().getY(), 2, 2);
+				}
 		}
 	}
 }

@@ -45,8 +45,10 @@ import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import icy.gui.frame.progress.AnnounceFrame;
+import icy.main.Icy;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
+import icy.swimmingPool.SwimmingObject;
 
 /**
  * <b>CellGraph</b> is a plugin for the bioimage analysis tool ICY. 
@@ -132,6 +134,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarInteger				varMaxT;
 	EzVarInteger				varLinkrange;
 	EzVarFloat					varDisplacement;
+	EzVarBoolean				varUseSwimmingPool;
 	
 	//Stop flag for advanced thread handling TODO
 	boolean						stopFlag;
@@ -151,7 +154,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//TODO open automatically test image!
 
 		varSequence = new EzVarSequence("Input sequence");
-		varRemovePainterFromSequence = new EzVarBoolean("Remove painter", false);
+		varRemovePainterFromSequence = new EzVarBoolean("Remove all painters", false);
 		varUpdatePainterMode = new EzVarBoolean("Update painter", false);
 		
 		super.addEzComponent(varSequence);
@@ -170,7 +173,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/Dropbox/IMLS/conversion_scripts/packing_analyser_gammazero");
+				"Input files", "/Users/davide/Documents/segmentation/2013_5_12/nub4ecadgfp100x12h_20130513_93125 AM/Seedwater_trial/");
 
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
@@ -183,7 +186,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varAreaThreshold = new EzVarDouble("Area threshold", 10, 0, Double.MAX_VALUE, 0.1);
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
-	
+		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", false);
 		
 		//Cells view
 		varBooleanPolygon = new EzVarBoolean("Polygons", true);
@@ -237,18 +240,24 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varCutBorder,
 				varRemoveSmallCells,
 				varAreaThreshold		
-	);
+				);
+		
+		EzGroup groupPainters = new EzGroup("Painters",
+				varPlotting,
+				groupCellMap,
+				groupVoronoiMap,
+				groupTracking
+				);
 				
 		
 		//Painter Choice
 		EzGroup groupFiles = new EzGroup(
-				"Representation", 
+				"", 
 				varUpdatePainterMode,
 				groupInputPrameters,
-				varPlotting,
-				groupCellMap,
-				groupVoronoiMap,
-				groupTracking);
+				varUseSwimmingPool,
+				groupPainters
+				);
 		
 		super.addEzComponent(groupFiles);
 		
@@ -259,6 +268,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
 		varDirectInput.addVisibilityTriggerTo(varTool, true);
 		varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
+		varUseSwimmingPool.addVisibilityTriggerTo(groupPainters, false);
+		
 		this.setTimeDisplay(true);
 		
 	}
@@ -320,29 +331,38 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 			//Display results according to user choice
 			
-			PlotEnum USER_CHOICE = varPlotting.getValue();
-			
-			switch (USER_CHOICE){
-				case BORDER: sequence.addPainter(borderUpdate);
-					break;
-				case CELLS: cellMode(wing_disc_movie);
-					break;
-				case POLYGON_CLASS: sequence.addPainter(new PolygonClassPainter(wing_disc_movie));
-					break;
-				case READ_DIVISIONS: divisionMode(wing_disc_movie);
-					break;
-				case TRACKING: trackingMode(wing_disc_movie);
-					break;
-				case VORONOI: voronoiMode(wing_disc_movie);
-					break;
+			if(varUseSwimmingPool.getValue()){
+				// Put my object in a Swimming Object
+				SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie);
+
+				// add the object in the swimming pool
+				Icy.getMainInterface().getSwimmingPool().add( swimmingObject );	
 			}
+			else{
 
-			//future statistical output statistics
-//			CsvWriter.trackedArea(wing_disc_movie);
-//			CsvWriter.frameAndArea(wing_disc_movie);
+				PlotEnum USER_CHOICE = varPlotting.getValue();
 
+				switch (USER_CHOICE){
+				case BORDER: sequence.addPainter(borderUpdate);
+				break;
+				case CELLS: cellMode(wing_disc_movie);
+				break;
+				case POLYGON_CLASS: sequence.addPainter(new PolygonClassPainter(wing_disc_movie));
+				break;
+				case READ_DIVISIONS: divisionMode(wing_disc_movie);
+				break;
+				case TRACKING: trackingMode(wing_disc_movie);
+				break;
+				case VORONOI: voronoiMode(wing_disc_movie);
+				break;
+				}
+
+				//future statistical output statistics
+				//			CsvWriter.trackedArea(wing_disc_movie);
+				//			CsvWriter.frameAndArea(wing_disc_movie);
+
+			}
 		}
-
 	}
 	
 	private void divisionMode(SpatioTemporalGraph wing_disc_movie){

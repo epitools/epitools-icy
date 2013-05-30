@@ -6,6 +6,7 @@
 package plugins.davhelle.cellgraph;
 
 import java.io.IOException;
+import java.util.List;
 
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
@@ -17,6 +18,7 @@ import icy.swimmingPool.SwimmingObject;
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
+import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarSequence;
 
@@ -24,6 +26,7 @@ import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
+import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
@@ -47,10 +50,11 @@ public class CellPainter extends EzPlug {
 	
 	//plotting modes
 	private enum PlotEnum{
-		CELLS,BORDER, VORONOI, POLYGON_CLASS,  READ_DIVISIONS,
+		CELLS,BORDER, VORONOI, POLYGON_CLASS,  READ_DIVISIONS, AREA_THRESHOLD,
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
+	EzVarBoolean				varUpdatePainterMode;
 	
 	EzVarEnum<PlotEnum> 		varPlotting;
 
@@ -62,6 +66,8 @@ public class CellPainter extends EzPlug {
 	EzVarBoolean				varBooleanVoronoiDiagram;
 	EzVarBoolean				varBooleanWriteCenters;
 	EzVarBoolean				varBooleanWriteArea;
+	
+	EzVarDouble					varAreaThreshold;
 
 	//sequence to paint on 
 	EzVarSequence				varSequence;
@@ -78,6 +84,8 @@ public class CellPainter extends EzPlug {
 		varRemovePainterFromSequence = new EzVarBoolean("Remove all painters", false);
 		super.addEzComponent(varRemovePainterFromSequence);
 		
+		varUpdatePainterMode = new EzVarBoolean("Update painter", false);
+
 		//Cells view
 		varBooleanPolygon = new EzVarBoolean("Polygons", true);
 		varBooleanCCenter = new EzVarBoolean("Centers", true);
@@ -98,20 +106,29 @@ public class CellPainter extends EzPlug {
 				varBooleanAreaDifference,
 				varBooleanVoronoiDiagram);	
 		
+		//Area Threshold View
+		varAreaThreshold = new EzVarDouble("Area threshold", 100, 0, 2000, 1);
+		
+		EzGroup groupAreaThreshold = new EzGroup("AREA_THRESHOLD elements",
+				varAreaThreshold);
+		
 		//Which painter should be shown by default
 		varPlotting = new EzVarEnum<PlotEnum>("Painter type",
 				PlotEnum.values(),PlotEnum.CELLS);
 
 		//Painter
 		EzGroup groupPainters = new EzGroup("Painters",
+				varUpdatePainterMode,
 				varPlotting,
 				groupCellMap,
-				groupVoronoiMap
+				groupVoronoiMap,
+				groupAreaThreshold
 		);
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
 		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
 		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
+		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, PlotEnum.AREA_THRESHOLD);
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
 
 		super.addEzComponent(groupPainters);
@@ -122,45 +139,79 @@ public class CellPainter extends EzPlug {
 	@Override
 	protected void execute() {
 		sequence = varSequence.getValue();
+		if(sequence == null){
+			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
+			return;
+		}
 		
-		// watch if objects are already in the swimming pool:
-		//TODO time_stamp collection?
-		
-		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
-		
-			for ( SwimmingObject swimmingObject : 
-				Icy.getMainInterface().getSwimmingPool().getObjects(
-						"stGraph", true) ){
-
-				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
-
-					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
-
-					System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
-					System.out.println("CellVisualizer:	first frame has  "+wing_disc_movie.getFrame(0).size()+" cells");
-
-					PlotEnum USER_CHOICE = varPlotting.getValue();
-
-					switch (USER_CHOICE){
-					case BORDER: sequence.addPainter(new BorderPainter(wing_disc_movie));
-					break;
-					case CELLS: cellMode(wing_disc_movie);
-					break;
-					case POLYGON_CLASS: sequence.addPainter(new PolygonClassPainter(wing_disc_movie));
-					break;
-					case READ_DIVISIONS: divisionMode(wing_disc_movie);
-					break;
-					case VORONOI: voronoiMode(wing_disc_movie);
-					break;
-					}
-
-					//future statistical output statistics
-					//			CsvWriter.trackedArea(wing_disc_movie);
-					//			CsvWriter.frameAndArea(wing_disc_movie);
-				}
+		//First boolean choice to remove previous painters
+		if(varRemovePainterFromSequence.getValue()){
+			List<Painter> painters = sequence.getPainters();
+			for (Painter painter : painters) {
+				sequence.removePainter(painter);
+				sequence.painterChanged(painter);    				
 			}
-		else
-			new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
+		}
+		else{
+
+			// watch if objects are already in the swimming pool:
+			//TODO time_stamp collection?
+
+			if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
+
+				for ( SwimmingObject swimmingObject : 
+					Icy.getMainInterface().getSwimmingPool().getObjects(
+							"stGraph", true) ){
+
+					if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
+
+						
+						//Eliminates the previous painter and runs the 
+						//the program (update mode)
+						
+						if(varUpdatePainterMode.getValue()){
+							List<Painter> painters = sequence.getPainters();
+							for (Painter painter : painters) {
+								sequence.removePainter(painter);
+								sequence.painterChanged(painter);    				
+							}
+						}
+						
+						SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+
+						System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
+						System.out.println("CellVisualizer:	first frame has  "+wing_disc_movie.getFrame(0).size()+" cells");
+
+						PlotEnum USER_CHOICE = varPlotting.getValue();
+
+						switch (USER_CHOICE){
+						case BORDER: sequence.addPainter(
+								new BorderPainter(wing_disc_movie));
+						break;
+						case CELLS: cellMode(wing_disc_movie);
+						break;
+						case POLYGON_CLASS: sequence.addPainter(
+								new PolygonClassPainter(wing_disc_movie));
+						break;
+						case READ_DIVISIONS: divisionMode(wing_disc_movie);
+						break;
+						case VORONOI: voronoiMode(wing_disc_movie);
+						break;
+						case AREA_THRESHOLD: sequence.addPainter(
+								new AreaThresholdPainter(
+										wing_disc_movie, 
+										varAreaThreshold.getValue()));
+						break;
+						}
+
+						//future statistical output statistics
+						//			CsvWriter.trackedArea(wing_disc_movie);
+						//			CsvWriter.frameAndArea(wing_disc_movie);
+					}
+				}
+			else
+				new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
+		}
 	}
 
 	@Override

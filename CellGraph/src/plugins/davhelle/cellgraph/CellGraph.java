@@ -539,7 +539,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//wing_disc_movie.setFrame(current_frame, current_file_no);
 			wing_disc_movie.addFrame(current_frame);
 			
-
 		}
 		
 	}

@@ -24,8 +24,17 @@ import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
 
+/**
+ * Class identifies the cells which constitute the border 
+ * of the given selection. The task is achieved by consid-
+ * ering the union of all cells and asking which polygons
+ * intersect with the outer ring. Currently this is an un-
+ * optimized version and takes some time. SysOut given.  
+ * 
+ * @author Davide Heller
+ *
+ */
 public class BorderCells extends AbstractPainter{
 
 	private SpatioTemporalGraph stGraph;
@@ -115,6 +124,8 @@ public class BorderCells extends AbstractPainter{
 				//Remember good boundary
 				n.setBoundary(is_border);
 			}
+			
+			System.out.println("Graph finished for frame "+time_point_i);
 		}
 	}
 	

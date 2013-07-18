@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
 
@@ -44,8 +45,9 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 * Distance method names to choose from a candidate list
 	 */
 	private enum DistanceCriteria{
-		MINIMAL_DISTANCE, AVERAGE_DISTANCE
+		MINIMAL_DISTANCE, AVERAGE_DISTANCE, AREA_OVERLAP	
 		//TODO Add weighted distance? decreasing in time, e.g. 1*(t-1) + 0.8*(t-2)....
+, WEIGHTED_INTERSECTION_DISTANCE, WEIGHTED_MIN_DISTANCE
 	}
 
 	/**
@@ -77,7 +79,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange) {
 		super(spatioTemporalGraph);
 		this.linkrange = linkrange;
-		this.group_criteria = DistanceCriteria.MINIMAL_DISTANCE;
+		this.group_criteria = DistanceCriteria.WEIGHTED_MIN_DISTANCE;
 		this.increase_factor = 1.5;
 	}
 	
@@ -232,7 +234,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		Stack<Node> unmarried_grooms = unmarried.get("grooms");
 		
 		//analyze unmarried brides, i.e. current nodes without previously linked node
-		//System.out.println(" uB:"+ unmarried_brides.size());
+		System.out.println(" uB:"+ unmarried_brides.size());
 		while(!unmarried_brides.empty()){
 			Node lost = unmarried_brides.pop();
 	
@@ -241,7 +243,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//major image shift could have happened.
 			Node rescued = rescueCandidate(lost);
 			
+			
 			if(rescued != null){
+				
+				System.out.println("Attempting rescue with:"+rescued.getTrackID());
 				//check whether linking missed candidate due to excessive movement
 				//TODO add conditional for division case, mother node should
 				//not be further searched after division happended..
@@ -261,6 +266,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					//the previous time point
 					//TODO decide whether to add .buffer(6).
 					if(lastCorrespondence.getGeometry().contains(lost.getCentroid())){
+						
+						System.out.println("\tDivision recognition started..");
 						
 						//initialize division assumption
 						Node mother = rescued;
@@ -327,7 +334,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		}
 		
 		//analyze unmarried grooms, i.e. first nodes not been associated to current frame
-		//System.out.println(" uG:"+ unmarried_grooms.size());
+		System.out.println(" uG:"+ unmarried_grooms.size());
 		while(!unmarried_grooms.empty()){
 			Node last_correspondence = getMostRecentCorrespondence(time_point, unmarried_grooms.pop());
 			if(last_correspondence.getErrorTag() == TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code)
@@ -406,6 +413,9 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					current_map.put(current, new ArrayList<ComparableNode>());
 			}
 			else{
+				
+				double current_area = current.getGeometry().getArea();
+				
 				while(candidates.size() > 0){
 
 					Iterator<Node> candidate_it = candidates.iterator();
@@ -491,8 +501,78 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 
 						group_value = min;
 						break;
-					}
+						
+					case AREA_OVERLAP:	
+						
+						//init best_ratio
+						double best_ratio = 0;
+						
+						while(candidate_it.hasNext()){
+							
+							//count only candidates with the same first cell
+							voted = candidate_it.next();
+							if( voted.getFirst() == first){
+								candidate_it.remove();
+								//compute the intersection between the two cell geometries
+								Geometry intersection = current.getGeometry().intersection(voted.getGeometry());
 
+								//Use the ratio of the intersection area and current's area as metric	
+								double overlap_ratio = intersection.getArea() / current_area;
+								//or alternatively divided by the sum of the two cell areas
+								//double overlap_ratio = intersection.getArea() / (current_area + voted.getGeometry().getArea());
+								//adding the candidate's area should reduce the bias of a large cell to affect
+								//the ratio. 
+								
+								//choose the biggest overlap ration
+								if(overlap_ratio > best_ratio)
+									best_ratio = overlap_ratio;
+							
+							}
+						}
+						
+						//end by assigning the reverse value as group value, ordered by minimum
+						group_value = 1 - best_ratio;
+							
+						break;
+						
+					case WEIGHTED_MIN_DISTANCE:
+						//compute the minimal distance out of all
+						//distances with same node (group)
+						
+						min = Double.MAX_VALUE;
+
+						while(candidate_it.hasNext()){
+							
+							voted = candidate_it.next();
+							if( voted.getFirst() == first){
+								candidate_it.remove();
+								voted_centroid = voted.getCentroid();
+								
+								double candidate_dist = DistanceOp.distance(
+										voted_centroid,
+										current_cell_center);
+								
+								//compute the intersection between the two cell geometries
+								Geometry intersection = current.getGeometry().intersection(voted.getGeometry());
+								double overlap_ratio = intersection.getArea() / current_area;
+							
+								double weighted_candidateDistance = candidate_dist * (1 - overlap_ratio);
+								if(min > weighted_candidateDistance)
+									min = weighted_candidateDistance;
+
+							}
+						}
+
+						group_value = min;
+						
+						break;
+						
+					case WEIGHTED_INTERSECTION_DISTANCE:
+						
+						//use the area overlap ratio to weight the distance from the intersection to current's cell center
+						break;
+						
+					}
 
 					//assign candidate to both maps with the respective distance
 

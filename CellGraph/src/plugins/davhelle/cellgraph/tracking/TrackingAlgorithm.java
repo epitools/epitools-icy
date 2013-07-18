@@ -251,6 +251,22 @@ public abstract class TrackingAlgorithm {
 					most_likely_parent = candidate;
 		}
 
+		//System.out.println("before:"+most_likely_parent.getTrackID());
+		
+		//check if equally good candidates exist and if yes compare the distances to the unassigned node
+		for(Node candidate: qs_map.keySet()){
+			if(candidate != most_likely_parent)
+				if(qs_map.get(most_likely_parent).compareTo(qs_map.get(candidate)) == 0){
+					double distanceMostLikely = unassignedNode.getCentroid().distance(most_likely_parent.getCentroid());
+					double distanceAlternative= unassignedNode.getCentroid().distance(candidate.getCentroid());
+					//equally good solution exist, choose the one that is closer
+					if(distanceAlternative < distanceMostLikely)
+						most_likely_parent = candidate;
+				}
+		}
+		
+		//System.out.println("after:"+most_likely_parent.getTrackID());
+		
 //		double candidate_average = 0;
 //		if(qs_map.size() > 0)
 //			candidate_average = candidate_sum / qs_map.size();

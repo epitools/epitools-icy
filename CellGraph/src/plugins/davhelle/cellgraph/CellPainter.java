@@ -26,6 +26,7 @@ import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
+import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsPainter;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
@@ -50,7 +51,7 @@ public class CellPainter extends EzPlug {
 	
 	//plotting modes
 	private enum PlotEnum{
-		CELLS,BORDER, VORONOI, POLYGON_CLASS,  READ_DIVISIONS, AREA_THRESHOLD,
+		CELLS,BORDER, VORONOI, POLYGON_CLASS,  READ_DIVISIONS, AREA_THRESHOLD, ALWAYS_TRACKED,
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -202,6 +203,10 @@ public class CellPainter extends EzPlug {
 										wing_disc_movie, 
 										varAreaThreshold.getValue()));
 						break;
+						case ALWAYS_TRACKED: sequence.addPainter(
+								new AlwaysTrackedCellsPainter(
+										wing_disc_movie));
+						
 						}
 
 						//future statistical output statistics

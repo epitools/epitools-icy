@@ -151,19 +151,19 @@ public class TrackPainter extends AbstractPainter{
 			percentage_tracked = (percentage_tracked/stGraph.getFrame(0).size())*100;
 			
 			//Text headline
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
-			
-			g.setColor(Color.white);
-			g.drawString("Tracked cells: "+(int)percentage_tracked+"%", 10 , 20);
-			
-			g.setColor(Color.red);
-			g.drawString("previous", 10 , 30);
-			
-			g.setColor(Color.yellow);
-			g.drawString("next", 60 , 30);
-			
-			g.setColor(Color.green);
-			g.drawString("none", 90 , 30);
+//			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
+//			
+//			g.setColor(Color.white);
+//			g.drawString("Tracked cells: "+(int)percentage_tracked+"%", 10 , 20);
+//			
+//			g.setColor(Color.red);
+//			g.drawString("previous", 10 , 30);
+//			
+//			g.setColor(Color.yellow);
+//			g.drawString("next", 60 , 30);
+//			
+//			g.setColor(Color.green);
+//			g.drawString("none", 90 , 30);
 		}
 	}
 

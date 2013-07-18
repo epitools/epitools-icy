@@ -318,7 +318,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	private void trackingMode(SpatioTemporalGraph wing_disc_movie){
 		//Tracking
 		if(wing_disc_movie.size() > 1){
-			
+		
 			TrackingAlgorithm tracker = null;
 					
 			switch(varTracking.getValue()){
@@ -367,6 +367,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				TrackPainter correspondence = new TrackPainter(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
 				sequence.addPainter(correspondence);
 			}
+			
+			wing_disc_movie.setTracking(true);
 			
 
 		}

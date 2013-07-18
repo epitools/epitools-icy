@@ -29,7 +29,7 @@ public class Division {
 	private Node child1;
 	private Node child2;
 	private int time_point;
-	private FrameGraph stGraph;
+	private FrameGraph division_frame;
 
 	public Division(Node mother, Node child1, Node child2, int tracking_id) {
 		
@@ -37,12 +37,12 @@ public class Division {
 		this.mother = mother;
 		this.child1 = child1;
 		this.child2 = child2;
-		this.stGraph = child1.getBelongingFrame();
-		this.time_point = stGraph.getFrameNo();
+		this.division_frame = child1.getBelongingFrame();
+		this.time_point = division_frame.getFrameNo();
 		
 		
 		//sanity check
-		if(stGraph != child2.getBelongingFrame())
+		if(division_frame != child2.getBelongingFrame())
 			System.out.println("The division children do not share the same time point");
 		
 		//update children first node (themself)

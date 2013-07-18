@@ -231,4 +231,9 @@ public class Cell implements Node {
 		this.errorTag = errorTag;
 	}
 
+	@Override
+	public boolean hasNext() {
+		return (next != null);
+	}
+
 }

@@ -92,6 +92,16 @@ public interface Node{
 	public void setPrevious(Node next_node);
 	
 	/**
+	 * Returns if the Node has an associated node 
+	 * in a successive time point (not necessarily contiguous),
+	 * i.e. node stored in next field.
+	 * 
+	 * @return true if next field exists.
+	 */
+	public boolean hasNext();
+	
+	
+	/**
 	 * Get reference to same node in successive time frame (first known)
 	 * @return reference to corresponding node in t+i (ideally i=1)
 	 */

@@ -105,6 +105,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	//Input limitation
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
+	EzVarInteger				varBorderEliminationNo;
 	
 	//EzPlug options
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -161,11 +162,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<CellGraph.SegmentationProgram>(
-				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.SeedWater);
+				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.PackingAnalyzer);
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/Documents/segmentation/2013_5_12/nub4ecadgfp100x12h_20130513_93125 AM/Seedwater_trial/");
+				"Input files", "/Users/davide/Documents/segmentation/packingAnalyzer_files/packing_analyser_gammazero/");
 
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
@@ -202,11 +203,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		varTracking = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
-		
+		varBorderEliminationNo = new EzVarInteger("No of border layers to ex. in 1th frame",1,0,10,1);
+
 		EzGroup groupTracking = new EzGroup("TRACKING elements",
 				varTracking,
 				varLinkrange,
 				varDisplacement,
+				varBorderEliminationNo,
 				varBooleanCellIDs,
 				varBooleanHighlightMistakesBoolean,
 				varBooleanLoadDivisions,
@@ -334,6 +337,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 						wing_disc_movie, varLinkrange.getValue());
 				break;
 			}
+			
+			//if desired by user reduce first frame by 
+			//iteratively remove boundary layers
+			
+			//removing outer layers of first frame to ensure accurate tracking
+			BorderCells remover = new BorderCells(wing_disc_movie);
+			for(int i=0; i < varBorderEliminationNo.getValue();i++)
+				remover.removeOneBoundaryLayerFromFrame(0);
+
+			//update to new boundary conditions
+			remover.markOnly();
+			
 
 			// TODO perform tracking trycatch
 			tracker.track();

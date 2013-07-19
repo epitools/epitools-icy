@@ -250,7 +250,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			
 			if(rescued != null){
 				
-				System.out.println("Attempting rescue with:"+rescued.getTrackID());
+//				System.out.println("Attempting rescue with:"+rescued.getTrackID());
 				//check whether linking missed candidate due to excessive movement
 				//TODO add conditional for division case, mother node should
 				//not be further searched after division happended..
@@ -325,15 +325,15 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					}
 					else{
 						lost.setErrorTag(TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code);
-						System.out.println("\t@User: outside previous geometry - "+rescued.getTrackID() + 
-								"@[" + Math.round(rescued.getCentroid().getX()) + 
-								"," + Math.round(rescued.getCentroid().getY()) + "]");
+//						System.out.println("\t@User: outside previous geometry - "+rescued.getTrackID() + 
+//								"@[" + Math.round(rescued.getCentroid().getX()) + 
+//								"," + Math.round(rescued.getCentroid().getY()) + "]");
 					}
 				}	
 			}				
 			else{
 				lost.setErrorTag(TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code);
-				System.out.println("\t@User: no rescue candidate");
+//				System.out.println("\t@User: no rescue candidate");
 			}
 		}
 		

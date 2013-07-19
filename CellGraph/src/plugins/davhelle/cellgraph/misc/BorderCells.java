@@ -129,6 +129,64 @@ public class BorderCells extends AbstractPainter{
 		}
 	}
 	
+	
+	/**
+	 * The boundary cells of every frame are identified by merging all Node geometries.
+	 * After removing the boundary cells from the graph the Nodes forming the new
+	 * boundary are updated (setBoundary);
+	 * 
+	 * The removed layer is saved as polygon ring union.
+	 * 
+	 * TODO: split the method to allow for separate removal and labeling of boundary cells
+	 */
+	public void removeOneBoundaryLayerFromFrame(int time_point_i){
+		
+		if(time_point_i < 0 || time_point_i > stGraph.size() - 1)
+			time_point_i = 0;
+
+		FrameGraph frame_i = stGraph.getFrame(time_point_i);
+
+		//set up polygon container
+		Geometry[] output = new Geometry[frame_i.size()];
+		Iterator<Node> node_it = frame_i.iterator();
+		for(int i=0; i<frame_i.size(); i++){
+			output[i] = node_it.next().getGeometry();
+		}		
+
+		//Create union of all polygons
+		GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+		Geometry union = polygonCollection.buffer(0);
+
+		//Compute boundary ring
+		Geometry boundary = union.getBoundary();
+//		LinearRing borderRing = (LinearRing) boundary;
+		
+		//Check via intersection if cell is border cell
+		node_it = frame_i.iterator();
+		ArrayList<Node> borderCells = new ArrayList<Node>();
+		for(int i=0; i<frame_i.size(); i++){
+
+			Node n = node_it.next();
+			Geometry p = n.getGeometry();
+			
+			boolean is_border = p.intersects(boundary);
+
+			//Set border flag if intersect
+			if(is_border)
+				borderCells.add(n);
+		}
+
+		//Can't remove vertices while iterating so doining it now
+		for(Node n: borderCells)
+			if(!frame_i.removeVertex(n))
+				System.out.println("Elimination went wrong, please check!");
+
+		
+		System.out.println("Removed one outer layer!");
+		
+	}
+	
+	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();

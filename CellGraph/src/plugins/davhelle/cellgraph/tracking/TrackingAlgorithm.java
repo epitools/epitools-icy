@@ -18,6 +18,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -63,6 +64,8 @@ public abstract class TrackingAlgorithm {
 		
 		//first set trackID and geometry of first graph (reference)
 		tracking_id = 0;
+		
+		//Now process the first frame and record it's new geometry
 		FrameGraph first_frame = stGraph.getFrame(0);
 		Geometry[] output = new Geometry[first_frame.size()];
 		

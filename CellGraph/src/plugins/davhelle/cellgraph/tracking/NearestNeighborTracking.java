@@ -79,7 +79,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange) {
 		super(spatioTemporalGraph);
 		this.linkrange = linkrange;
-		this.group_criteria = DistanceCriteria.WEIGHTED_MIN_DISTANCE;
+		this.group_criteria = DistanceCriteria.MINIMAL_DISTANCE;
 		this.increase_factor = 1.5;
 	}
 	
@@ -105,7 +105,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			for(Node current: stGraph.getFrame(time_point).vertexSet()){
 				for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
 					for(Node next: stGraph.getFrame(time_point + i).vertexSet())
-						if(next.getGeometry().contains(current.getCentroid()))
+						if(next.getGeometry().intersects(current.getGeometry()))
 							next.addParentCandidate(current);
 			
 			
@@ -236,8 +236,12 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		//analyze unmarried brides, i.e. current nodes without previously linked node
 		System.out.println(" uB:"+ unmarried_brides.size());
 		while(!unmarried_brides.empty()){
+			
 			Node lost = unmarried_brides.pop();
 	
+			if(lost.onBoundary())
+				continue;
+			
 			//Make a rescue attempt on lost node
 			//i.e. determine whether a division or
 			//major image shift could have happened.
@@ -337,6 +341,42 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		System.out.println(" uG:"+ unmarried_grooms.size());
 		while(!unmarried_grooms.empty()){
 			Node last_correspondence = getMostRecentCorrespondence(time_point, unmarried_grooms.pop());
+			
+			//ignore if on border
+			if(last_correspondence.onBoundary())
+				continue;
+			else{
+				//look through neighborhood and see whether an untracked
+				//particle occurs at t+1 in their neighborhood
+				for(Node neighbor: last_correspondence.getNeighbors()){
+					if(neighbor.hasNext()){
+						Node futureN = neighbor.getNext();
+						//check intersection with the non-assigned brides
+						for(Node futureNN: futureN.getNeighbors())
+							if(unmarried_brides.contains(futureNN))
+								//check whether solution can be found. \
+								System.out.println(
+										"Cell "+last_correspondence.getTrackID()+
+										" was lost in Frame "+last_correspondence.getBelongingFrame().getFrameNo()+
+										"\n possible misassignmnet might occurred as"+
+										"\n Cell "+futureN.getTrackID()+"(from "+neighbor.getTrackID()+") has untracked neighbor");
+						
+						
+					}
+				}
+				
+			}
+			
+
+			
+			//if an untracked cells occurs, check whether the two share
+			//a common neighbor. And check if the candidates list of the latter
+			//contains either the lost groom or a groom that was assigned to 
+			//a neighbor.
+			
+			
+			
+			
 			if(last_correspondence.getErrorTag() == TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code)
 				last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_BOTH.numeric_code);
 			else

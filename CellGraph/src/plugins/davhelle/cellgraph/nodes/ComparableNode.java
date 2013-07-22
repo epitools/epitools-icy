@@ -30,6 +30,10 @@ public class ComparableNode implements Comparable<ComparableNode> {
 		return key;
 	}
 	
+	public double getValue(){
+		return value;
+	}
+	
 	@Override
 	public int compareTo(ComparableNode o) {
 		return value.compareTo(o.value);

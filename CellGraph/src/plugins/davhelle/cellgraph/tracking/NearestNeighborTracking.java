@@ -47,7 +47,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	private enum DistanceCriteria{
 		MINIMAL_DISTANCE, AVERAGE_DISTANCE, AREA_OVERLAP	
 		//TODO Add weighted distance? decreasing in time, e.g. 1*(t-1) + 0.8*(t-2)....
-, WEIGHTED_INTERSECTION_DISTANCE, WEIGHTED_MIN_DISTANCE
+, MIN_DISTANCE_WITH_AREA_DIFF, WEIGHTED_MIN_DISTANCE
 	}
 
 	/**
@@ -61,6 +61,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 * @see #group_criteria
 	 */
 	private final DistanceCriteria group_criteria;
+	private final boolean DO_DIVISION_CHECK;
 
 	/**
 	 * Holds the proportion of area increase that a dividing cell must have
@@ -79,7 +80,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange) {
 		super(spatioTemporalGraph);
 		this.linkrange = linkrange;
-		this.group_criteria = DistanceCriteria.MINIMAL_DISTANCE;
+		this.group_criteria = DistanceCriteria.MIN_DISTANCE_WITH_AREA_DIFF;
+		this.DO_DIVISION_CHECK = false;
 		this.increase_factor = 1.5;
 	}
 	
@@ -101,13 +103,20 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				
 			}
 			
-			//Compute candidates for successive nodes in [linkrange] time frames (one and only assignment x node x frame)
+			//Compute candidates for successive nodes in [linkrange] time frames
 			for(Node current: stGraph.getFrame(time_point).vertexSet()){
-				for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
-					for(Node next: stGraph.getFrame(time_point + i).vertexSet())
-						if(next.getGeometry().intersects(current.getGeometry()))
-							next.addParentCandidate(current);
-			
+				//don't propagate what has not been recognized.
+				if(current.getTrackID() != -1)
+					for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
+						for(Node next: stGraph.getFrame(time_point + i).vertexSet())
+							if(next.getGeometry().intersects(current.getGeometry()))
+							{
+								next.addParentCandidate(current);
+								if(current.getTrackID() == 302)
+									System.out.println("302 propagated to [" + Math.round(next.getCentroid().getX()) + 
+									"," + Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
+							}
+								
 			
 				//also check in case of a division that the brother cell is present
 				if(current.hasObservedDivision())
@@ -155,6 +164,21 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//take groom candidate from stack and try to assign
 			Node groom = unmarried_grooms.pop();
 
+			int follow_id = 286;
+			int follow_t = 27;
+			
+			if(groom.getTrackID() == follow_id && time_point == follow_t){
+				System.out.print("Prefered brides of "+ follow_id +"are:");
+				for(ComparableNode b: grooms.get(groom)){
+					Node next = b.getNode();
+					System.out.println("[" + Math.round(next.getCentroid().getX()) + 
+									"," + Math.round(next.getCentroid().getY()) + "]");
+				}
+				
+				System.out.println();
+				
+			}
+			
 			//get preference list of groom 
 			Iterator<ComparableNode> bride_it = grooms.get(groom).iterator();
 			boolean married = false;
@@ -178,6 +202,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				else{
 
 					Node old_groom = marriage.get(bride);
+					if(old_groom.getTrackID() == 286 && time_point == 27)
+						System.out.println("Alarm! Your bride might get stolen!");
 					Iterator<ComparableNode> grooms_it = brides.get(bride).iterator();
 
 					//cycle preferences (ascending order, best first)
@@ -265,6 +291,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					//lost_previous.add(lost);
 				}
 				else{
+					if(DO_DIVISION_CHECK){
 					//check whether lost node is result of a division process
 					//by looking if the center was inside the rescue node at 
 					//the previous time point
@@ -320,6 +347,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 									"@[" + Math.round(rescued.getCentroid().getX()) + 
 									"," + Math.round(rescued.getCentroid().getY()) + "]");
 						}
+					}
 						
 						
 					}
@@ -480,6 +508,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					
 					Point voted_centroid = voted.getCentroid();
 
+					
+					//VIABILITY CHECK BASED ON FIRST FRAME GEOMETRY
 					//Cell could be either new (division/seg.error), 
 					//thus not associated to any first node //TODO .buffer(-10.0)?
 					if(first == null){
@@ -544,8 +574,18 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						
 					case AREA_OVERLAP:	
 						
+						//compute the intersection between the two cell geometries
+						Geometry intersection = current.getGeometry().intersection(voted.getGeometry());
+
+						//Use the ratio of the intersection area and current's area as metric	
+						double overlap_ratio = intersection.getArea() / current_area;
+						//or alternatively divided by the sum of the two cell areas
+						//double overlap_ratio = intersection.getArea() / (current_area + voted.getGeometry().getArea());
+						//adding the candidate's area should reduce the bias of a large cell to affect
+						//the ratio. 
+						
 						//init best_ratio
-						double best_ratio = 0;
+						double best_ratio = overlap_ratio;
 						
 						while(candidate_it.hasNext()){
 							
@@ -554,10 +594,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 							if( voted.getFirst() == first){
 								candidate_it.remove();
 								//compute the intersection between the two cell geometries
-								Geometry intersection = current.getGeometry().intersection(voted.getGeometry());
+								intersection = current.getGeometry().intersection(voted.getGeometry());
 
 								//Use the ratio of the intersection area and current's area as metric	
-								double overlap_ratio = intersection.getArea() / current_area;
+								overlap_ratio = intersection.getArea() / current_area;
 								//or alternatively divided by the sum of the two cell areas
 								//double overlap_ratio = intersection.getArea() / (current_area + voted.getGeometry().getArea());
 								//adding the candidate's area should reduce the bias of a large cell to affect
@@ -579,7 +619,17 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						//compute the minimal distance out of all
 						//distances with same node (group)
 						
-						min = Double.MAX_VALUE;
+						double candidate_dist = DistanceOp.distance(
+								voted_centroid,
+								current_cell_center);
+						
+						//compute the intersection between the two cell geometries
+						intersection = current.getGeometry().intersection(voted.getGeometry());
+						overlap_ratio = intersection.getArea() / current_area;
+					
+						double weighted_candidateDistance = candidate_dist * (1 - overlap_ratio);
+						
+						min = weighted_candidateDistance;
 
 						while(candidate_it.hasNext()){
 							
@@ -588,16 +638,18 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 								candidate_it.remove();
 								voted_centroid = voted.getCentroid();
 								
-								double candidate_dist = DistanceOp.distance(
+								candidate_dist = DistanceOp.distance(
 										voted_centroid,
 										current_cell_center);
 								
 								//compute the intersection between the two cell geometries
-								Geometry intersection = current.getGeometry().intersection(voted.getGeometry());
-								double overlap_ratio = intersection.getArea() / current_area;
+								intersection = current.getGeometry().intersection(voted.getGeometry());
+								overlap_ratio = intersection.getArea() / current_area;
 							
-								double weighted_candidateDistance = candidate_dist * (1 - overlap_ratio);
-								if(min > weighted_candidateDistance)
+								weighted_candidateDistance = candidate_dist * (1 - overlap_ratio);
+							
+								
+							if(min > weighted_candidateDistance)
 									min = weighted_candidateDistance;
 
 							}
@@ -607,7 +659,75 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						
 						break;
 						
-					case WEIGHTED_INTERSECTION_DISTANCE:
+					case MIN_DISTANCE_WITH_AREA_DIFF:
+						
+						candidate_dist = DistanceOp.distance(
+								voted_centroid,
+								current_cell_center);
+						
+						//compute difference in area
+						double area_candidate = voted.getGeometry().getArea();
+						double area_current = current.getGeometry().getArea();
+						
+						double area_difference = Math.abs(area_candidate - area_current);
+						double normalized_area_diff = area_difference/area_candidate;
+						
+						//weighting parameters
+						final double lambda1 = 1;
+						final double lambda2 = 1;
+	
+						//final score
+						
+						
+//						System.out.println(voted.getTrackID()+" dist:"+candidate_dist);
+//						System.out.println(
+//								voted.getTrackID()+" area:"+
+//										"\n\t"+area_candidate+
+//										"\n\t"+area_current+
+//										"\n\t"+normalized_area_diff);
+						
+						weighted_candidateDistance = 
+								lambda1 * candidate_dist +
+								lambda2 * normalized_area_diff;
+						
+						
+						min = weighted_candidateDistance;
+
+						while(candidate_it.hasNext()){
+							
+							voted = candidate_it.next();
+							if( voted.getFirst() == first){
+								candidate_it.remove();
+								voted_centroid = voted.getCentroid();
+								
+								candidate_dist = DistanceOp.distance(
+										voted_centroid,
+										current_cell_center);
+								
+								//compute difference in area
+								area_candidate = voted.getGeometry().getArea();
+								area_current = voted.getGeometry().getArea();
+								
+								area_difference = Math.abs(area_candidate - area_current);
+								normalized_area_diff = area_difference/area_candidate;
+			
+								//final score
+								
+								
+//								System.out.println(voted.getTrackID()+" dist:"+candidate_dist);
+//								System.out.println(voted.getTrackID()+" area:"+normalized_area_diff);
+//								
+								weighted_candidateDistance = 
+										lambda1 * candidate_dist +
+										lambda2 * normalized_area_diff;
+										
+								if(min > weighted_candidateDistance)
+									min = weighted_candidateDistance;
+
+							}
+						}
+
+						group_value = min;
 						
 						//use the area overlap ratio to weight the distance from the intersection to current's cell center
 						break;

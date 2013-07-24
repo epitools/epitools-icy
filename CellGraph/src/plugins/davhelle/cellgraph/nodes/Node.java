@@ -114,6 +114,14 @@ public interface Node{
 	public Node getPrevious();
 	
 	/**
+	 * Tells whether the cell has been tracked
+	 * in the previous frame
+	 * 
+	 * @return true if cell has correspondence in a previous frame
+	 */
+	public boolean hasPrevious();
+	
+	/**
 	 * Check whether object lies on the window boundary
 	 * 
 	 * @return true if object is part of boundary

@@ -30,6 +30,7 @@ import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
+import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
@@ -116,6 +117,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean 				varDoTracking;
 	EzVarBoolean				varBooleanHighlightMistakesBoolean;
 	EzVarBoolean 				varBooleanDrawDisplacement;
+	EzVarBoolean				varBooleanDrawGraphCoherence;
 	EzVarInteger				varLinkrange;
 	EzVarFloat					varDisplacement;
 	EzVarBoolean				varBooleanCellIDs;
@@ -201,6 +203,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
 		varBooleanLoadDivisions = new EzVarBoolean("Load division file", false);
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
+		varBooleanDrawGraphCoherence = new EzVarBoolean("Draw Graph coherence indeces",false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		varTracking = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
 		varBorderEliminationNo = new EzVarInteger("No of border layers to ex. in 1th frame",1,0,10,1);
@@ -213,7 +216,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varBooleanCellIDs,
 				varBooleanHighlightMistakesBoolean,
 				varBooleanLoadDivisions,
-				varBooleanDrawDisplacement);
+				varBooleanDrawDisplacement,
+				varBooleanDrawGraphCoherence);
 
 		//Decide whether to load into swimming pool the generated stGraph
 		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
@@ -352,6 +356,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 			// TODO perform tracking trycatch
 			tracker.track();
+			wing_disc_movie.setTracking(true);
+			
 
 			if(varBooleanCellIDs.getValue()){
 				Painter trackID = new TrackIdPainter(wing_disc_movie);
@@ -363,6 +369,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 				sequence.addPainter(displacementSegments);
 			}
 			
+			if(varBooleanDrawGraphCoherence.getValue()){
+				sequence.addPainter(new GraphCoherenceOverlay(wing_disc_movie));
+			}
 			
 			if(varBooleanLoadDivisions.getValue()){
 				//read manual divisions and combine with tracking information
@@ -383,7 +392,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				sequence.addPainter(correspondence);
 			}
 			
-			wing_disc_movie.setTracking(true);
+			
+			
 			
 
 		}

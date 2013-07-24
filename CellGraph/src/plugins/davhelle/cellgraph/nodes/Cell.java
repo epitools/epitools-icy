@@ -236,4 +236,10 @@ public class Cell implements Node {
 		return (next != null);
 	}
 
+	@Override
+	public boolean hasPrevious() {
+		// TODO Auto-generated method stub
+		return (previous != null);
+	}
+
 }

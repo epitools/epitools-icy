@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
@@ -23,18 +24,20 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class BorderPainter extends AbstractPainter{
+public class BorderPainter extends Overlay{
 
 		private SpatioTemporalGraph stGraph;
 		//TODO maybe speedup with private ShapeWriter writer;
 		
 		public BorderPainter(SpatioTemporalGraph spatioTemporalGraph){
+			super("Border cells");
 			this.stGraph = spatioTemporalGraph;
+			
 
 		}
 
 		public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas){
-			int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+			int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 			if(time_point < stGraph.size()){
 

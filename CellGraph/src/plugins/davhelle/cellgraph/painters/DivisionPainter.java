@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
@@ -18,17 +19,18 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-public class DivisionPainter extends AbstractPainter {
+public class DivisionPainter extends Overlay {
 
 	SpatioTemporalGraph stGraph;
 	
 	public DivisionPainter(SpatioTemporalGraph stGraph){
+		super("Divisions (green)");
 		this.stGraph = stGraph;
 	}
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			

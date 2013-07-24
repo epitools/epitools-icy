@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
@@ -37,7 +38,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class PolygonConverterPainter extends AbstractPainter{
+public class PolygonConverterPainter extends Overlay{
 
 	private SpatioTemporalGraph stGraph;
 	private Map<Node, Polygon> polyMap;
@@ -47,6 +48,7 @@ public class PolygonConverterPainter extends AbstractPainter{
 	 * @param spatioTemporalGraph
 	 */
 	public PolygonConverterPainter(SpatioTemporalGraph spatioTemporalGraph){
+		super("Junction polygons (via intersections)");
 		this.stGraph = spatioTemporalGraph;
 		this.polyMap = new HashMap<Node, Polygon>();
 		this.writer = new ShapeWriter();
@@ -264,7 +266,7 @@ public class PolygonConverterPainter extends AbstractPainter{
 	@Override
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			

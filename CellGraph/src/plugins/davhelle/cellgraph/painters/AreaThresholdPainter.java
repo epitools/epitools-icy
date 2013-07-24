@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
@@ -24,12 +25,13 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class AreaThresholdPainter extends AbstractPainter{
+public class AreaThresholdPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
 	private ArrayList<Node> toDraw;
 	
 	public AreaThresholdPainter(SpatioTemporalGraph spatioTemporalGraph, double areaThreshold){
+		super("Cells above area threshold");
 		this.stGraph = spatioTemporalGraph;
 		
 		toDraw = new ArrayList<Node>();
@@ -46,7 +48,7 @@ public class AreaThresholdPainter extends AbstractPainter{
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			//TODO include 3D information!

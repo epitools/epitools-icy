@@ -14,6 +14,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 /**
@@ -22,11 +23,12 @@ import icy.sequence.Sequence;
  * @author Davide Heller
  *
  */
-public class PolygonPainter extends AbstractPainter{
+public class PolygonPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
 	
 	public PolygonPainter(SpatioTemporalGraph spatioTemporalGraph){
+		super("Polygons");
 		this.stGraph = spatioTemporalGraph;
 	}
 
@@ -34,7 +36,7 @@ public class PolygonPainter extends AbstractPainter{
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			//TODO include 3D information!

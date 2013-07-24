@@ -82,7 +82,7 @@ public class GraphCoherenceOverlay extends Overlay {
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			

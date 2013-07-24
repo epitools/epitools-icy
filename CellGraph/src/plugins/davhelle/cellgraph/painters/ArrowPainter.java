@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.BasicStroke;
@@ -26,7 +27,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.Point;
 
-public class ArrowPainter extends AbstractPainter {
+public class ArrowPainter extends Overlay {
 
 	SpatioTemporalGraph stGraph;
 	GeometryFactory factory;
@@ -34,6 +35,7 @@ public class ArrowPainter extends AbstractPainter {
 	float displacement;
 	
 	public ArrowPainter(SpatioTemporalGraph stGraph, float displacement){
+		super("Displacement arrows");
 		this.stGraph = stGraph;
 		this.factory = new GeometryFactory();
 		this.writer = new ShapeWriter();
@@ -42,7 +44,7 @@ public class ArrowPainter extends AbstractPainter {
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			

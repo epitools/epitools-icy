@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
@@ -21,7 +22,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;;
 
-public class VoronoiPainter extends AbstractPainter {
+public class VoronoiPainter extends Overlay {
 
 	private Map<Node, Geometry> nodeVoronoiMap;
 	private ShapeWriter writer;
@@ -30,6 +31,7 @@ public class VoronoiPainter extends AbstractPainter {
 	
 	public VoronoiPainter(SpatioTemporalGraph stGraph, Map<Node,Geometry> nodeVoronoiMap) {
 		// TODO Auto-generated constructor stub
+		super("Voronoi Diagram");
 		this.stGraph = stGraph;
 		this.nodeVoronoiMap = nodeVoronoiMap;
 		this.writer = new ShapeWriter();
@@ -39,7 +41,7 @@ public class VoronoiPainter extends AbstractPainter {
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			

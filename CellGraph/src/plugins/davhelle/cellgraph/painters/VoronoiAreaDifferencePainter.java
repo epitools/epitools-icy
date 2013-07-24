@@ -9,6 +9,7 @@ import icy.canvas.IcyCanvas;
 import icy.canvas.Layer;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
@@ -34,7 +35,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class VoronoiAreaDifferencePainter extends AbstractPainter{
+public class VoronoiAreaDifferencePainter extends Overlay{
 	
 	private final int DIFFERENCE_THRESHOLD = 10;
 	
@@ -50,6 +51,7 @@ public class VoronoiAreaDifferencePainter extends AbstractPainter{
 	
 	
 	public VoronoiAreaDifferencePainter(SpatioTemporalGraph stGraph, Map<Node,Double> area_difference_map) {
+		super("Voronoi Area Difference");
 		this.stGraph = stGraph;
 		this.writer = new ShapeWriter();
 		this.area_difference_map = area_difference_map;
@@ -103,7 +105,7 @@ public class VoronoiAreaDifferencePainter extends AbstractPainter{
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		//Set layer to 0.3 opacity
 		Layer current_layer = canvas.getLayer(this);

@@ -21,6 +21,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 /**
@@ -30,11 +31,12 @@ import icy.sequence.Sequence;
  * @author Davide Heller
  *
  */
-public class TrackIdPainter extends AbstractPainter{
+public class TrackIdPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
 	
 	public TrackIdPainter(SpatioTemporalGraph spatioTemporalGraph){
+		super("Tracking IDs");
 		this.stGraph = spatioTemporalGraph;
 		
 	}
@@ -43,7 +45,7 @@ public class TrackIdPainter extends AbstractPainter{
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
 		
-    	int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+    	int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			//print index int the center of the cell

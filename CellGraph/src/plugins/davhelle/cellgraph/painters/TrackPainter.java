@@ -3,6 +3,7 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
@@ -28,7 +29,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class TrackPainter extends AbstractPainter{
+public class TrackPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
 	private HashMap<Node,Color> correspondence_color;
@@ -36,6 +37,7 @@ public class TrackPainter extends AbstractPainter{
 	private boolean highlightMistakes;
 
 	public TrackPainter(SpatioTemporalGraph stGraph, Boolean highlightMistakes) {
+		super("Tracking coloring");
 		
 		//Color for each lineage
 		this.correspondence_color = new HashMap<Node,Color>();
@@ -92,7 +94,7 @@ public class TrackPainter extends AbstractPainter{
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 		
 		if(time_point < stGraph.size()){
 			

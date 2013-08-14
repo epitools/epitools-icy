@@ -299,17 +299,33 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 			else
 				borderUpdate.markOnly();
+	
+			//tracking: link the graph in the temporal dimension
 			
+			//removing outer layers of first frame to ensure accurate tracking
+			if(varDoTracking.getValue()){
+				BorderCells remover = new BorderCells(wing_disc_movie);
+				for(int i=0; i < varBorderEliminationNo.getValue();i++)
+					remover.removeOneBoundaryLayerFromFrame(0);
 
+
+				//update to new boundary conditions
+				remover.markOnly();
+			}
 			
 			//Remove all cells below given threshold if desired
+			//Done after Border cell remover, otherwise holes are created
+			//wherever a too small cell was removed!
 			SmallCellRemover cellRemover = new SmallCellRemover(wing_disc_movie);
 			if(varRemoveSmallCells.getValue())
 				cellRemover.removeCellsBelow(varAreaThreshold.getValue());
-	
-			//tracking: link the graph in the temporal dimension
+			
+			
 			if(varDoTracking.getValue())
 				trackingMode(wing_disc_movie);
+			
+			
+
 			
 			//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 			if(varUseSwimmingPool.getValue()){
@@ -356,13 +372,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//if desired by user reduce first frame by 
 			//iteratively remove boundary layers
 			
-			//removing outer layers of first frame to ensure accurate tracking
-			BorderCells remover = new BorderCells(wing_disc_movie);
-			for(int i=0; i < varBorderEliminationNo.getValue();i++)
-				remover.removeOneBoundaryLayerFromFrame(0);
 
-			//update to new boundary conditions
-			remover.markOnly();
 			
 
 			// TODO perform tracking trycatch

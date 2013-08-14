@@ -166,20 +166,20 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<CellGraph.SegmentationProgram>(
-				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.PackingAnalyzer);
+				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.SeedWater);
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
 				"Input files", "/Users/davide/Documents/segmentation/packingAnalyzer_files/packing_analyser_gammazero/");
 
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
-		varMaxT = new EzVarInteger("Time points to load:",1,0,100,1);
+		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
 		
 		//Border cut
 		varCutBorder = new EzVarBoolean("Eliminate one border line",false);
 		
 		//small cell elimination
-		varRemoveSmallCells = new EzVarBoolean("Remove too small cells", false);
+		varRemoveSmallCells = new EzVarBoolean("Remove too small cells", true);
 		varAreaThreshold = new EzVarDouble("Area threshold", 10, 0, Double.MAX_VALUE, 0.1);
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
@@ -425,12 +425,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 		File mesh_file;
 		
 		try{
-			mesh_file = varFile.getValue(true);
+			//Set true to enable Control mechanism
+			mesh_file = varFile.getValue(false);
 		}
 		catch(EzException e){
 			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
 			return;
 		}
+		
+		//Default
+		if(mesh_file == null)
+			mesh_file = new File("/Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif");
+		
 	
 		int time_points = varMaxT.getValue();
 

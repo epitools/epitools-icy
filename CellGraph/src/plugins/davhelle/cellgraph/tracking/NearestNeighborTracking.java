@@ -47,7 +47,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	private enum DistanceCriteria{
 		MINIMAL_DISTANCE, AVERAGE_DISTANCE, AREA_OVERLAP	
 		//TODO Add weighted distance? decreasing in time, e.g. 1*(t-1) + 0.8*(t-2)....
-, MIN_DISTANCE_WITH_AREA_DIFF, WEIGHTED_MIN_DISTANCE
+, AREA_DIFF_WITH_MIN_DISTANCE, WEIGHTED_MIN_DISTANCE, OVERLAP_WITH_MIN_DISTANCE
 	}
 
 	/**
@@ -62,6 +62,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 */
 	private final DistanceCriteria group_criteria;
 	private final boolean DO_DIVISION_CHECK;
+	private final boolean VERBOSE;
+	private final int follow_ID;
 
 	/**
 	 * Holds the proportion of area increase that a dividing cell must have
@@ -71,18 +73,31 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	private final double increase_factor;
 	
 	/**
+	 * Candidate evaluation parameters
+	 * @see #lambda1
+	 * @see #lambda2
+	*/
+	private double lambda1;
+	private double lambda2;
+	
+	
+	/**
 	 * Initializes Neighbor tracking
 	 * 
 	 * 
 	 * @param spatioTemporalGraph Spatio-temporal graph to be tracked/linked
 	 * @param linkrange the maximum no. of frames the node information is projected ahead
 	 */
-	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange) {
+	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, double lambda1, double lambda2) {
 		super(spatioTemporalGraph);
 		this.linkrange = linkrange;
-		this.group_criteria = DistanceCriteria.MIN_DISTANCE_WITH_AREA_DIFF;
-		this.DO_DIVISION_CHECK = false;
+		this.group_criteria = DistanceCriteria.OVERLAP_WITH_MIN_DISTANCE;
+		this.DO_DIVISION_CHECK = true;
 		this.increase_factor = 1.5;
+		this.VERBOSE = true;
+		this.follow_ID = 21;
+		this.lambda1 = lambda1;
+		this.lambda2 = lambda2;
 	}
 	
 	@Override
@@ -111,12 +126,14 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						for(Node next: stGraph.getFrame(time_point + i).vertexSet())
 							if(next.getGeometry().intersects(current.getGeometry()))
 							{
+								if(next.getGeometry().intersection(current.getGeometry()).getArea() > 10){
 								next.addParentCandidate(current);
-								if(current.getTrackID() == 302)
-									System.out.println("302 propagated to [" + Math.round(next.getCentroid().getX()) + 
-									"," + Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
-							}
 								
+								if( VERBOSE && current.getTrackID() == follow_ID)
+									System.out.println(follow_ID + " propagated to [" + Math.round(next.getCentroid().getX()) + 
+									"," + Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
+								}
+							}								
 			
 				//also check in case of a division that the brother cell is present
 				if(current.hasObservedDivision())
@@ -163,16 +180,17 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		while(!unmarried_grooms.empty()){
 			//take groom candidate from stack and try to assign
 			Node groom = unmarried_grooms.pop();
-
-			int follow_id = 286;
-			int follow_t = 27;
 			
-			if(groom.getTrackID() == follow_id && time_point == follow_t){
-				System.out.print("Prefered brides of "+ follow_id +"are:");
+			if(VERBOSE && groom.getTrackID() == follow_ID){
+				
+				System.out.println("Prefered brides of "+ follow_ID +" are:");
+				
 				for(ComparableNode b: grooms.get(groom)){
 					Node next = b.getNode();
-					System.out.println("[" + Math.round(next.getCentroid().getX()) + 
-									"," + Math.round(next.getCentroid().getY()) + "]");
+					System.out.println(
+							"[" + Math.round(next.getCentroid().getX()) + 
+							"," + Math.round(next.getCentroid().getY()) +
+							"] : "+ b.getValue());
 				}
 				
 				System.out.println();
@@ -659,7 +677,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						
 						break;
 						
-					case MIN_DISTANCE_WITH_AREA_DIFF:
+					case AREA_DIFF_WITH_MIN_DISTANCE:
 						
 						candidate_dist = DistanceOp.distance(
 								voted_centroid,
@@ -672,19 +690,27 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						double area_difference = Math.abs(area_candidate - area_current);
 						double normalized_area_diff = area_difference/area_candidate;
 						
-						//weighting parameters
-						final double lambda1 = 1;
-						final double lambda2 = 1;
+						//alternative
+						
+						//compute the intersection between the two cell geometries
+						intersection = current.getGeometry().intersection(voted.getGeometry());
+						double normalized_overlap = intersection.getArea() / area_candidate;
 	
 						//final score
 						
 						
-//						System.out.println(voted.getTrackID()+" dist:"+candidate_dist);
-//						System.out.println(
-//								voted.getTrackID()+" area:"+
-//										"\n\t"+area_candidate+
-//										"\n\t"+area_current+
-//										"\n\t"+normalized_area_diff);
+						System.out.println(
+								voted.getTrackID()+
+								" dist:"+candidate_dist+
+								" to: ["+Math.round(current_cell_center.getX())+
+								","+Math.round(current_cell_center.getY())+"]");
+						
+						System.out.println(
+								voted.getTrackID()+" area:"+
+										"\n\t"+area_candidate+
+										"\n\t"+area_current+
+										"\n\t"+normalized_area_diff+
+										"\n\t"+1/normalized_overlap);
 						
 						weighted_candidateDistance = 
 								lambda1 * candidate_dist +
@@ -732,6 +758,75 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						//use the area overlap ratio to weight the distance from the intersection to current's cell center
 						break;
 						
+					case OVERLAP_WITH_MIN_DISTANCE:
+						
+						candidate_dist = DistanceOp.distance(
+								voted_centroid,
+								current_cell_center);
+						
+						//compute difference in area
+						area_candidate = voted.getGeometry().getArea();
+						area_current = current.getGeometry().getArea();
+						
+						//compute the intersection between the two cell geometries
+						intersection = current.getGeometry().intersection(voted.getGeometry());
+						normalized_overlap = intersection.getArea() / (area_candidate + area_current);
+						
+						weighted_candidateDistance = 
+								lambda1 * candidate_dist +
+								lambda2 * (1 / normalized_overlap);
+
+						
+						if(VERBOSE && voted.getTrackID() == follow_ID)
+							System.out.println(
+								voted.getTrackID()+
+								" to: ["+Math.round(current_cell_center.getX())+
+								","+Math.round(current_cell_center.getY())+"]:\n"+
+								" dist:"+Math.round(candidate_dist) +
+								" area:"+Math.round(1/normalized_overlap)+
+								" (= "+ weighted_candidateDistance + ")");
+
+						
+						min = weighted_candidateDistance;
+
+						while(candidate_it.hasNext()){
+							
+							voted = candidate_it.next();
+							if( voted.getFirst() == first){
+								candidate_it.remove();
+								voted_centroid = voted.getCentroid();
+								
+								candidate_dist = DistanceOp.distance(
+										voted_centroid,
+										current_cell_center);
+								
+								//compute difference in area
+								area_candidate = voted.getGeometry().getArea();
+								area_current = current.getGeometry().getArea();
+								
+								//compute the intersection between the two cell geometries
+								intersection = current.getGeometry().intersection(voted.getGeometry());
+								normalized_overlap = intersection.getArea() / (area_candidate + area_current);
+								
+								weighted_candidateDistance = 
+										lambda1 * candidate_dist +
+										lambda2 * (1 / normalized_overlap);
+								
+								if(VERBOSE && voted.getTrackID() == follow_ID)
+									System.out.println(" dist:"+Math.round(candidate_dist) +
+										" area:"+Math.round(1/normalized_overlap) + 
+										" (= "+ weighted_candidateDistance + ")");
+										
+								if(min > weighted_candidateDistance)
+									min = weighted_candidateDistance;
+
+							}
+						}
+
+						group_value = min;
+						
+						break;
+						
 					}
 
 					//assign candidate to both maps with the respective distance
@@ -751,7 +846,13 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 
 					//the two maps will be later matched by solving an abstracted
 					//stable marriage problem
+				
+					
+				
+				
 				}
+				
+				
 			}
 		}	
 	}

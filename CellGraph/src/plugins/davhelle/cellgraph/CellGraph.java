@@ -120,6 +120,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varBooleanDrawGraphCoherence;
 	EzVarInteger				varLinkrange;
 	EzVarFloat					varDisplacement;
+	EzVarDouble					varLambda1;
+	EzVarDouble					varLambda2;
 	EzVarBoolean				varBooleanCellIDs;
 	EzVarBoolean				varBooleanLoadDivisions;
 	
@@ -207,15 +209,20 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		varTracking = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
 		varBorderEliminationNo = new EzVarInteger("No of border layers to ex. in 1th frame",1,0,10,1);
+		
+		varLambda1 = new EzVarDouble("Min. Distance weight", 1, 0, 10, 0.1);
+		varLambda2 = new EzVarDouble("Overlap Ratio weight", 1, 0, 10, 0.1);
 
 		EzGroup groupTracking = new EzGroup("TRACKING elements",
 				varTracking,
 				varLinkrange,
 				varDisplacement,
+				varLambda1,
+				varLambda2,
 				varBorderEliminationNo,
-				varBooleanCellIDs,
-				varBooleanHighlightMistakesBoolean,
-				varBooleanLoadDivisions,
+				//varBooleanCellIDs,
+				//varBooleanHighlightMistakesBoolean,
+				//varBooleanLoadDivisions,
 				varBooleanDrawDisplacement,
 				varBooleanDrawGraphCoherence);
 
@@ -286,12 +293,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//borderUpdate.applyBoundaryCondition();
 
 			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-			if(varCutBorder.getValue())
+			if(varCutBorder.getValue()){
 				borderUpdate.applyBoundaryCondition();
+				sequence.addPainter(borderUpdate);
+			}
 			else
 				borderUpdate.markOnly();
 			
-			sequence.addPainter(borderUpdate);
 
 			
 			//Remove all cells below given threshold if desired
@@ -338,7 +346,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				break;
 			case NN:
 				tracker = new NearestNeighborTracking(
-						wing_disc_movie, varLinkrange.getValue());
+						wing_disc_movie, 
+						varLinkrange.getValue(),
+						varLambda1.getValue(),
+						varLambda2.getValue());
 				break;
 			}
 			

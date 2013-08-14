@@ -37,7 +37,7 @@ public class TrackPainter extends Overlay{
 	private boolean highlightMistakes;
 
 	public TrackPainter(SpatioTemporalGraph stGraph, Boolean highlightMistakes) {
-		super("Tracking coloring");
+		super("Tracking Coloring");
 		
 		//Color for each lineage
 		this.correspondence_color = new HashMap<Node,Color>();

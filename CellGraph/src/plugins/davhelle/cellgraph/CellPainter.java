@@ -26,7 +26,7 @@ import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
-import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsPainter;
+import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
@@ -204,7 +204,7 @@ public class CellPainter extends EzPlug {
 										varAreaThreshold.getValue()));
 						break;
 						case ALWAYS_TRACKED: sequence.addPainter(
-								new AlwaysTrackedCellsPainter(
+								new AlwaysTrackedCellsOverlay(
 										wing_disc_movie));
 						
 						}

@@ -148,6 +148,21 @@ public class TrackPainter extends Overlay{
 						}
 					}
 				}
+				else{
+					//Mark cells in green which do have all neighbors tracked
+					//and are not on the boundary
+					if(!cell.onBoundary()){
+						g.setColor(Color.green);
+
+						boolean all_assigned = true;
+						for(Node neighbor: cell.getNeighbors())
+							if(neighbor.getTrackID() == -1)
+								all_assigned = false;
+
+						if(all_assigned)
+							g.fill(cell.toShape());
+					}
+				}
 			}
 			
 			percentage_tracked = (percentage_tracked/stGraph.getFrame(0).size())*100;

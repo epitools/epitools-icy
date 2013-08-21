@@ -109,6 +109,7 @@ public abstract class TrackingAlgorithm {
 		
 		//only update linkage from previous cell if not set yet
 		if(previous.getNext() == null){
+			
 			previous.setNext(next);
 			
 			int previous_frame_no = previous.getBelongingFrame().getFrameNo();
@@ -119,6 +120,34 @@ public abstract class TrackingAlgorithm {
 				previous.setErrorTag(-3);
 			
 		}
+		
+	}
+	
+	/**
+	 * Link nodes and force update of previous node even if already
+	 * assigned.
+	 * 
+	 * @param next
+	 * @param previous
+	 */
+	protected void forceCorrespondence(Node next, Node previous){
+		next.setTrackID(previous.getTrackID());
+		next.setFirst(previous.getFirst());
+		next.setPrevious(previous);
+		
+		//propagate division
+		if(previous.hasObservedDivision())
+			next.setDivision(previous.getDivision());
+			
+		previous.setNext(next);
+
+		int previous_frame_no = previous.getBelongingFrame().getFrameNo();
+		int next_frame_no = next.getBelongingFrame().getFrameNo();
+
+		//check if correspondence is in the immediately successive frame
+		if(next_frame_no - previous_frame_no > 1)
+			previous.setErrorTag(-3);
+			
 		
 	}
 	

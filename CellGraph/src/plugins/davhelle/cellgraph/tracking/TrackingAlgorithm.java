@@ -225,8 +225,6 @@ public abstract class TrackingAlgorithm {
 	 * @param unassignedNode Node with an empty previous field
 	 */
 	protected Node rescueCandidate(Node unassignedNode){
-		
-		boolean is_division = false;
 
 		List<Node> neighbors = unassignedNode.getNeighbors();
 		Set<Node> unique_neighbors = new HashSet<Node>(neighbors);
@@ -307,6 +305,8 @@ public abstract class TrackingAlgorithm {
 
 		//If a parent has been found check whether the most recent correspondence in time is also 
 		//geometrically sound with the hypothesis, if yes update the correspondence.
+		
+//		boolean is_division = false;
 		
 //		if(most_likely_parent != null){
 //

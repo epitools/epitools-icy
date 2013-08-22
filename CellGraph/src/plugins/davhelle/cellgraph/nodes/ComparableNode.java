@@ -34,6 +34,14 @@ public class ComparableNode implements Comparable<ComparableNode> {
 		return value;
 	}
 	
+	public void increaseValueByOne(){
+		value = value + 1.0;
+	}
+	
+	public void increaseValueBy(double toAdd){
+		value = value + toAdd;
+	}
+	
 	@Override
 	public int compareTo(ComparableNode o) {
 		return value.compareTo(o.value);

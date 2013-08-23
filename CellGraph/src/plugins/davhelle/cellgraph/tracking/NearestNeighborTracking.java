@@ -344,137 +344,119 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 
 								if(swap_condition_1 && swap_condition_2){
 
-									//									//remove unrescued bride from list
-									//									unrescued_brides.remove(futureNN);
-									//
-									//									//error -> faulty assignment is propagated
-									//									//CHANGE TO FORCE ASSIGNMENT
-									//									//in updateC. the assignment is blocked
-									//									//if the previous has already a next.
-									//
-									//									forceCorrespondence(futureN, last_correspondence);
-									//									forceCorrespondence(futureNN, neighbor);
-									//
-									//									//update TrackingFeedback with field NOTHING_TO_REPORT(-1)
-									//									futureNN.setErrorTag(-1);
+									//error -> faulty assignment is propagated
+									//CHANGE TO FORCE ASSIGNMENT
+									//in updateC. the assignment is blocked
+									//if the previous has already a next.
+
+//									forceCorrespondence(futureN, last_correspondence);
+//									forceCorrespondence(futureNN, neighbor);
+//
+//									//update TrackingFeedback with field NOTHING_TO_REPORT(-1)
+//									futureNN.setErrorTag(-1);
+//									
+//									unmarried_brides.remove(rescued);
 
 									System.out.println("  Reverted likely SWAP between "+
 											last_correspondence.getTrackID()+" and "+neighbor.getTrackID());
 
-									continue groomLoop;
+//									continue groomLoop;
 
 								}
 								else{
-									
-									//check for normal rescue
-									if(lost2untracked < neighbor2untracked){
-									//likely normal lost
-									//remove both uG and uB from Stacks
-									
-//									updateCorrespondence(futureNN, last_correspondence);
-//									unmarried_brides.remove(futureNN);
-									
-									
-									
-									rescued = futureNN;
-
-									//continue groomLoop;
-									}
+									//check for normal rescue and in case save (swap has priority)
+									if(lost2untracked < neighbor2untracked)
+										rescued = futureNN;
 								}
 							}
 						}
 					}
 				
-				//Swap wins over rescue
+				//Swap wins over normal lost
 				//perhaps make rescue comply with condition
 				//e.g. at least three neighbors agree ecc. 
 				if(rescued != null){
 					
+					updateCorrespondence(rescued, last_correspondence);
+					unmarried_brides.remove(rescued);
+					
 					System.out.println("   Rescued "+
 							last_correspondence.getTrackID());
 					
-					unmarried_brides.remove(rescued);
-
+					continue;
 				}
 						
 				
-//				if(last_correspondence.getErrorTag() == TrackingFeedback.LOST_IN_PREVIOUS_FRAME.numeric_code)
-//					last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_BOTH.numeric_code);
-//				else
-//					last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code);
+				//End point, cell could not be rescued and is tagged as lost
+				last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code);
 			}
 
 	}
 	
 	private void division_recognition(Stack<Node> unmarried_brides, Stack<Node> unmarried_grooms, int time_point){
-
+		
+		
 		while(!unmarried_brides.empty()){
 			
 			//find likely brother & mother
 			Node untracked = unmarried_brides.pop();
 	
-			if(untracked.onBoundary())
-				continue;
-			
-			//assumption 1: brother must be in neighborhood
-			List<Node> neighbors = untracked.getNeighbors();
-			Set<Node> unique_neighbors = new HashSet<Node>(neighbors);
-			
-			//assumption 2: not all neighbors might have a correspondence
-			//at the immediately preceeding frame, thus work with first field.
-			Map<Node, ComparableNode> brother_candidates = new HashMap<Node, ComparableNode>();
-			for(Node candidate: neighbors)
-				if(candidate.getFirst() != null)
-					brother_candidates.put(candidate.getFirst(), new ComparableNode(candidate, 0.0));
-			
-			
-			//Neighborhood quorum sensing to define most likely brother
-			for(Node neighbor: unique_neighbors){
+//			if(untracked.onBoundary())
+//				continue;
 
-				if(neighbor.hasPrevious()){
+			ComparableNode bestBrotherCandidate = new ComparableNode(null, 0.0);
+			
+			//assumption 1: brother must be direct neighbor
+			List<Node> neighbors = untracked.getNeighbors();
+
+			for(Node brotherCandidate: neighbors){
+				//assumption 2: mother cell should be the last correspondence of brother cell
+				if(brotherCandidate.hasPrevious()){
+
+					Node motherCandidate = brotherCandidate.getPrevious();
 					
-					Node previousN = neighbor.getPrevious();
+					//assumption 3: mother cell should be at immediately preceeding time frame
+					if(motherCandidate.getBelongingFrame().getFrameNo() != time_point - 1)
+						continue;
+
+					//assumption 4: mother cell should share the biggest intersection with the untracked cell
+					Geometry motherIntersection = untracked.getGeometry().intersection(
+							motherCandidate.getGeometry());
 					
-					for(Node previousNN: previousN.getNeighbors())
-						if(brother_candidates.containsKey(previousNN.getFirst())){
-							
-							Geometry intersection = untracked.getGeometry().intersection(previousNN.getGeometry());
-							
-							brother_candidates.get(previousNN.getFirst()).increaseValueBy(intersection.getArea());
-						}
+					ComparableNode candidate = new ComparableNode(brotherCandidate, motherIntersection.getArea());
+					
+					if(candidate.compareTo(bestBrotherCandidate) > 0)
+						bestBrotherCandidate = candidate;
 
 				}
-			
 			}
-			
-			//Order candidates according to the voting
-			int candidate_no = brother_candidates.size();
-			
-			//ascending sort
-			ComparableNode[] candidate_array = 
-					brother_candidates.values().toArray(new ComparableNode[candidate_no]);
-			
-			Arrays.sort(candidate_array);
-			
-			//obtain most likely brother by choosing the last element
-			Node brother = candidate_array[candidate_no - 1].getNode();
-			
-			//no suitable brother found, abort
-			if(brother == null){
-				System.out.println("No suitable brother found");
+					
+
+			if(bestBrotherCandidate.getNode() == null)
+				//no brother found
 				continue;
-			}
-			else{
-				Node mother = brother.getPrevious();
-				System.out.println("Brother is cell "+brother.getTrackID()+
-						" with mother @ "+mother.getBelongingFrame().getFrameNo());
-				for(ComparableNode i: candidate_array)
-					System.out.println(i.toString());
-			}	
 			
-				
-			//area check: area(B*) < area(M)
-			//cell center check: d(B,B') > d(B*,M)
+			Node brother1 = untracked;
+			Node brother2 = bestBrotherCandidate.getNode();
+			Node mother = brother2.getPrevious();
+			
+			//assumption 5: mother's area should be bigger than the child's combined area
+			
+			double combined_area = brother1.getGeometry().getArea() + brother2.getGeometry().getArea();
+			double mother_area = mother.getGeometry().getArea();
+			
+			if( mother_area < combined_area)
+				continue;
+			
+			//mark as successful division
+			Division division = new Division(mother , brother1, brother2, tracking_id);
+			tracking_id = tracking_id + 2;
+			System.out.println(division.toString());
+			
+			//out.println("Pot.Div.Cell: "+mother.getTrackID());
+			
+			//Further Assumption? cell center check, the brother cells should be respectively 
+			//further apart than to their mother d(B,B') > d(B*,M)
 		
 		}
 		
@@ -516,11 +498,16 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				for(Node groom: unmarried_grooms)
 					uG_copy.push(groom);
 				
+				System.out.println(" uB:"+ unmarried_brides.size());
+				
+				boolean new_tracking = true;
+				if(new_tracking){
 				groom_rescue(uB_copy, uG_copy, time_point);
 				division_recognition(uB_copy, uG_copy, time_point);
-				
+				}
+				else{
 				//analyze unmarried brides, i.e. current nodes without previously linked node
-				System.out.println(" uB:"+ unmarried_brides.size());
+				
 				while(!unmarried_brides.empty()){
 					
 					Node lost = unmarried_brides.pop();
@@ -768,6 +755,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_BOTH.numeric_code);
 					else
 						last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code);
+				}
 				}
 	}
 

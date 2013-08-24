@@ -166,6 +166,12 @@ public class CellPainter extends EzPlug {
 
 					if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
 
+						SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+
+						//Data statistics
+						
+						System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
+						System.out.println("CellVisualizer:	"+wing_disc_movie.getFrame(0).size()+" cells in first frame");
 						
 						//Eliminates the previous painter and runs the 
 						//the program (update mode)
@@ -178,10 +184,7 @@ public class CellPainter extends EzPlug {
 							}
 						}
 						
-						SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
-
-						System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
-						System.out.println("CellVisualizer:	first frame has  "+wing_disc_movie.getFrame(0).size()+" cells");
+						//Painter type
 
 						PlotEnum USER_CHOICE = varPlotting.getValue();
 

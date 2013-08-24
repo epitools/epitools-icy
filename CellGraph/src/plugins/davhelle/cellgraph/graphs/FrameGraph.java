@@ -13,6 +13,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.ListenableUndirectedGraph;
 
 import plugins.davhelle.cellgraph.nodes.Cell;
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -30,6 +31,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	
 	private NeighborIndex<Node, DefaultEdge> neighborList;
+	private ArrayList<Division> divisions;
 	private int frame_no; 
 	
 	/**
@@ -45,6 +47,9 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 		//create the neighborIndexList
 		this.neighborList = new NeighborIndex<Node, DefaultEdge>(this);
 		this.addGraphListener(neighborList);
+		
+		//initialize division list
+		this.divisions = new ArrayList<Division>();
 	}
 	
 	public FrameGraph(){
@@ -54,7 +59,6 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	public Iterator<Node> iterator(){
 		return this.vertexSet().iterator();
 	}
-	
 	
 	/**
 	 * Method to quickly access the neighbors of a node
@@ -74,6 +78,17 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	 */
 	public int size(){
 		return this.vertexSet().size();
+	}
+	
+	public void addDivision(Division division){
+		//safety check
+		if(division.getTimePoint() == this.frame_no)
+			//throw exception TODO
+			this.divisions.add(division);
+	}
+	
+	public int getDivisionNo(){
+		return divisions.size();
 	}
 	
 	public int getFrameNo(){

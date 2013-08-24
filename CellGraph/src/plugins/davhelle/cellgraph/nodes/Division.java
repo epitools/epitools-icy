@@ -62,6 +62,9 @@ public class Division {
 		//division tag, not exactly an error.. TODO
 		mother.setErrorTag(-5);
 		
+		//division notification to frame
+		division_frame.addDivision(this);
+		
 		//division propagation
 		Node ancestor = mother.getPrevious();
 		while(ancestor != null){

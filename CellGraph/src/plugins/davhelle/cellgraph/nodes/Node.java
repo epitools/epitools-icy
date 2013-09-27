@@ -37,6 +37,11 @@ public interface Node{
 	public Point getCentroid();
 	
 	/**
+	 * @param node_geometry JTS geometry representing the NodeType
+	 */
+	public void setGeometry(Geometry node_geometry);
+	
+	/**
 	 * @return JTS geometry representing the NodeType
 	 */
 	public Geometry getGeometry();

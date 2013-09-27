@@ -30,10 +30,10 @@ import com.vividsolutions.jts.geom.Polygon;
 public class Cell implements Node {
 	
 	//geometry to abstract the Node
-	private final Polygon geometry;
+	private Polygon geometry;
 	
 	//avoid redundant centroid computation
-	private final Point centroid;
+	private Point centroid;
 	
 	//FrameGraph to which 
 	private final FrameGraph parent;
@@ -240,6 +240,15 @@ public class Cell implements Node {
 	public boolean hasPrevious() {
 		// TODO Auto-generated method stub
 		return (previous != null);
+	}
+
+	@Override
+	public void setGeometry(Geometry node_geometry) {
+		//TODO safety check if the update is really a polygon
+		this.geometry = (Polygon)node_geometry;
+		//update centroid information as well
+		this.centroid = geometry.getCentroid();
+		
 	}
 
 }

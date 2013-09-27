@@ -111,7 +111,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		for(int time_point=0;time_point<stGraph.size(); time_point++){
 			System.out.println("Linking frame "+time_point);
 			
-			//link only from the second time point on
+			//LINKING [only from the second time point on]
 			if(time_point > 0){
 				
 				//link the current time point
@@ -122,10 +122,18 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				
 			}
 			
+			//PROPAGATION 
 			//Compute candidates for successive nodes in [linkrange] time frames
 			for(Node current: stGraph.getFrame(time_point).vertexSet()){
+				
 				//don't propagate what has not been recognized.
 				if(current.getTrackID() != -1)
+					
+					//TODO performance enhancement USE neighborhood to find next candidates
+					//find out which node the previous neighbor candidated for and use it
+					//as starting node in the next graph to find all other correspondences
+					//idea: keep last of previously propagated nodes
+					
 					for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
 						for(Node next: stGraph.getFrame(time_point + i).vertexSet())
 							if(next.getGeometry().intersects(current.getGeometry()))
@@ -562,6 +570,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			
 			if((ib2.getArea()/b2.getArea()) < coverage_factor)
 				continue;
+			
+			//TODO 6 could be extended with a maximial factor too. The two area
+			//overlaps should be coherent. This could avoid recognizing segmentation errors
+			//as divisions
 			
 			//assumption 7: the cell center of the mother should be within 
 			//				the rectangle formed by the children's cell center

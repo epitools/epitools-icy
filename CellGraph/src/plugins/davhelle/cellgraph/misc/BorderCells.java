@@ -8,11 +8,13 @@ package plugins.davhelle.cellgraph.misc;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.AbstractPainter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -24,6 +26,7 @@ import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 /**
  * Class identifies the cells which constitute the border 
@@ -35,12 +38,13 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * @author Davide Heller
  *
  */
-public class BorderCells extends AbstractPainter{
+public class BorderCells extends Overlay{
 
 	private SpatioTemporalGraph stGraph;
 	private HashMap<FrameGraph,Geometry> frame_ring_map;
 	
 	public BorderCells(SpatioTemporalGraph stGraph) {
+		super("Border cells");
 		//Set data structures
 		this.stGraph = stGraph;
 		this.frame_ring_map = new HashMap<FrameGraph,Geometry>();
@@ -71,8 +75,11 @@ public class BorderCells extends AbstractPainter{
 			}		
 
 			//Create union of all polygons
-			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-			Geometry union = polygonCollection.buffer(0);
+//			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+//			Geometry union = polygonCollection.buffer(0);
+			
+			//On avg.faster and more robust method
+			Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
 
 			//Compute boundary ring
 			Geometry boundary = union.getBoundary();
@@ -105,13 +112,17 @@ public class BorderCells extends AbstractPainter{
 					wrong_boundary.add(n.getGeometry());
 
 			//Outer polygon boundary for which statistics won't computed
-			GeometryCollection polygonBoundary = 
-					new GeometryCollection(
-							wrong_boundary.toArray(
-									new Geometry[wrong_boundary.size()]),
-									new GeometryFactory());
+//			GeometryCollection polygonBoundary = 
+//					new GeometryCollection(
+//							wrong_boundary.toArray(
+//									new Geometry[wrong_boundary.size()]),
+//									new GeometryFactory());
+//			
+//			Geometry polygonRing = polygonBoundary.buffer(0);
 			
-			Geometry polygonRing = polygonBoundary.buffer(0);
+			//faster method as above
+			Geometry polygonRing = CascadedPolygonUnion.union(wrong_boundary);
+					
 			frame_ring_map.put(frame_i, polygonRing);
 			
 			node_it = frame_i.iterator();
@@ -154,8 +165,11 @@ public class BorderCells extends AbstractPainter{
 		}		
 
 		//Create union of all polygons
-		GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-		Geometry union = polygonCollection.buffer(0);
+//		GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+//		Geometry union = polygonCollection.buffer(0);
+		
+		//faster method as in main routine
+		Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
 
 		//Compute boundary ring
 		Geometry boundary = union.getBoundary();
@@ -239,8 +253,11 @@ public class BorderCells extends AbstractPainter{
 			}		
 
 			//Create union of all polygons
-			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-			Geometry union = polygonCollection.buffer(0);
+//			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
+//			Geometry union = polygonCollection.buffer(0);
+			
+			//More robust method
+			Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
 
 			//Compute boundary ring
 			Geometry boundary = union.getBoundary();

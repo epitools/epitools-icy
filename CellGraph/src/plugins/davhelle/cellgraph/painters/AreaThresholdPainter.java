@@ -13,6 +13,8 @@ import icy.sequence.Sequence;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -30,16 +32,25 @@ public class AreaThresholdPainter extends Overlay{
 	private SpatioTemporalGraph stGraph;
 	private ArrayList<Node> toDraw;
 	
+	private double min_area;
+	private double max_area;
+	
 	public AreaThresholdPainter(SpatioTemporalGraph spatioTemporalGraph, double areaThreshold){
-		super("Cells above area threshold");
+		super("Cells colored according to area");
 		this.stGraph = spatioTemporalGraph;
-		
+	
 		toDraw = new ArrayList<Node>();
+		
+		min_area = Double.MAX_VALUE;
+		max_area = Double.MIN_VALUE;
 		
 		for(int i=0; i < stGraph.size(); i++){
 			for(Node node: stGraph.getFrame(i).vertexSet()){
-				if(node.getGeometry().getArea() > areaThreshold)
-					toDraw.add(node);
+				double node_area = node.getGeometry().getArea();
+				if( node_area > max_area)
+					max_area = node_area;
+				if( node_area < min_area)
+					min_area = node_area;
 			}
 		}
 	
@@ -54,13 +65,35 @@ public class AreaThresholdPainter extends Overlay{
 			//TODO include 3D information!
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.LIGHT_GRAY);
-	
-			for(Node cell: frame_i.vertexSet())
-				if(toDraw.contains(cell))
-					g.fill((cell.toShape()));
-
 			
+	
+			for(Node cell: frame_i.vertexSet()){
+				//if(toDraw.contains(cell)){
+				
+				double cell_area = cell.getGeometry().getArea();
+				
+				double h = (cell_area - min_area)/max_area;
+				
+				//adapt for certain color range
+				//by multiplying with factor
+				double range_factor = 0.15;
+				
+				h = h * range_factor;
+				
+				//revert
+				h = Math.abs(h - range_factor);
+				
+				//scale to use the color range of interest
+				
+				Color hsbColor = Color.getHSBColor(
+						(float)(h),
+						1f,
+						1f);
+				
+				g.setColor(hsbColor);
+				g.fill((cell.toShape()));
+				//}
+			}
 		}
     }
 }

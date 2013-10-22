@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.io;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Iterator;
+import java.util.Set;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
@@ -102,7 +103,7 @@ public class CsvWriter {
 
 		try{
 			
-			String file = chooseFile("area vs pn");
+			String file = chooseFile("area vs polygonal number");
 			
 			FileWriter fstream = new FileWriter(file);
 			BufferedWriter out = new BufferedWriter(fstream);
@@ -160,6 +161,118 @@ public class CsvWriter {
 				}
 
 			}
+
+			out.close();
+		}
+		catch (Exception e){
+			System.err.println("Error: " + e.getMessage());
+		}
+		
+	}
+	
+	public static void custom_write_out(
+			SpatioTemporalGraph stGraph){
+			//later add more controlled output, i.e. from UI
+			//with various boolean switches (e.g. only dividing ecc..)
+		try{
+			
+			
+			String file = chooseFile("Custom data");
+			
+			FileWriter fstream = new FileWriter(file);
+			BufferedWriter out = new BufferedWriter(fstream);
+			
+//			out.write("cellID, area\n");
+			
+//			for(int i=0; i<stGraph.size(); i++){
+				
+				FrameGraph frame_i = stGraph.getFrame(0);
+				Iterator<Node> cell_it = frame_i.iterator();
+				
+//				while(cell_it.hasNext()){
+//	
+//					Node cell = cell_it.next();
+//					//only dividing cells
+//					if(!cell.hasObservedDivision())
+//						continue;
+//					
+////					//only mother
+////					if(!cell.getDivision().isMother(cell))
+////						continue;
+//					
+//					//skip boundary cell
+//					if(cell.onBoundary())
+//						continue;
+//						
+//					//record area of dividing cell
+//					//out.write(cell.getTrackID())
+//					
+//					while(cell.hasNext()){
+//						out.write(cell.getGeometry().getArea()+",");
+//						cell = cell.getNext();
+//					}
+//
+//					//one cell per line
+//					out.write("\n");
+//
+//				}
+				
+				
+				//
+				//no of divisions
+				int division_no = 0;
+				int division_no_W = 0;
+				while(cell_it.hasNext()){
+					Node cell = cell_it.next();
+					
+					if(cell.hasObservedDivision()){
+						division_no++;
+
+
+						for(Node neighbor: cell.getNeighbors())
+							if(neighbor.hasObservedDivision()){
+								division_no_W++;
+								break;
+							}
+
+					}
+				}
+				
+				//sample value 
+				double p_dividing_neighbor = division_no_W / (double)division_no;
+				
+				out.write(p_dividing_neighbor+"\n");
+				
+				//random sampler
+				Node[] cells = frame_i.vertexSet().toArray(new Node[frame_i.size()]);
+
+				int sim_no = 1000;
+				
+				for(int sim_i=0; sim_i<sim_no; sim_i++){
+					
+					//no of random cells that have a dividing neighbor
+					int rnd_division_no_W = 0;
+					//take as many random cells as there were dividing cells
+					for(int i=0; i<division_no; i++){
+						
+						Node rnd_cell = cells[Math.round((float)Math.random()*cells.length)];
+						
+						for(Node neighbor: rnd_cell.getNeighbors())
+							if(neighbor.hasObservedDivision()){
+								rnd_division_no_W++;
+								break;
+							}
+							
+					}
+					
+					double rnd_p_dividing_neighbor = rnd_division_no_W / (double)division_no;
+					
+					out.write(rnd_p_dividing_neighbor+"\n");
+					
+				}
+				//write out
+
+//			}
 
 			out.close();
 		}

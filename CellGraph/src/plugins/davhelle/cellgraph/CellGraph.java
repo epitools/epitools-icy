@@ -22,6 +22,7 @@ import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
+import plugins.davhelle.cellgraph.io.SegmentationProgram;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
@@ -88,10 +89,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	private enum InputType{
 		VTK_MESH, SKELETON,
-	}
-	
-	private enum SegmentationProgram{
-		PackingAnalyzer, SeedWater
 	}
 
 	//Ezplug fields 
@@ -165,12 +162,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varDirectInput = new EzVarBoolean("Direct import", true);
 		
 		//In case yes, what particular program was used
-		varTool = new EzVarEnum<CellGraph.SegmentationProgram>(
+		varTool = new EzVarEnum<SegmentationProgram>(
 				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.SeedWater);
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/Documents/segmentation/packingAnalyzer_files/packing_analyser_gammazero/");
+				"Input files", "/Users/davide/Documents/segmentation/");
 
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
@@ -223,7 +220,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//varBooleanCellIDs,
 				//varBooleanHighlightMistakesBoolean,
 				//varBooleanLoadDivisions,
-				varBooleanDrawDisplacement,
+				//varBooleanDrawDisplacement,
 				varBooleanDrawGraphCoherence);
 
 		//Decide whether to load into swimming pool the generated stGraph
@@ -491,6 +488,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 					break;
 				case SeedWater:
 					abs_path = file_name.substring(0, file_no_idx) + file_str_no + file_name.substring(point_idx);
+					break;
+				case MatlabLabelOutlines:
+					abs_path = file_name.substring(0, file_no_idx) + file_str_no + file_name.substring(point_idx);
+					break;
+				default:
+					abs_path = file_name.substring(0, file_no_idx) + file_str_no + file_name.substring(point_idx);
 					break;			
 				}
 			else	
@@ -517,11 +520,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 			case SKELETON:
 				
 				boolean REDO_SKELETON = false;
-				if(varDirectInput.getValue())
-					REDO_SKELETON = varTool.getValue().equals(SegmentationProgram.SeedWater);
 				
+				if(varDirectInput.getValue())
+					if(varTool.getValue().equals(SegmentationProgram.SeedWater) 
+							|| varTool.getValue().equals(SegmentationProgram.MatlabLabelOutlines))
+					REDO_SKELETON = true;
+
 				SkeletonReader skeletonReader = new SkeletonReader(
-						abs_path, REDO_SKELETON);
+						abs_path, REDO_SKELETON, varTool.getValue());
 				
 				//TODO CHECK FOR DATA CORRECTION
 				
@@ -584,8 +590,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				Iterator<Cell> neighbor_it = cellList.iterator();
 				while(neighbor_it.hasNext()){
 					Cell b = neighbor_it.next();
-					if(a.getGeometry().touches(b.getGeometry()))
-						current_frame.addEdge(a, b);
+					//avoid creating the connection twice
+					if(!current_frame.containsEdge(a, b))
+						if(a.getGeometry().touches(b.getGeometry()))
+							current_frame.addEdge(a, b);
 				}
 			}
 			/******************ST-GRAPH UPDATE***********************************/

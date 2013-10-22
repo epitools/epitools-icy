@@ -45,6 +45,7 @@ public class DivisionPainter extends Overlay {
 						g.setColor(Color.green);
 //						if(!cell.onBoundary()) TODO: apply correspondence to first frame!
 						g.draw(cell.toShape());
+						g.fillOval((int)cell.getCentroid().getX(), (int)cell.getCentroid().getY(), 2, 2);
 					}	
 				
 //					else{
@@ -58,7 +59,7 @@ public class DivisionPainter extends Overlay {
 			
 			//g.setColor(Color.white);
 			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
-			g.drawString("Manually identified: "+division_no, 10 , 30);
+			//g.drawString("Manually identified: "+division_no, 10 , 30);
 		}
 	}
 

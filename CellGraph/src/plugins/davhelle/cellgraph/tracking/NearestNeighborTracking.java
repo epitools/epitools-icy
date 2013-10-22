@@ -136,14 +136,20 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					
 					for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
 						for(Node next: stGraph.getFrame(time_point + i).vertexSet())
+							
+							//TODO performance enhancement by sampling just one anchor point
+							//     and spreading from there towards a certain k-neighborhood (risk?)
+							
 							if(next.getGeometry().intersects(current.getGeometry()))
 							{
 								if(next.getGeometry().intersection(current.getGeometry()).getArea() > 10){
 								next.addParentCandidate(current);
 								
 								if( VERBOSE && current.getTrackID() == follow_ID)
-									System.out.println(follow_ID + " propagated to [" + Math.round(next.getCentroid().getX()) + 
-									"," + Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
+									System.out.println(follow_ID + " propagated to [" +
+											Math.round(next.getCentroid().getX()) + 
+											"," +
+											Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
 								}
 							}								
 			

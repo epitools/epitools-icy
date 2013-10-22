@@ -6,7 +6,9 @@
 package plugins.davhelle.cellgraph;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
@@ -23,16 +25,24 @@ import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarSequence;
 
 
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
+import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
+import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
+import plugins.davhelle.cellgraph.painters.DivisionPainter;
+import plugins.davhelle.cellgraph.painters.GraphPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.TrackIdPainter;
+import plugins.davhelle.cellgraph.painters.TrackPainter;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
 
@@ -51,7 +61,16 @@ public class CellPainter extends EzPlug {
 	
 	//plotting modes
 	private enum PlotEnum{
-		CELLS,BORDER, VORONOI, POLYGON_CLASS,  READ_DIVISIONS, AREA_THRESHOLD, ALWAYS_TRACKED,
+		CELLS,
+		BORDER, 
+		VORONOI, 
+		POLYGON_CLASS,  
+		AREA_THRESHOLD,
+		TRACKING,
+		GRAPH_PAINTER,
+		ALWAYS_TRACKED,
+		WRITE_OUT,
+		DIVISIONS,
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -67,6 +86,13 @@ public class CellPainter extends EzPlug {
 	EzVarBoolean				varBooleanVoronoiDiagram;
 	EzVarBoolean				varBooleanWriteCenters;
 	EzVarBoolean				varBooleanWriteArea;
+	
+	EzVarBoolean				varBooleanReadDivisions;
+	
+	//Tracking Mode
+	EzVarBoolean				varBooleanCellIDs;
+	EzVarBoolean				varBooleanHighlightMistakesBoolean;
+	EzVarBoolean 				varBooleanDrawDisplacement;
 	
 	EzVarDouble					varAreaThreshold;
 
@@ -116,14 +142,36 @@ public class CellPainter extends EzPlug {
 		//Which painter should be shown by default
 		varPlotting = new EzVarEnum<PlotEnum>("Painter type",
 				PlotEnum.values(),PlotEnum.CELLS);
+		
 
+		//Division mode
+		varBooleanReadDivisions = new EzVarBoolean("Read divisions", false);
+		EzGroup groupDivisions = new EzGroup("DIVISIONS elements", 
+				varBooleanReadDivisions);
+		
+		
+		
+		//TrackingMode
+		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
+		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
+		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
+		
+		EzGroup groupTracking = new EzGroup("TRACKING elements",
+				varBooleanCellIDs,
+				varBooleanDrawDisplacement,
+				varBooleanHighlightMistakesBoolean);
+				
+		
+		
 		//Painter
 		EzGroup groupPainters = new EzGroup("Painters",
 				varUpdatePainterMode,
 				varPlotting,
 				groupCellMap,
 				groupVoronoiMap,
-				groupAreaThreshold
+				groupAreaThreshold,
+				//groupDivisions,
+				groupTracking
 		);
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
@@ -131,7 +179,8 @@ public class CellPainter extends EzPlug {
 		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
 		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, PlotEnum.AREA_THRESHOLD);
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
-
+		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
+		varPlotting.addVisibilityTriggerTo(groupDivisions, PlotEnum.DIVISIONS);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -189,37 +238,263 @@ public class CellPainter extends EzPlug {
 						PlotEnum USER_CHOICE = varPlotting.getValue();
 
 						switch (USER_CHOICE){
-						case BORDER: sequence.addPainter(
-								new BorderPainter(wing_disc_movie));
-						break;
-						case CELLS: cellMode(wing_disc_movie);
-						break;
-						case POLYGON_CLASS: sequence.addPainter(
-								new PolygonClassPainter(wing_disc_movie));
-						break;
-						case READ_DIVISIONS: divisionMode(wing_disc_movie);
-						break;
-						case VORONOI: voronoiMode(wing_disc_movie);
-						break;
-						case AREA_THRESHOLD: sequence.addPainter(
-								new AreaThresholdPainter(
-										wing_disc_movie, 
-										varAreaThreshold.getValue()));
-						break;
-						case ALWAYS_TRACKED: sequence.addPainter(
-								new AlwaysTrackedCellsOverlay(
-										wing_disc_movie));
-						
-						}
+						case BORDER: 
+							sequence.addPainter(
+									new BorderPainter(wing_disc_movie));
+							break;
 
+						case CELLS: 
+							cellMode(wing_disc_movie);
+							break;
+
+						case POLYGON_CLASS: 
+							sequence.addPainter(
+									new PolygonClassPainter(wing_disc_movie));
+							break;
+
+						case DIVISIONS: 
+							divisionMode(
+									wing_disc_movie, 
+									varBooleanReadDivisions.getValue());
+							break;
+
+						case VORONOI: 
+							voronoiMode(wing_disc_movie);
+							break;
+
+						case AREA_THRESHOLD: 
+							sequence.addPainter(
+									new AreaThresholdPainter(
+											wing_disc_movie, 
+											varAreaThreshold.getValue()));
+							break;
+
+						case ALWAYS_TRACKED: 
+							sequence.addPainter(
+									new AlwaysTrackedCellsOverlay(
+											wing_disc_movie));
+							break;
+
+						case WRITE_OUT: 
+							
+							//CsvWriter.custom_write_out(wing_disc_movie);
+							writeOutMode(wing_disc_movie);
+							break;
+							
+						case TRACKING:
+							
+							trackingMode(
+									wing_disc_movie,
+									varBooleanCellIDs.getValue(),
+									varBooleanHighlightMistakesBoolean.getValue(),
+									varBooleanDrawDisplacement.getValue());
+							
+						break;
+						case GRAPH_PAINTER:
+							
+							sequence.addPainter(
+									new GraphPainter(
+											wing_disc_movie));
+							
+							break;
+									
+						}
 						//future statistical output statistics
 						//			CsvWriter.trackedArea(wing_disc_movie);
 						//			CsvWriter.frameAndArea(wing_disc_movie);
+						//CsvWriter.custom_write_out(wing_disc_movie);
+						
 					}
 				}
 			else
 				new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
 		}
+	}
+
+	/**
+	 * Repaint the tracking
+	 * 
+	 * @param wing_disc_movie
+	 * @param paint_cellID
+	 * @param paint_mistakes
+	 * @param paint_displacement
+	 */
+	private void trackingMode(SpatioTemporalGraph wing_disc_movie,
+			boolean paint_cellID, boolean paint_mistakes, boolean paint_displacement) {
+		
+		if(!wing_disc_movie.hasTracking()){
+			new AnnounceFrame("Loaded Graph has not been tracked, cannot paint tracking!");
+			return;
+		}
+		
+		if(paint_cellID){
+			Painter trackID = new TrackIdPainter(wing_disc_movie);
+			sequence.addPainter(trackID);
+		}
+		
+		if(paint_displacement){
+			float maximum_displacement = 2;
+			Painter displacementSegments = new ArrowPainter(wing_disc_movie, maximum_displacement);
+			sequence.addPainter(displacementSegments);
+		}
+		
+		TrackPainter correspondence = new TrackPainter(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
+		sequence.addPainter(correspondence);
+		
+	}
+
+	/**
+	 * Write out data to the disc, user specified location
+	 * 
+	 * @param wing_disc_movie the stGraph structure to be analyzed
+	 */
+	private void writeOutMode(SpatioTemporalGraph wing_disc_movie) {		
+		//write out
+//		CsvWriter.custom_write_out(wing_disc_movie); 
+		
+		FrameGraph frame_i = wing_disc_movie.getFrame(0);
+		Iterator<Node> cell_it = frame_i.iterator();	
+//		
+//		int nd = 0, d = 0;
+//		int nd_wD = 0, d_wD = 0;
+//		
+//		while(cell_it.hasNext()){
+//
+//			Node cell = cell_it.next();
+//			//only dividing cells
+//			
+//			//skip boundary cell
+//			if(cell.onBoundary())
+//				continue;
+//			
+//			
+//
+//			
+//			if(!cell.hasObservedDivision()){
+//				nd++;
+//			
+//				for(Node neighbor: cell.getNeighbors())
+//					if(neighbor.hasObservedDivision()){
+//						nd_wD++;
+//						break;
+//					}
+//			}
+//			else{
+//				//dividing cell
+//				d++;
+//				
+//				for(Node neighbor: cell.getNeighbors())
+//					if(neighbor.hasObservedDivision()){
+//						d_wD++;
+//						break;
+//					}
+//			}
+//			
+////			//only mother
+////			if(!cell.getDivision().isMother(cell))
+////				continue;
+//			
+//
+//				
+//			//record area of dividing cell
+//			//out.write(cell.getTrackID())
+//			
+//			//write out all successive areas on one side
+////			while(cell.hasNext()){
+////				System.out.print(cell.getGeometry().getArea()+",");
+////				cell = cell.getNext();
+////			}
+//			
+//			//one cell per line
+//			//System.out.print("\n");
+//
+//		}
+//		
+//		//p(dividing neighbor | non D)
+//		double p_nd = nd_wD/(double)nd;
+//		
+//		//p(dividing neighbor |     D)
+//		double p_d  = d_wD/(double)d;
+//		
+//		//p(dividing neighbor | nD + D)
+//		double p_all = (nd_wD + d_wD)/(double)(nd + d);
+//		
+//		System.out.println("p(dividing neighbor | non D) = "+p_nd);
+//		System.out.println("p(dividing neighbor |     D) = "+p_d);
+//		System.out.println("p(dividing neighbor | nD + D)"+p_all);
+//		
+//		System.out.println("ND:"+ nd_wD + ", " + nd);
+//		System.out.println("D: "+d_wD + ", " + d);
+		
+		//no of divisions
+		
+		int division_no = 0;
+		int division_no_W = 0;
+		while(cell_it.hasNext()){
+			Node cell = cell_it.next();
+			
+			//do not count if cell is on boundary
+			if(cell.onBoundary())
+				continue;
+			
+			if(cell.hasObservedDivision()){
+				division_no++;
+
+				//no of divisions t
+				//int 
+				
+				for(Node neighbor: cell.getNeighbors())
+					if(neighbor.hasObservedDivision()){
+						division_no_W++;
+						break;
+					}
+
+			}
+		}
+		
+		//sample value 
+		double p_dividing_neighbor = division_no_W / (double)division_no;
+		
+		System.out.println(p_dividing_neighbor);
+		
+		//random sampler
+		Node[] cells = frame_i.vertexSet().toArray(new Node[frame_i.size()]);
+
+		int sim_no = 1000;
+		
+		Random randomGenerator = new Random();
+		
+		for(int sim_i=0; sim_i<sim_no; sim_i++){
+			
+			//no of random cells that have a dividing neighbor
+			int rnd_division_no_W = 0;
+			//take as many random cells as there were dividing cells
+			for(int i=0; i<division_no; i++){
+				
+				int rnd_cell_id = randomGenerator.nextInt(cells.length);
+				//Math.round((float)Math.random()*cells.length);
+				Node rnd_cell = cells[rnd_cell_id];
+				
+				//do not choose a border cell
+				while(rnd_cell.onBoundary()){
+					rnd_cell_id = randomGenerator.nextInt(cells.length);
+					rnd_cell = cells[rnd_cell_id];
+				}
+				
+				for(Node neighbor: rnd_cell.getNeighbors())
+					if(neighbor.hasObservedDivision()){
+						rnd_division_no_W++;
+						break;
+					}
+					
+			}
+			
+			double rnd_p_dividing_neighbor = rnd_division_no_W / (double)division_no;
+			
+			System.out.println(rnd_p_dividing_neighbor);
+			
+		}
+		
 	}
 
 	@Override
@@ -265,15 +540,25 @@ public class CellPainter extends EzPlug {
 		
 	}
 
-	private void divisionMode(SpatioTemporalGraph wing_disc_movie){
-		//Divisions read in 
-		try{
-			DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-			division_reader.backtrackDivisions();
-			sequence.addPainter(division_reader);
+	private void divisionMode(SpatioTemporalGraph wing_disc_movie, boolean read_divisions){
+		if(read_divisions){
+			try{
+				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+				division_reader.backtrackDivisions();
+				sequence.addPainter(division_reader);
+
+
+
+
+			}
+			catch(IOException e){
+				System.out.println("Something went wrong in division reading");
+			}
 		}
-		catch(IOException e){
-			System.out.println("Something went wrong in division reading");
-		}
+		
+		
+		DivisionPainter dividing_cells = new DivisionPainter(wing_disc_movie);
+		sequence.addPainter(dividing_cells);
+		
 	}
 }

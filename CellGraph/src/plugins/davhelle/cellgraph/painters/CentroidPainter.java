@@ -44,7 +44,7 @@ public class CentroidPainter extends Overlay{
 			//TODO possible performance improvement if map<Node,Point> is created
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.green);
+			g.setColor(Color.red);
 	
 			for(Node cell: frame_i.vertexSet()){
 				Point centroid = cell.getCentroid();

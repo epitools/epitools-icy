@@ -5,29 +5,19 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.AbstractPainter;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
-
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Point;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-public class CentroidPainter extends AbstractGraphPainter{
+import com.vividsolutions.jts.geom.Point;
 
-	private ShapeWriter writer;
+public class CentroidPainter extends AbstractGraphPainter{
 	
 	public CentroidPainter(SpatioTemporalGraph spatioTemporalGraph){
 		super("Cell centroids", spatioTemporalGraph);
-		this.writer = new ShapeWriter();	
 	}
 
 	@Override

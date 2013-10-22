@@ -21,38 +21,24 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-public class CentroidPainter extends Overlay{
+public class CentroidPainter extends AbstractGraphPainter{
 
-	private SpatioTemporalGraph stGraph;
 	private ShapeWriter writer;
 	
 	public CentroidPainter(SpatioTemporalGraph spatioTemporalGraph){
-		super("Cell centroids");
-		this.stGraph = spatioTemporalGraph;
-		this.writer = new ShapeWriter();
-		
+		super("Cell centroids", spatioTemporalGraph);
+		this.writer = new ShapeWriter();	
 	}
 
-	
 	@Override
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-    {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		if(time_point < stGraph.size()){
-			//TODO include 3D information!
-			//TODO possible performance improvement if map<Node,Point> is created
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.red);
-	
-			for(Node cell: frame_i.vertexSet()){
-				Point centroid = cell.getCentroid();
-				g.fillOval((int)centroid.getX(), (int)centroid.getY(), 2, 2);
-			}
-				
-
-			
-		}
-    }
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
+		//TODO include 3D information!
+		//TODO possible performance improvement if map<Node,Point> is created
+		g.setColor(Color.red);
+		
+		for(Node cell: frame_i.vertexSet()){
+			Point centroid = cell.getCentroid();
+			g.fillOval((int)centroid.getX(), (int)centroid.getY(), 2, 2);
+		}		
+	}
 }

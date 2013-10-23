@@ -39,7 +39,7 @@ public class SkeletonReaderTest {
 		Assert.assertEquals(collection.size(), size);
 	}
 	
-	@Test
+	@Test(invocationCount=100)
 	public void testNestedImage() {
 		
 		String file_name = "testData/nested_example.tiff";
@@ -51,10 +51,17 @@ public class SkeletonReaderTest {
 		int true_no_of_cells = 2;
 		assertSize(extracted_polygons, true_no_of_cells);	
 		
-		Polygon first = extracted_polygons.get(0);
+		Polygon bigger = extracted_polygons.get(0);
+		//make sure we are handling the bigger polygon
+		if(!bigger.getEnvelope().contains(extracted_polygons.get(1)))
+			bigger = extracted_polygons.get(1);
 		
-		//test if first polygon contains holes (nested polygon)
-		Assert.assertEquals(first.getNumInteriorRing(), 1);
+		//check if bigger is indeed the larger polygon
+		HashSet<Coordinate> coordinates = new HashSet<Coordinate>(Arrays.asList(bigger.getCoordinates()));			
+		Assert.assertTrue(coordinates.contains(new Coordinate(288, 85)));
+		
+		//test if bigger polygon contains holes (nested polygon)
+		Assert.assertEquals(bigger.getNumInteriorRing(), 1);
 		
 	}
 	

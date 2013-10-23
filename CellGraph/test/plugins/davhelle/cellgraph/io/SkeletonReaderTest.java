@@ -7,16 +7,15 @@ import java.util.HashSet;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.vividsolutions.jts.awt.PointShapeFactory.Point;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class SkeletonReaderTest {
 	
-	String file_name = "testData/square_example.tif";
-
 	@Test
 	public void testSinglePolygon() {
+		
+		String file_name = "testData/square_example.tif";
 
 		SkeletonReader reader = 
 				new SkeletonReader(file_name, true, SegmentationProgram.MatlabLabelOutlines);
@@ -34,6 +33,25 @@ public class SkeletonReaderTest {
 		Assert.assertEquals(square.getNumInteriorRing(), 0);
 		
 	}
+	
+	@Test
+	public void testNestedImage() {
+		
+		String file_name = "testData/nested_example.tiff";
+
+		SkeletonReader reader = 
+				new SkeletonReader(file_name, true, SegmentationProgram.MatlabLabelOutlines);
+		ArrayList<Polygon> extracted_polygons = reader.extractPolygons();
+
+		Assert.assertEquals(extracted_polygons.size(), 2);
+		
+		Polygon first = extracted_polygons.get(0);
+		
+		//test if first polygon contains holes (nested polygon)
+		Assert.assertEquals(first.getNumInteriorRing(), 1);
+		
+	}
+	
 	
 	
 }

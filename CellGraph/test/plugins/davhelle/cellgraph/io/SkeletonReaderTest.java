@@ -2,12 +2,15 @@ package plugins.davhelle.cellgraph.io;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class SkeletonReaderTest {
@@ -35,11 +38,11 @@ public class SkeletonReaderTest {
 		
 	}
 
-	private void assertSize(ArrayList<Polygon> collection, int size) {
+	private void assertSize(Collection collection, int size) {
 		Assert.assertEquals(collection.size(), size);
 	}
 	
-	@Test(invocationCount=100)
+	@Test //(invocationCount=100)
 	public void testNestedImage() {
 		
 		String file_name = "testData/nested_example.tiff";

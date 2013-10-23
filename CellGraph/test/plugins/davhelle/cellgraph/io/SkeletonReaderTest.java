@@ -25,11 +25,14 @@ public class SkeletonReaderTest {
 		Assert.assertEquals(extracted_polygons.size(), 1);
 		
 		Polygon square = extracted_polygons.get(0);
-		System.out.println(square);
 	
 		//test polygon for containing specific point
 		HashSet<Coordinate> coordinates = new HashSet<Coordinate>(Arrays.asList(square.getCoordinates()));			
 		Assert.assertTrue(coordinates.contains(new Coordinate(288, 85)));
+		
+		//test polygon for holes
+		Assert.assertEquals(square.getNumInteriorRing(), 0);
+		
 	}
 	
 	

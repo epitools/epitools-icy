@@ -1,14 +1,15 @@
 package plugins.davhelle.cellgraph.io;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.vividsolutions.jts.awt.PointShapeFactory.Point;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Polygon;
-
-import plugins.davhelle.cellgraph.io.SegmentationProgram;
-import plugins.davhelle.cellgraph.io.SkeletonReader;
 
 public class SkeletonReaderTest {
 	
@@ -16,11 +17,20 @@ public class SkeletonReaderTest {
 
 	@Test
 	public void testSinglePolygon() {
+
 		SkeletonReader reader = 
 				new SkeletonReader(file_name, true, SegmentationProgram.MatlabLabelOutlines);
 		ArrayList<Polygon> extracted_polygons = reader.extractPolygons();
 
 		Assert.assertEquals(extracted_polygons.size(), 1);
 		
+		Polygon square = extracted_polygons.get(0);
+		System.out.println(square);
+	
+		//test polygon for containing specific point
+		HashSet<Coordinate> coordinates = new HashSet<Coordinate>(Arrays.asList(square.getCoordinates()));			
+		Assert.assertTrue(coordinates.contains(new Coordinate(288, 85)));
 	}
+	
+	
 }

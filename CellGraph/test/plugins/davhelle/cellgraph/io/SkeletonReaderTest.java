@@ -58,6 +58,18 @@ public class SkeletonReaderTest {
 		
 	}
 	
+	@Test
+	public void testComplexExample(){
+		String file_name = "testData/cell_tissue_crop.tif";
+
+		SkeletonReader reader = 
+				new SkeletonReader(file_name, true, SegmentationProgram.SeedWater);
+		ArrayList<Polygon> extracted_polygons = reader.extractPolygons();
+		
+		int true_no_of_cells = 1;
+		assertSize(extracted_polygons, true_no_of_cells);
+
+	}
 	
 	
 }

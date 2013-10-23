@@ -12,7 +12,7 @@ import plugins.davhelle.cellgraph.io.SkeletonReader;
 
 public class SkeletonReaderTest {
 	
-	String file_name = "/Users/davide/Documents/segmentation/square_example.tif";
+	String file_name = "testData/square_example.tif";
 
 	@Test
 	public void testSinglePolygon() {

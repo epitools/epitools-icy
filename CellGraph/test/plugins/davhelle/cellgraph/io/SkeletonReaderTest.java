@@ -21,7 +21,8 @@ public class SkeletonReaderTest {
 				new SkeletonReader(file_name, true, SegmentationProgram.MatlabLabelOutlines);
 		ArrayList<Polygon> extracted_polygons = reader.extractPolygons();
 
-		Assert.assertEquals(extracted_polygons.size(), 1);
+		int true_no_of_cells = 1;
+		assertSize(extracted_polygons, true_no_of_cells);
 		
 		Polygon square = extracted_polygons.get(0);
 	
@@ -33,6 +34,10 @@ public class SkeletonReaderTest {
 		Assert.assertEquals(square.getNumInteriorRing(), 0);
 		
 	}
+
+	private void assertSize(ArrayList<Polygon> collection, int size) {
+		Assert.assertEquals(collection.size(), size);
+	}
 	
 	@Test
 	public void testNestedImage() {
@@ -43,7 +48,8 @@ public class SkeletonReaderTest {
 				new SkeletonReader(file_name, true, SegmentationProgram.MatlabLabelOutlines);
 		ArrayList<Polygon> extracted_polygons = reader.extractPolygons();
 
-		Assert.assertEquals(extracted_polygons.size(), 2);
+		int true_no_of_cells = 2;
+		assertSize(extracted_polygons, true_no_of_cells);	
 		
 		Polygon first = extracted_polygons.get(0);
 		

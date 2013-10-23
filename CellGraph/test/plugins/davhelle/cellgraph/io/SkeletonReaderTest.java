@@ -59,15 +59,20 @@ public class SkeletonReaderTest {
 	}
 	
 	@Test
-	public void testComplexExample(){
+	public void testSampleCrop(){
 		String file_name = "testData/cell_tissue_crop.tif";
 
 		SkeletonReader reader = 
 				new SkeletonReader(file_name, true, SegmentationProgram.SeedWater);
 		ArrayList<Polygon> extracted_polygons = reader.extractPolygons();
 		
-		int true_no_of_cells = 1;
+		int true_no_of_cells = 23;
 		assertSize(extracted_polygons, true_no_of_cells);
+		
+		//assert that all polygons do not contain holes
+		int no_of_expected_holes = 0;
+		for(Polygon p: extracted_polygons)
+			Assert.assertEquals(p.getNumInteriorRing(), no_of_expected_holes);
 
 	}
 	

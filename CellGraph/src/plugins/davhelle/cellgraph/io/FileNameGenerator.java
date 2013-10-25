@@ -9,7 +9,7 @@ import java.io.File;
  * from the input file number (not necessarily 0)
  * 
  * Current file name requirements are:
- * - Contiguous 2 digit enumeration
+ * - Contiguous 3 digit enumeration
  * - Enumeration to start from 0 by default
  * 		(not necessarily the input)
  * 
@@ -53,10 +53,10 @@ public class FileNameGenerator {
 		input_file_name = input_file.getAbsolutePath();
 		point_idx = input_file_name.indexOf('.');
 		
-		//assumption of 2 digit number
+		//assumption of 3 digit number
 		//TODO: proper number read in (no. represented in 2 digit format...)
 		//TODO: do it like fiji-loci-fileImporter : parse Option
-		file_no_idx = point_idx - 2;
+		file_no_idx = point_idx - 3;
 		if(point_idx > 3){		
 			String file_str_no = input_file_name.substring(file_no_idx, point_idx);
 			int file_no = Integer.valueOf(file_str_no);
@@ -96,6 +96,8 @@ public class FileNameGenerator {
 		
 		//TODO add support for more than 2 digit no
 		if(file_no < 10)
+			file_str_no = "00" + file_str_no;  
+		else if(file_no < 100)
 			file_str_no = "0" + file_str_no;  
 		
 		String abs_path = "";

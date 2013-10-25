@@ -21,7 +21,7 @@ public class FileNameGeneratorTest {
 			  is_direct_input,
 			  SegmentationProgram.MatlabLabelOutlines);
 	  
-	  int no_of_files = 99;
+	  int no_of_files = 100;
 	  assertFileExistence(testGenerator, no_of_files);
 	  
   }

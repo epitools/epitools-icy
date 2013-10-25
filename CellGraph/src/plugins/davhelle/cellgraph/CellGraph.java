@@ -163,7 +163,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<SegmentationProgram>(
-				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.SeedWater);
+				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.MatlabLabelOutlines);
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
@@ -260,20 +260,16 @@ public class CellGraph extends EzPlug implements EzStoppable
 		}
 		
 		//First boolean choice to remove previous painters
-		if(varRemovePainterFromSequence.getValue()){
-			removeAllPainters();
-		}
+		if(varRemovePainterFromSequence.getValue())
+			removeAllPainters();	
 		else{
 			
 			//Eliminates the previous painter and runs the 
-			//the program (update mode)
-			
-			if(varUpdatePainterMode.getValue()){
+			//the program (update mode)		
+			if(varUpdatePainterMode.getValue())
 				removeAllPainters();
-			}
 			
 			//Create spatio temporal graph from mesh files
-			
 			TissueEvolution wing_disc_movie = new TissueEvolution();	
 			generateSpatioTemporalGraph(wing_disc_movie);
 			
@@ -441,9 +437,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 		}
 		
 		//Default
-		if(mesh_file == null)
-			mesh_file = new File("/Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif");
-		
+		if(mesh_file == null){
+			String default_file = "Neo0_skeleton_001.png";
+			String default_dir = "/Users/davide/Documents/segmentation/Epitools/Neo0/Skeleton/";
+			//previous default: /Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif
+			mesh_file = new File(default_dir+default_file);
+		}
 	
 		int time_points = varMaxT.getValue();
 
@@ -451,7 +450,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		int point_idx = file_name.indexOf('.');
 		int file_no_idx = point_idx - 2;
 		
-		int start_file_no = 0;
+		int start_file_no = 1;
 		
 		if(point_idx > 3){
 			//two space number assuption
@@ -471,8 +470,25 @@ public class CellGraph extends EzPlug implements EzStoppable
 		for(int i = 0; i<time_points; i++){
 			
 			//successive file name generation
-			int current_file_no = start_file_no + i;
-			String file_str_no = Integer.toString(current_file_no);
+			final int FIRST_INDEX;
+			
+			switch(varTool.getValue()){
+			case MatlabLabelOutlines:
+				FIRST_INDEX = 1;
+				break;
+			case PackingAnalyzer:
+				FIRST_INDEX = 0;
+				break;
+			case SeedWater:
+				FIRST_INDEX = 0;
+				break;
+			default:
+				FIRST_INDEX = 0;
+				break;
+			}	
+			
+			int current_file_no = start_file_no + i - FIRST_INDEX;
+			String file_str_no = Integer.toString(current_file_no + FIRST_INDEX);
 			
 			if(current_file_no < 10)
 				file_str_no = "0" + file_str_no;  
@@ -499,7 +515,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 			else	
 				abs_path = file_name.substring(0, file_no_idx) + file_str_no + file_name.substring(point_idx);
 			
-			System.out.println("reading frame "+i+": "+ abs_path);
 			
 			try{
 				File current_file = new File(abs_path);
@@ -511,6 +526,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				continue;
 			}
 			
+			System.out.println("reading frame "+i+": "+ abs_path);
+
 			/******************INPUT TO POLYGON TRANSFORMATION***********************************/
 
 			

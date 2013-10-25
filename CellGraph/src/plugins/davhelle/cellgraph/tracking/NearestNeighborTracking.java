@@ -519,16 +519,28 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			List<Node> neighbors = untracked.getNeighbors();
 
 			for(Node brotherCandidate: neighbors){
-				//assumption 2: mother cell should be the last correspondence of brother cell and at preceding frame
 				if(brotherCandidate.hasPrevious()){
-
-					Node motherCandidate = brotherCandidate.getPrevious();
-					if(motherCandidate.getBelongingFrame().getFrameNo() != time_point - 1)
-						continue;
 					
-					//assumption 3: mother cell cannot divide twice
-					if(motherCandidate.hasObservedDivision())
+//					System.out.println("Analyzing brother: "+brotherCandidate.getTrackID());
+
+					//assumption 2: mother cell should be the last correspondence of brother cell 
+					//              and at preceding frame 
+					//TODO weak, what if division happens close by and distorts previous image
+					Node motherCandidate = brotherCandidate.getPrevious();
+					int mother_frame_no = motherCandidate.getBelongingFrame().getFrameNo();
+					int expected_frame_no = time_point - 1;
+					if(mother_frame_no != expected_frame_no){
+//						System.out.println(
+//								"\t failed for assumption 2: mother cell belongs to frame "+
+//										mother_frame_no+" instead of "+expected_frame_no);
+						
 						continue;
+					}
+					//assumption 3: mother cell cannot divide twice
+					if(motherCandidate.hasObservedDivision()){
+//						System.out.println("\t failed for assumption 3");
+						continue;
+					}
 
 					//assumption 4: mother cell should share the biggest intersection with the untracked cell
 					Geometry motherIntersection = untracked.getGeometry().intersection(
@@ -543,8 +555,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			}
 					
 
+			//no brother found
 			if(bestBrotherCandidate.getNode() == null)
-				//no brother found
 				continue;
 			
 			Node brother1 = untracked;

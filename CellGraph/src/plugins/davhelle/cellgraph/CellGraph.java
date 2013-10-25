@@ -21,6 +21,7 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
+import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
@@ -85,10 +86,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	private enum TrackEnum{
 		MOSAIC, NN,
-	}
-	
-	private enum InputType{
-		VTK_MESH, SKELETON,
 	}
 
 	//Ezplug fields 
@@ -173,7 +170,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
 		
 		//Border cut
-		varCutBorder = new EzVarBoolean("Eliminate one border line",false);
+		varCutBorder = new EzVarBoolean("Eliminate one border line",true);
 		
 		//small cell elimination
 		varRemoveSmallCells = new EzVarBoolean("Remove too small cells", true);

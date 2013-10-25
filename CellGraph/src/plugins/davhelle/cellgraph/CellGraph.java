@@ -261,11 +261,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//First boolean choice to remove previous painters
 		if(varRemovePainterFromSequence.getValue()){
-			List<Painter> painters = sequence.getPainters();
-			for (Painter painter : painters) {
-				sequence.removePainter(painter);
-				sequence.painterChanged(painter);    				
-			}
+			removeAllPainters();
 		}
 		else{
 			
@@ -273,11 +269,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//the program (update mode)
 			
 			if(varUpdatePainterMode.getValue()){
-				List<Painter> painters = sequence.getPainters();
-				for (Painter painter : painters) {
-					sequence.removePainter(painter);
-					sequence.painterChanged(painter);    				
-				}
+				removeAllPainters();
 			}
 			
 			//Create spatio temporal graph from mesh files
@@ -339,6 +331,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			
 			}
+		}
+	}
+
+	private void removeAllPainters() {
+		List<Painter> painters = sequence.getPainters();
+		for (Painter painter : painters) {
+			sequence.removePainter(painter);
+			sequence.painterChanged(painter);    				
 		}
 	}
 	

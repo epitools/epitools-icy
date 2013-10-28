@@ -161,20 +161,24 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			}	
 		}
 		
+		reportTrackingResults();
+	}
+
+	private void reportTrackingResults() {
 		System.out.println(
 				"\nTracking completed for "+stGraph.size()+" frames:"+
 						"\n\t "+stGraph.getFrame(0).size()+" cells in first frame");
 
-		if(DO_DIVISION_CHECK){
-			
-			int tot_divisions = 0;
+		if(DO_DIVISION_CHECK)
+			System.out.println("\t "+countDivisions()+" divisions recognized");
+	}
 
-			for(int i=0; i < stGraph.size(); i++)
-				tot_divisions += stGraph.getFrame(i).getDivisionNo();
+	private int countDivisions() {
+		int tot_divisions = 0;
 
-			System.out.println("\t "+tot_divisions+" divisions recognized");
-
-		}
+		for(int i=0; i < stGraph.size(); i++)
+			tot_divisions += stGraph.getFrame(i).getDivisionNo();
+		return tot_divisions;
 	}
 
 	/**

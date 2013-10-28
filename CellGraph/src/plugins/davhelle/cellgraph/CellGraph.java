@@ -271,8 +271,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 		if(varRemovePainterFromSequence.getValue())
 			removeAllPainters();	
 		else{
-			//Override current painters	
+			
 			if(varUpdatePainterMode.getValue())
+				//Override current painters	
 				removeAllPainters();
 			
 			//Create spatio temporal graph from mesh files
@@ -282,33 +283,29 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//Border identification + discard/mark
 			applyBorderOptions(wing_disc_movie);
 			
-			//Remove all cells below given threshold if desired
-			//Done after Border cell remover, otherwise holes are created
-			//wherever a too small cell was removed!
-			SmallCellRemover cellRemover = new SmallCellRemover(wing_disc_movie);
+			//Small cell handling, executed after border options 
 			if(varRemoveSmallCells.getValue())
-				cellRemover.removeCellsBelow(varAreaThreshold.getValue());
-			
+				new SmallCellRemover(wing_disc_movie).removeCellsBelow(varAreaThreshold.getValue());
 			
 			if(varDoTracking.getValue())
 				trackingMode(wing_disc_movie);
 			
 			//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
-			if(varUseSwimmingPool.getValue()){
-				
-				//remove all formerly present objects 
-				//TODO review, might want to hold multiple object in future
-				Icy.getMainInterface().getSwimmingPool().removeAll();
-				
-				// Put my object in a Swimming Object
-				SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie,"stGraph");
-				
-				// add the object in the swimming pool
-				Icy.getMainInterface().getSwimmingPool().add( swimmingObject );	
-			
-			
-			}
+			if(varUseSwimmingPool.getValue())
+				pushToSwimingPool(wing_disc_movie);	
 		}
+	}
+
+	private void pushToSwimingPool(TissueEvolution wing_disc_movie) {
+		//remove all formerly present objects 
+		//TODO review, might want to hold multiple object in future
+		Icy.getMainInterface().getSwimmingPool().removeAll();
+		
+		// Put my object in a Swimming Object
+		SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie,"stGraph");
+		
+		// add the object in the swimming pool
+		Icy.getMainInterface().getSwimmingPool().add( swimmingObject );
 	}
 
 	private void applyBorderOptions(TissueEvolution wing_disc_movie) {

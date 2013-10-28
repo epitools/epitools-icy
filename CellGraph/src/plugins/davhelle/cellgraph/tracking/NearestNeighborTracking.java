@@ -107,11 +107,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	@Override
 	public void track(){
 		
-		//for every frame extract all particles
-		for(int time_point=0;time_point<stGraph.size(); time_point++){
+		//link the time points and propagate the information
+		for(int time_point = 0; time_point < stGraph.size(); time_point++){
 			System.out.println("Linking frame "+time_point);
 			
-			//LINKING
 			if(time_point > 0){
 				Map<String, Stack<Node>> unmarried = linkTimePoint(time_point);
 				
@@ -119,44 +118,53 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				analyze_unmarried(unmarried, time_point);
 			}
 			
-			//PROPAGATION 
-			//Add candidates for nodes in next [linkrange] time frames
-			//TODO [performance enhancement] use neighborhood to find candidates in next frame:
-			//find out which node the previous neighbor candidated for and use it
-			//as starting node in the next graph to find all other correspondences
-			//idea: keep last of previously propagated nodes or iterate on a neighbor basis
-			//      e.g. and spreading towards a certain k-neighborhood (risk?)
-			
-			for(Node current: stGraph.getFrame(time_point).vertexSet())
-			{	
-				//only propagate what has been successfully in current frame.
-				if(current.getTrackID() != -1)
-				{	
-					for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
-						for(Node next: stGraph.getFrame(time_point + i).vertexSet())
-							
-							if(next.getGeometry().intersects(current.getGeometry()))
-							{
-								if(next.getGeometry().intersection(current.getGeometry()).getArea() > 10){
-								next.addParentCandidate(current);
-								
-								if( VERBOSE && current.getTrackID() == follow_ID)
-									System.out.println(follow_ID + " propagated to [" +
-											Math.round(next.getCentroid().getX()) + 
-											"," +
-											Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
-								}
-							}								
-				}
-				//also check in case of a division that the brother cell is present
-				if(current.hasObservedDivision())
-					if(!current.getDivision().isBrotherPresent(current)) //TODO review isBrotherPresent Method input (list would be more logic)
-						current.setErrorTag(TrackingFeedback.BROTHER_CELL_NOT_FOUND.numeric_code);
-				
-			}	
+			propagateTimePoint(time_point);	
 		}
 		
 		reportTrackingResults();
+	}
+
+	/**
+	 * PROPAGATION 
+	 * Add candidates to nodes in next [linkrange] time frames
+	 * 
+	 * @param time_point
+	 */
+	private void propagateTimePoint(int time_point) {
+
+		//TODO [performance enhancement] use neighborhood to find candidates in next frame:
+		//find out which node the previous neighbor candidated for and use it
+		//as starting node in the next graph to find all other correspondences
+		//idea: keep last of previously propagated nodes or iterate on a neighbor basis
+		//      e.g. and spreading towards a certain k-neighborhood (risk?)
+		
+		for(Node current: stGraph.getFrame(time_point).vertexSet())
+		{	
+			//only propagate what has been successfully in current frame.
+			if(current.getTrackID() != -1)
+			{	
+				for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
+					for(Node next: stGraph.getFrame(time_point + i).vertexSet())
+						
+						if(next.getGeometry().intersects(current.getGeometry()))
+						{
+							if(next.getGeometry().intersection(current.getGeometry()).getArea() > 10){
+							next.addParentCandidate(current);
+							
+							if( VERBOSE && current.getTrackID() == follow_ID)
+								System.out.println(follow_ID + " propagated to [" +
+										Math.round(next.getCentroid().getX()) + 
+										"," +
+										Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
+							}
+						}								
+			}
+			//also check in case of a division that the brother cell is present
+			if(current.hasObservedDivision())
+				if(!current.getDivision().isBrotherPresent(current)) //TODO review isBrotherPresent Method input (list would be more logic)
+					current.setErrorTag(TrackingFeedback.BROTHER_CELL_NOT_FOUND.numeric_code);
+			
+		}
 	}
 
 	private void reportTrackingResults() {

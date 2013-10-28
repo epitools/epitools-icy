@@ -99,7 +99,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 	//Ezplug fields 
 
-	EzVarEnum<TrackEnum>		varTracking;
+	EzVarEnum<TrackEnum>		varTrackingAlgorithm;
 	EzVarEnum<InputType>		varInput;
 	EzVarEnum<SegmentationProgram> varTool;
 	EzVarFile					varFile;
@@ -240,14 +240,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		varBooleanDrawGraphCoherence = new EzVarBoolean("Draw Graph coherence indeces",false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
-		varTracking = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
+		varTrackingAlgorithm = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.NN);
 		varBorderEliminationNo = new EzVarInteger("No of border layers to ex. in 1th frame",1,0,10,1);
 		
 		varLambda1 = new EzVarDouble("Min. Distance weight", 1, 0, 10, 0.1);
 		varLambda2 = new EzVarDouble("Overlap Ratio weight", 1, 0, 10, 0.1);
 	
 		EzGroup groupTracking = new EzGroup("TRACKING elements",
-				varTracking,
+				varTrackingAlgorithm,
 				varLinkrange,
 				varDisplacement,
 				varLambda1,
@@ -474,13 +474,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 	}
 
 	private void applyTracking(SpatioTemporalGraph wing_disc_movie){
-		//Tracking
 		if(wing_disc_movie.size() > 1){
-		
 			TrackingAlgorithm tracker = null;
 					
-			switch(varTracking.getValue()){
-			
+			switch(varTrackingAlgorithm.getValue()){
 			case MOSAIC:
 				tracker = new MosaicTracking(
 						wing_disc_movie,
@@ -496,49 +493,49 @@ public class CellGraph extends EzPlug implements EzStoppable
 				break;
 			}
 			
-			//if desired by user reduce first frame by 
-			//iteratively remove boundary layers
-	
-			// TODO perform tracking trycatch
+			// TODO try&catch
 			tracker.track();
 			wing_disc_movie.setTracking(true);
 	
-			if(varBooleanCellIDs.getValue()){
-				Painter trackID = new TrackIdPainter(wing_disc_movie);
-				sequence.addPainter(trackID);
-			}
-			
-			if(varBooleanDrawDisplacement.getValue()){
-				Painter displacementSegments = new ArrowPainter(wing_disc_movie, varDisplacement.getValue());
-				sequence.addPainter(displacementSegments);
-			}
-			
-			if(varBooleanDrawGraphCoherence.getValue()){
-				sequence.addPainter(new GraphCoherenceOverlay(wing_disc_movie));
-			}
-			
-			if(varBooleanLoadDivisions.getValue()){
-				//read manual divisions and combine with tracking information
-				try{
-					DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-					division_reader.assignDivisions();
-					sequence.addPainter(new DivisionPainter(wing_disc_movie));
-				}
-				catch(IOException e){
-					System.out.println("Something went wrong in division reading");
-				}
-				
-				sequence.addPainter(new SiblingPainter(wing_disc_movie));
-			}
-			else{
-				//Paint corresponding cells in time
-				TrackPainter correspondence = new TrackPainter(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
-				sequence.addPainter(correspondence);
-			}
-	
+			paintTrackingResult(wing_disc_movie);
 		}
 		else{
 			new AnnounceFrame("Tracking requires at least two time points! Please increase time points to load");
+		}
+	}
+
+	private void paintTrackingResult(SpatioTemporalGraph wing_disc_movie) {
+		if(varBooleanCellIDs.getValue()){
+			Painter trackID = new TrackIdPainter(wing_disc_movie);
+			sequence.addPainter(trackID);
+		}
+		
+		if(varBooleanDrawDisplacement.getValue()){
+			Painter displacementSegments = new ArrowPainter(wing_disc_movie, varDisplacement.getValue());
+			sequence.addPainter(displacementSegments);
+		}
+		
+		if(varBooleanDrawGraphCoherence.getValue()){
+			sequence.addPainter(new GraphCoherenceOverlay(wing_disc_movie));
+		}
+		
+		if(varBooleanLoadDivisions.getValue()){
+			//read manual divisions and combine with tracking information
+			try{
+				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+				division_reader.assignDivisions();
+				sequence.addPainter(new DivisionPainter(wing_disc_movie));
+			}
+			catch(IOException e){
+				System.out.println("Something went wrong in division reading");
+			}
+			
+			sequence.addPainter(new SiblingPainter(wing_disc_movie));
+		}
+		else{
+			//Paint corresponding cells in time
+			TrackPainter correspondence = new TrackPainter(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
+			sequence.addPainter(correspondence);
 		}
 	}
 

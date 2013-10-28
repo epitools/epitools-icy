@@ -111,34 +111,29 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		for(int time_point=0;time_point<stGraph.size(); time_point++){
 			System.out.println("Linking frame "+time_point);
 			
-			//LINKING [only from the second time point on]
+			//LINKING
 			if(time_point > 0){
-				
-				//link the current time point
 				Map<String, Stack<Node>> unmarried = linkTimePoint(time_point);
 				
-				//analyze unmarried nodes
+				//analyze unmarried/unlinked nodes
 				analyze_unmarried(unmarried, time_point);
-				
 			}
 			
 			//PROPAGATION 
-			//Compute candidates for successive nodes in [linkrange] time frames
-			for(Node current: stGraph.getFrame(time_point).vertexSet()){
-				
-				//don't propagate what has not been recognized.
+			//Add candidates for nodes in next [linkrange] time frames
+			//TODO [performance enhancement] use neighborhood to find candidates in next frame:
+			//find out which node the previous neighbor candidated for and use it
+			//as starting node in the next graph to find all other correspondences
+			//idea: keep last of previously propagated nodes or iterate on a neighbor basis
+			//      e.g. and spreading towards a certain k-neighborhood (risk?)
+			
+			for(Node current: stGraph.getFrame(time_point).vertexSet())
+			{	
+				//only propagate what has been successfully in current frame.
 				if(current.getTrackID() != -1)
-					
-					//TODO performance enhancement USE neighborhood to find next candidates
-					//find out which node the previous neighbor candidated for and use it
-					//as starting node in the next graph to find all other correspondences
-					//idea: keep last of previously propagated nodes
-					
+				{	
 					for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
 						for(Node next: stGraph.getFrame(time_point + i).vertexSet())
-							
-							//TODO performance enhancement by sampling just one anchor point
-							//     and spreading from there towards a certain k-neighborhood (risk?)
 							
 							if(next.getGeometry().intersects(current.getGeometry()))
 							{
@@ -152,12 +147,12 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 											Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
 								}
 							}								
-			
+				}
 				//also check in case of a division that the brother cell is present
 				if(current.hasObservedDivision())
 					if(!current.getDivision().isBrotherPresent(current)) //TODO review isBrotherPresent Method input (list would be more logic)
 						current.setErrorTag(TrackingFeedback.BROTHER_CELL_NOT_FOUND.numeric_code);
-			
+				
 			}	
 		}
 		

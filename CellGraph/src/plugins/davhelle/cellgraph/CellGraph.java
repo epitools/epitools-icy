@@ -203,7 +203,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
 				"Input files", "/Users/davide/Documents/segmentation/");
-
+	
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
 		
@@ -245,7 +245,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		varLambda1 = new EzVarDouble("Min. Distance weight", 1, 0, 10, 0.1);
 		varLambda2 = new EzVarDouble("Overlap Ratio weight", 1, 0, 10, 0.1);
-
+	
 		EzGroup groupTracking = new EzGroup("TRACKING elements",
 				varTracking,
 				varLinkrange,
@@ -260,13 +260,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varBooleanDrawGraphCoherence);
 		return groupTracking;
 	}
-	
+
 	@Override
 	protected void execute()
 	{		
-		if(no_open_sequence())
+		if(noOpenSequenceCheck())
 			return;
-
+	
 		//Only remove previous painters
 		if(varRemovePainterFromSequence.getValue())
 			removeAllPainters();	
@@ -288,7 +288,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				new SmallCellRemover(wing_disc_movie).removeCellsBelow(varAreaThreshold.getValue());
 			
 			if(varDoTracking.getValue())
-				trackingMode(wing_disc_movie);
+				applyTracking(wing_disc_movie);
 			
 			//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 			if(varUseSwimmingPool.getValue())
@@ -296,42 +296,15 @@ public class CellGraph extends EzPlug implements EzStoppable
 		}
 	}
 
-	private void pushToSwimingPool(TissueEvolution wing_disc_movie) {
-		//remove all formerly present objects 
-		//TODO review, might want to hold multiple object in future
-		Icy.getMainInterface().getSwimmingPool().removeAll();
-		
-		// Put my object in a Swimming Object
-		SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie,"stGraph");
-		
-		// add the object in the swimming pool
-		Icy.getMainInterface().getSwimmingPool().add( swimmingObject );
-	}
-
-	private void applyBorderOptions(TissueEvolution wing_disc_movie) {
-		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-		if(varCutBorder.getValue()){
-			borderUpdate.applyBoundaryCondition();
-			sequence.addPainter(borderUpdate);
-		}
-		else
-			borderUpdate.markOnly();
-
-		//tracking: link the graph in the temporal dimension
-		
-		//removing outer layers of first frame to ensure accurate tracking
-		if(varDoTracking.getValue()){
-			BorderCells remover = new BorderCells(wing_disc_movie);
-			for(int i=0; i < varBorderEliminationNo.getValue();i++)
-				remover.removeOneBoundaryLayerFromFrame(0);
-
-
-			//update to new boundary conditions
-			remover.markOnly();
+	private void removeAllPainters() {
+		List<Painter> painters = sequence.getPainters();
+		for (Painter painter : painters) {
+			sequence.removePainter(painter);
+			sequence.painterChanged(painter);    				
 		}
 	}
 
-	private boolean no_open_sequence() {
+	private boolean noOpenSequenceCheck() {
 		boolean no_open_sequence = false;
 		
 		sequence = varSequence.getValue();
@@ -342,16 +315,165 @@ public class CellGraph extends EzPlug implements EzStoppable
 		return no_open_sequence;
 	}
 
-	private void removeAllPainters() {
-		List<Painter> painters = sequence.getPainters();
-		for (Painter painter : painters) {
-			sequence.removePainter(painter);
-			sequence.painterChanged(painter);    				
+	private void generateSpatioTemporalGraph(TissueEvolution wing_disc_movie) {
+		
+		//TODO replace with Factory design and possibly with Thread executors!
+		
+		File input_file = null;
+		
+		try{
+			//Set true to suppress default mechanism
+			input_file = varFile.getValue(false);
+		}
+		catch(EzException e){
+			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
+			return;
+		}
+		
+		FileNameGenerator file_name_generator = new FileNameGenerator(
+				input_file,
+				varInput.getValue(), 
+				varDirectInput.getValue(), 
+				varTool.getValue());
+		
+		varFile.setButtonText(file_name_generator.getShortName());
+		
+		/******************FRAME LOOP***********************************/
+		for(int i = 0; i< varMaxT.getValue(); i++){
+			
+			String abs_path = file_name_generator.getFileName(i);
+			
+			//check existance
+			try{
+				File current_file = new File(abs_path);
+				if(!current_file.exists())
+					throw new SecurityException();
+			}
+			catch(Exception e){
+				new AnnounceFrame("Missing time point: " + abs_path);
+				continue;
+			}
+			
+			System.out.println("reading frame "+i+": "+ abs_path);
+	
+			/******************INPUT TO POLYGON TRANSFORMATION***********************************/
+	
+			
+			ArrayList<Polygon> polygonMesh = null;
+			
+			switch(varInput.getValue()){
+			case SKELETON:
+				
+				boolean REDO_SKELETON = false;
+				
+				if(varDirectInput.getValue())
+					if(varTool.getValue().equals(SegmentationProgram.SeedWater) 
+							|| varTool.getValue().equals(SegmentationProgram.MatlabLabelOutlines))
+					REDO_SKELETON = true;
+	
+				SkeletonReader skeletonReader = new SkeletonReader(
+						abs_path, REDO_SKELETON, varTool.getValue());
+				
+				//TODO CHECK FOR DATA CORRECTION
+				
+				polygonMesh = skeletonReader.extractPolygons();
+				
+				break;
+			case VTK_MESH:
+				JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
+	
+				//check for data correctness        
+				if(polygonReader.is_not_polydata()){
+					new AnnounceFrame("NO Poly data found in: "+abs_path);
+					continue;
+				}
+	
+				polygonMesh = polygonReader.extractPolygons();
+				
+				break;	
+			}
+	
+			
+			/******************GRAPH GENERATION***********************************/
+			
+			FrameGraph current_frame = new FrameGraph(file_name_generator.getFrameNo(i));
+	
+			//insert all polygons into graph as CellPolygons
+			ArrayList<Cell> cellList = new ArrayList<Cell>();
+			
+			//order polygons according to cell center position
+			ComparablePolygon[] poly_array = new ComparablePolygon[polygonMesh.size()];
+			for(int k=0; k < poly_array.length; k++)
+				poly_array[k] = new ComparablePolygon(polygonMesh.get(k));
+			
+			//order polygons according to comparator class
+			Arrays.sort(poly_array);
+			
+			//obtain the polygons back and create cells
+			for(ComparablePolygon polygon: poly_array){
+				Cell c = new Cell(polygon.getPolygon(),current_frame);
+				cellList.add(c);
+				current_frame.addVertex(c);
+			}
+			
+			/* Algorithm to find neighborhood relationships between polygons
+			 * 
+			 * for every polygon
+			 * 	for every non assigned face
+			 * 	 find neighboring polygon
+			 * 	  add edge to graph if neighbor found
+			 * 	  if all faces assigned 
+			 * 	   exclude from list
+			 *    
+			 */
+	
+			//TODO more efficient search
+			Iterator<Node> cell_it = current_frame.iterator();
+			
+			while(cell_it.hasNext()){
+				Cell a = (Cell)cell_it.next();
+				Iterator<Cell> neighbor_it = cellList.iterator();
+				while(neighbor_it.hasNext()){
+					Cell b = neighbor_it.next();
+					//avoid creating the connection twice
+					if(!current_frame.containsEdge(a, b))
+						if(a.getGeometry().touches(b.getGeometry()))
+							current_frame.addEdge(a, b);
+				}
+			}
+			/******************ST-GRAPH UPDATE***********************************/
+			
+			//wing_disc_movie.setFrame(current_frame, current_file_no);
+			wing_disc_movie.addFrame(current_frame);
+			
+		}
+		
+	}
+
+	private void applyBorderOptions(TissueEvolution wing_disc_movie) {
+		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
+		if(varCutBorder.getValue()){
+			borderUpdate.applyBoundaryCondition();
+			sequence.addPainter(borderUpdate);
+		}
+		else
+			borderUpdate.markOnly();
+	
+		//tracking: link the graph in the temporal dimension
+		
+		//removing outer layers of first frame to ensure accurate tracking
+		if(varDoTracking.getValue()){
+			BorderCells remover = new BorderCells(wing_disc_movie);
+			for(int i=0; i < varBorderEliminationNo.getValue();i++)
+				remover.removeOneBoundaryLayerFromFrame(0);
+	
+	
+			//update to new boundary conditions
+			remover.markOnly();
 		}
 	}
-	
-	
-	private void trackingMode(SpatioTemporalGraph wing_disc_movie){
+
+	private void applyTracking(SpatioTemporalGraph wing_disc_movie){
 		//Tracking
 		if(wing_disc_movie.size() > 1){
 		
@@ -376,15 +498,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			//if desired by user reduce first frame by 
 			//iteratively remove boundary layers
-			
-
-			
-
+	
 			// TODO perform tracking trycatch
 			tracker.track();
 			wing_disc_movie.setTracking(true);
-			
-
+	
 			if(varBooleanCellIDs.getValue()){
 				Painter trackID = new TrackIdPainter(wing_disc_movie);
 				sequence.addPainter(trackID);
@@ -417,150 +535,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 				TrackPainter correspondence = new TrackPainter(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
 				sequence.addPainter(correspondence);
 			}
-			
-			
-			
-			
-
+	
 		}
 		else{
 			new AnnounceFrame("Tracking requires at least two time points! Please increase time points to load");
 		}
 	}
-	
- 	private void generateSpatioTemporalGraph(TissueEvolution wing_disc_movie) {
+
+	private void pushToSwimingPool(TissueEvolution wing_disc_movie) {
+		//remove all formerly present objects 
+		//TODO review, might want to hold multiple object in future
+		Icy.getMainInterface().getSwimmingPool().removeAll();
 		
- 		//TODO replace with Factory design and possibly with Thread executors!
+		// Put my object in a Swimming Object
+		SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie,"stGraph");
 		
- 		File input_file = null;
- 		
-		try{
-			//Set true to suppress default mechanism
-			input_file = varFile.getValue(false);
-		}
-		catch(EzException e){
-			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
-			return;
-		}
- 		
- 		FileNameGenerator file_name_generator = new FileNameGenerator(
- 				input_file,
- 				varInput.getValue(), 
- 				varDirectInput.getValue(), 
- 				varTool.getValue());
- 		
-		varFile.setButtonText(file_name_generator.getShortName());
-		
-		/******************FRAME LOOP***********************************/
-		for(int i = 0; i< varMaxT.getValue(); i++){
-			
-			String abs_path = file_name_generator.getFileName(i);
-			
-			//check existance
-			try{
-				File current_file = new File(abs_path);
-				if(!current_file.exists())
-					throw new SecurityException();
-			}
-			catch(Exception e){
-				new AnnounceFrame("Missing time point: " + abs_path);
-				continue;
-			}
-			
-			System.out.println("reading frame "+i+": "+ abs_path);
-
-			/******************INPUT TO POLYGON TRANSFORMATION***********************************/
-
-			
-			ArrayList<Polygon> polygonMesh = null;
-			
-			switch(varInput.getValue()){
-			case SKELETON:
-				
-				boolean REDO_SKELETON = false;
-				
-				if(varDirectInput.getValue())
-					if(varTool.getValue().equals(SegmentationProgram.SeedWater) 
-							|| varTool.getValue().equals(SegmentationProgram.MatlabLabelOutlines))
-					REDO_SKELETON = true;
-
-				SkeletonReader skeletonReader = new SkeletonReader(
-						abs_path, REDO_SKELETON, varTool.getValue());
-				
-				//TODO CHECK FOR DATA CORRECTION
-				
-				polygonMesh = skeletonReader.extractPolygons();
-				
-				break;
-			case VTK_MESH:
-				JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
-
-				//check for data correctness        
-				if(polygonReader.is_not_polydata()){
-					new AnnounceFrame("NO Poly data found in: "+abs_path);
-					continue;
-				}
-
-				polygonMesh = polygonReader.extractPolygons();
-				
-				break;	
-			}
-
-			
-			/******************GRAPH GENERATION***********************************/
-			
-			FrameGraph current_frame = new FrameGraph(file_name_generator.getFrameNo(i));
-
-			//insert all polygons into graph as CellPolygons
-			ArrayList<Cell> cellList = new ArrayList<Cell>();
-			
-			//order polygons according to cell center position
-			ComparablePolygon[] poly_array = new ComparablePolygon[polygonMesh.size()];
-			for(int k=0; k < poly_array.length; k++)
-				poly_array[k] = new ComparablePolygon(polygonMesh.get(k));
-			
-			//order polygons according to comparator class
-			Arrays.sort(poly_array);
-			
-			//obtain the polygons back and create cells
-			for(ComparablePolygon polygon: poly_array){
-				Cell c = new Cell(polygon.getPolygon(),current_frame);
-				cellList.add(c);
-				current_frame.addVertex(c);
-			}
-			
-			/* Algorithm to find neighborhood relationships between polygons
-			 * 
-			 * for every polygon
-			 * 	for every non assigned face
-			 * 	 find neighboring polygon
-			 * 	  add edge to graph if neighbor found
-			 * 	  if all faces assigned 
-			 * 	   exclude from list
-			 *    
-			 */
-
-			//TODO more efficient search
-			Iterator<Node> cell_it = current_frame.iterator();
-			
-			while(cell_it.hasNext()){
-				Cell a = (Cell)cell_it.next();
-				Iterator<Cell> neighbor_it = cellList.iterator();
-				while(neighbor_it.hasNext()){
-					Cell b = neighbor_it.next();
-					//avoid creating the connection twice
-					if(!current_frame.containsEdge(a, b))
-						if(a.getGeometry().touches(b.getGeometry()))
-							current_frame.addEdge(a, b);
-				}
-			}
-			/******************ST-GRAPH UPDATE***********************************/
-			
-			//wing_disc_movie.setFrame(current_frame, current_file_no);
-			wing_disc_movie.addFrame(current_frame);
-			
-		}
-		
+		// add the object in the swimming pool
+		Icy.getMainInterface().getSwimmingPool().add( swimmingObject );
 	}
 
 	@Override

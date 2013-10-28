@@ -5,7 +5,12 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph;
 
-import java.awt.Dimension;
+import icy.gui.frame.progress.AnnounceFrame;
+import icy.main.Icy;
+import icy.painter.Painter;
+import icy.sequence.Sequence;
+import icy.swimmingPool.SwimmingObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,13 +18,20 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Polygon;
-
-import plugins.adufour.ezplug.*;
-
+import plugins.adufour.ezplug.EzException;
+import plugins.adufour.ezplug.EzGroup;
+import plugins.adufour.ezplug.EzPlug;
+import plugins.adufour.ezplug.EzStoppable;
+import plugins.adufour.ezplug.EzVarBoolean;
+import plugins.adufour.ezplug.EzVarDouble;
+import plugins.adufour.ezplug.EzVarEnum;
+import plugins.adufour.ezplug.EzVarFile;
+import plugins.adufour.ezplug.EzVarFloat;
+import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarSequence;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
@@ -41,11 +53,7 @@ import plugins.davhelle.cellgraph.tracking.MosaicTracking;
 import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
-import icy.gui.frame.progress.AnnounceFrame;
-import icy.main.Icy;
-import icy.painter.Painter;
-import icy.sequence.Sequence;
-import icy.swimmingPool.SwimmingObject;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * <b>CellGraph</b> is a plugin for the bioimage analysis tool ICY. 
@@ -255,16 +263,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	@Override
 	protected void execute()
-	{
-		// main plugin code goes here, and runs in a separate thread
-
-		//check that input sequence is present
-		sequence = varSequence.getValue();
-		if(sequence == null){
-			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
+	{		
+		if(no_open_sequence())
 			return;
-		}
-		
+
 		//First boolean choice to remove previous painters
 		if(varRemovePainterFromSequence.getValue())
 			removeAllPainters();	
@@ -315,9 +317,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 			if(varDoTracking.getValue())
 				trackingMode(wing_disc_movie);
 			
-			
-
-			
 			//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 			if(varUseSwimmingPool.getValue()){
 				
@@ -334,6 +333,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			}
 		}
+	}
+
+	private boolean no_open_sequence() {
+		boolean no_open_sequence = false;
+		
+		sequence = varSequence.getValue();
+		if(sequence == null){
+			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
+			no_open_sequence = true;
+		}
+		return no_open_sequence;
 	}
 
 	private void removeAllPainters() {

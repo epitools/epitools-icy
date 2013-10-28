@@ -267,13 +267,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		if(no_open_sequence())
 			return;
 
-		//First boolean choice to remove previous painters
+		//Only remove previous painters
 		if(varRemovePainterFromSequence.getValue())
 			removeAllPainters();	
 		else{
-			
-			//Eliminates the previous painter and runs the 
-			//the program (update mode)		
+			//Override current painters	
 			if(varUpdatePainterMode.getValue())
 				removeAllPainters();
 			
@@ -281,30 +279,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 			TissueEvolution wing_disc_movie = new TissueEvolution();	
 			generateSpatioTemporalGraph(wing_disc_movie);
 			
-			//Border identification and discarding of outer ring
-			//to remove another layer just reapply the method
-			//borderUpdate.applyBoundaryCondition();
-
-			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-			if(varCutBorder.getValue()){
-				borderUpdate.applyBoundaryCondition();
-				sequence.addPainter(borderUpdate);
-			}
-			else
-				borderUpdate.markOnly();
-	
-			//tracking: link the graph in the temporal dimension
-			
-			//removing outer layers of first frame to ensure accurate tracking
-			if(varDoTracking.getValue()){
-				BorderCells remover = new BorderCells(wing_disc_movie);
-				for(int i=0; i < varBorderEliminationNo.getValue();i++)
-					remover.removeOneBoundaryLayerFromFrame(0);
-
-
-				//update to new boundary conditions
-				remover.markOnly();
-			}
+			//Border identification + discard/mark
+			applyBorderOptions(wing_disc_movie);
 			
 			//Remove all cells below given threshold if desired
 			//Done after Border cell remover, otherwise holes are created
@@ -332,6 +308,29 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			
 			}
+		}
+	}
+
+	private void applyBorderOptions(TissueEvolution wing_disc_movie) {
+		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
+		if(varCutBorder.getValue()){
+			borderUpdate.applyBoundaryCondition();
+			sequence.addPainter(borderUpdate);
+		}
+		else
+			borderUpdate.markOnly();
+
+		//tracking: link the graph in the temporal dimension
+		
+		//removing outer layers of first frame to ensure accurate tracking
+		if(varDoTracking.getValue()){
+			BorderCells remover = new BorderCells(wing_disc_movie);
+			for(int i=0; i < varBorderEliminationNo.getValue();i++)
+				remover.removeOneBoundaryLayerFromFrame(0);
+
+
+			//update to new boundary conditions
+			remover.markOnly();
 		}
 	}
 

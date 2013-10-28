@@ -139,19 +139,48 @@ public class CellGraph extends EzPlug implements EzStoppable
 	protected void initialize()
 	{
 		//Ezplug variable initialization
-		//TODO optimize file name display 
-//		this.getUI().setMaximumSize(new Dimension(50, 150));
-//		this.getUI().setResizable(false);
-		
-		//TODO open automatically test image!
+		//TODO optimize file name display, suggested methods
+		//this.getUI().setMaximumSize(new Dimension(50, 150));
+		//this.getUI().setResizable(false);
 
+		//Working image and pre-existent overlays handling
 		varSequence = new EzVarSequence("Input sequence");
 		varRemovePainterFromSequence = new EzVarBoolean("Remove all painters", false);
 		varUpdatePainterMode = new EzVarBoolean("Update painter", false);
-		
 		super.addEzComponent(varSequence);
 		super.addEzComponent(varRemovePainterFromSequence);
 		
+		//Main Input GUI
+		EzGroup groupInputPrameters = initializeInputGUI();
+		
+		//Tracking GUI
+		varDoTracking = new EzVarBoolean("Do tracking", true);
+		EzGroup groupTracking = initializeTrackingGUI();
+
+		//Usage of temporary ICY-memory (java object swimming pool)
+		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
+		
+		EzGroup groupFiles = new EzGroup(
+				"", 
+				varUpdatePainterMode,
+				groupInputPrameters,
+				varDoTracking,
+				groupTracking,
+				varUseSwimmingPool
+				);
+		
+		super.addEzComponent(groupFiles);
+		
+		//set visibility according to choice
+		varRemovePainterFromSequence.addVisibilityTriggerTo(groupFiles, false);
+		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
+		varDirectInput.addVisibilityTriggerTo(varTool, true);
+		
+		this.setTimeDisplay(true);
+		
+	}
+
+	private EzGroup initializeInputGUI() {
 		//What input is given
 		varInput = new EzVarEnum<InputType>(
 				"Input type",InputType.values(), InputType.SKELETON);
@@ -189,9 +218,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varRemoveSmallCells,
 				varAreaThreshold		
 				);
-		
-		varDoTracking = new EzVarBoolean("Do tracking", true);
-		
+		return groupInputPrameters;
+	}
+
+	private EzGroup initializeTrackingGUI() {
 		//Track view
 		varLinkrange = new EzVarInteger(
 				"Linkrange (frames)", 5,1,100,1);
@@ -220,29 +250,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//varBooleanLoadDivisions,
 				//varBooleanDrawDisplacement,
 				varBooleanDrawGraphCoherence);
-
-		//Decide whether to load into swimming pool the generated stGraph
-		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
-		
-		EzGroup groupFiles = new EzGroup(
-				"", 
-				varUpdatePainterMode,
-				groupInputPrameters,
-				varDoTracking,
-				groupTracking,
-				varUseSwimmingPool
-				);
-		
-		super.addEzComponent(groupFiles);
-		
-		//set visibility according to choice
-		varRemovePainterFromSequence.addVisibilityTriggerTo(groupFiles, false);
-		
-		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
-		varDirectInput.addVisibilityTriggerTo(varTool, true);
-		
-		this.setTimeDisplay(true);
-		
+		return groupTracking;
 	}
 	
 	@Override

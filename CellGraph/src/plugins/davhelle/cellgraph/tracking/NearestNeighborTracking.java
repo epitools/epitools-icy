@@ -107,7 +107,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	@Override
 	public void track(){
 		
-		//link the time points and propagate the information
+		//link time points and propagate their information
 		for(int time_point = 0; time_point < stGraph.size(); time_point++){
 			System.out.println("Linking frame "+time_point);
 			
@@ -121,7 +121,49 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			propagateTimePoint(time_point);	
 		}
 		
+		reviewDivisionsAndEliminations();
+		
 		reportTrackingResults();
+	}
+
+	/**
+	 * - review all events classified as a divisions 
+	 * - review all new entry cells
+	 * - assign permanent loss labels to permanently lost cells
+	 * - Highlight possible Segmentation mistakes
+	 */
+	private void reviewDivisionsAndEliminations() {
+		
+		//is cell missing in next frame i.e. TrackingFeedback...
+		for(int time_point = 0; time_point < stGraph.size(); time_point++)
+		{
+			for(Node cell: stGraph.getFrame(time_point).vertexSet())
+			{
+				if(cell.getErrorTag() == TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code)
+					//if so, is it permanent (depends also on no. of tracked frames)?
+					if(!cell.hasNext())
+						System.out.println(
+								"Elimination candidate in frame "+time_point+
+								" id "+cell.getTrackID()+" [" +
+								Math.round(cell.getCentroid().getX()) + 
+								"," +
+								Math.round(cell.getCentroid().getY()) + "]");
+								
+			}
+		}
+		
+		//		if yes, mark as likely elimination
+		// 		if not, mark as seg.error
+		
+		//is cell dividing?
+		//	permanent?
+		//		brother cell?...
+		//		segmentation mistakes? Revert division?
+		
+		//New cell
+		// 	permanent/missed division/segmentation mistake
+		//	add division.. 
+		
 	}
 
 	/**

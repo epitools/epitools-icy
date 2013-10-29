@@ -236,4 +236,26 @@ public interface Node{
 	 * @return error tag
 	 */
 	public int getErrorTag();
+
+	/**
+	 * Associate an elimination event with the node;
+	 * 
+	 * @param elimination
+	 */
+	public void setElimination(Elimination elimination);
+	
+	/**
+	 * Obtain the associated elimination event
+	 * 
+	 * @return elimination object
+	 */
+	public Elimination getElimination();
+	
+	/**
+	 * Test whether the object is associated
+	 * with an elimination event during the observation
+	 * 
+	 * @return true if the Node will be eliminated during the observation period
+	 */
+	public boolean hasObservedElimination();
 }

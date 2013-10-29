@@ -50,8 +50,12 @@ public class Cell implements Node {
 	private boolean is_on_boundary;
 	
 	//division information
-	private boolean observedDivision;
+	private boolean has_observed_division;
 	private Division division;
+	
+	//elimination information
+	private boolean has_observed_elimination;
+	private Elimination elimination;
 	
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
@@ -72,8 +76,12 @@ public class Cell implements Node {
 		this.is_on_boundary = false;
 		
 		//default division information
-		this.observedDivision = false;
+		this.has_observed_division = false;
 		this.division = null;
+		
+		//default elimination information
+		this.has_observed_elimination = false;
+		this.elimination = null;
 	}
 
 	/* (non-Javadoc)
@@ -165,12 +173,12 @@ public class Cell implements Node {
 
 	@Override
 	public boolean hasObservedDivision() {
-		return observedDivision;
+		return has_observed_division;
 	}
 
 	@Override
 	public void setObservedDivision(boolean will_cell_divide) {
-		this.observedDivision = will_cell_divide;
+		this.has_observed_division = will_cell_divide;
 	}
 
 	@Override
@@ -206,7 +214,7 @@ public class Cell implements Node {
 	@Override
 	public void setDivision(Division division) {
 		this.division = division;
-		this.observedDivision = true;
+		this.has_observed_division = true;
 	}
 
 	@Override
@@ -249,6 +257,22 @@ public class Cell implements Node {
 		//update centroid information as well
 		this.centroid = geometry.getCentroid();
 		
+	}
+
+	@Override
+	public void setElimination(Elimination elimination) {
+		this.elimination = elimination;
+		this.has_observed_elimination = true;
+	}
+
+	@Override
+	public Elimination getElimination() {
+		return elimination;
+	}
+
+	@Override
+	public boolean hasObservedElimination() {
+		return this.has_observed_elimination;
 	}
 
 }

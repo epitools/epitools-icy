@@ -22,6 +22,7 @@ import com.vividsolutions.jts.operation.distance.DistanceOp;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.ComparableNode;
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Elimination;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -135,21 +136,18 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	private void reviewDivisionsAndEliminations() {
 		
 		//is cell missing in next frame i.e. TrackingFeedback...
-		for(int time_point = 0; time_point < stGraph.size(); time_point++)
+		int elimination_detection_time_limit = stGraph.size() - 1;
+		for(int time_point = 0; time_point < elimination_detection_time_limit; time_point++)
 		{
 			for(Node cell: stGraph.getFrame(time_point).vertexSet())
 			{
 				if(cell.getErrorTag() == TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code)
 					//if so, is it permanent (depends also on no. of tracked frames)?
 					if(!cell.hasNext())
-					{
-						System.out.println(
-								"Elimination candidate in frame "+time_point+
-								" id "+cell.getTrackID()+" [" +
-								Math.round(cell.getCentroid().getX()) + 
-								"," +
-								Math.round(cell.getCentroid().getY()) + "]");
-
+					{						
+						Elimination e = new Elimination(cell);
+						System.out.println(e.toString());
+						
 						recursiveTAG(cell, TrackingFeedback.ELIMINATED_IN_NEXT_FRAME);
 					}			
 			}
@@ -241,8 +239,18 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				"\nTracking completed for "+stGraph.size()+" frames:"+
 						"\n\t "+stGraph.getFrame(0).size()+" cells in first frame");
 
-		if(DO_DIVISION_CHECK)
+		if(DO_DIVISION_CHECK){
 			System.out.println("\t "+countDivisions()+" divisions recognized");
+			System.out.println("\t "+countEliminations()+" eliminiations recognized");
+		}
+	}
+
+	private int countEliminations() {
+		int tot_eliminations = 0;
+
+		for(int i=0; i < stGraph.size(); i++)
+			tot_eliminations += stGraph.getFrame(i).getEliminationNo();
+		return tot_eliminations;
 	}
 
 	private int countDivisions() {

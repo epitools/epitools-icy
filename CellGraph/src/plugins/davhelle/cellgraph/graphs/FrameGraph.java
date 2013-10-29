@@ -14,6 +14,7 @@ import org.jgrapht.graph.ListenableUndirectedGraph;
 
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Elimination;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -32,6 +33,7 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	
 	private NeighborIndex<Node, DefaultEdge> neighborList;
 	private ArrayList<Division> divisions;
+	private ArrayList<Elimination> eliminations;
 	private int frame_no; 
 	
 	/**
@@ -50,6 +52,7 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 		
 		//initialize division list
 		this.divisions = new ArrayList<Division>();
+		this.eliminations = new ArrayList<Elimination>();
 	}
 	
 	public FrameGraph(){
@@ -93,6 +96,15 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 	
 	public int getFrameNo(){
 		return frame_no;
+	}
+
+	public void addElimination(Elimination elimination) {
+		if(elimination.getTimePoint() == this.frame_no)
+			this.eliminations.add(elimination);
+	}
+	
+	public int getEliminationNo(){
+		return eliminations.size();
 	}
 	
 }

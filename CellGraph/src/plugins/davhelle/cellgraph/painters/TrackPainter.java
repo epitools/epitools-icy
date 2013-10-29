@@ -72,6 +72,7 @@ public class TrackPainter extends Overlay{
 		errorMap.put(-4, Color.green);	//missing both
 		errorMap.put(-5, Color.blue);	//dividing in next frame
 		errorMap.put(-6, Color.magenta);//brother cell missing
+		errorMap.put(-7, Color.cyan);   //elimination
 	}
 	
 	/**

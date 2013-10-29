@@ -142,15 +142,25 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				if(cell.getErrorTag() == TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code)
 					//if so, is it permanent (depends also on no. of tracked frames)?
 					if(!cell.hasNext())
+					{
 						System.out.println(
 								"Elimination candidate in frame "+time_point+
 								" id "+cell.getTrackID()+" [" +
 								Math.round(cell.getCentroid().getX()) + 
 								"," +
 								Math.round(cell.getCentroid().getY()) + "]");
-								
+
+						recursiveTAG(cell, TrackingFeedback.ELIMINATED_IN_NEXT_FRAME);
+					}			
 			}
 		}
+		
+		//Fixes needed:
+		//False Division event out of a segmentation creates a false elimination as well
+		//Test against it, revert division if possible.
+		
+		//Division morphology caused eliminations. Limited frame knowledge. Further assumptions needed
+		//in case of limited time point availability (e.g. start or end of movie)
 		
 		//		if yes, mark as likely elimination
 		// 		if not, mark as seg.error
@@ -164,6 +174,23 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		// 	permanent/missed division/segmentation mistake
 		//	add division.. 
 		
+	}
+
+	/**
+	 * Function to tag all preceding cells in the lineage with the 
+	 * same tag.
+	 * 
+	 * @param cell latest time point of the lineage to be tagged
+	 * @param tag tag to be applied
+	 */
+	private void recursiveTAG(Node cell, TrackingFeedback tag) {
+		if(cell == null)
+			return;
+		else
+		{
+			cell.setErrorTag(tag.numeric_code);
+			recursiveTAG(cell.getPrevious(),tag);
+		}
 	}
 
 	/**

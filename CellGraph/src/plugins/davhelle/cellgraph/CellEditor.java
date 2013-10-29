@@ -38,20 +38,63 @@ public class CellEditor extends EzPlug{
 		
 		if(viewer_list.size() > 0){
 			//Prepare input
+				//i.e. get painter
 			Viewer first = viewer_list.get(0);
 			IcyCanvas first_canvas = first.getCanvas();
-			IcyBufferedImage img = first_canvas.getCurrentImage();
-			System.out.println(img.getSizeC());
 			ArrayList<Layer> layer_list = first_canvas.getLayers();
-			System.out.println("Found "+layer_list.size()+" layers attached to first viewer:");
+			Painter modifications = null;
+			
 			for(Layer l: layer_list){
 				System.out.println("\t"+l.getName());
 				if(l.getName().equals("Painting")){
-					Painter extracted = l.getPainter();
-					varOutputSeq.getValue().addPainter(extracted);
-					//extracted.paint(g, sequence, canvas)
+					modifications = l.getPainter();
+					
 				}
 			}
+			
+			if(modifications == null){
+				System.out.println("No Painting overlay found");
+				return;
+			}
+			
+			//previous step to just copy the painter on top of the
+			//output sequence as separate overlay
+			//varOutputSeq.getValue().addPainter(modifications);
+			
+			//Prepare output
+				//i.e. get buffered image and relative graphic painter.
+				// what we want is fill all necessary fields to execute
+				// extracted.paint(g, sequence, canvas)
+			if(varOutputSeq.getValue().getAllImage().size() != 1)
+				return;
+			
+			
+			//TODO check of viewers...
+			Viewer output_viewer = Icy.getMainInterface().getViewers(varOutputSeq.getValue()).get(0);
+			IcyCanvas output_canvas = output_viewer.getCanvas();
+			IcyBufferedImage img = output_canvas.getCurrentImage();
+		
+			//TODO check TYPE_BYTE_GRAY suitability
+			BufferedImage imgBuff = IcyBufferedImageUtil.toBufferedImage(img, new BufferedImage(img.getWidth(),
+	                 img.getHeight(), BufferedImage.TYPE_BYTE_GRAY));
+			
+			Graphics2D g2d = imgBuff.createGraphics();
+			
+			//Apply painting to real canvas
+			modifications.paint(g2d, varOutputSeq.getValue(), output_canvas);
+			
+			//close graphics devices and update sequence
+			g2d.dispose();
+			
+			img = IcyBufferedImage.createFrom(imgBuff);
+			output_canvas.getCurrentImage().setDataXY(0, img.getDataXY(0));
+			
+			output_canvas.getSequence().dataChanged();
+			
+			//the copied painting modification must be separately saved yet.
+			
+//			System.out.println(img.getSizeC());
+//			System.out.println("Found "+layer_list.size()+" layers attached to first viewer:");
 		}
 		
 	}

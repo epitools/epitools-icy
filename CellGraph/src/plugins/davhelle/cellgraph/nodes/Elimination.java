@@ -7,6 +7,7 @@
 package plugins.davhelle.cellgraph.nodes;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.tracking.TrackingFeedback;
 
 public class Elimination {
 
@@ -26,6 +27,7 @@ public class Elimination {
 		
 		frame_of_last_occurrence.addElimination(this);	
 		cell.setElimination(this);
+		cell.setErrorTag(TrackingFeedback.ELIMINATED_IN_NEXT_FRAME.numeric_code);
 		
 		//add elimination to all the preceding cells in the 
 		//tracked lineage

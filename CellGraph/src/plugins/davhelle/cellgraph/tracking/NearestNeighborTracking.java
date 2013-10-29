@@ -145,9 +145,11 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					//if so, is it permanent (depends also on no. of tracked frames)?
 					if(!cell.hasNext())
 					{						
-						Elimination e = new Elimination(cell);
-						System.out.println(e.toString());
+						Elimination cell_elimination = new Elimination(cell);
+						System.out.println(cell_elimination.toString());
 						
+						//temporary solution to visualize all eliminated cells
+						//TODO transform to overlay
 						recursiveTAG(cell, TrackingFeedback.ELIMINATED_IN_NEXT_FRAME);
 					}			
 			}

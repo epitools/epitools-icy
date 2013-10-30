@@ -13,19 +13,33 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import plugins.adufour.ezplug.EzPlug;
+import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.davhelle.cellgraph.io.SegmentationProgram;
 
+/**
+ * TODO apply white and black default!
+ * 
+ * 
+ * @author Davide Heller
+ *
+ */
 public class CellEditor extends EzPlug{
 	
 	EzVarSequence				varInputSeq;
 	EzVarSequence				varOutputSeq;
+	EzVarEnum<SegmentationProgram>  varTool;
 	
 	@Override
 	protected void initialize() {
 		varInputSeq = new EzVarSequence("Input sequence");
 		varOutputSeq = new EzVarSequence("Output sequence");
+		varTool = new EzVarEnum<SegmentationProgram>(
+				"Seg.Tool used",SegmentationProgram.values(), 
+				SegmentationProgram.MatlabLabelOutlines);
 		super.addEzComponent(varInputSeq);
 		super.addEzComponent(varOutputSeq);
+		super.addEzComponent(varTool);
 	}
 
 	@Override
@@ -72,10 +86,27 @@ public class CellEditor extends EzPlug{
 
 		IcyCanvas output_canvas = output_viewer.getCanvas();
 		IcyBufferedImage img = output_canvas.getCurrentImage();
+		
+		int skleton_image_type;
+		switch(varTool.getValue()){
+		case MatlabLabelOutlines:
+			//yet to find a working solution! Also this fails
+			skleton_image_type = BufferedImage.TYPE_BYTE_GRAY;
+			break;
+		case PackingAnalyzer:
+			skleton_image_type = BufferedImage.TYPE_BYTE_GRAY;
+			break;
+		case SeedWater:
+			skleton_image_type = BufferedImage.TYPE_BYTE_GRAY;
+			break;
+		default:
+			skleton_image_type = BufferedImage.TYPE_BYTE_GRAY;
+			break;
+		}
 
 		//TODO check TYPE_BYTE_GRAY suitability
 		BufferedImage imgBuff = IcyBufferedImageUtil.toBufferedImage(img, new BufferedImage(img.getWidth(),
-				img.getHeight(), BufferedImage.TYPE_BYTE_GRAY));
+				img.getHeight(), skleton_image_type));
 
 		Graphics2D g2d = imgBuff.createGraphics();
 

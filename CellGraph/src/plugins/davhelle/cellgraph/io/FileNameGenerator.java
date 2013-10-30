@@ -30,22 +30,13 @@ public class FileNameGenerator {
 	private File input_file;
 	
 	public FileNameGenerator(
-			File ez_file, 
+			File input_file, 
 			InputType fileType, 
 			boolean directInput, 
 			SegmentationProgram tool){
 		
 		this.tool = tool;
-		
-		//Default file to use
-		if(ez_file == null){
-			String default_file = "Neo0_skeleton_001.png";
-			String default_dir = "/Users/davide/Documents/segmentation/Epitools/Neo0/Skeleton/";
-			//previous default: /Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif
-			input_file = new File(default_dir+default_file);
-		}
-		else
-			input_file = ez_file;
+		this.input_file = input_file;
 		
 		//default values
 		enumeration_start = 0;

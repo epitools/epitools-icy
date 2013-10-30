@@ -46,6 +46,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
+import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
@@ -198,7 +199,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<SegmentationProgram>(
-				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.MatlabLabelOutlines);
+				"Seg.Tool used",SegmentationProgram.values(), SegmentationProgram.SeedWater);
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
@@ -289,6 +290,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			if(varDoTracking.getValue())
 				applyTracking(wing_disc_movie);
+			else
+				sequence.addPainter(new PolygonPainter(wing_disc_movie));
 			
 			//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 			if(varUseSwimmingPool.getValue())
@@ -328,6 +331,16 @@ public class CellGraph extends EzPlug implements EzStoppable
 		catch(EzException e){
 			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
 			return;
+		}
+		
+		//Default file to use
+		if(input_file == null){
+			String default_file = "frame_000.tif";
+			//"Neo0_skeleton_001.png";
+			String default_dir = "/Users/davide/Documents/segmentation/Epitools/converted_skeleton/";
+			//old "/Users/davide/Documents/segmentation/Epitools/Neo0/Skeleton/";
+			//previous default: /Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif
+			input_file = new File(default_dir+default_file);
 		}
 		
 		FileNameGenerator file_name_generator = new FileNameGenerator(

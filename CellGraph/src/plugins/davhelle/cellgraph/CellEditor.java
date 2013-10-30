@@ -2,6 +2,7 @@ package plugins.davhelle.cellgraph;
 
 import icy.canvas.IcyCanvas;
 import icy.canvas.Layer;
+import icy.file.Saver;
 import icy.gui.viewer.Viewer;
 import icy.image.IcyBufferedImage;
 import icy.image.IcyBufferedImageUtil;
@@ -10,11 +11,18 @@ import icy.painter.Painter;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import loci.formats.FormatException;
+
 import plugins.adufour.ezplug.EzPlug;
+import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.davhelle.cellgraph.io.FileNameGenerator;
+import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 
 /**
@@ -29,6 +37,7 @@ public class CellEditor extends EzPlug{
 	EzVarSequence				varInputSeq;
 	EzVarSequence				varOutputSeq;
 	EzVarEnum<SegmentationProgram>  varTool;
+	EzVarBoolean				varSaveChanges;
 	
 	@Override
 	protected void initialize() {
@@ -37,9 +46,12 @@ public class CellEditor extends EzPlug{
 		varTool = new EzVarEnum<SegmentationProgram>(
 				"Seg.Tool used",SegmentationProgram.values(), 
 				SegmentationProgram.MatlabLabelOutlines);
+		varSaveChanges = new EzVarBoolean("Save changes", false );
+		
 		super.addEzComponent(varInputSeq);
 		super.addEzComponent(varOutputSeq);
 		super.addEzComponent(varTool);
+		super.addEzComponent(varSaveChanges);
 	}
 
 	@Override
@@ -120,6 +132,40 @@ public class CellEditor extends EzPlug{
 		output_canvas.getCurrentImage().setDataXY(0, img.getDataXY(0));
 
 		output_canvas.getSequence().dataChanged();
+		
+		if(varSaveChanges.getValue()){
+			String file_name = varOutputSeq.getValue().getFilename();
+			File skeleton_file = new File(file_name);
+			FileNameGenerator skeleton_file_name_generator = 
+					new FileNameGenerator(
+							skeleton_file,
+							InputType.SKELETON,
+							true, 
+							SegmentationProgram.SeedWater);
+			
+			int current_time_point = output_viewer.getPositionT();
+			String current_file_name = skeleton_file_name_generator.getFileName(current_time_point);
+			
+			System.out.println("Saving changes to:"+current_file_name);
+			try {
+				
+				//check existence!
+				File current_file = new File(current_file_name);
+				if(!current_file.exists())
+					throw new IOException("File doesn't exists");
+				
+				//attempt saving
+				Saver.saveImage(img, current_file, true);
+				
+			} catch (FormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
 
 		//TODO the copied painting modification must be separately saved yet.
 	}

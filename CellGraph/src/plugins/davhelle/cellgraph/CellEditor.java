@@ -8,6 +8,7 @@ import icy.image.IcyBufferedImage;
 import icy.image.IcyBufferedImageUtil;
 import icy.main.Icy;
 import icy.painter.Painter;
+import icy.sequence.Sequence;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -74,6 +75,19 @@ public class CellEditor extends EzPlug{
 
 		applyModifications(modifications, output_viewers.get(0));
 		
+		removeModifications(modifications, input_viewers.get(0));
+	}
+
+	/**
+	 * Remove modifications form viewer/sequence
+	 * 
+	 * @param modifications
+	 * @param viewer
+	 */
+	private void removeModifications(Painter modifications, Viewer viewer) {
+		Sequence seq = viewer.getSequence();
+		seq.removePainter(modifications);
+		seq.painterChanged(modifications);
 	}
 
 	/**

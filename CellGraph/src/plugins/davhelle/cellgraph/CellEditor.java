@@ -11,6 +11,7 @@ import icy.painter.Painter;
 import icy.plugin.PluginDescriptor;
 import icy.plugin.PluginLauncher;
 import icy.plugin.PluginLoader;
+import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
 
 import java.awt.Graphics2D;
@@ -53,7 +54,8 @@ public class CellEditor extends EzPlug{
 		//Open Painting plugin
 		//TODO check that it is available
 		String class_name = "plugins.tprovoost.painting.Painting";
-		PluginLauncher.start(class_name);
+		//TODO possibly set preferences of colors and widith in advance?
+		Plugin painting_plugin = PluginLauncher.start(class_name);
 		
 		varInputSeq = new EzVarSequence("Input sequence");
 		varOutputSeq = new EzVarSequence("Output sequence");

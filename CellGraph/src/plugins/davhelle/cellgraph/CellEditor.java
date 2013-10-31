@@ -74,6 +74,11 @@ public class CellEditor extends EzPlug{
 	@Override
 	protected void execute() {
 		
+		if(varInputSeq.getValue().equals(varOutputSeq.getValue())){
+			System.out.println("Input and Output sequence should be different!");
+			return;
+		}
+		
 		ArrayList<Viewer> input_viewers = Icy.getMainInterface().getViewers(varInputSeq.getValue());
 		ArrayList<Viewer> output_viewers = Icy.getMainInterface().getViewers(varOutputSeq.getValue());
 

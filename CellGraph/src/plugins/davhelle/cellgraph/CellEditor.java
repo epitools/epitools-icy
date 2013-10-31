@@ -8,6 +8,9 @@ import icy.image.IcyBufferedImage;
 import icy.image.IcyBufferedImageUtil;
 import icy.main.Icy;
 import icy.painter.Painter;
+import icy.plugin.PluginDescriptor;
+import icy.plugin.PluginLauncher;
+import icy.plugin.PluginLoader;
 import icy.sequence.Sequence;
 
 import java.awt.Graphics2D;
@@ -25,8 +28,12 @@ import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
+import plugins.tprovoost.painting.Painting;
 
 /**
+ * Tool to apply manual modifications to skeleton files
+ * use white to add and black to 
+ * 
  * TODO apply white and black default!
  * 
  * 
@@ -42,6 +49,12 @@ public class CellEditor extends EzPlug{
 	
 	@Override
 	protected void initialize() {
+		
+		//Open Painting plugin
+		//TODO check that it is available
+		String class_name = "plugins.tprovoost.painting.Painting";
+		PluginLauncher.start(class_name);
+		
 		varInputSeq = new EzVarSequence("Input sequence");
 		varOutputSeq = new EzVarSequence("Output sequence");
 		varTool = new EzVarEnum<SegmentationProgram>(
@@ -66,16 +79,17 @@ public class CellEditor extends EzPlug{
 			return;
 		}
 
-		Painter modifications = extractPaintingOverlay(input_viewers.get(0));
-
+		Viewer input_viewer = input_viewers.get(0);
+		Viewer output_viewer = output_viewers.get(0);
+		
+		Painter modifications = extractPaintingOverlay(input_viewer);
 		if(modifications == null){
 			System.out.println("No Painting overlay found");
 			return;
 		}
 
-		applyModifications(modifications, output_viewers.get(0));
-		
-		removeModifications(modifications, input_viewers.get(0));
+		applyModifications(modifications, output_viewer);
+		removeModifications(modifications, input_viewer);
 	}
 
 	/**

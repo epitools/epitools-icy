@@ -19,6 +19,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import loci.formats.FormatException;
 
@@ -213,7 +214,7 @@ public class CellEditor extends EzPlug{
 		//i.e. get painter
 		Viewer first = viewer;
 		IcyCanvas first_canvas = first.getCanvas();
-		ArrayList<Layer> layer_list = first_canvas.getLayers();
+		List<Layer> layer_list = first_canvas.getLayers();
 		Painter modifications = null;
 
 		for(Layer l: layer_list){

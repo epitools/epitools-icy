@@ -359,7 +359,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varTool.getValue(), 
 				file_name_generator);
 		
-		/******************FRAME LOOP***********************************/
+		//Generate a FrameGraph for each time point/input file
 		for(int i = 0; i< varMaxT.getValue(); i++){
 			//check existance
 			String abs_path = file_name_generator.getFileName(i);
@@ -379,98 +379,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 			long startTime = System.currentTimeMillis();
 			FrameGraph frame_from_generator = frame_generator.generateFrame(i, abs_path);
 			long endTime = System.currentTimeMillis();
-			System.out.println("Generator " + (endTime - startTime) + " milliseconds");
-			System.out.println("Generated: "+frame_from_generator.size() + " cells found");
+			
+			System.out.println("\t Found " + frame_from_generator.size() + " cells in " + (endTime - startTime) + " milliseconds");
 
-			startTime = System.currentTimeMillis();
-			
-	
-			/******************INPUT TO POLYGON TRANSFORMATION***********************************/
-	
-			
-			ArrayList<Polygon> polygonMesh = null;
-			
-			switch(varInput.getValue()){
-			case SKELETON:
-				
-				boolean REDO_SKELETON = false;
-				
-				if(varDirectInput.getValue())
-					if(varTool.getValue().equals(SegmentationProgram.SeedWater) 
-							|| varTool.getValue().equals(SegmentationProgram.MatlabLabelOutlines))
-					REDO_SKELETON = true;
-	
-				SkeletonReader skeletonReader = new SkeletonReader(REDO_SKELETON, varTool.getValue());
-				
-				//TODO CHECK FOR DATA CORRECTION
-				
-				polygonMesh = skeletonReader.extractPolygons(abs_path);
-				
-				break;
-			case VTK_MESH:
-				JtsVtkReader polygonReader = new JtsVtkReader(); 
-
-				polygonMesh = polygonReader.extractPolygons(abs_path);
-				
-				break;	
-			}
-	
-			
-			/******************GRAPH GENERATION***********************************/
-			
-			FrameGraph current_frame = new FrameGraph(file_name_generator.getFrameNo(i));
-	
-			//insert all polygons into graph as CellPolygons
-			ArrayList<Cell> cell_list = new ArrayList<Cell>();
-			
-			//order polygons according to cell center position
-			ComparablePolygon[] poly_array = new ComparablePolygon[polygonMesh.size()];
-			for(int k=0; k < poly_array.length; k++)
-				poly_array[k] = new ComparablePolygon(polygonMesh.get(k));
-			
-			//order polygons according to comparator class
-			Arrays.sort(poly_array);
-			
-			//obtain the polygons back and create cells
-			for(ComparablePolygon polygon: poly_array){
-				Cell c = new Cell(polygon.getPolygon(),current_frame);
-				cell_list.add(c);
-				current_frame.addVertex(c);
-			}
-			
-			/* Algorithm to find neighborhood relationships between polygons
-			 * 
-			 * for every polygon
-			 * 	for every non assigned face
-			 * 	 find neighboring polygon
-			 * 	  add edge to graph if neighbor found
-			 * 	  if all faces assigned 
-			 * 	   exclude from list
-			 *    
-			 */
-	
-			//TODO more efficient search
-			Iterator<Node> cell_it = current_frame.iterator();
-			
-			while(cell_it.hasNext()){
-				Cell a = (Cell)cell_it.next();
-				Iterator<Cell> neighbor_it = cell_list.iterator();
-				while(neighbor_it.hasNext()){
-					Cell b = neighbor_it.next();
-					//avoid creating the connection twice
-					if(!current_frame.containsEdge(a, b))
-						if(a.getGeometry().touches(b.getGeometry()))
-							current_frame.addEdge(a, b);
-				}
-			}
-			
-			endTime = System.currentTimeMillis();
-			System.out.println("OldProced " + (endTime - startTime) + " milliseconds");
-			
-			/******************ST-GRAPH UPDATE***********************************/
-			
-			System.out.println("OldProced: "+current_frame.size()+ " cells found");
-			
 			//wing_disc_movie.setFrame(current_frame, current_file_no);
 			wing_disc_movie.addFrame(frame_from_generator);
 			

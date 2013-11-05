@@ -29,6 +29,7 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarFloat;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.davhelle.cellgraph.graphs.FrameGenerator;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
@@ -351,9 +352,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		varFile.setButtonText(file_name_generator.getShortName());
 		
+		//Create FrameGenerator
+		FrameGenerator frame_generator = new FrameGenerator(
+				varInput.getValue(),
+				varDirectInput.getValue(), 
+				varTool.getValue(), 
+				file_name_generator);
+		
 		/******************FRAME LOOP***********************************/
 		for(int i = 0; i< varMaxT.getValue(); i++){
 			
+			long startTime = System.currentTimeMillis();
+			FrameGraph frame_from_generator = frame_generator.generateFrame(i);
+			long endTime = System.currentTimeMillis();
+			System.out.println("Generator " + (endTime - startTime) + " milliseconds");
+			System.out.println("Generated: "+frame_from_generator.size() + " cells found");
+
+			startTime = System.currentTimeMillis();
 			String abs_path = file_name_generator.getFileName(i);
 			
 			//check existance
@@ -448,10 +463,15 @@ public class CellGraph extends EzPlug implements EzStoppable
 				}
 			}
 			
+			endTime = System.currentTimeMillis();
+			System.out.println("OldProced " + (endTime - startTime) + " milliseconds");
+			
 			/******************ST-GRAPH UPDATE***********************************/
 			
+			System.out.println("OldProced: "+current_frame.size()+ " cells found");
+			
 			//wing_disc_movie.setFrame(current_frame, current_file_no);
-			wing_disc_movie.addFrame(current_frame);
+			wing_disc_movie.addFrame(frame_from_generator);
 			
 		}
 		

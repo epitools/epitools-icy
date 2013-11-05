@@ -384,24 +384,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 							|| varTool.getValue().equals(SegmentationProgram.MatlabLabelOutlines))
 					REDO_SKELETON = true;
 	
-				SkeletonReader skeletonReader = new SkeletonReader(
-						abs_path, REDO_SKELETON, varTool.getValue());
+				SkeletonReader skeletonReader = new SkeletonReader(REDO_SKELETON, varTool.getValue());
 				
 				//TODO CHECK FOR DATA CORRECTION
 				
-				polygonMesh = skeletonReader.extractPolygons();
+				polygonMesh = skeletonReader.extractPolygons(abs_path);
 				
 				break;
 			case VTK_MESH:
-				JtsVtkReader polygonReader = new JtsVtkReader(abs_path); 
-	
-				//check for data correctness        
-				if(polygonReader.is_not_polydata()){
-					new AnnounceFrame("NO Poly data found in: "+abs_path);
-					continue;
-				}
-	
-				polygonMesh = polygonReader.extractPolygons();
+				JtsVtkReader polygonReader = new JtsVtkReader(); 
+
+				polygonMesh = polygonReader.extractPolygons(abs_path);
 				
 				break;	
 			}
@@ -454,6 +447,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 							current_frame.addEdge(a, b);
 				}
 			}
+			
 			/******************ST-GRAPH UPDATE***********************************/
 			
 			//wing_disc_movie.setFrame(current_frame, current_file_no);

@@ -5,6 +5,8 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
+import icy.gui.frame.progress.AnnounceFrame;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -28,26 +30,15 @@ import vtk.vtkPolyDataWriter;
  * @author Davide Heller
  *
  */
-public class JtsVtkReader {
+public class JtsVtkReader implements PolygonReader{
 	
 	vtkPolyDataReader reader;
-	vtkPolyData polydata;
 	
-	public JtsVtkReader(String file_name){
-		
-		reader = new vtkPolyDataReader();
-        reader.SetFileName(file_name);
-        
-        polydata = new vtkPolyData();
-        reader.SetOutput(polydata);
-              
-        reader.Update();
-        
-       
-		
+	public JtsVtkReader(){	
+		reader = new vtkPolyDataReader();	
 	}
 	
-	public boolean is_not_polydata(){
+	private boolean is_not_polydata(){
 		return reader.IsFilePolyData() != 1;
 	}
 	
@@ -57,7 +48,19 @@ public class JtsVtkReader {
 	 * 
 	 * @return Collection of jts polygons
 	 */
-	public ArrayList<Polygon> extractPolygons(){
+	public ArrayList<Polygon> extractPolygons(String file_name){
+		
+		//define input
+		reader.SetFileName(file_name);
+		vtkPolyData polydata = new vtkPolyData();
+        reader.SetOutput(polydata);
+        reader.Update();
+        
+		//check for data correctness        
+		if(is_not_polydata()){
+			new AnnounceFrame("NO Poly data found in: "+file_name);
+			return null;
+		}
 		
 		//extract points from polydata      
         vtkPoints points = polydata.GetPoints();        

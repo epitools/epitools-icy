@@ -3,6 +3,7 @@ package plugins.davhelle.cellgraph;
 import icy.canvas.IcyCanvas;
 import icy.canvas.Layer;
 import icy.file.Saver;
+import icy.gui.frame.IcyFrame;
 import icy.gui.viewer.Viewer;
 import icy.image.IcyBufferedImage;
 import icy.image.IcyBufferedImageUtil;
@@ -14,6 +15,7 @@ import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -44,10 +46,11 @@ import plugins.tprovoost.painting.Painting;
  */
 public class CellEditor extends EzPlug{
 	
-	EzVarSequence				varInputSeq;
-	EzVarSequence				varOutputSeq;
-	EzVarEnum<SegmentationProgram>  varTool;
-	EzVarBoolean				varSaveChanges;
+	private EzVarSequence				varInputSeq;
+	private EzVarSequence				varOutputSeq;
+	private EzVarEnum<SegmentationProgram>  varTool;
+	private EzVarBoolean				varSaveChanges;
+	private Plugin 						painting_plugin;
 	
 	@Override
 	protected void initialize() {
@@ -55,8 +58,7 @@ public class CellEditor extends EzPlug{
 		//Open Painting plugin
 		//TODO check that it is available
 		String class_name = "plugins.tprovoost.painting.Painting";
-		//TODO possibly set preferences of colors and widith in advance?
-		Plugin painting_plugin = PluginLauncher.start(class_name);
+		painting_plugin = PluginLauncher.start(class_name);
 		
 		varInputSeq = new EzVarSequence("Input sequence");
 		varOutputSeq = new EzVarSequence("Output sequence");
@@ -97,7 +99,11 @@ public class CellEditor extends EzPlug{
 		}
 
 		applyModifications(modifications, output_viewer);
+		
 		removeModifications(modifications, input_viewer);
+		
+		//restartPainterPlugin();
+		
 	}
 
 	/**
@@ -107,9 +113,42 @@ public class CellEditor extends EzPlug{
 	 * @param viewer
 	 */
 	private void removeModifications(Painter modifications, Viewer viewer) {
+		
 		Sequence seq = viewer.getSequence();
 		seq.removePainter(modifications);
 		seq.painterChanged(modifications);
+
+	}
+
+	/**
+	 * Optional method to eventually restart the paiter plugin in order to avoid user 
+	 * action gap after the modification layer is removed. Downside is reset of color  
+	 * and the painter size which is more manual work than just clicking on the output
+	 * image. 
+	 * 
+	 * TODO save closure
+	 * TODO open Painter with specific option (color w/b, painter size 2)
+	 * 
+	 */
+	private void restartPainterPlugin() {
+		
+		//close current painter
+		ArrayList<IcyFrame> all_open_frames = IcyFrame.getAllFrames();
+		System.out.println("All open IcyFrames:");
+		for(IcyFrame frame: all_open_frames){	
+			String frame_name = frame.getTitle();
+			//System.out.println("\t "+frame_name);
+			if(frame_name.equals("Tools")){
+				frame.close();
+				break;
+			}
+		}
+		
+		//restart painter
+		Icy.getMainInterface().unRegisterPlugin(painting_plugin);
+		Icy.getMainInterface().setFocusedViewer(varInputSeq.getValue().getFirstViewer());
+		String class_name = "plugins.tprovoost.painting.Painting";
+		painting_plugin = PluginLauncher.start(class_name);
 	}
 
 	/**
@@ -157,6 +196,7 @@ public class CellEditor extends EzPlug{
 				img.getHeight(), skleton_image_type));
 
 		Graphics2D g2d = imgBuff.createGraphics();
+
 
 		//Apply painting to real canvas
 		modifications.paint(g2d, varOutputSeq.getValue(), output_canvas);

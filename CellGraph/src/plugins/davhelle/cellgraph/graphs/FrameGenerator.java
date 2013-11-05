@@ -19,15 +19,12 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class FrameGenerator {
 	
 	PolygonReader polygonReader;
-	FileNameGenerator file_name_generator;
 	
 	public FrameGenerator(
 			InputType input_type,
 			boolean is_direct_input,
 			SegmentationProgram tool,
 			FileNameGenerator file_name_generator){
-		
-		this.file_name_generator = file_name_generator;
 		
 		switch(input_type){
 		case SKELETON:
@@ -58,9 +55,8 @@ public class FrameGenerator {
 		
 	}
 	
-	public FrameGraph generateFrame(int frame_no){
+	public FrameGraph generateFrame(int frame_no, String file_name){
 		
-		String file_name = file_name_generator.getFileName(frame_no);
 		FrameGraph frame = new FrameGraph(frame_no);
 		
 		ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons(file_name);

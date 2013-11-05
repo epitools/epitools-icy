@@ -361,17 +361,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		/******************FRAME LOOP***********************************/
 		for(int i = 0; i< varMaxT.getValue(); i++){
-			
-			long startTime = System.currentTimeMillis();
-			FrameGraph frame_from_generator = frame_generator.generateFrame(i);
-			long endTime = System.currentTimeMillis();
-			System.out.println("Generator " + (endTime - startTime) + " milliseconds");
-			System.out.println("Generated: "+frame_from_generator.size() + " cells found");
-
-			startTime = System.currentTimeMillis();
-			String abs_path = file_name_generator.getFileName(i);
-			
 			//check existance
+			String abs_path = file_name_generator.getFileName(i);
+
 			try{
 				File current_file = new File(abs_path);
 				if(!current_file.exists())
@@ -383,6 +375,15 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 			
 			System.out.println("reading frame "+i+": "+ abs_path);
+			
+			long startTime = System.currentTimeMillis();
+			FrameGraph frame_from_generator = frame_generator.generateFrame(i, abs_path);
+			long endTime = System.currentTimeMillis();
+			System.out.println("Generator " + (endTime - startTime) + " milliseconds");
+			System.out.println("Generated: "+frame_from_generator.size() + " cells found");
+
+			startTime = System.currentTimeMillis();
+			
 	
 			/******************INPUT TO POLYGON TRANSFORMATION***********************************/
 	

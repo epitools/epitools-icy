@@ -412,7 +412,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			FrameGraph current_frame = new FrameGraph(file_name_generator.getFrameNo(i));
 	
 			//insert all polygons into graph as CellPolygons
-			ArrayList<Cell> cellList = new ArrayList<Cell>();
+			ArrayList<Cell> cell_list = new ArrayList<Cell>();
 			
 			//order polygons according to cell center position
 			ComparablePolygon[] poly_array = new ComparablePolygon[polygonMesh.size()];
@@ -425,7 +425,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//obtain the polygons back and create cells
 			for(ComparablePolygon polygon: poly_array){
 				Cell c = new Cell(polygon.getPolygon(),current_frame);
-				cellList.add(c);
+				cell_list.add(c);
 				current_frame.addVertex(c);
 			}
 			
@@ -445,7 +445,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			while(cell_it.hasNext()){
 				Cell a = (Cell)cell_it.next();
-				Iterator<Cell> neighbor_it = cellList.iterator();
+				Iterator<Cell> neighbor_it = cell_list.iterator();
 				while(neighbor_it.hasNext()){
 					Cell b = neighbor_it.next();
 					//avoid creating the connection twice

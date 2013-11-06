@@ -1,3 +1,8 @@
+/*=========================================================================
+ *
+ *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
+ *
+ *=========================================================================*/
 package plugins.davhelle.cellgraph.graphs;
 
 import java.util.ArrayList;
@@ -15,10 +20,26 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Polygon;
 
+/**
+ * FrameGenerator is a helper class to create FrameGraph objects
+ * given a specific user input. Once initialized it can generate
+ * FrameGraphs without the need to respecify all the generation
+ * details, e.g. Input Type ecc...
+ * 
+ * @author Davide Heller
+ *
+ */
 public class FrameGenerator {
 	
 	PolygonReader polygonReader;
 	
+	/**
+	 * Initializes the parameters
+	 * 
+	 * @param input_type type of file from which the polygons will be extracted
+	 * @param is_direct_input true if the files come from a known Segmentation Program
+	 * @param tool Segmentation program used to create the skeletons
+	 */
 	public FrameGenerator(
 			InputType input_type,
 			boolean is_direct_input,
@@ -53,6 +74,14 @@ public class FrameGenerator {
 		
 	}
 	
+	/**
+	 * generates a single FrameGraph for the specified time point 
+	 * and absolute file name.
+	 * 
+	 * @param frame_no time point of the new frame
+	 * @param file_name absolute path of the input file.
+	 * @return the frameGraph object representing the input file
+	 */
 	public FrameGraph generateFrame(int frame_no, String file_name){
 		
 		FrameGraph frame = new FrameGraph(frame_no);

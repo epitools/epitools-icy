@@ -98,7 +98,11 @@ public class CellEditor extends EzPlug{
 			return;
 		}
 
-		applyModifications(modifications, output_viewer);
+		IcyBufferedImage img = applyModifications(modifications, output_viewer);
+		if(varSaveChanges.getValue()){
+			String file_name = saveModifications(output_viewer, img);
+			
+		}
 		
 		removeModifications(modifications, input_viewer);
 		
@@ -168,8 +172,9 @@ public class CellEditor extends EzPlug{
 	 * 
 	 * @param modifications Painter/Overlay of the input sequence to be permanently applied
 	 * @param output_viewer Viewer associated with the output sequence (by default the 1st viewer is chosen)
+	 * @return 
 	 */
-	private void applyModifications(Painter modifications, Viewer output_viewer) {
+	private IcyBufferedImage applyModifications(Painter modifications, Viewer output_viewer) {
 
 		IcyCanvas output_canvas = output_viewer.getCanvas();
 		IcyBufferedImage img = output_canvas.getCurrentImage();
@@ -209,41 +214,44 @@ public class CellEditor extends EzPlug{
 
 		output_canvas.getSequence().dataChanged();
 		
-		if(varSaveChanges.getValue()){
-			String file_name = varOutputSeq.getValue().getFilename();
-			File skeleton_file = new File(file_name);
-			FileNameGenerator skeleton_file_name_generator = 
-					new FileNameGenerator(
-							skeleton_file,
-							InputType.SKELETON,
-							true, 
-							SegmentationProgram.SeedWater);
-			
-			int current_time_point = output_viewer.getPositionT();
-			String current_file_name = skeleton_file_name_generator.getFileName(current_time_point);
-			
-			System.out.println("Saving changes to:"+current_file_name);
-			try {
-				
-				//check existence!
-				File current_file = new File(current_file_name);
-				if(!current_file.exists())
-					throw new IOException("File doesn't exists");
-				
-				//attempt saving
-				Saver.saveImage(img, current_file, true);
-				
-			} catch (FormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
+		return img;
 
 		//TODO the copied painting modification must be separately saved yet.
+	}
+
+	private String saveModifications(Viewer output_viewer, IcyBufferedImage img) {
+		String file_name = varOutputSeq.getValue().getFilename();
+		File skeleton_file = new File(file_name);
+		FileNameGenerator skeleton_file_name_generator = 
+				new FileNameGenerator(
+						skeleton_file,
+						InputType.SKELETON,
+						true, 
+						SegmentationProgram.SeedWater);
+		
+		int current_time_point = output_viewer.getPositionT();
+		String current_file_name = skeleton_file_name_generator.getFileName(current_time_point);
+		
+		System.out.println("Saving changes to:"+current_file_name);
+		try {
+			
+			//check existence!
+			File current_file = new File(current_file_name);
+			if(!current_file.exists())
+				throw new IOException("File doesn't exists");
+			
+			//attempt saving
+			Saver.saveImage(img, current_file, true);
+			
+		} catch (FormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return current_file_name;
 	}
 
 	/**

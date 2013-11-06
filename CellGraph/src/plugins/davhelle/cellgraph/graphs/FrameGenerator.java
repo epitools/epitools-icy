@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.vividsolutions.jts.geom.Polygon;
-
-import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.PolygonReader;
@@ -16,6 +13,8 @@ import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+import com.vividsolutions.jts.geom.Polygon;
+
 public class FrameGenerator {
 	
 	PolygonReader polygonReader;
@@ -23,8 +22,7 @@ public class FrameGenerator {
 	public FrameGenerator(
 			InputType input_type,
 			boolean is_direct_input,
-			SegmentationProgram tool,
-			FileNameGenerator file_name_generator){
+			SegmentationProgram tool){
 		
 		switch(input_type){
 		case SKELETON:

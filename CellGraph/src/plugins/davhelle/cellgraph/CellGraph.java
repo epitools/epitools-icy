@@ -356,8 +356,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		FrameGenerator frame_generator = new FrameGenerator(
 				varInput.getValue(),
 				varDirectInput.getValue(), 
-				varTool.getValue(), 
-				file_name_generator);
+				varTool.getValue());
 		
 		//Generate a FrameGraph for each time point/input file
 		for(int i = 0; i< varMaxT.getValue(); i++){

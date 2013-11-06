@@ -36,13 +36,26 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
+import plugins.davhelle.cellgraph.misc.BorderCells;
+import plugins.davhelle.cellgraph.misc.SmallCellRemover;
+import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
+import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 import plugins.tprovoost.painting.Painting;
 
 /**
  * Tool to apply manual modifications to skeleton files
- * use white to add and black to 
+ * use white to add and black to add or remove membrane.
+ * 
+ * Requires both the raw image (preferred) and the
+ * skeleton file (must) to be open.
+ * 
+ * current state: EXPERIMENTAL! 
+ * WARNING: This plugin can permanently modify your
+ * output data. Please make sure to back it up before
+ * trying this plugin!
  * 
  * TODO apply white and black default!
+ * TODO avoid that painter tip is also applied to img
  * 
  * 
  * @author Davide Heller
@@ -77,7 +90,7 @@ public class CellEditor extends EzPlug{
 				"Seg.Tool used",SegmentationProgram.values(), 
 				SegmentationProgram.MatlabLabelOutlines);
 		varSaveChanges = new EzVarBoolean("Save changes", false );
-		varRegenerateGraph = new EzVarBoolean("Regenerate graph (only default params)", false);
+		varRegenerateGraph = new EzVarBoolean("Regenerate graph (default only!)", false);
 		
 		super.addEzComponent(varInputSeq);
 		super.addEzComponent(varOutputSeq);
@@ -264,26 +277,58 @@ public class CellEditor extends EzPlug{
 		}
 		
 		if(varRegenerateGraph.getValue()){
-			//if swimming pool object is present also apply changes to graph
-			if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
-				for ( SwimmingObject swimmingObject : 
-					Icy.getMainInterface().getSwimmingPool().getObjects(
-							"stGraph", true) ){
-
-					if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
-
-						SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
-
-						System.out.println("Rereading frame "+current_time_point);
-						FrameGraph substitution_frame = frame_generator.generateFrame(current_time_point, current_file_name); 
-						wing_disc_movie.setFrame(substitution_frame, current_time_point);
-						System.out.println("Substitution successful");
-					}
-				}
-
+			substituteFrame(current_time_point, current_file_name);
 		}
 		
 		return current_file_name;
+	}
+
+	private void substituteFrame(int time_point, String substitute_file_name) {
+		//if swimming pool object is present also apply changes to graph
+		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
+			for ( SwimmingObject swimmingObject : 
+				
+				Icy.getMainInterface().getSwimmingPool().getObjects(
+						"stGraph", true) ){
+
+				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
+
+					long startTime = System.currentTimeMillis();
+					
+					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+
+					System.out.println("Rereading frame "+time_point);
+					
+					//Read and substitute the frame
+					FrameGraph substitution_frame = frame_generator.generateFrame(time_point, substitute_file_name); 
+					wing_disc_movie.setFrame(substitution_frame, time_point);
+					
+					//Apply default conditions from CellGraph plugin 
+					//TODO make flexible!
+					BorderCells borderUpdater = new BorderCells(wing_disc_movie);
+					borderUpdater.applyBoundaryConditionsToFrame(time_point);
+					if(wing_disc_movie.hasTracking() && time_point == 0)
+						borderUpdater.removeOneBoundaryLayerFromFrame(0);
+					
+					new SmallCellRemover(wing_disc_movie).removeCellsOnFrame(time_point, 10.0);
+					
+					if(wing_disc_movie.hasTracking()){
+						
+						//TODO need to reset tracking 
+						TrackingAlgorithm tracker = new NearestNeighborTracking(
+								wing_disc_movie, 
+								5,
+								1,
+								1);
+						
+						tracker.track();
+						
+					}
+					
+					long endTime = System.currentTimeMillis();
+					System.out.println("Completed substitution in " + (endTime - startTime) + " milliseconds");
+				}
+			}
 	}
 
 	/**

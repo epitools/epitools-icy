@@ -150,7 +150,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						
 						//temporary solution to visualize all eliminated cells
 						//TODO transform to overlay
-						recursiveTAG(cell, TrackingFeedback.ELIMINATED_IN_NEXT_FRAME);
+						//recursiveTAG(cell, TrackingFeedback.ELIMINATED_IN_NEXT_FRAME);
 					}			
 			}
 		}

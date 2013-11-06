@@ -14,6 +14,7 @@ import icy.plugin.PluginLauncher;
 import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
+import icy.swimmingPool.SwimmingObject;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -29,6 +30,9 @@ import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.davhelle.cellgraph.graphs.FrameGenerator;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
@@ -51,9 +55,15 @@ public class CellEditor extends EzPlug{
 	private EzVarEnum<SegmentationProgram>  varTool;
 	private EzVarBoolean				varSaveChanges;
 	private Plugin 						painting_plugin;
+	private FrameGenerator				frame_generator;
 	
 	@Override
 	protected void initialize() {
+		
+		this.frame_generator = new FrameGenerator(
+				InputType.SKELETON,
+				true,
+				SegmentationProgram.SeedWater);
 		
 		//Open Painting plugin
 		//TODO check that it is available
@@ -101,7 +111,6 @@ public class CellEditor extends EzPlug{
 		IcyBufferedImage img = applyModifications(modifications, output_viewer);
 		if(varSaveChanges.getValue()){
 			String file_name = saveModifications(output_viewer, img);
-			
 		}
 		
 		removeModifications(modifications, input_viewer);
@@ -250,6 +259,23 @@ public class CellEditor extends EzPlug{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		//if swimming pool object is present also apply changes to graph
+		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
+			for ( SwimmingObject swimmingObject : 
+				Icy.getMainInterface().getSwimmingPool().getObjects(
+						"stGraph", true) ){
+
+				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
+
+					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+					
+					System.out.println("Rereading frame "+current_time_point);
+					FrameGraph substitution_frame = frame_generator.generateFrame(current_time_point, current_file_name); 
+					wing_disc_movie.setFrame(substitution_frame, current_time_point);
+					System.out.println("Substitution successful");
+				}
+			}
 		
 		return current_file_name;
 	}

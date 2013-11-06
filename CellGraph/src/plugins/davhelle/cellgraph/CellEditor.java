@@ -54,6 +54,7 @@ public class CellEditor extends EzPlug{
 	private EzVarSequence				varOutputSeq;
 	private EzVarEnum<SegmentationProgram>  varTool;
 	private EzVarBoolean				varSaveChanges;
+	private EzVarBoolean				varRegenerateGraph;
 	private Plugin 						painting_plugin;
 	private FrameGenerator				frame_generator;
 	
@@ -76,11 +77,13 @@ public class CellEditor extends EzPlug{
 				"Seg.Tool used",SegmentationProgram.values(), 
 				SegmentationProgram.MatlabLabelOutlines);
 		varSaveChanges = new EzVarBoolean("Save changes", false );
+		varRegenerateGraph = new EzVarBoolean("Regenerate graph (only default params)", false);
 		
 		super.addEzComponent(varInputSeq);
 		super.addEzComponent(varOutputSeq);
 		super.addEzComponent(varTool);
 		super.addEzComponent(varSaveChanges);
+		super.addEzComponent(varRegenerateGraph);
 	}
 
 	@Override
@@ -260,22 +263,25 @@ public class CellEditor extends EzPlug{
 			e.printStackTrace();
 		}
 		
-		//if swimming pool object is present also apply changes to graph
-		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
-			for ( SwimmingObject swimmingObject : 
-				Icy.getMainInterface().getSwimmingPool().getObjects(
-						"stGraph", true) ){
+		if(varRegenerateGraph.getValue()){
+			//if swimming pool object is present also apply changes to graph
+			if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
+				for ( SwimmingObject swimmingObject : 
+					Icy.getMainInterface().getSwimmingPool().getObjects(
+							"stGraph", true) ){
 
-				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
+					if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
 
-					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
-					
-					System.out.println("Rereading frame "+current_time_point);
-					FrameGraph substitution_frame = frame_generator.generateFrame(current_time_point, current_file_name); 
-					wing_disc_movie.setFrame(substitution_frame, current_time_point);
-					System.out.println("Substitution successful");
+						SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+
+						System.out.println("Rereading frame "+current_time_point);
+						FrameGraph substitution_frame = frame_generator.generateFrame(current_time_point, current_file_name); 
+						wing_disc_movie.setFrame(substitution_frame, current_time_point);
+						System.out.println("Substitution successful");
+					}
 				}
-			}
+
+		}
 		
 		return current_file_name;
 	}

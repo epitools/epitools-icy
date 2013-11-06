@@ -64,54 +64,60 @@ public class BorderCells extends Overlay{
 		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
 			
-			FrameGraph frame_i = stGraph.getFrame(time_point_i);
+			applyBoundaryConditionsToFrame(time_point_i);
+		}
+	}
 
-			//set up polygon container
-		
-			Geometry[] output = new Geometry[frame_i.size()];
-			Iterator<Node> node_it = frame_i.iterator();
-			for(int i=0; i<frame_i.size(); i++){
-				output[i] = node_it.next().getGeometry();
-			}		
+	public void applyBoundaryConditionsToFrame(int time_point_i) {
+		long startTime = System.currentTimeMillis();
+		FrameGraph frame_i = stGraph.getFrame(time_point_i);
 
-			//Create union of all polygons
+		//set up polygon container
+
+		Geometry[] output = new Geometry[frame_i.size()];
+		Iterator<Node> node_it = frame_i.iterator();
+		for(int i=0; i<frame_i.size(); i++){
+			output[i] = node_it.next().getGeometry();
+		}		
+
+		//Create union of all polygons
 //			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
 //			Geometry union = polygonCollection.buffer(0);
-			
-			//On avg.faster and more robust method
-			Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
+		
+		//On avg.faster and more robust method
+		Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
 
-			//Compute boundary ring
-			Geometry boundary = union.getBoundary();
+		//Compute boundary ring
+		Geometry boundary = union.getBoundary();
 //			LinearRing borderRing = (LinearRing) boundary;
 
+		
+		//Get first boundary ring (not proper polygons)
+		ArrayList<Node> wrong_cells = new ArrayList<Node>();
+		
+		//Check via intersection if cell is border cell
+		node_it = frame_i.iterator();
+		for(int i=0; i<frame_i.size(); i++){
+
+			Node n = node_it.next();
+			Geometry p = n.getGeometry();
 			
-			//Get first boundary ring (not proper polygons)
-			ArrayList<Node> wrong_cells = new ArrayList<Node>();
+			boolean is_border = p.intersects(boundary);
+
 			
-			//Check via intersection if cell is border cell
-			node_it = frame_i.iterator();
-			for(int i=0; i<frame_i.size(); i++){
+			//Cancel wrong boundary
+			if(is_border)
+				wrong_cells.add(n);
 
-				Node n = node_it.next();
-				Geometry p = n.getGeometry();
-				
-				boolean is_border = p.intersects(boundary);
+		}
+		
+		//Can't remove vertices while iterating so doining it now
+		ArrayList<Geometry> wrong_boundary = new ArrayList<Geometry>();
+		for(Node n: wrong_cells)
+			if(frame_i.removeVertex(n))
+				wrong_boundary.add(n.getGeometry());
 
-				
-				//Cancel wrong boundary
-				if(is_border)
-					wrong_cells.add(n);
-
-			}
-			
-			//Can't remove vertices while iterating so doining it now
-			ArrayList<Geometry> wrong_boundary = new ArrayList<Geometry>();
-			for(Node n: wrong_cells)
-				if(frame_i.removeVertex(n))
-					wrong_boundary.add(n.getGeometry());
-
-			//Outer polygon boundary for which statistics won't computed
+		//Outer polygon boundary for which statistics won't computed
 //			GeometryCollection polygonBoundary = 
 //					new GeometryCollection(
 //							wrong_boundary.toArray(
@@ -119,25 +125,25 @@ public class BorderCells extends Overlay{
 //									new GeometryFactory());
 //			
 //			Geometry polygonRing = polygonBoundary.buffer(0);
-			
-			//faster method as above
-			Geometry polygonRing = CascadedPolygonUnion.union(wrong_boundary);
-					
-			frame_ring_map.put(frame_i, polygonRing);
-			
-			node_it = frame_i.iterator();
-			for(int i=0; i<frame_i.size(); i++){
-				Node n = node_it.next();
-				Geometry p = n.getGeometry();
+		
+		//faster method as above
+		Geometry polygonRing = CascadedPolygonUnion.union(wrong_boundary);
 				
-				boolean is_border = p.intersects(polygonRing);
-				
-				//Remember good boundary
-				n.setBoundary(is_border);
-			}
+		frame_ring_map.put(frame_i, polygonRing);
+		
+		node_it = frame_i.iterator();
+		for(int i=0; i<frame_i.size(); i++){
+			Node n = node_it.next();
+			Geometry p = n.getGeometry();
 			
-			System.out.println("Graph finished for frame "+time_point_i);
+			boolean is_border = p.intersects(polygonRing);
+			
+			//Remember good boundary
+			n.setBoundary(is_border);
 		}
+		
+		long endTime = System.currentTimeMillis();		
+		System.out.println("Applied boundary conditions to frame "+time_point_i+" in " + (endTime - startTime) + " milliseconds");
 	}
 	
 	

@@ -18,6 +18,7 @@ import icy.swimmingPool.SwimmingObject;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -227,7 +228,12 @@ public class CellEditor extends EzPlug{
 
 		Graphics2D g2d = imgBuff.createGraphics();
 
-
+		//g2d.setStroke (see whether basic stroke options can change way the
+		//lines are currently drawn, i.e. surpress blurring)
+		//System.out.println(g2d.getRenderingHint(hintKey)
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+		//possibly set stroke to 2 g2d.setStroke(new BasicStr)
+		
 		//Apply painting to real canvas
 		modifications.paint(g2d, varOutputSeq.getValue(), output_canvas);
 

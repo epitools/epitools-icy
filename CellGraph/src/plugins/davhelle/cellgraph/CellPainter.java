@@ -6,6 +6,7 @@
 package plugins.davhelle.cellgraph;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -219,8 +220,8 @@ public class CellPainter extends EzPlug {
 
 						//Data statistics
 						
-						System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
-						System.out.println("CellVisualizer:	"+wing_disc_movie.getFrame(0).size()+" cells in first frame");
+						//System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
+						//System.out.println("CellVisualizer:	"+wing_disc_movie.getFrame(0).size()+" cells in first frame");
 						
 						//Eliminates the previous painter and runs the 
 						//the program (update mode)
@@ -349,87 +350,20 @@ public class CellPainter extends EzPlug {
 	 * @param wing_disc_movie the stGraph structure to be analyzed
 	 */
 	private void writeOutMode(SpatioTemporalGraph wing_disc_movie) {		
-		//write out
-//		CsvWriter.custom_write_out(wing_disc_movie); 
+		//write out through method possibly/problems with dynamic change
+		//substitute this method with graph write out.
+		//CsvWriter.custom_write_out(wing_disc_movie); 
 		
+		final int sim_no = 10000;
+		System.out.println(sim_no + "simulations");
 		FrameGraph frame_i = wing_disc_movie.getFrame(0);
 		Iterator<Node> cell_it = frame_i.iterator();	
-//		
-//		int nd = 0, d = 0;
-//		int nd_wD = 0, d_wD = 0;
-//		
-//		while(cell_it.hasNext()){
-//
-//			Node cell = cell_it.next();
-//			//only dividing cells
-//			
-//			//skip boundary cell
-//			if(cell.onBoundary())
-//				continue;
-//			
-//			
-//
-//			
-//			if(!cell.hasObservedDivision()){
-//				nd++;
-//			
-//				for(Node neighbor: cell.getNeighbors())
-//					if(neighbor.hasObservedDivision()){
-//						nd_wD++;
-//						break;
-//					}
-//			}
-//			else{
-//				//dividing cell
-//				d++;
-//				
-//				for(Node neighbor: cell.getNeighbors())
-//					if(neighbor.hasObservedDivision()){
-//						d_wD++;
-//						break;
-//					}
-//			}
-//			
-////			//only mother
-////			if(!cell.getDivision().isMother(cell))
-////				continue;
-//			
-//
-//				
-//			//record area of dividing cell
-//			//out.write(cell.getTrackID())
-//			
-//			//write out all successive areas on one side
-////			while(cell.hasNext()){
-////				System.out.print(cell.getGeometry().getArea()+",");
-////				cell = cell.getNext();
-////			}
-//			
-//			//one cell per line
-//			//System.out.print("\n");
-//
-//		}
-//		
-//		//p(dividing neighbor | non D)
-//		double p_nd = nd_wD/(double)nd;
-//		
-//		//p(dividing neighbor |     D)
-//		double p_d  = d_wD/(double)d;
-//		
-//		//p(dividing neighbor | nD + D)
-//		double p_all = (nd_wD + d_wD)/(double)(nd + d);
-//		
-//		System.out.println("p(dividing neighbor | non D) = "+p_nd);
-//		System.out.println("p(dividing neighbor |     D) = "+p_d);
-//		System.out.println("p(dividing neighbor | nD + D)"+p_all);
-//		
-//		System.out.println("ND:"+ nd_wD + ", " + nd);
-//		System.out.println("D: "+d_wD + ", " + d);
 		
 		//no of divisions
-		
 		int division_no = 0;
-		int division_no_W = 0;
+		//" with at least one direct dividing neighbor (ddn)
+		int division_no_with_ddn= 0;
+		
 		while(cell_it.hasNext()){
 			Node cell = cell_it.next();
 			
@@ -440,43 +374,37 @@ public class CellPainter extends EzPlug {
 			if(cell.hasObservedDivision()){
 				division_no++;
 
-				//no of divisions t
-				//int 
-				
 				for(Node neighbor: cell.getNeighbors())
 					if(neighbor.hasObservedDivision()){
-						division_no_W++;
+						division_no_with_ddn++;
 						break;
 					}
-
 			}
 		}
 		
 		//sample value 
-		double p_dividing_neighbor = division_no_W / (double)division_no;
+		double p_dividing_neighbor = division_no_with_ddn / (double)division_no;
 		
 		System.out.println(p_dividing_neighbor);
 		
-		//random sampler
+		//random sampler (without replacement)
 		Node[] cells = frame_i.vertexSet().toArray(new Node[frame_i.size()]);
-
-		int sim_no = 1000;
-		
-		Random randomGenerator = new Random();
+		Random randomGenerator = new Random(System.currentTimeMillis());
 		
 		for(int sim_i=0; sim_i<sim_no; sim_i++){
 			
-			//no of random cells that have a dividing neighbor
+			//no of random cells that have at least a dividing neighbor
 			int rnd_division_no_W = 0;
-			//take as many random cells as there were dividing cells
+			ArrayList<Integer> chosen_cell_ids = new ArrayList<Integer>();
+			
+			//choose as many random cells as there were dividing cells
 			for(int i=0; i<division_no; i++){
 				
 				int rnd_cell_id = randomGenerator.nextInt(cells.length);
-				//Math.round((float)Math.random()*cells.length);
 				Node rnd_cell = cells[rnd_cell_id];
 				
-				//do not choose a border cell
-				while(rnd_cell.onBoundary()){
+				//do not choose a border cell or cell that has already been selected
+				while(rnd_cell.onBoundary() || chosen_cell_ids.contains(rnd_cell_id)){
 					rnd_cell_id = randomGenerator.nextInt(cells.length);
 					rnd_cell = cells[rnd_cell_id];
 				}
@@ -485,16 +413,13 @@ public class CellPainter extends EzPlug {
 					if(neighbor.hasObservedDivision()){
 						rnd_division_no_W++;
 						break;
-					}
-					
+					}			
 			}
 			
 			double rnd_p_dividing_neighbor = rnd_division_no_W / (double)division_no;
-			
 			System.out.println(rnd_p_dividing_neighbor);
 			
 		}
-		
 	}
 
 	@Override

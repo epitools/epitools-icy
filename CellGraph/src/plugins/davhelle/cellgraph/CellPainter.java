@@ -26,6 +26,8 @@ import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarSequence;
 
 
+import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
+import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.CsvWriter;
@@ -72,6 +74,7 @@ public class CellPainter extends EzPlug {
 		ALWAYS_TRACKED,
 		WRITE_OUT,
 		DIVISIONS,
+		GRAPH_EXPORT
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -96,6 +99,9 @@ public class CellPainter extends EzPlug {
 	EzVarBoolean 				varBooleanDrawDisplacement;
 	
 	EzVarDouble					varAreaThreshold;
+	
+	//Graph Export
+	EzVarEnum<ExportFieldType>  varExportType;
 
 	//sequence to paint on 
 	EzVarSequence				varSequence;
@@ -163,6 +169,11 @@ public class CellPainter extends EzPlug {
 				varBooleanHighlightMistakesBoolean);
 				
 		
+		//Graph Export Mode
+		varExportType = new EzVarEnum<ExportFieldType>("Export field", ExportFieldType.values(), ExportFieldType.DIVISION);
+		EzGroup groupExport = new EzGroup("GRAPH_EXPORT elements",
+				varExportType);
+		
 		
 		//Painter
 		EzGroup groupPainters = new EzGroup("Painters",
@@ -172,7 +183,8 @@ public class CellPainter extends EzPlug {
 				groupVoronoiMap,
 				groupAreaThreshold,
 				//groupDivisions,
-				groupTracking
+				groupTracking,
+				groupExport
 		);
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
@@ -182,6 +194,7 @@ public class CellPainter extends EzPlug {
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
 		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, PlotEnum.DIVISIONS);
+		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPH_EXPORT);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -297,6 +310,13 @@ public class CellPainter extends EzPlug {
 									new GraphPainter(
 											wing_disc_movie));
 							
+							break;
+						case GRAPH_EXPORT:
+							GraphExporter exporter = new GraphExporter(varExportType.getValue());
+							String file_name = "/Users/davide/tmp/frame0_" + varExportType.getValue().name() + ".xml";
+							exporter.exportFrame(wing_disc_movie.getFrame(0), file_name);
+							break;
+						default:
 							break;
 									
 						}

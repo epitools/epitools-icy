@@ -5,6 +5,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.nodes;
 
+import java.awt.Color;
 import java.awt.Shape;
 import java.util.List;
 
@@ -258,4 +259,19 @@ public interface Node{
 	 * @return true if the Node will be eliminated during the observation period
 	 */
 	public boolean hasObservedElimination();
+	
+	/**
+	 * Assign color tag to the cell
+	 * 
+	 * @return the color tag
+	 */
+	public Color getColorTag();
+	
+	/**
+	 * Get the color assigned to the cell
+	 * 
+	 * @param color_tag the color tag to set
+	 */
+	public void setColorTag(Color color_tag);
+	
 }

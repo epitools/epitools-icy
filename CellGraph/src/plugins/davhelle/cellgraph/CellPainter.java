@@ -38,7 +38,9 @@ import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
+import plugins.davhelle.cellgraph.painters.CellMarker;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
+import plugins.davhelle.cellgraph.painters.ColorTagPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.GraphPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
@@ -74,7 +76,8 @@ public class CellPainter extends EzPlug {
 		ALWAYS_TRACKED,
 		WRITE_OUT,
 		DIVISIONS,
-		GRAPH_EXPORT
+		GRAPH_EXPORT,
+		COLOR_TAG,
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -315,6 +318,12 @@ public class CellPainter extends EzPlug {
 							GraphExporter exporter = new GraphExporter(varExportType.getValue());
 							String file_name = "/Users/davide/tmp/frame0_" + varExportType.getValue().name() + ".xml";
 							exporter.exportFrame(wing_disc_movie.getFrame(0), file_name);
+							break;
+						case COLOR_TAG:
+							sequence.addPainter(
+									new CellMarker(wing_disc_movie));
+							sequence.addPainter(
+									new ColorTagPainter(wing_disc_movie));
 							break;
 						default:
 							break;

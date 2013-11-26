@@ -8,6 +8,7 @@
  */
 package plugins.davhelle.cellgraph.nodes;
 
+import java.awt.Color;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,9 @@ public class Cell implements Node {
 	private boolean has_observed_elimination;
 	private Elimination elimination;
 	
+	//cell color tag
+	private Color color_tag;
+
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
 	 */
@@ -82,6 +86,9 @@ public class Cell implements Node {
 		//default elimination information
 		this.has_observed_elimination = false;
 		this.elimination = null;
+		
+		//color_tag, default black
+		this.color_tag = Color.black;
 	}
 
 	/* (non-Javadoc)
@@ -273,6 +280,16 @@ public class Cell implements Node {
 	@Override
 	public boolean hasObservedElimination() {
 		return this.has_observed_elimination;
+	}
+	
+	@Override
+	public Color getColorTag() {
+		return color_tag;
+	}
+
+	@Override
+	public void setColorTag(Color color_tag) {
+		this.color_tag = color_tag;
 	}
 
 }

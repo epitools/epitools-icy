@@ -38,6 +38,12 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		case TRACKING_ID:
 			vertex_label = Integer.toString(vertex.getTrackID());
 			break;
+		case ALL:
+			vertex_label = 	Integer.toString(vertex.getTrackID()) +  
+							"," +
+							Math.round(vertex.getCentroid().getX()) + 
+							"," +
+							Math.round(vertex.getCentroid().getY());
 		default:
 			break;
 		}

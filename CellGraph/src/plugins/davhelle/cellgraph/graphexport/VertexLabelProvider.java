@@ -1,5 +1,7 @@
 package plugins.davhelle.cellgraph.graphexport;
 
+import java.awt.Color;
+
 import org.jgrapht.ext.VertexNameProvider;
 
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -44,6 +46,9 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 							Math.round(vertex.getCentroid().getX()) + 
 							"," +
 							Math.round(vertex.getCentroid().getY());
+		case COLOR_TAG:
+			vertex_label = Boolean.toString(vertex.getColorTag() == Color.red);
+			break;
 		default:
 			break;
 		}

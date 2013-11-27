@@ -52,12 +52,23 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		case SEQ_AREA:			
 			double cell_area = vertex.getGeometry().getArea();
 			String csv_area_over_time = Integer.toString(vertex.getTrackID()) + "," + Long.toString(Math.round(cell_area));
-			
+		
 			Node cell = vertex;
+			int t = vertex.getBelongingFrame().getFrameNo();
 			while(cell.hasNext()){
+				
 				cell = cell.getNext();
+				int t_new = cell.getBelongingFrame().getFrameNo();
+				
+				//in case of missing values add previous value
+				for(;t < t_new - 1; t++)
+					csv_area_over_time += "," + Long.toString(Math.round(cell_area));
+				
+				//add new value at the end of the list
 				cell_area = cell.getGeometry().getArea();
 				csv_area_over_time += "," + Long.toString(Math.round(cell_area));
+				t++;
+					
 			}
 			
 			vertex_label = csv_area_over_time;

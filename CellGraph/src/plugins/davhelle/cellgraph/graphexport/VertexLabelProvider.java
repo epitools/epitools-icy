@@ -49,6 +49,19 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		case COLOR_TAG:
 			vertex_label = Boolean.toString(vertex.getColorTag() == Color.red);
 			break;
+		case SEQ_AREA:			
+			double cell_area = vertex.getGeometry().getArea();
+			String csv_area_over_time = Integer.toString(vertex.getTrackID()) + "," + Long.toString(Math.round(cell_area));
+			
+			Node cell = vertex;
+			while(cell.hasNext()){
+				cell = cell.getNext();
+				cell_area = cell.getGeometry().getArea();
+				csv_area_over_time += "," + Long.toString(Math.round(cell_area));
+			}
+			
+			vertex_label = csv_area_over_time;
+			break;
 		default:
 			break;
 		}

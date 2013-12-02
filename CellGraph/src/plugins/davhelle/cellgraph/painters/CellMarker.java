@@ -19,11 +19,13 @@ public class CellMarker extends Overlay {
 	
 	private SpatioTemporalGraph stGraph;
 	private GeometryFactory factory;
+	private Color tag_color;
 	
-	public CellMarker(SpatioTemporalGraph stGraph) {
+	public CellMarker(SpatioTemporalGraph stGraph, Color tag_color) {
 		super("Cell Marker");
 		this.stGraph = stGraph;
 		this.factory = new GeometryFactory();
+		this.tag_color = tag_color;
 	}
 	
 	@Override
@@ -39,9 +41,12 @@ public class CellMarker extends Overlay {
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet())
 			 	if(cell.getGeometry().contains(point_geometry))
-			 		cell.setColorTag(Color.red);
+			 		cell.setColorTag(tag_color);
 		}
 
 	}
+	
+	//simpler: interface launch marker with certain color
+	//output: if==color take for certain column -> alex workbook
 
 }

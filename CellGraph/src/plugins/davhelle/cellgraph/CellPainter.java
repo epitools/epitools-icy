@@ -5,18 +5,18 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
+import java.awt.Color;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzPlug;
@@ -24,14 +24,12 @@ import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarSequence;
-
-
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
+import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
@@ -105,6 +103,9 @@ public class CellPainter extends EzPlug {
 	
 	//Graph Export
 	EzVarEnum<ExportFieldType>  varExportType;
+	
+	//CellMarker
+	EzVarEnum<CellColor>		varCellColor;		
 
 	//sequence to paint on 
 	EzVarSequence				varSequence;
@@ -177,6 +178,12 @@ public class CellPainter extends EzPlug {
 		EzGroup groupExport = new EzGroup("GRAPH_EXPORT elements",
 				varExportType);
 		
+		//CellMarker mode
+		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
+		EzGroup groupMarker = new EzGroup("COLOR_TAG elements",
+				varCellColor);
+				
+		
 		
 		//Painter
 		EzGroup groupPainters = new EzGroup("Painters",
@@ -187,7 +194,8 @@ public class CellPainter extends EzPlug {
 				groupAreaThreshold,
 				//groupDivisions,
 				groupTracking,
-				groupExport
+				groupExport,
+				groupMarker
 		);
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
@@ -198,6 +206,7 @@ public class CellPainter extends EzPlug {
 		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, PlotEnum.DIVISIONS);
 		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPH_EXPORT);
+		varPlotting.addVisibilityTriggerTo(groupMarker, PlotEnum.COLOR_TAG);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -320,8 +329,9 @@ public class CellPainter extends EzPlug {
 							exporter.exportFrame(wing_disc_movie.getFrame(0), file_name);
 							break;
 						case COLOR_TAG:
+							Color color_tag = varCellColor.getValue().getColor();
 							sequence.addPainter(
-									new CellMarker(wing_disc_movie));
+									new CellMarker(wing_disc_movie,color_tag));
 							sequence.addPainter(
 									new ColorTagPainter(wing_disc_movie));
 							break;

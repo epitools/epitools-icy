@@ -329,9 +329,8 @@ public class CellPainter extends EzPlug {
 							exporter.exportFrame(wing_disc_movie.getFrame(0), file_name);
 							break;
 						case COLOR_TAG:
-							Color color_tag = varCellColor.getValue().getColor();
 							sequence.addPainter(
-									new CellMarker(wing_disc_movie,color_tag));
+									new CellMarker(wing_disc_movie,varCellColor));
 							sequence.addPainter(
 									new ColorTagPainter(wing_disc_movie));
 							break;

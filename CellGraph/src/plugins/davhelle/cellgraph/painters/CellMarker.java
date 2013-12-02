@@ -7,8 +7,10 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
+import plugins.adufour.ezplug.EzVarEnum;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -19,13 +21,13 @@ public class CellMarker extends Overlay {
 	
 	private SpatioTemporalGraph stGraph;
 	private GeometryFactory factory;
-	private Color tag_color;
+	private EzVarEnum<CellColor> tag_color;
 	
-	public CellMarker(SpatioTemporalGraph stGraph, Color tag_color) {
+	public CellMarker(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor) {
 		super("Cell Marker");
 		this.stGraph = stGraph;
 		this.factory = new GeometryFactory();
-		this.tag_color = tag_color;
+		this.tag_color = varCellColor;
 	}
 	
 	@Override
@@ -41,7 +43,7 @@ public class CellMarker extends Overlay {
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet())
 			 	if(cell.getGeometry().contains(point_geometry))
-			 		cell.setColorTag(tag_color);
+			 		cell.setColorTag(tag_color.getValue().getColor());
 		}
 
 	}

@@ -17,6 +17,18 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
+/**
+ * Interactive painter to mark cell with a certain
+ * color tag set in the UI. Current behavior tags
+ * a cell is the default color is present (black)
+ * or if another color is present. If the user
+ * tries to repaint a cell with the same color it 
+ * already has, the cell is put back to default.
+ * 
+ * 
+ * @author Davide Heller
+ *
+ */
 public class CellMarker extends Overlay {
 	
 	private SpatioTemporalGraph stGraph;
@@ -42,8 +54,17 @@ public class CellMarker extends Overlay {
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet())
-			 	if(cell.getGeometry().contains(point_geometry))
-			 		cell.setColorTag(tag_color.getValue().getColor());
+			 	if(cell.getGeometry().contains(point_geometry)){
+			 		Color current_tag = cell.getColorTag();
+			 		Color new_tag = tag_color.getValue().getColor();
+			 		if(current_tag == Color.black)
+			 			cell.setColorTag(new_tag);
+			 		else if(current_tag == new_tag)
+			 			cell.setColorTag(Color.black);
+			 		else
+			 			cell.setColorTag(new_tag);
+			 	}
+			
 		}
 
 	}

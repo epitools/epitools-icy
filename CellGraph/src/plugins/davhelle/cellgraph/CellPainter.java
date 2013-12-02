@@ -29,6 +29,7 @@ import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.DivisionReader;
+import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -76,6 +77,7 @@ public class CellPainter extends EzPlug {
 		DIVISIONS,
 		GRAPH_EXPORT,
 		COLOR_TAG,
+		SAVE_TAG,
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -334,6 +336,8 @@ public class CellPainter extends EzPlug {
 							sequence.addPainter(
 									new ColorTagPainter(wing_disc_movie));
 							break;
+						case SAVE_TAG:
+							new TagSaver(wing_disc_movie);
 						default:
 							break;
 									

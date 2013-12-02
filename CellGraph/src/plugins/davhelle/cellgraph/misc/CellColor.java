@@ -3,7 +3,7 @@ package plugins.davhelle.cellgraph.misc;
 import java.awt.Color;
 
 public enum CellColor {
-	RED(Color.red), GREEN(Color.green), BLUE(Color.blue);
+	GREEN(Color.green), BLUE(Color.blue);
 	
 	private Color color;
 	

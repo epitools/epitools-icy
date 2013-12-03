@@ -1,3 +1,8 @@
+/*=========================================================================
+ *
+ *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
+ *
+ *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
 import icy.gui.frame.IcyFrame;
@@ -24,6 +29,21 @@ import org.jfree.data.statistics.DefaultBoxAndWhiskerXYDataset;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+
+
+/**
+ * Adapted from:
+ * http://www.roseindia.net/chartgraphs/box-whisker-chart.shtml
+ * and the tutorial BarChartDemo1 by the Icy team:
+ * tuto16 Tutorial: Creating a simple graph with JFreeChart within ICY
+ * 
+ * 
+ * Depicts a Boxplot of the tagged cell, labels are currently dates[TODO]
+ * all security checks are missing currently![TODO]
+ * 
+ * @author Davide Heller
+ *
+ */
 public class AreaBoxPlot extends PluginActionable{
 
 	private SpatioTemporalGraph stGraph;

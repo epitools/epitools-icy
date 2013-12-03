@@ -28,6 +28,7 @@ import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CellWorkbook;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
@@ -78,6 +79,7 @@ public class CellPainter extends EzPlug {
 		GRAPH_EXPORT,
 		COLOR_TAG,
 		SAVE_TAG,
+		SAVE_TAG_XLS,
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -338,6 +340,9 @@ public class CellPainter extends EzPlug {
 							break;
 						case SAVE_TAG:
 							new TagSaver(wing_disc_movie);
+							break;
+						case SAVE_TAG_XLS:
+							new CellWorkbook(wing_disc_movie);
 						default:
 							break;
 									

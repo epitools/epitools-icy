@@ -44,9 +44,14 @@ public class DivisionPainter extends Overlay {
 						division_no++;
 						g.setColor(Color.green);
 //						if(!cell.onBoundary()) TODO: apply correspondence to first frame!
-						g.draw(cell.toShape());
+						g.fill(cell.toShape());
 						g.fillOval((int)cell.getCentroid().getX(), (int)cell.getCentroid().getY(), 2, 2);
-					}	
+					}
+					
+					if(cell.getFirst().hasObservedElimination()){
+						g.setColor(Color.red);
+						g.fill(cell.toShape());
+					}
 				
 //					else{
 //						g.setColor(Color.white);

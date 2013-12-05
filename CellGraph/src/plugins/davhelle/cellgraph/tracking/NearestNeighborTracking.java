@@ -607,7 +607,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			for(Node brotherCandidate: neighbors){
 				if(brotherCandidate.hasPrevious()){
 					
-//					System.out.println("Analyzing brother: "+brotherCandidate.getTrackID());
+					if(VERBOSE) System.out.println("Analyzing brother: "+brotherCandidate.getTrackID());
 
 					//assumption 2: mother cell should be the last correspondence of brother cell 
 					//              and at preceding frame 
@@ -616,15 +616,15 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					int mother_frame_no = motherCandidate.getBelongingFrame().getFrameNo();
 					int expected_frame_no = time_point - 1;
 					if(mother_frame_no != expected_frame_no){
-//						System.out.println(
-//								"\t failed for assumption 2: mother cell belongs to frame "+
-//										mother_frame_no+" instead of "+expected_frame_no);
+						if(VERBOSE) System.out.println(
+								"\t failed for assumption 2: mother cell belongs to frame "+
+										mother_frame_no+" instead of "+expected_frame_no);
 						
 						continue;
 					}
 					//assumption 3: mother cell cannot divide twice
 					if(motherCandidate.hasObservedDivision()){
-//						System.out.println("\t failed for assumption 3");
+						if(VERBOSE) System.out.println("\t failed for assumption 3");
 						continue;
 					}
 
@@ -666,14 +666,18 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			Geometry ib1 = b1.intersection(m);
 			Geometry ib2 = b2.intersection(m);
 			
-			final double coverage_factor = 0.6;
+			final double coverage_factor = 0.5;
 			
 			
-			if((ib1.getArea()/b1.getArea()) < coverage_factor)
+			if((ib1.getArea()/b1.getArea()) < coverage_factor){
+				if(VERBOSE) System.out.println("Insufficient coverage b1: "+ib1.getArea()/b1.getArea());
 				continue;
+			}
 			
-			if((ib2.getArea()/b2.getArea()) < coverage_factor)
+			if((ib2.getArea()/b2.getArea()) < coverage_factor){
+				if(VERBOSE) System.out.println("Insufficient coverage b2: "+ib2.getArea()/b2.getArea());
 				continue;
+			}
 			
 			//TODO 6 could be extended with a maximial factor too. The two area
 			//overlaps should be coherent. This could avoid recognizing segmentation errors

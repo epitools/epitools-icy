@@ -69,7 +69,8 @@ public class CellPainter extends EzPlug {
 		CELLS,
 		BORDER, 
 		VORONOI, 
-		POLYGON_CLASS,  
+		POLYGON_CLASS,
+		POLYGON_TILE,
 		AREA_THRESHOLD,
 		TRACKING,
 		GRAPH_PAINTER,
@@ -281,7 +282,12 @@ public class CellPainter extends EzPlug {
 							sequence.addPainter(
 									new PolygonClassPainter(wing_disc_movie));
 							break;
-
+						
+						case POLYGON_TILE:
+							sequence.addPainter(
+									new PolygonConverterPainter(wing_disc_movie));
+							break;
+							
 						case DIVISIONS: 
 							divisionMode(
 									wing_disc_movie, 

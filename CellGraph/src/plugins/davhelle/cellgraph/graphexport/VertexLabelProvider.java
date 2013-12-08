@@ -17,7 +17,8 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class VertexLabelProvider implements VertexNameProvider<Node> {
 	
-	ExportFieldType export_field; 
+	ExportFieldType export_field;
+	
 	
 	public VertexLabelProvider(ExportFieldType field){
 		this.export_field = field;
@@ -40,7 +41,7 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		case TRACKING_ID:
 			vertex_label = Integer.toString(vertex.getTrackID());
 			break;
-		case ALL:
+		case TRACKING_POSITION:
 			vertex_label = 	Integer.toString(vertex.getTrackID()) +  
 							"," +
 							Math.round(vertex.getCentroid().getX()) + 
@@ -73,11 +74,35 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			
 			vertex_label = csv_area_over_time;
 			break;
+		case COMPLETE_CSV:
+			StringBuilder builder = new StringBuilder();
+			
+			builder.append(vertex.getTrackID());
+			addComma(builder);
+			builder.append(Math.round(vertex.getCentroid().getX()));
+			addComma(builder);
+			builder.append(Math.round(vertex.getCentroid().getX()));
+			addComma(builder);
+			builder.append(vertex.getGeometry().getArea());
+			addComma(builder);
+			builder.append(vertex.onBoundary());
+			addComma(builder);
+			builder.append(vertex.hasObservedDivision());
+			addComma(builder);
+			builder.append(vertex.hasObservedElimination());
+			
+			vertex_label = builder.toString();
+			
+			
 		default:
 			break;
 		}
 		
 		return vertex_label;
+	}
+	
+	private void addComma(StringBuilder builder){
+		builder.append(',');
 	}
 
 }

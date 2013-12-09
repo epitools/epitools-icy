@@ -76,12 +76,12 @@ public class AreaThresholdPainter extends Overlay{
 				
 				//adapt for certain color range
 				//by multiplying with factor
-				double range_factor = 0.15;
+				double range_factor = 0.9;
 				
 				h = h * range_factor;
 				
 				//revert
-				h = Math.abs(h - range_factor);
+				//h = Math.abs(h - range_factor);
 				
 				//scale to use the color range of interest
 				

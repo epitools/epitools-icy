@@ -23,6 +23,7 @@ import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
+import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
@@ -115,6 +116,8 @@ public class CellPainter extends EzPlug {
 	//sequence to paint on 
 	EzVarSequence				varSequence;
 	Sequence sequence;
+	
+	EzVarFile				varOutputFile;
 
 	@Override
 	protected void initialize() {
@@ -180,16 +183,17 @@ public class CellPainter extends EzPlug {
 		
 		//Graph Export Mode
 		varExportType = new EzVarEnum<ExportFieldType>("Export field", ExportFieldType.values(), ExportFieldType.DIVISION);
+		varOutputFile = new EzVarFile("Output File", "/Users/davide/tmp/frame0_" + varExportType.getValue().name() + ".xml");
+		
 		EzGroup groupExport = new EzGroup("GRAPH_EXPORT elements",
-				varExportType);
+				varExportType,
+				varOutputFile);
 		
 		//CellMarker mode
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
 		EzGroup groupMarker = new EzGroup("COLOR_TAG elements",
 				varCellColor);
-				
-		
-		
+
 		//Painter
 		EzGroup groupPainters = new EzGroup("Painters",
 				varUpdatePainterMode,
@@ -335,7 +339,7 @@ public class CellPainter extends EzPlug {
 							break;
 						case GRAPH_EXPORT:
 							GraphExporter exporter = new GraphExporter(varExportType.getValue());
-							String file_name = "/Users/davide/tmp/frame0_" + varExportType.getValue().name() + ".xml";
+							String file_name = varOutputFile.getValue().getAbsolutePath();
 							exporter.exportFrame(wing_disc_movie.getFrame(0), file_name);
 							break;
 						case COLOR_TAG:

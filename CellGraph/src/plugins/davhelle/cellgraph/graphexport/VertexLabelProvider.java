@@ -90,6 +90,17 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			builder.append(vertex.hasObservedDivision());
 			addComma(builder);
 			builder.append(vertex.hasObservedElimination());
+			addComma(builder);
+			if(vertex.hasObservedDivision())
+				builder.append(vertex.getDivision().getTimePoint());
+			else
+				builder.append(-1);
+			addComma(builder);
+			if(vertex.hasObservedElimination())
+				builder.append(vertex.getElimination().getTimePoint());
+			else
+				builder.append(-1);
+			
 			
 			vertex_label = builder.toString();
 			

@@ -184,6 +184,27 @@ public class Division {
 			for(Node neighbor: child.getNeighbors())	
 				if(neighbor.getFirst() == brother)
 					return true;
+
+		return false;
+	}
+	
+	/**
+	 * Check whether brother cell was eliminated at 
+	 * a previous time point 
+	 * 
+	 * @param child
+	 * @return
+	 */
+	public boolean wasBrotherEliminated(Node child){
+		Node brother = this.getBrother(child.getFirst());
+
+		if(brother != null)
+			if(brother.hasObservedElimination()){
+				int current_time = child.getBelongingFrame().getFrameNo();
+				int elimination_time = brother.getElimination().getTimePoint();
+				if(current_time > elimination_time)
+					return true;
+			}
 		
 		return false;
 	}

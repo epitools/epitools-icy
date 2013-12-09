@@ -15,7 +15,8 @@ public enum TrackingFeedback {
 	LOST_IN_BOTH(-4),
 	DIVIDING_IN_NEXT_FRAME(-5),
 	BROTHER_CELL_NOT_FOUND(-6),
-	ELIMINATED_IN_NEXT_FRAME(-7);
+	ELIMINATED_IN_NEXT_FRAME(-7),
+	BROTHER_CELL_ELIMINATED(-8);
 	
 	public final int numeric_code;
 	

@@ -231,7 +231,11 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//also check in case of a division that the brother cell is present
 			if(current.hasObservedDivision())
 				if(!current.getDivision().isBrotherPresent(current)) //TODO review isBrotherPresent Method input (list would be more logic)
-					current.setErrorTag(TrackingFeedback.BROTHER_CELL_NOT_FOUND.numeric_code);
+					if(current.getDivision().wasBrotherEliminated(current))
+						current.setErrorTag(TrackingFeedback.BROTHER_CELL_ELIMINATED.numeric_code);
+					else
+						current.setErrorTag(TrackingFeedback.BROTHER_CELL_NOT_FOUND.numeric_code);
+			
 			
 		}
 	}

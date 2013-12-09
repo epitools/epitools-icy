@@ -7,18 +7,30 @@ package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
-import icy.painter.AbstractPainter;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+/**
+ * Painter to visualize all cells that will divide or be eliminated
+ * over the length of the movie. To solve the ambiguity of cells
+ * undergoing both events (i.e. a cell divides and then loses
+ * one of the siblings by elimination) a different color scheme
+ * is used (see below)
+ * 
+ * dividing cell - green
+ * eliminated cell - red
+ * both events - yellow
+ * 
+ * @author Davide Heller
+ *
+ */
 public class DivisionPainter extends Overlay {
 
 	SpatioTemporalGraph stGraph;
@@ -28,44 +40,32 @@ public class DivisionPainter extends Overlay {
 		this.stGraph = stGraph;
 	}
 	
-	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-	{
+	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas){
+		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			
-			int division_no = 0;
 			for(Node cell: frame_i.vertexSet()){
 				if(cell.getFirst() != null){
 					
 					if(cell.getFirst().hasObservedDivision()){
-						division_no++;
 						g.setColor(Color.green);
-//						if(!cell.onBoundary()) TODO: apply correspondence to first frame!
 						g.fill(cell.toShape());
-						g.fillOval((int)cell.getCentroid().getX(), (int)cell.getCentroid().getY(), 2, 2);
 					}
 					
 					if(cell.getFirst().hasObservedElimination()){
-						g.setColor(Color.red);
+						if(cell.getFirst().hasObservedDivision())
+							g.setColor(Color.yellow);
+						else
+							g.setColor(Color.red);
+						
 						g.fill(cell.toShape());
-					}
-				
-//					else{
-//						g.setColor(Color.white);
-//						g.fill(cell.toShape());
-//						g.setColor(Color.red);
-//						g.draw(cell.toShape());
-//					}
+					}	
 				}
-			}
-			
-			//g.setColor(Color.white);
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 10));
-			//g.drawString("Manually identified: "+division_no, 10 , 30);
+			}	
 		}
 	}
-
 }

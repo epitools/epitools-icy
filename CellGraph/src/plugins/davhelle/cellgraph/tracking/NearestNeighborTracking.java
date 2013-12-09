@@ -84,6 +84,15 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	private double lambda1;
 	private double lambda2;
 	
+	/**
+	 * Division heuristic parameter
+	 * sets the percentage of overlap
+	 * between the mother and the daughter
+	 * cells
+	 * 
+	 *  @see #coverage_factor
+	 */
+	private double coverage_factor;	
 	
 	/**
 	 * Initializes Neighbor tracking
@@ -103,6 +112,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		this.follow_ID = 14;
 		this.lambda1 = lambda1;
 		this.lambda2 = lambda2;
+		this.coverage_factor = 0.6;
 	}
 	
 	@Override
@@ -669,9 +679,6 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			//assumption 6: both children should be covered by at least 60% by the mother cell
 			Geometry ib1 = b1.intersection(m);
 			Geometry ib2 = b2.intersection(m);
-			
-			final double coverage_factor = 0.5;
-			
 			
 			if((ib1.getArea()/b1.getArea()) < coverage_factor){
 				if(VERBOSE) System.out.println("Insufficient coverage b1: "+ib1.getArea()/b1.getArea());

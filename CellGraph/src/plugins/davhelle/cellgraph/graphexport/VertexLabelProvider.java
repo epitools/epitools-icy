@@ -81,7 +81,7 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			addComma(builder);
 			builder.append(Math.round(vertex.getCentroid().getX()));
 			addComma(builder);
-			builder.append(Math.round(vertex.getCentroid().getX()));
+			builder.append(Math.round(vertex.getCentroid().getY()));
 			addComma(builder);
 			builder.append(vertex.getGeometry().getArea());
 			addComma(builder);

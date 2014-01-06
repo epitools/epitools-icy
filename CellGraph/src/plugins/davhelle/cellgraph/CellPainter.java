@@ -12,18 +12,21 @@ import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarFile;
+import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
@@ -109,6 +112,7 @@ public class CellPainter extends EzPlug {
 	
 	//Graph Export
 	EzVarEnum<ExportFieldType>  varExportType;
+	EzVarInteger				varFrameNo;
 	
 	//CellMarker
 	EzVarEnum<CellColor>		varCellColor;		
@@ -184,10 +188,12 @@ public class CellPainter extends EzPlug {
 		//Graph Export Mode
 		varExportType = new EzVarEnum<ExportFieldType>("Export field", ExportFieldType.values(), ExportFieldType.DIVISION);
 		varOutputFile = new EzVarFile("Output File", "/Users/davide/tmp/frame0_" + varExportType.getValue().name() + ".xml");
+		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
 		
 		EzGroup groupExport = new EzGroup("GRAPH_EXPORT elements",
 				varExportType,
-				varOutputFile);
+				varOutputFile,
+				varFrameNo);
 		
 		//CellMarker mode
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
@@ -338,9 +344,11 @@ public class CellPainter extends EzPlug {
 							
 							break;
 						case GRAPH_EXPORT:
-							GraphExporter exporter = new GraphExporter(varExportType.getValue());
-							String file_name = varOutputFile.getValue().getAbsolutePath();
-							exporter.exportFrame(wing_disc_movie.getFrame(0), file_name);
+							graphExportMode(
+									wing_disc_movie,
+									varExportType.getValue(),
+									varOutputFile.getValue(false),
+									varFrameNo.getValue());
 							break;
 						case COLOR_TAG:
 							sequence.addPainter(
@@ -367,6 +375,24 @@ public class CellPainter extends EzPlug {
 			else
 				new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
 		}
+	}
+
+	private void graphExportMode(
+			SpatioTemporalGraph wing_disc_movie,
+			ExportFieldType export_type,
+			File output_file,
+			Integer frame_no) {
+		
+		//safety checks
+		if(output_file == null)
+			new AnnounceFrame("No output file specified! Please select");
+		else if(frame_no >= wing_disc_movie.size())
+			new AnnounceFrame("Requested frame no is not available! Please check");
+		else{
+			GraphExporter exporter = new GraphExporter(varExportType.getValue());
+			FrameGraph frame_to_export = wing_disc_movie.getFrame(frame_no);
+			exporter.exportFrame(frame_to_export, output_file.getAbsolutePath());
+		}		
 	}
 
 	/**

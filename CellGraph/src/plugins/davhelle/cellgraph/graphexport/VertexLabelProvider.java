@@ -103,6 +103,15 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			
 			
 			vertex_label = builder.toString();
+			break;
+		case SEQ_X:
+			String csv_x_over_time = getSequentialXCoordinates(vertex);
+			vertex_label = csv_x_over_time;
+			break;
+		case SEQ_Y:
+			String csv_y_over_time = getSequentialYCoordinates(vertex);
+			vertex_label = csv_y_over_time;
+			break;
 			
 			
 		default:
@@ -112,6 +121,58 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		return vertex_label;
 	}
 	
+	private String getSequentialYCoordinates(Node vertex) {
+		
+		double cell_y = vertex.getCentroid().getY();
+		String csv_y_over_time = Integer.toString(vertex.getTrackID()) + "," + Long.toString(Math.round(cell_y));
+	
+		Node cell = vertex;
+		int t = vertex.getBelongingFrame().getFrameNo();
+		while(cell.hasNext()){
+			
+			cell = cell.getNext();
+			int t_new = cell.getBelongingFrame().getFrameNo();
+			
+			//in case of missing values add previous value
+			for(;t < t_new - 1; t++)
+				csv_y_over_time += "," + Long.toString(Math.round(cell_y));
+			
+			//add new value at the end of the list
+			cell_y = cell.getCentroid().getY();
+			csv_y_over_time += "," + Long.toString(Math.round(cell_y));
+			t++;
+				
+		}
+		
+		return csv_y_over_time;
+	}
+
+	private String getSequentialXCoordinates(Node vertex) {
+		
+		double cell_x = vertex.getCentroid().getX();
+		String csv_x_over_time = Integer.toString(vertex.getTrackID()) + "," + Long.toString(Math.round(cell_x));
+	
+		Node cell = vertex;
+		int t = vertex.getBelongingFrame().getFrameNo();
+		while(cell.hasNext()){
+			
+			cell = cell.getNext();
+			int t_new = cell.getBelongingFrame().getFrameNo();
+			
+			//in case of missing values add previous value
+			for(;t < t_new - 1; t++)
+				csv_x_over_time += "," + Long.toString(Math.round(cell_x));
+			
+			//add new value at the end of the list
+			cell_x = cell.getCentroid().getX();
+			csv_x_over_time += "," + Long.toString(Math.round(cell_x));
+			t++;
+				
+		}
+		
+		return csv_x_over_time;
+	}
+
 	private void addComma(StringBuilder builder){
 		builder.append(',');
 	}

@@ -32,9 +32,8 @@ public class SkeletonWriter {
 		
 	}
 	
-	public void write(){
-		
-		String file_name = "/Users/davide/tmp/reviewed_skeletons/neo0_000.tif";
+	public void write(String file_name){
+	
 		File skeleton_file = new File(file_name);
 		FileNameGenerator skeleton_file_name_generator = 
 				new FileNameGenerator(
@@ -62,12 +61,15 @@ public class SkeletonWriter {
 		byte[] dataBuffer = img.getDataXYAsByte(0);
 
 		for(Node cell: stGraph.getFrame(t).vertexSet()){
-			Geometry polygon = cell.getGeometry();
-			for(Coordinate vertex: polygon.getCoordinates()){
-				int x = (int)Math.round(vertex.x);
-				int y = (int)Math.round(vertex.y);
-				
-				dataBuffer[x + y * img_width] = (byte) 255; 
+			if(cell.hasNext() || cell.hasPrevious()){
+				Geometry polygon = cell.getGeometry();
+				for(Coordinate vertex: polygon.getCoordinates()){
+
+					int x = (int)Math.round(vertex.x);
+					int y = (int)Math.round(vertex.y);
+
+					dataBuffer[x + y * img_width] = (byte) 255; 
+				}
 			}
 		}
 	

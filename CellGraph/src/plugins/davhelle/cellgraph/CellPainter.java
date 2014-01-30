@@ -124,6 +124,7 @@ public class CellPainter extends EzPlug {
 	Sequence sequence;
 	
 	EzVarFile				varOutputFile;
+	private EzVarFile varSaveSkeleton;
 
 	@Override
 	protected void initialize() {
@@ -201,6 +202,10 @@ public class CellPainter extends EzPlug {
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
 		EzGroup groupMarker = new EzGroup("COLOR_TAG elements",
 				varCellColor);
+		
+		//SAVE_SKELETON mode
+		varSaveSkeleton = new EzVarFile("Output File", "");
+		EzGroup groupSaveSkeleton = new EzGroup("SAVE_SKELETON elements",varSaveSkeleton);
 
 		//Painter
 		EzGroup groupPainters = new EzGroup("Painters",
@@ -212,7 +217,8 @@ public class CellPainter extends EzPlug {
 				//groupDivisions,
 				groupTracking,
 				groupExport,
-				groupMarker
+				groupMarker,
+				groupSaveSkeleton
 		);
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
@@ -224,6 +230,7 @@ public class CellPainter extends EzPlug {
 		varPlotting.addVisibilityTriggerTo(groupDivisions, PlotEnum.DIVISIONS);
 		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPH_EXPORT);
 		varPlotting.addVisibilityTriggerTo(groupMarker, PlotEnum.COLOR_TAG);
+		varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, PlotEnum.SAVE_SKELETONS);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -364,7 +371,7 @@ public class CellPainter extends EzPlug {
 						case SAVE_TAG_XLS:
 							new CellWorkbook(wing_disc_movie);
 						case SAVE_SKELETONS:
-							new SkeletonWriter(sequence, wing_disc_movie).write();
+							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
 						default:
 							break;
 									

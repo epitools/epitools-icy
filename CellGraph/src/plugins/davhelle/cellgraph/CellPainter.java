@@ -34,6 +34,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.CellWorkbook;
 import plugins.davhelle.cellgraph.io.DivisionReader;
+import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
@@ -85,6 +86,7 @@ public class CellPainter extends EzPlug {
 		COLOR_TAG,
 		SAVE_TAG,
 		SAVE_TAG_XLS,
+		SAVE_SKELETONS
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -361,6 +363,8 @@ public class CellPainter extends EzPlug {
 							break;
 						case SAVE_TAG_XLS:
 							new CellWorkbook(wing_disc_movie);
+						case SAVE_SKELETONS:
+							new SkeletonWriter(sequence, wing_disc_movie).write();
 						default:
 							break;
 									

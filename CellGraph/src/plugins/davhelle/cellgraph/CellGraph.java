@@ -462,7 +462,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			try{
 				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
 				division_reader.assignDivisions();
-				sequence.addPainter(new DivisionPainter(wing_disc_movie));
+				sequence.addPainter(new DivisionPainter(wing_disc_movie, true,false,true));
 			}
 			catch(IOException e){
 				System.out.println("Something went wrong in division reading");

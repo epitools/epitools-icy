@@ -10,6 +10,7 @@ import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
@@ -34,10 +35,20 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class DivisionPainter extends Overlay {
 
 	SpatioTemporalGraph stGraph;
+	private boolean PLOT_DIVISIONS;
+	private boolean PLOT_ELIMINATIONS;
+	private boolean FILL_CELLS;
 	
-	public DivisionPainter(SpatioTemporalGraph stGraph){
-		super("Divisions (green)");
+	public DivisionPainter(
+			SpatioTemporalGraph stGraph,
+			boolean PLOT_DIVSIONS,
+			boolean PLOT_ELIMINATIONS,
+			boolean FILL_CELLS){
+		super("Divisions (green) and Eliminations (red)");
 		this.stGraph = stGraph;
+		this.PLOT_DIVISIONS = PLOT_DIVSIONS;
+		this.PLOT_ELIMINATIONS = PLOT_ELIMINATIONS;
+		this.FILL_CELLS = FILL_CELLS;
 	}
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas){
@@ -46,24 +57,34 @@ public class DivisionPainter extends Overlay {
 
 		if(time_point < stGraph.size()){
 			
+			if(!FILL_CELLS)
+				g.setStroke(new BasicStroke(3));
+			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			
 			for(Node cell: frame_i.vertexSet()){
 				if(cell.getFirst() != null){
 					
-					if(cell.getFirst().hasObservedDivision()){
-						g.setColor(Color.green);
-						g.fill(cell.toShape());
-					}
-					
-					if(cell.getFirst().hasObservedElimination()){
-						if(cell.getFirst().hasObservedDivision())
-							g.setColor(Color.yellow);
-						else
-							g.setColor(Color.red);
-						
-						g.fill(cell.toShape());
-					}	
+					if(PLOT_DIVISIONS)
+						if(cell.getFirst().hasObservedDivision()){
+							g.setColor(Color.green);
+							if(FILL_CELLS)
+								g.fill(cell.toShape());
+							else
+								g.draw(cell.toShape());	
+						}					
+					if(PLOT_ELIMINATIONS)
+						if(cell.getFirst().hasObservedElimination()){
+							if(PLOT_DIVISIONS && cell.getFirst().hasObservedDivision())
+								g.setColor(Color.yellow);
+							else
+								g.setColor(Color.red);
+							
+							if(FILL_CELLS)
+								g.fill(cell.toShape());
+							else
+								g.draw(cell.toShape());
+						}	
 				}
 			}	
 		}

@@ -125,6 +125,9 @@ public class CellPainter extends EzPlug {
 	
 	EzVarFile				varOutputFile;
 	private EzVarFile varSaveSkeleton;
+	private EzVarBoolean varBooleanPlotDivisions;
+	private EzVarBoolean varBooleanPlotEliminations;
+	private EzVarBoolean varBooleanFillCells;
 
 	@Override
 	protected void initialize() {
@@ -172,8 +175,15 @@ public class CellPainter extends EzPlug {
 
 		//Division mode
 		varBooleanReadDivisions = new EzVarBoolean("Read divisions", false);
+		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions (green)",true);
+		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations (red)",false);
+		varBooleanFillCells = new EzVarBoolean("Fill cells with color",true);
 		EzGroup groupDivisions = new EzGroup("DIVISIONS elements", 
-				varBooleanReadDivisions);
+				//varBooleanReadDivisions, TODO
+				varBooleanPlotDivisions,
+				varBooleanPlotEliminations,
+				varBooleanFillCells
+				);
 		
 		
 		
@@ -214,7 +224,7 @@ public class CellPainter extends EzPlug {
 				groupCellMap,
 				groupVoronoiMap,
 				groupAreaThreshold,
-				//groupDivisions,
+				groupDivisions,
 				groupTracking,
 				groupExport,
 				groupMarker,
@@ -560,15 +570,12 @@ public class CellPainter extends EzPlug {
 	}
 
 	private void divisionMode(SpatioTemporalGraph wing_disc_movie, boolean read_divisions){
+		
 		if(read_divisions){
 			try{
 				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
 				division_reader.backtrackDivisions();
 				sequence.addPainter(division_reader);
-
-
-
-
 			}
 			catch(IOException e){
 				System.out.println("Something went wrong in division reading");
@@ -576,7 +583,11 @@ public class CellPainter extends EzPlug {
 		}
 		
 		
-		DivisionPainter dividing_cells = new DivisionPainter(wing_disc_movie);
+		DivisionPainter dividing_cells = new DivisionPainter(
+				wing_disc_movie,
+				varBooleanPlotDivisions.getValue(),
+				varBooleanPlotEliminations.getValue(),
+				varBooleanFillCells.getValue());
 		sequence.addPainter(dividing_cells);
 		
 	}

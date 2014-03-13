@@ -7,6 +7,7 @@ import icy.gui.frame.IcyFrame;
 import icy.gui.viewer.Viewer;
 import icy.image.IcyBufferedImage;
 import icy.image.IcyBufferedImageUtil;
+import icy.imagej.ImageJUtil;
 import icy.main.Icy;
 import icy.painter.Painter;
 import icy.plugin.PluginDescriptor;
@@ -15,6 +16,7 @@ import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+import ij.ImagePlus;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -237,10 +239,14 @@ public class CellEditor extends EzPlug{
 		//Apply painting to real canvas
 		modifications.paint(g2d, varOutputSeq.getValue(), output_canvas);
 
-		//close graphics devices and update sequence
+		//close graphics devices and
 		g2d.dispose();
+		
+		//reskeletonize image
+		BufferedImage imgBuff_skeletonized = reskeletonize(imgBuff);
 
-		img = IcyBufferedImage.createFrom(imgBuff);
+		//update sequence
+		img = IcyBufferedImage.createFrom(imgBuff_skeletonized);
 		output_canvas.getCurrentImage().setDataXY(0, img.getDataXY(0));
 
 		output_canvas.getSequence().dataChanged();
@@ -248,6 +254,13 @@ public class CellEditor extends EzPlug{
 		return img;
 
 		//TODO the copied painting modification must be separately saved yet.
+	}
+	
+	private BufferedImage reskeletonize(BufferedImage imgBuff) {
+		ImagePlus img = new ImagePlus("Corrected Image", imgBuff);
+		ij.IJ.run(img, "Make Binary", "");
+		ij.IJ.run(img, "Skeletonize", "");
+		return img.getBufferedImage();
 	}
 
 	private String saveModifications(Viewer output_viewer, IcyBufferedImage img) {

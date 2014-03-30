@@ -265,7 +265,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 	@Override
 	protected void execute()
-	{		
+	{	
+		stopFlag = false;
 		if(noOpenSequenceCheck())
 			return;
 	
@@ -281,6 +282,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//Create spatio temporal graph from mesh files
 			TissueEvolution wing_disc_movie = new TissueEvolution();	
 			generateSpatioTemporalGraph(wing_disc_movie);
+			
+			//safety check
+			if(wing_disc_movie.size() != varMaxT.getValue())
+				return;
 			
 			//Border identification + discard/mark
 			applyBorderOptions(wing_disc_movie);
@@ -370,7 +375,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 			catch(Exception e){
 				new AnnounceFrame("Missing time point: " + abs_path);
-				continue;
+				return;
+			}
+			
+			if(stopFlag){
+				stopFlag = false;
+				return;
 			}
 			
 			System.out.println("reading frame "+i+": "+ abs_path);

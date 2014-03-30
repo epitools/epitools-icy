@@ -108,11 +108,11 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		this.DO_DIVISION_CHECK = true;
 		this.DO_SWAP_RESC_CHECK = true;
 		this.increase_factor = 1.3;
-		this.VERBOSE = false;
-		this.follow_ID = 14;
+		this.VERBOSE = true;
+		this.follow_ID = 109;
 		this.lambda1 = lambda1;
 		this.lambda2 = lambda2;
-		this.coverage_factor = 0.6;
+		this.coverage_factor = 0.5;
 	}
 	
 	@Override
@@ -120,7 +120,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		
 		//link time points and propagate their information
 		for(int time_point = 0; time_point < stGraph.size(); time_point++){
-			System.out.println("Linking frame "+time_point);
+			System.out.println("\n******************Linking frame "+time_point+"******************\n");
 			
 			if(time_point > 0){
 				Map<String, Stack<Node>> unmarried = linkTimePoint(time_point);
@@ -294,7 +294,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		//Evaluate the distances of the candidates of each node in current time frame
 		evaluateCandidates(grooms, brides, time_point);
 
-		//Order the evaluated candidates in ascending mannor (smallest distances first) 
+		//Order the evaluated candidates in ascending manner (smallest distances first) 
 		orderCandidates(grooms);
 		orderCandidates(brides);
 
@@ -405,8 +405,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 * in the currently analyzed frame (time_point). 
 	 * 
 	 * It either recognized a SWAP event, i.e. a cell is assigned
-	 * to the wrong cell in a future frame and creates two 
-	 * untracked cells as result.
+	 * to the wrong cell in a future frame and creates one 
+	 * untracked cell as result.
 	 * 
 	 * Or a normal lost due to excessive movement. The latter event
 	 * is reviewed by neighborhood consistency.
@@ -429,22 +429,26 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				if(last_correspondence.onBoundary())
 					continue;
 				
+				if(VERBOSE)
+					System.out.printf("**Rescue attempt for: %d\n",last_correspondence.getTrackID());
+				
 				ArrayList<Node> ancestor_neighbors = new ArrayList<Node>();
 				for(Node n: last_correspondence.getNeighbors())
 					if(n.getFirst() != null)
 						ancestor_neighbors.add(n.getFirst());
 					
-				//Assumption 1: several alternative might be available
+				//Assumption 1: several alternative scenarios might be available.
+				//>Rank every scenario according to multiple criteria (see below)
 				ComparableNode bestSWAP = new ComparableNode(null, 0.0);
 				Node swapNeighbor = null;
 				Node swapUntracked = null;
 
 				Node bestRescNode = null;
 				int bestRescVal = 0;
-
+				
 				//Check neighbors for untracked cells at time_point
-				for(Node neighbor: last_correspondence.getNeighbors()){
-
+				for(Node neighbor: last_correspondence.getNeighbors())
+				{
 					//obtain neighbor's last known correspondence
 					Node futureN = getMostRecentCorrespondence(time_point + 1, neighbor);
 
@@ -452,7 +456,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 					if(futureN.getBelongingFrame().getFrameNo() != time_point)
 						continue;
 
-					for(Node futureNN: futureN.getNeighbors()){
+					ComparableNode best_untracked = new ComparableNode(null, Double.MAX_VALUE);
+					
+					for(Node futureNN: futureN.getNeighbors())
+					{
 
 						//if neighbor is untracked analyze it for SWAP or RESCUE
 						if(unmarried_brides.contains(futureNN)){	
@@ -462,6 +469,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 							double neighbor2untracked = DistanceOp.distance(
 									neighbor.getCentroid(),
 									untracked.getCentroid());
+							
+							ComparableNode current_untracked = new ComparableNode(untracked, neighbor2untracked);
+							if(current_untracked.compareTo(best_untracked) < 0)
+								best_untracked = current_untracked;
 
 							double lost2untracked = DistanceOp.distance(
 									last_correspondence.getCentroid(),
@@ -544,10 +555,50 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 									bestRescNode = untracked; 
 								}
 							}
+							
+							//Check difference in neighborhoods for current neighbor
+							Set<Node> old_neighbor_set = new HashSet<Node>(); 
+							for(Node node: neighbor.getNeighbors())
+								if(node.getFirst() != null)
+									old_neighbor_set.add(node.getFirst());
+
+							Set<Node> new_neighbor_set = new HashSet<Node>();
+							for(Node node: futureN.getNeighbors())
+								if(node.getFirst() != null)
+									new_neighbor_set.add(node.getFirst());
+							
+							old_neighbor_set.retainAll(new_neighbor_set);
+							new_neighbor_set.removeAll(old_neighbor_set);
+							
+//							System.out.printf("\t%d>%d:%d conserved, %d new/lost\n",
+//									last_correspondence.getTrackID(),
+//									neighbor.getTrackID(),
+//									old_neighbor_set.size(),
+//									new_neighbor_set.size());
+							
+							old_neighbor_set.removeAll(ancestor_neighbors);
+							
+//							System.out.printf("\t%d>%d:%d neighbors left if lost's neighbors pruned\n", 
+//									last_correspondence.getTrackID(),
+//									neighbor.getTrackID(),
+//									old_neighbor_set.size());
+							
+							if(old_neighbor_set.size() == 0){
+								System.out.printf("\t>REVERTING SWAP: [%d,%d] (untracked:%.0f,%.0f):\n",
+										last_correspondence.getTrackID(),
+										neighbor.getTrackID(),
+										best_untracked.getNode().getCentroid().getX(),
+										best_untracked.getNode().getCentroid().getY());
+								//assign SWAP max priority
+								bestSWAP = new ComparableNode(neighbor, Double.MAX_VALUE);
+								swapNeighbor = futureN;
+								swapUntracked = untracked;
+							}
 						}
 					}
 				}
-
+				
+				
 				//Swap wins over normal lost
 				if(bestSWAP.getNode() != null){
 
@@ -1071,6 +1122,12 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						
 					case OVERLAP_WITH_MIN_DISTANCE:
 						
+						if(VERBOSE && voted.getTrackID() == follow_ID)
+							System.out.printf("%d to [%.0f,%.0f]:\n",
+									voted.getTrackID(),
+									current_cell_center.getX(),
+									current_cell_center.getY());
+						
 						candidate_dist = DistanceOp.distance(
 								voted_centroid,
 								current_cell_center);
@@ -1082,20 +1139,38 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						//compute the intersection between the two cell geometries
 						intersection = current.getGeometry().intersection(voted.getGeometry());
 						normalized_overlap = intersection.getArea() / (area_candidate + area_current);
+						double reciprocal_overlap = 1 / normalized_overlap;
+						
+						//time influence (maximally reduce candidate score by 20%)
+						double time_multiplier = 0.5;
+						
+						//time distance (recent candidates should count more)
+						int candidate_frame_no = voted.getBelongingFrame().getFrameNo();
+						double time_difference = time_point - candidate_frame_no;
+						double time_weight = 1 - (time_multiplier/time_difference);
 						
 						weighted_candidateDistance = 
 								lambda1 * candidate_dist +
-								lambda2 * (1 / normalized_overlap);
-
+								lambda2 * reciprocal_overlap;
 						
+						double time_weighted_candidateDistance = weighted_candidateDistance * time_weight;
+
 						if(VERBOSE && voted.getTrackID() == follow_ID)
-							System.out.println(
-								voted.getTrackID()+
-								" to: ["+Math.round(current_cell_center.getX())+
-								","+Math.round(current_cell_center.getY())+"]:\n"+
-								" dist:"+Math.round(candidate_dist) +
-								" area:"+Math.round(1/normalized_overlap)+
-								" (= "+ weighted_candidateDistance + ")");
+							System.out.printf("\t%.2f\t%.2f\t[dist:\t%.2f\tarea:\t%.2f\n",
+									time_weighted_candidateDistance,
+									weighted_candidateDistance,
+									candidate_dist,
+									reciprocal_overlap);
+						
+						
+						weighted_candidateDistance = time_weighted_candidateDistance;
+//							System.out.println(
+//								voted.getTrackID()+
+//								" to: ["+Math.round(current_cell_center.getX())+
+//								","+Math.round(current_cell_center.getY())+"]:\n"+
+//								" dist:"+Math.round(candidate_dist) +
+//								" area:"+Math.round(1/normalized_overlap)+
+//								" (= "+ weighted_candidateDistance + ")");
 
 						
 						min = weighted_candidateDistance;
@@ -1118,15 +1193,31 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 								//compute the intersection between the two cell geometries
 								intersection = current.getGeometry().intersection(voted.getGeometry());
 								normalized_overlap = intersection.getArea() / (area_candidate + area_current);
+								reciprocal_overlap = 1 / normalized_overlap;
+								
+								//time distance (recent candidates should count more)
+								candidate_frame_no = voted.getBelongingFrame().getFrameNo();
+								time_difference = time_point - candidate_frame_no;
+								time_weight = 1 - (time_multiplier/time_difference);
 								
 								weighted_candidateDistance = 
 										lambda1 * candidate_dist +
-										lambda2 * (1 / normalized_overlap);
+										lambda2 * reciprocal_overlap;
+								
+								time_weighted_candidateDistance = weighted_candidateDistance * time_weight;
 								
 								if(VERBOSE && voted.getTrackID() == follow_ID)
-									System.out.println(" dist:"+Math.round(candidate_dist) +
-										" area:"+Math.round(1/normalized_overlap) + 
-										" (= "+ weighted_candidateDistance + ")");
+									System.out.printf("\t%.2f\t%.2f\t[dist:\t%.2f\tarea:\t%.2f\n",
+											time_weighted_candidateDistance,
+											weighted_candidateDistance,
+											candidate_dist,
+											reciprocal_overlap);
+								
+								weighted_candidateDistance = time_weighted_candidateDistance;
+			
+//									System.out.println(" dist:"+Math.round(candidate_dist) +
+//										" area:"+Math.round(1/normalized_overlap) + 
+//										" (= "+ weighted_candidateDistance + ")");
 										
 								if(min > weighted_candidateDistance)
 									min = weighted_candidateDistance;

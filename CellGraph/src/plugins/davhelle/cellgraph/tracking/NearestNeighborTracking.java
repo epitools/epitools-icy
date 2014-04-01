@@ -108,7 +108,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		this.DO_DIVISION_CHECK = true;
 		this.DO_SWAP_RESC_CHECK = true;
 		this.increase_factor = 1.3;
-		this.VERBOSE = true;
+		this.VERBOSE = false;
 		this.follow_ID = 109;
 		this.lambda1 = lambda1;
 		this.lambda2 = lambda2;
@@ -1174,6 +1174,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 
 						
 						min = weighted_candidateDistance;
+						int candidate_no = 1;
+						double candidate_avg = weighted_candidateDistance;
 
 						while(candidate_it.hasNext()){
 							
@@ -1218,6 +1220,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 //									System.out.println(" dist:"+Math.round(candidate_dist) +
 //										" area:"+Math.round(1/normalized_overlap) + 
 //										" (= "+ weighted_candidateDistance + ")");
+								
+								
+								candidate_no++;
+								candidate_avg += weighted_candidateDistance;
 										
 								if(min > weighted_candidateDistance)
 									min = weighted_candidateDistance;

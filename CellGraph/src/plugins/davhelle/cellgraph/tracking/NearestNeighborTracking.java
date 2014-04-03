@@ -6,7 +6,6 @@
 package plugins.davhelle.cellgraph.tracking;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,15 +14,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.operation.distance.DistanceOp;
+import org.jgrapht.WeightedGraph;
+import org.jgrapht.alg.KuhnMunkresMinimalWeightBipartitePerfectMatching;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.SimpleWeightedGraph;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.ComparableNode;
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.DummyNode;
 import plugins.davhelle.cellgraph.nodes.Elimination;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.operation.distance.DistanceOp;
 
 /**
  * Nearest Neighbor tracking implements a tracking strategy
@@ -92,7 +97,9 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 * 
 	 *  @see #coverage_factor
 	 */
-	private double coverage_factor;	
+	private double coverage_factor;
+
+	private Double dummy_weight;	
 	
 	/**
 	 * Initializes Neighbor tracking
@@ -106,13 +113,14 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		this.linkrange = linkrange;
 		this.group_criteria = DistanceCriteria.OVERLAP_WITH_MIN_DISTANCE;
 		this.DO_DIVISION_CHECK = true;
-		this.DO_SWAP_RESC_CHECK = true;
+		this.DO_SWAP_RESC_CHECK = false;
 		this.increase_factor = 1.3;
 		this.VERBOSE = false;
 		this.follow_ID = 109;
 		this.lambda1 = lambda1;
 		this.lambda2 = lambda2;
 		this.coverage_factor = 0.5;
+		this.dummy_weight = 30.0;
 	}
 	
 	@Override
@@ -120,7 +128,10 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		
 		//link time points and propagate their information
 		for(int time_point = 0; time_point < stGraph.size(); time_point++){
-			System.out.println("\n******************Linking frame "+time_point+"******************\n");
+			
+			long startTime = System.currentTimeMillis();
+			
+			System.out.println("\n******************Linking frame "+time_point+"...\n");
 			
 			if(time_point > 0){
 				Map<String, Stack<Node>> unmarried = linkTimePoint(time_point);
@@ -129,7 +140,12 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 				analyze_unmarried(unmarried, time_point);
 			}
 			
-			propagateTimePoint(time_point);	
+			propagateTimePoint(time_point);
+			
+			long endTime = System.currentTimeMillis();
+			
+			System.out.printf("...Linking frame %d took %d milliseconds******************\n",
+					time_point,(endTime-startTime));
 		}
 		
 		reviewDivisionsAndEliminations();
@@ -153,7 +169,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			{
 				if(cell.getErrorTag() == TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code)
 					//if so, is it permanent (depends also on no. of tracked frames)?
-					if(!cell.hasNext())
+					if(!cell.hasNext() && !cell.onBoundary())
 					{						
 						Elimination cell_elimination = new Elimination(cell);
 						System.out.println(cell_elimination.toString());
@@ -293,107 +309,86 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 
 		//Evaluate the distances of the candidates of each node in current time frame
 		evaluateCandidates(grooms, brides, time_point);
+		
+		WeightedGraph<Node, DefaultWeightedEdge> cell_matching_bipartite_graph = 
+				new SimpleWeightedGraph<Node, DefaultWeightedEdge>(DefaultWeightedEdge.class);
+		
+		//cost for non-assignment 100
+		//dummy nodes are characterized by the TrackID(-10)
+		for(Node node: grooms.keySet()){
+			cell_matching_bipartite_graph.addVertex(node);
+			//for all groom add a dummy brides
+			DummyNode dummy_bride = new DummyNode();
+			grooms.get(node).add(new ComparableNode(dummy_bride, dummy_weight));
+			brides.put(dummy_bride, null);
+			cell_matching_bipartite_graph.addVertex(dummy_bride);
+		}
+		
+		for(Node node: brides.keySet()){
+			cell_matching_bipartite_graph.addVertex(node);
+			if(node.getTrackID() != -10){
+				//for all real brides add a dummy groom
+				DummyNode dummy_groom = new DummyNode();
+				grooms.put(dummy_groom, null);
+				cell_matching_bipartite_graph.addVertex(dummy_groom);
+			}
+		}
+		
+		//fill the complete and equal bipartite graph
+		for(Node node: grooms.keySet())
+		{
+			if(grooms.get(node) != null)
+			{
+				for(ComparableNode match: grooms.get(node))
+				{
+					DefaultWeightedEdge candidate_edge = cell_matching_bipartite_graph.addEdge(node, match.getNode());
+					cell_matching_bipartite_graph.setEdgeWeight(candidate_edge, match.getValue());
+				}
+			}
+			
+			for(Node bride: brides.keySet())
+				if(!cell_matching_bipartite_graph.containsEdge(node, bride))
+				{
+					DefaultWeightedEdge candidate_edge = cell_matching_bipartite_graph.addEdge(node, bride);
+					cell_matching_bipartite_graph.setEdgeWeight(candidate_edge, Double.MAX_VALUE);
+				}
+		}
+		
+		KuhnMunkresMinimalWeightBipartitePerfectMatching<Node, DefaultWeightedEdge> assignment_problem = 
+				new KuhnMunkresMinimalWeightBipartitePerfectMatching<Node, DefaultWeightedEdge>(
+						cell_matching_bipartite_graph,
+						new ArrayList<Node>(grooms.keySet()),
+						new ArrayList<Node>(brides.keySet()));
+		
+		Set<DefaultWeightedEdge> best_matches = assignment_problem.getMatching();
 
-		//Order the evaluated candidates in ascending manner (smallest distances first) 
-		orderCandidates(grooms);
-		orderCandidates(brides);
-
-		//Initialize data structures
-		Map<Node, Node> marriage = new HashMap<Node,Node>();
-
+		//Initialize output data structures
 		Stack<Node> unmarried_grooms = new Stack<Node>();
 		Stack<Node> unmarried_brides = new Stack<Node>();
-		Stack<Node>	nochoice_grooms = new Stack<Node>();
-
-		//Fill candidates
-		unmarried_grooms.addAll(grooms.keySet());
-		unmarried_brides.addAll(brides.keySet());
-
-		//Stable marriage problem (Gale–Shapley algorithm)
-		while(!unmarried_grooms.empty()){
-			//take groom candidate from stack and try to assign
-			Node groom = unmarried_grooms.pop();
-			
-			if(VERBOSE && groom.getTrackID() == follow_ID){
-				
-				System.out.println("Prefered brides of "+ follow_ID +" are:");
-				
-				for(ComparableNode b: grooms.get(groom)){
-					Node next = b.getNode();
-					System.out.println(
-							"[" + Math.round(next.getCentroid().getX()) + 
-							"," + Math.round(next.getCentroid().getY()) +
-							"] : "+ b.getValue());
-				}
-				
-				System.out.println();
-				
-			}
-			
-			//get preference list of groom 
-			Iterator<ComparableNode> bride_it = grooms.get(groom).iterator();
-			boolean married = false;
-
-			//loop util groom has preferences and is not married
-			while(bride_it.hasNext() && !married){
-
-				//get bride candidate and mark her as visited
-				Node bride = bride_it.next().getNode();
-				bride_it.remove();
-
-				//check if wanted bride is married at all
-				if(!marriage.containsKey(bride)){
-					unmarried_brides.remove(bride);
-
-					marriage.put(bride, groom);
-					married = true;
-				}
-
-				//if already married see if current groom is better fit
-				else{
-
-					Node old_groom = marriage.get(bride);
-//					if(old_groom.getTrackID() == 286 && time_point == 27)
-//						System.out.println("Alarm! Your bride might get stolen!");
-					Iterator<ComparableNode> grooms_it = brides.get(bride).iterator();
-
-					//cycle preferences (ascending order, best first)
-					while(grooms_it.hasNext()){
-						Node preffered_groom = grooms_it.next().getNode();
-
-						//current husband has better rating
-						if(preffered_groom == old_groom)
-							break;
-
-						//new husband has better rating!
-						if(preffered_groom == groom){
-							unmarried_grooms.push(old_groom);
-
-							marriage.put(bride, groom);
-							married = true;
-							break;
-						}
-					}
-				}
-			}
-
-			//if groom has no more bride candidates eliminate from list
-			if(!marriage.containsValue(groom) && grooms.get(groom).isEmpty())
-				nochoice_grooms.push(groom);
-
-		}
 
 		//finally update node correspondences
-		for(Node bride: marriage.keySet()){
-			Node groom = marriage.get(bride);
-			updateCorrespondence(bride, getMostRecentCorrespondence(bride, groom));
+		for(DefaultWeightedEdge match: best_matches){
+			Node groom = cell_matching_bipartite_graph.getEdgeSource(match);
+			Node bride = cell_matching_bipartite_graph.getEdgeTarget(match);
+			
+			boolean is_dummy_groom = (groom.getTrackID() == -10);
+			boolean is_dummy_bride = (bride.getTrackID() == -10);
+			
+			if(is_dummy_bride && !is_dummy_groom)
+			{
+				unmarried_grooms.push(groom);
+				Node last_correspondence = getMostRecentCorrespondence(time_point, groom);
+				last_correspondence.setErrorTag(TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code);
+			}
+			else if(!is_dummy_bride && is_dummy_groom)
+				unmarried_brides.push(bride);
+			else if(!is_dummy_bride && !is_dummy_groom)
+				updateCorrespondence(bride, getMostRecentCorrespondence(bride, groom));
 		}
-		
-		
+
 		Map<String, Stack<Node>> unmarried = new HashMap<String, Stack<Node>>();
-		
 		unmarried.put("brides", unmarried_brides);
-		unmarried.put("grooms", nochoice_grooms);
+		unmarried.put("grooms", unmarried_grooms);
 		
 		return unmarried;
 	}
@@ -794,37 +789,6 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		if(DO_DIVISION_CHECK)
 			division_recognition(unmarried_brides, unmarried_grooms, time_point);
 		
-	}
-
-	/**
-	 * Method to order the candidates based on the distance computed
-	 * by the evaluation method. Given the ComparableNode object the
-	 * standard Arrays.sort method can be used.
-	 * 
-	 * @param node_map Map with node's list to be ordered
-	 */
-	private void orderCandidates(
-			Map<Node, List<ComparableNode>> node_map) {
-
-		for(Node first: node_map.keySet()){
-			
-			//retrieve
-			List<ComparableNode> candidate_list = node_map.get(first);
-			int candidate_no = candidate_list.size();
-			
-			//ascending sort
-			ComparableNode[] candidate_array = candidate_list.toArray(new ComparableNode[candidate_no]);
-			Arrays.sort(candidate_array);
-//			System.out.print(first.getTrackID()+":"+Arrays.toString(candidate_array));
-		
-			//List conversion
-			candidate_list = new ArrayList<ComparableNode>(Arrays.asList(candidate_array));
-			
-			//update (requires change from immutable java.util.Arrays$Arraylist to mutable ArrayList object)
-			node_map.put(first, candidate_list);
-
-		}
-
 	}
 
 	/**

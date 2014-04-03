@@ -1,7 +1,12 @@
 /*=========================================================================
  *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
+ *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
+ *  
+ *  All rights reserved.
+ *	
+ *  author:	Davide Heller
+ *  email:	davide.heller@imls.uzh.ch
+ *  
  *=========================================================================*/
 package plugins.davhelle.cellgraph;
 
@@ -78,9 +83,9 @@ import com.vividsolutions.jts.geom.Polygon;
  * 
  * Required libraries:
  * - JTS (Java Topology Suite) for the vtkmesh to polygon transformation
- * 		and to represent the Geometrical objects
+ * 		and to represent the Geometrical objects, version 1.13
  * 
- * - JGraphT to represent the graph structure of a single time point
+ * - JGraphT to represent the graph structure of a single time point, version 0.9
  * 
  * For the GUI part EzPlug by Alexandre Dufour has been used.
  * [http://icy.bioimageanalysis.org/plugin/EzPlug]

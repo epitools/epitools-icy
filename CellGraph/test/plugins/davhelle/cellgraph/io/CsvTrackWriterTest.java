@@ -26,11 +26,14 @@ public class CsvTrackWriterTest {
 	  String output_folder = "/Users/davide/tmp/NewFolder/";
 
 	  //Execute Program
-	  CsvTrackWriter track_writer = new CsvTrackWriter(empty_stg);
-	  track_writer.writeTrackingIds(output_folder);
+	  CsvTrackWriter track_writer = new CsvTrackWriter(empty_stg,output_folder);
+	  track_writer.writeTrackingIds();
 
 	  //Verify file structure
 	  assertFileExistence(output_folder,"tracking_t000.csv");
+	  
+	  File tracking_file = new File(output_folder + "tracking_t000.csv");
+	  removeDummyFile(tracking_file);
   }
   
   @Test
@@ -69,8 +72,8 @@ public class CsvTrackWriterTest {
 	  String output_folder = "/Users/davide/tmp/NewFolder/";
 	  
 	  //Execute Program
-	  CsvTrackWriter track_writer = new CsvTrackWriter(single_frame_stg);
-	  track_writer.writeTrackingIds(output_folder);
+	  CsvTrackWriter track_writer = new CsvTrackWriter(single_frame_stg,output_folder);
+	  track_writer.writeTrackingIds();
 
 	  //Verify file existance
 	  String expected_file_name = output_folder+"tracking_t000.csv";
@@ -84,10 +87,20 @@ public class CsvTrackWriterTest {
 	  String file_content = read_file(tracking_file);
 	  
 	  Assert.assertEquals(file_content,expected_content,"File content is not as expected: "+file_content);
+	  
+	  removeDummyFile(tracking_file);
   
   }
   
-  private void assertFileExistence(String output_folder, String file_name) {
+  private void removeDummyFile(File dummy_file) {
+	  try{
+		  dummy_file.delete();
+	  } catch (Exception e) {
+		  e.printStackTrace();
+	  }
+  }
+
+private void assertFileExistence(String output_folder, String file_name) {
 	  File tracking_file = new File(output_folder + file_name);
 	  Assert.assertTrue(tracking_file.exists(), tracking_file.getAbsolutePath() + " does not exist!");
   }

@@ -23,12 +23,14 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class CsvTrackWriter {
 	
 	SpatioTemporalGraph wing_disc_movie;
+	String output_directory;
 
-	public CsvTrackWriter(SpatioTemporalGraph wing_disc_movie) {
+	public CsvTrackWriter(SpatioTemporalGraph wing_disc_movie,String output_directory) {
 		 this.wing_disc_movie = wing_disc_movie;
+		 this.output_directory = output_directory;
 	}
 	
-	public void writeTrackingIds(String output_directory){
+	public void writeTrackingIds(){
 		
 		for(int i=0; i < wing_disc_movie.size(); i++){
 			

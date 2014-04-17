@@ -5,6 +5,7 @@ import java.awt.Color;
 import org.jgrapht.ext.VertexNameProvider;
 
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Elimination;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -120,8 +121,33 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			String csv_y_over_time = getSequentialYCoordinates(vertex);
 			vertex_label = csv_y_over_time;
 			break;
+		case ELIMINATION:
+			if(vertex.hasObservedElimination()){
+				Elimination elimination = vertex.getElimination();
+				vertex_label = String.format("%d,%d",
+						elimination.getCell().getTrackID(),
+						elimination.getTimePoint());
+				}
 			
-			
+			//In case of division check if the daughter cells get eliminated
+			if(vertex.hasObservedDivision()){
+				Division division = vertex.getDivision();
+				
+				if(division.isMother(vertex)){
+					Node child1 = division.getChild1();
+					Node child2 = division.getChild2();
+				
+					String elimination_str1 = getVertexName(child1);
+					String elimination_str2 = getVertexName(child2);
+					
+					if(elimination_str1.length() > 0)
+						vertex_label += "\n" + elimination_str1;
+					
+					if(elimination_str2.length() > 0)
+						vertex_label += "\n" + elimination_str2;
+			}
+		}
+			break;
 		default:
 			break;
 		}

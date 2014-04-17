@@ -12,6 +12,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Elimination;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -155,6 +156,44 @@ public class CsvTrackWriterTest {
 	  removeDummyFile(new File(output_folder + "tracking_t000.csv"));
 	  removeDummyFile(new File(output_folder + "tracking_t001.csv"));
 	  
+  }
+  
+  @Test
+  private void testSingleEliminationInput(){
+	  //Input Data
+	  TissueEvolution one_elimination_stg = new TissueEvolution(2);
+	  FrameGraph first_frame = new FrameGraph();
+	  one_elimination_stg.addFrame(first_frame);
+	  
+	  Cell cell_to_eliminate = buildDummyCell(first_frame);
+	  cell_to_eliminate.setTrackID(1);
+	  Elimination elimination = new Elimination(cell_to_eliminate);
+	  
+	  String output_folder = "/Users/davide/tmp/NewFolder/";
+	  
+	  //Execute Program
+	  CsvTrackWriter track_writer = new CsvTrackWriter(one_elimination_stg,output_folder);
+	  track_writer.writeTrackingIds();
+	  track_writer.writeEliminations();
+	  
+	  //Verify file existance
+	  String expected_file_name = output_folder+"eliminations.csv";
+	  File tracking_file = new File(expected_file_name);
+	  Assert.assertTrue(tracking_file.exists(), tracking_file.getAbsolutePath() + " does not exist!");
+	  
+	  //Verify content
+	  String expected_content = String.format("%d,%d",
+			  elimination.getCell().getTrackID(),
+			  elimination.getTimePoint());
+	  
+	  System.out.println(expected_content);
+	  
+	  String file_content = read_file(tracking_file);
+	  
+	  Assert.assertEquals(file_content,expected_content,"File content is not as expected");
+	  
+	  removeDummyFile(tracking_file);
+	  removeDummyFile(new File(output_folder + "tracking_t000.csv"));
   }
   
   private void removeDummyFile(File dummy_file) {

@@ -51,6 +51,15 @@ public class CsvTrackWriter {
 		}
 	}
 	
+	public void writeEliminations(){
+		if(wing_disc_movie.size() > 0){
+			FrameGraph frame = wing_disc_movie.getFrame(0);
+			String file_name = output_directory + String.format("eliminations.csv");
+			File output_file = new File(file_name);
+			write(frame,output_file,ExportFieldType.ELIMINATION);
+		}
+	}
+	
 	private void write(FrameGraph frame, File output_file, ExportFieldType export_information){
 		VertexLabelProvider tracking_information_provider = new VertexLabelProvider(export_information);
 		

@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import org.jgrapht.ext.VertexNameProvider;
 
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -35,8 +36,14 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			vertex_label = Long.toString(Math.round(vertex_area));
 			break;
 		case DIVISION:
-			boolean has_observed_division = vertex.hasObservedDivision();
-			vertex_label = Boolean.toString(has_observed_division);
+			if(vertex.hasObservedDivision()){
+				Division division = vertex.getDivision();
+				vertex_label = 	String.format("%d,%d,%d,%d",
+						division.getMother().getTrackID(),
+						division.getTimePoint(),
+						division.getChild1().getTrackID(),
+						division.getChild2().getTrackID());
+			}
 			break;
 		case TRACKING_ID:
 			vertex_label = Integer.toString(vertex.getTrackID());

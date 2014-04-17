@@ -42,6 +42,15 @@ public class CsvTrackWriter {
 		
 	}
 	
+	public void writeDivisions(){
+		if(wing_disc_movie.size() > 0){
+			FrameGraph frame = wing_disc_movie.getFrame(0);
+			String file_name = output_directory + String.format("divisions.csv");
+			File output_file = new File(file_name);
+			write(frame,output_file,ExportFieldType.DIVISION);
+		}
+	}
+	
 	private void write(FrameGraph frame, File output_file, ExportFieldType export_information){
 		VertexLabelProvider tracking_information_provider = new VertexLabelProvider(export_information);
 		
@@ -56,8 +65,11 @@ public class CsvTrackWriter {
 			BufferedWriter bw = new BufferedWriter(fw);
 			
 			for(Node cell: frame.vertexSet()){
-				bw.write(tracking_information_provider.getVertexName(cell));
-				bw.newLine();
+				String node_string = tracking_information_provider.getVertexName(cell);
+				if(node_string.length() > 0){
+					bw.write(node_string);
+					bw.newLine();
+				}
 			}
 			
 			bw.close();

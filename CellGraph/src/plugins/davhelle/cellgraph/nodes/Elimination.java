@@ -1,7 +1,12 @@
 /*=========================================================================
  *
- *  Copyright 2013 Basler Group, Institute of Molecular Life Sciences, UZH
- *
+ *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
+ *  
+ *  All rights reserved.
+ *	
+ *  author:	Davide Heller
+ *  email:	davide.heller@imls.uzh.ch
+ *  
  *=========================================================================*/
 
 package plugins.davhelle.cellgraph.nodes;

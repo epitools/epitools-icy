@@ -190,7 +190,7 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		
 		return csv_y_over_time;
 	}
-
+	
 	private String getSequentialXCoordinates(Node vertex) {
 		
 		double cell_x = vertex.getCentroid().getX();

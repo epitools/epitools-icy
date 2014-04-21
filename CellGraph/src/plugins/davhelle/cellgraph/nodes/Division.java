@@ -73,6 +73,58 @@ public class Division {
 		}
 		
 	}
+	
+	/**
+	 * Define division assuming that child track-IDs have already been 
+	 * set and the entire graph has been tracked.
+	 * 
+	 * Propagation is therefore done both forwards as backwards
+	 * 
+	 * @param mother
+	 * @param child1
+	 * @param child2
+	 */
+	public Division(Node mother, Node child1, Node child2) {
+		
+		//set main fields
+		this.mother = mother;
+		this.child1 = child1;
+		this.child2 = child2;
+		this.division_frame = child1.getBelongingFrame();
+		this.time_point = division_frame.getFrameNo();
+		
+		//sanity check
+		if(division_frame != child2.getBelongingFrame())
+			System.out.println("The division children do not share the same time point");
+		
+		child1.setDivision(this);
+		child2.setDivision(this);
+		mother.setDivision(this);
+		mother.setErrorTag(-5);
+		
+		//division notification to frame
+		division_frame.addDivision(this);
+		
+		//propagation
+		Node ancestor = mother.getPrevious();
+		while(ancestor != null){
+			ancestor.setDivision(this);
+			ancestor = ancestor.getPrevious();
+		}
+			
+		Node future1 = child1.getNext();
+		while(future1 != null){
+			future1.setDivision(this);
+			future1 = future1.getNext();
+		}
+
+		Node future2 = child2.getNext();
+		while(future2 != null){
+			future2.setDivision(this);
+			future2 = future2.getNext();
+		}
+		
+	}
 
 	/**
 	 * @return the mother

@@ -59,6 +59,11 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 		this(0);
 	}
 	
+	public FrameGraph(int frame_no,SpatioTemporalGraph stGraph){
+		this(frame_no);
+		stGraph.setFrame(this, frame_no);
+	}
+	
 	public Iterator<Node> iterator(){
 		return this.vertexSet().iterator();
 	}

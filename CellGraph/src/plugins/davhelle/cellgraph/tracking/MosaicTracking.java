@@ -49,8 +49,7 @@ public class MosaicTracking extends TrackingAlgorithm{
 	 * @param spatioTemporalGraph Spatio temporal graph to be tracked
 	 */
 	public MosaicTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, float displacement) {
-		
-		super(spatioTemporalGraph);
+		super(spatioTemporalGraph,true);
 		
 		this.frames_number = spatioTemporalGraph.size();
 		this.linkrange = linkrange; //TODO tune

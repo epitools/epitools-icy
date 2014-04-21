@@ -39,8 +39,8 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	private String output_directory;
 	private int linkage_threshold;
 	
-	public CsvTrackReader(SpatioTemporalGraph wing_disc_movie,String output_directory) {
-		 super(wing_disc_movie);
+	public CsvTrackReader(SpatioTemporalGraph stGraph,String output_directory) {
+		 super(stGraph,false);
 		 this.output_directory = output_directory;
 		 this.linkage_threshold = 5;
 	}

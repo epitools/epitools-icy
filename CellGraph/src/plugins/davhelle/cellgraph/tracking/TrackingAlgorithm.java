@@ -40,10 +40,10 @@ public abstract class TrackingAlgorithm {
 	 * 
 	 * @param spatioTemporalGraph
 	 */
-	public TrackingAlgorithm(SpatioTemporalGraph spatioTemporalGraph) {
+	public TrackingAlgorithm(SpatioTemporalGraph spatioTemporalGraph,boolean do_id_initialization) {
 		this.stGraph = spatioTemporalGraph;
-		initializeFirstFrame();
-	
+		if(do_id_initialization)
+			initializeFirstFrame();	
 	}
 	
 	/**

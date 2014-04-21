@@ -109,7 +109,7 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 * @param linkrange the maximum no. of frames the node information is projected ahead
 	 */
 	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, double lambda1, double lambda2) {
-		super(spatioTemporalGraph);
+		super(spatioTemporalGraph,true);
 		this.linkrange = linkrange;
 		this.group_criteria = DistanceCriteria.OVERLAP_WITH_MIN_DISTANCE;
 		this.DO_DIVISION_CHECK = true;

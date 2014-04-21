@@ -47,7 +47,10 @@ public class TissueEvolution implements SpatioTemporalGraph {
 	 */
 	@Override
 	public void setFrame(FrameGraph graph, int frame_no) {
-		frames.set(frame_no, graph);
+		if(frames.size() > frame_no)
+			frames.set(frame_no, graph);
+		else
+			frames.add(graph);
 	}
 	
 	public void addFrame(FrameGraph graph){

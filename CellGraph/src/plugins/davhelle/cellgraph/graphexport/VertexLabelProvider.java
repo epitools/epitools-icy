@@ -60,11 +60,12 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			vertex_label = Integer.toString(vertex.getTrackID());
 			break;
 		case TRACKING_POSITION:
-			vertex_label = 	String.format("%d,%.2f,%.2f,%b",
-					vertex.getTrackID(),
-					vertex.getCentroid().getX(),
-					vertex.getCentroid().getY(),
-					vertex.onBoundary());
+			if(vertex.getTrackID() != -1)
+				vertex_label = 	String.format("%d,%.2f,%.2f,%b",
+						vertex.getTrackID(),
+						vertex.getCentroid().getX(),
+						vertex.getCentroid().getY(),
+						vertex.onBoundary());
 			break;
 		case COLOR_TAG:
 			vertex_label = Boolean.toString(vertex.getColorTag() == Color.red);

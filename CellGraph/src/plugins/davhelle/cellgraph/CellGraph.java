@@ -38,6 +38,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGenerator;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
+import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
@@ -304,10 +305,25 @@ public class CellGraph extends EzPlug implements EzStoppable
 			else
 				sequence.addPainter(new PolygonPainter(wing_disc_movie));
 			
+			saveTracking(wing_disc_movie);
+			
 			//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 			if(varUseSwimmingPool.getValue())
 				pushToSwimingPool(wing_disc_movie);	
 		}
+	}
+
+	private void saveTracking(TissueEvolution wing_disc_movie) {
+		
+		String output_folder = "/Users/davide/tmp/NewFolder/";
+		
+		CsvTrackWriter track_writer = new CsvTrackWriter(wing_disc_movie,output_folder);
+		track_writer.writeTrackingIds();
+		track_writer.writeDivisions();
+		track_writer.writeEliminations();
+		
+		System.out.println("Successfully saved tracking to: "+output_folder);
+		
 	}
 
 	private void removeAllPainters() {

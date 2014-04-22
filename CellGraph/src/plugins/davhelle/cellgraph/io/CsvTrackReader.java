@@ -45,6 +45,13 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		 this.linkage_threshold = 5;
 	}
 	
+	@Override
+	public void track(){
+		readTrackingIds();
+		readDivisions();
+		readEliminations();
+	}
+	
 	public void readTrackingIds(){
 		for(int i=0; i < stGraph.size(); i++){
 			FrameGraph frame = stGraph.getFrame(i);

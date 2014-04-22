@@ -38,6 +38,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGenerator;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
+import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
@@ -102,7 +103,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 {
 	
 	private enum TrackEnum{
-		MOSAIC, NN,
+		MOSAIC, NN, CSV
 	}
 
 	//Ezplug fields 
@@ -460,6 +461,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 						varLambda1.getValue(),
 						varLambda2.getValue());
 				break;
+			case CSV:
+				String output_folder = "/Users/davide/tmp/NewFolder/";
+				tracker = new CsvTrackReader(wing_disc_movie, output_folder);
 			}
 			
 			// TODO try&catch

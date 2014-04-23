@@ -41,6 +41,9 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	
 	public CsvTrackReader(SpatioTemporalGraph stGraph,String output_directory) {
 		 super(stGraph,false);
+		 //Make sure directory ends with slash
+		 if(output_directory.charAt(output_directory.length() - 1) != '/')
+			 output_directory += "/";
 		 this.output_directory = output_directory;
 		 this.linkage_threshold = 5;
 	}
@@ -108,6 +111,14 @@ public class CsvTrackReader extends TrackingAlgorithm{
 			    				break;
 			    			}
 			    		
+			    		if(matching_cell != null){
+			    			System.out.printf("Could not find matching cell for:%d [%.2f,%.2f]\n",
+			    					cell_id,
+			    					cell_x,
+			    					cell_y);
+			    			continue;
+			    		}
+			    		
 			    		matching_cell.setTrackID(cell_id);
 			    		matching_cell.setBoundary(cell_on_border);
 			    		
@@ -147,6 +158,11 @@ public class CsvTrackReader extends TrackingAlgorithm{
 			    		break;
 			    	case DIVISION:
 			    		int division_time_point = Integer.parseInt(content[1]);
+			    		
+			    		//safety check, skip division if corresponding frame is missing
+			    		if(division_time_point > stGraph.size())
+			    			continue;
+			    		
 			    		int child1_id = Integer.parseInt(content[2]);
 			    		int child2_id = Integer.parseInt(content[3]);
 			    		
@@ -177,6 +193,11 @@ public class CsvTrackReader extends TrackingAlgorithm{
 						
 					case ELIMINATION:
 						int elimination_frame_no = Integer.parseInt(content[1]);
+						
+						//safety check, skip elimination if corresponding frame is missing
+			    		if(elimination_frame_no > stGraph.size())
+			    			continue;
+						
 						FrameGraph elimination_frame = stGraph.getFrame(elimination_frame_no);
 						Node eliminated_cell = null;
 						

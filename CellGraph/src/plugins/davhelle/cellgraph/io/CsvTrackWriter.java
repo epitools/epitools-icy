@@ -37,7 +37,19 @@ public class CsvTrackWriter {
 
 	public CsvTrackWriter(SpatioTemporalGraph wing_disc_movie,String output_directory) {
 		 this.wing_disc_movie = wing_disc_movie;
+		 
+		 //Make sure directory ends with slash
+		 if(output_directory.charAt(output_directory.length() - 1) != '/')
+			 output_directory += "/";
+		 
 		 this.output_directory = output_directory;
+		 
+	}
+	
+	public void write(){
+		writeTrackingIds();
+		writeDivisions();
+		writeEliminations();
 	}
 	
 	public void writeTrackingIds(){

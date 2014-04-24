@@ -275,7 +275,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//varBooleanDrawDisplacement,
 				varBooleanDrawGraphCoherence);
 		
-		varLoadFile = new EzVarFolder("select csv location", "");
+		varLoadFile = new EzVarFolder("Select csv location", "");
 		
 		EzGroup groupTracking = new EzGroup("TRACKING elements",
 				varTrackingAlgorithm,
@@ -294,7 +294,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	protected void execute()
 	{	
 		stopFlag = false;
-		if(noOpenSequenceCheck())
+		
+		if(wrongInputCheck())
 			return;
 	
 		//Only remove previous painters
@@ -335,6 +336,74 @@ public class CellGraph extends EzPlug implements EzStoppable
 		}
 	}
 
+	/**
+	 * Safety checks for wrong GUI input
+	 * 
+	 * @return true if input is wrong
+	 */
+	private boolean wrongInputCheck() {
+		boolean is_input_wrong = false;
+		
+		if(faultyInputCheck(varSequence.getValue() == null,
+				"Plugin requires active sequence! Please open an image on which to display results"))
+			return true;
+		
+		sequence = varSequence.getValue();
+		
+		//TODO integrate these into respective classes!
+		if(varDoTracking.getValue()){
+			
+			if(varTrackingAlgorithm.getValue() == TrackEnum.CSV){
+				if(faultyInputCheck(varLoadFile.getValue() == null,
+						"Load CSV tracking feature requires an input directory: please review!"))
+					return true;
+				
+				File input_directory = varLoadFile.getValue();
+				
+				if(faultyInputCheck(!input_directory.isDirectory(), "Input directory is not valid, please review"))
+					return true;
+				
+				for(int i=0; i < varMaxT.getValue(); i++){
+					File tracking_file = new File(input_directory, String.format(CsvTrackReader.tracking_file_pattern, i));
+					if(faultyInputCheck(!tracking_file.exists(), "Missing tracking file:"+String.format(CsvTrackReader.tracking_file_pattern, i)))
+						return true;
+				}
+				
+				File division_file = new File(input_directory, CsvTrackReader.division_file_pattern);
+				if(faultyInputCheck(!division_file.exists(), "Missing division file: "+CsvTrackReader.division_file_pattern))
+					return true;
+				
+				File elimination_file = new File(input_directory, CsvTrackReader.elimination_file_pattern);
+				if(faultyInputCheck(!elimination_file.exists(), "Missing elimination file: "+CsvTrackReader.elimination_file_pattern))
+					return true;
+			}
+			
+			if(varSaveTracking.getValue()){
+				if(faultyInputCheck(varSaveFile.getValue() == null,
+					"SaveTrack feature requires an ouput directory: please review!"))
+					return true;
+				
+				File output_directory = varSaveFile.getValue();
+				
+				if(faultyInputCheck(!output_directory.isDirectory(), "Output directory is not valid, please review"))
+					return true;
+				
+			}
+		}
+
+		return is_input_wrong;
+	}
+	
+	private boolean faultyInputCheck(boolean check, String error_message) {
+		boolean faultyInput = false;
+		
+		if(check){
+			new AnnounceFrame(error_message);
+			faultyInput = true;
+		}
+		return faultyInput;
+	}
+
 	private void saveTracking(TissueEvolution wing_disc_movie) {
 		
 		//TODO: save-check
@@ -354,17 +423,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 			sequence.removePainter(painter);
 			sequence.painterChanged(painter);    				
 		}
-	}
-
-	private boolean noOpenSequenceCheck() {
-		boolean no_open_sequence = false;
-		
-		sequence = varSequence.getValue();
-		if(sequence == null){
-			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
-			no_open_sequence = true;
-		}
-		return no_open_sequence;
 	}
 
 	private void generateSpatioTemporalGraph(TissueEvolution wing_disc_movie) {
@@ -483,6 +541,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 						varLambda2.getValue());
 				break;
 			case CSV:
+				//do not save the track if loaded with CSV
+				varSaveTracking.setValue(false);
 				String output_folder = varLoadFile.getValue().getAbsolutePath();
 				tracker = new CsvTrackReader(wing_disc_movie, output_folder);
 				break;

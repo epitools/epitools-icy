@@ -39,17 +39,24 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	private String output_directory;
 	private int linkage_threshold;
 	
+	public static final String tracking_file_pattern = "tracking_t%03d.csv";
+	public static final String division_file_pattern = "divisions.csv";
+	public static final String elimination_file_pattern = "eliminations.csv";
+	
 	public CsvTrackReader(SpatioTemporalGraph stGraph,String output_directory) {
 		 super(stGraph,false);
 		 //Make sure directory ends with slash
 		 if(output_directory.charAt(output_directory.length() - 1) != '/')
 			 output_directory += "/";
 		 this.output_directory = output_directory;
+		 //default linkage range (how many frame to go back to find a cell with the same id)
+		 //might be adapted. TODO
 		 this.linkage_threshold = 5;
 	}
 	
 	@Override
 	public void track(){
+		//helper method to enable CSV reader as alternative Tracking Manager
 		readTrackingIds();
 		readDivisions();
 		readEliminations();
@@ -58,7 +65,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	public void readTrackingIds(){
 		for(int i=0; i < stGraph.size(); i++){
 			FrameGraph frame = stGraph.getFrame(i);
-			String file_name = output_directory + String.format("tracking_t%03d.csv",i);
+			String file_name = output_directory + String.format(tracking_file_pattern,i);
 			File input_file = new File(file_name);
 			read(frame,input_file,ExportFieldType.TRACKING_POSITION);
 		}
@@ -67,7 +74,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	public void readDivisions(){
 		if(stGraph.size() > 0){
 			FrameGraph frame = stGraph.getFrame(0);
-			String file_name = output_directory + String.format("divisions.csv");
+			String file_name = output_directory + String.format(division_file_pattern);
 			File input_file = new File(file_name);
 			read(frame,input_file,ExportFieldType.DIVISION);
 		}
@@ -76,7 +83,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	public void readEliminations(){
 		if(stGraph.size() > 0){
 			FrameGraph frame = stGraph.getFrame(0);
-			String file_name = output_directory + String.format("eliminations.csv");
+			String file_name = output_directory + String.format(elimination_file_pattern);
 			File input_file = new File(file_name);
 			read(frame,input_file,ExportFieldType.ELIMINATION);
 		}

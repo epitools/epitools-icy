@@ -51,6 +51,7 @@ import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
+import plugins.davhelle.cellgraph.tracking.HungarianTracking;
 import plugins.davhelle.cellgraph.tracking.MosaicTracking;
 import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
@@ -94,7 +95,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 {
 	
 	private enum TrackEnum{
-		MOSAIC, NN, CSV
+		MOSAIC, NN, HUNGARIAN, CSV
 	}
 
 	//Ezplug fields 
@@ -148,10 +149,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	//sequence to paint on 
 	Sequence sequence;
 	
-
-	
-
-	
 	@Override
 	protected void initialize()
 	{
@@ -197,8 +194,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
 		varDoTracking.addVisibilityTriggerTo(varSaveTracking,true);
 		varSaveTracking.addVisibilityTriggerTo(varSaveFile, true);
-		varTrackingAlgorithm.addVisibilityTriggerTo(varSaveTracking, TrackEnum.MOSAIC);
-		varTrackingAlgorithm.addVisibilityTriggerTo(varSaveTracking, TrackEnum.NN);
+		
+		//cleaner way? This can still be tricked if the user selects it and then
+		//changes the Tracking Algorithm to CSV
+		varTrackingAlgorithm.addVisibilityTriggerTo(varSaveTracking, 
+				TrackEnum.NN,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
 		varDirectInput.addVisibilityTriggerTo(varTool, true);
 		
 		this.setTimeDisplay(true);
@@ -284,8 +284,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				);
 		
 		varTrackingAlgorithm.addVisibilityTriggerTo(varLoadFile, TrackEnum.CSV);
-		varTrackingAlgorithm.addVisibilityTriggerTo(groupTrackingParameters, TrackEnum.MOSAIC);
-		varTrackingAlgorithm.addVisibilityTriggerTo(groupTrackingParameters, TrackEnum.NN);
+		varTrackingAlgorithm.addVisibilityTriggerTo(groupTrackingParameters, 
+				TrackEnum.NN,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
+		
+		groupTrackingParameters.setVisible(false);
 		
 		return groupTracking;
 	}
@@ -535,6 +537,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 				break;
 			case NN:
 				tracker = new NearestNeighborTracking(
+						wing_disc_movie, 
+						varLinkrange.getValue(),
+						varLambda1.getValue(),
+						varLambda2.getValue());
+				break;
+			case HUNGARIAN:
+				tracker = new HungarianTracking(
 						wing_disc_movie, 
 						varLinkrange.getValue(),
 						varLambda1.getValue(),

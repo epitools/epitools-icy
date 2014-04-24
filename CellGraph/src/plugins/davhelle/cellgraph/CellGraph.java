@@ -18,9 +18,6 @@ import icy.swimmingPool.SwimmingObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import plugins.adufour.ezplug.EzException;
@@ -44,14 +41,9 @@ import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
-import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
-import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
-import plugins.davhelle.cellgraph.nodes.Cell;
-import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
-import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
@@ -62,8 +54,6 @@ import plugins.davhelle.cellgraph.painters.TrackPainter;
 import plugins.davhelle.cellgraph.tracking.MosaicTracking;
 import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
-
-import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * <b>CellGraph</b> is a plugin for the bioimage analysis tool ICY. 
@@ -150,7 +140,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarFolder varSaveFile;
 	
 	//Load Track from CSV files
-	EzVarBoolean varLoadTracking;
 	EzVarFolder varLoadFile;
 	
 	//Stop flag for advanced thread handling TODO

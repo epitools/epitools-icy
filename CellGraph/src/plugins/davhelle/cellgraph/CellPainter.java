@@ -46,6 +46,7 @@ import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CellMarker;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.ColorTagPainter;
+import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.GraphPainter;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
@@ -86,7 +87,8 @@ public class CellPainter extends EzPlug {
 		COLOR_TAG,
 		SAVE_TAG,
 		SAVE_TAG_XLS,
-		SAVE_SKELETONS
+		SAVE_SKELETONS,
+		CORRECTION_HINTS
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -382,6 +384,9 @@ public class CellPainter extends EzPlug {
 							new CellWorkbook(wing_disc_movie);
 						case SAVE_SKELETONS:
 							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
+						case CORRECTION_HINTS:
+							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+							break;
 						default:
 							break;
 									

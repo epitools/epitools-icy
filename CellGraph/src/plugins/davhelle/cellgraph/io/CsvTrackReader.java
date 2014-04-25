@@ -46,6 +46,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	public CsvTrackReader(SpatioTemporalGraph stGraph,String output_directory) {
 		 super(stGraph,false);
 		 //Make sure directory ends with slash
+		 //TODO: Substitute this whith new File(parent, child)
 		 if(output_directory.charAt(output_directory.length() - 1) != '/')
 			 output_directory += "/";
 		 this.output_directory = output_directory;
@@ -60,6 +61,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		readTrackingIds();
 		readDivisions();
 		readEliminations();
+		System.out.println("Successfully read tracking form: "+output_directory);
 	}
 	
 	public void readTrackingIds(){

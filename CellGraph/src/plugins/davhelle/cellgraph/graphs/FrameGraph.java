@@ -68,6 +68,14 @@ public class FrameGraph extends ListenableUndirectedGraph<Node, DefaultEdge> {
 		return this.vertexSet().iterator();
 	}
 	
+	public Iterator<Division> divisionIterator(){
+		return divisions.iterator();
+	}
+	
+	public Iterator<Elimination> eliminationIterator(){
+		return eliminations.iterator();
+	}
+	
 	/**
 	 * Method to quickly access the neighbors of a node
 	 * 

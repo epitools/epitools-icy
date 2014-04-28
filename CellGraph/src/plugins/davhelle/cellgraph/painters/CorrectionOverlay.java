@@ -70,7 +70,7 @@ public class CorrectionOverlay extends Overlay {
 				if(cell.hasNext())
 					if(cell.getNext().getBelongingFrame().getFrameNo() > time_point + 1){
 						cell.setErrorTag(TrackingFeedback.FALSE_NEGATIVE.numeric_code);
-						System.out.printf("\t Possible FN: %d @ frame %d\n",cell.getTrackID(),time_point);
+						System.out.printf("\t Possible FN: %d @ frame %d\n",cell.getTrackID(),time_point + 1);
 					}
 			}
 					
@@ -91,8 +91,6 @@ public class CorrectionOverlay extends Overlay {
 					
 			while(division_it.hasNext()){
 				Division division = division_it.next();
-				
-				System.out.println("Analyzed Division of:"+division.getMother().getTrackID());
 				
 				Node child1 = division.getChild1();
 				if(child1.hasObservedElimination())

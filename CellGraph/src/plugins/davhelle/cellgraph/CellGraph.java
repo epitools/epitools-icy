@@ -606,6 +606,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	private void pushToSwimingPool(TissueEvolution wing_disc_movie) {
 		//remove all formerly present objects 
 		//TODO review, might want to hold multiple object in future
+		//also allow the user to have multiple different objects 
+		//e.g. Track Manager seems to use it!
 		Icy.getMainInterface().getSwimmingPool().removeAll();
 		
 		// Put my object in a Swimming Object

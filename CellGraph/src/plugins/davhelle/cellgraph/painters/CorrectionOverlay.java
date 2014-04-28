@@ -92,8 +92,6 @@ public class CorrectionOverlay extends Overlay {
 			while(division_it.hasNext()){
 				Division division = division_it.next();
 				
-				System.out.println("Analyzed Division of:"+division.getMother().getTrackID());
-				
 				Node child1 = division.getChild1();
 				if(child1.hasObservedElimination())
 					if(child1.getElimination().getTimePoint() == time_point){

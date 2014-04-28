@@ -133,15 +133,16 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			vertex_label = csv_y_over_time;
 			break;
 		case ELIMINATION:
+			//Mutually exclusive events, either cells is eliminated
+			//or children.
 			if(vertex.hasObservedElimination()){
 				Elimination elimination = vertex.getElimination();
 				vertex_label = String.format("%d,%d",
 						elimination.getCell().getTrackID(),
 						elimination.getTimePoint());
-				}
-			
+			}
 			//In case of division check if the daughter cells get eliminated
-			if(vertex.hasObservedDivision()){
+			else if(vertex.hasObservedDivision()){
 				Division division = vertex.getDivision();
 				
 				if(division.isMother(vertex)){
@@ -152,12 +153,17 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 					String elimination_str2 = getVertexName(child2);
 					
 					if(elimination_str1.length() > 0)
-						vertex_label += "\n" + elimination_str1;
+						vertex_label += elimination_str1;
 					
-					if(elimination_str2.length() > 0)
-						vertex_label += "\n" + elimination_str2;
+					if(elimination_str2.length() > 0){
+						if(vertex_label.length() > 0)
+							//check if brother cell gets also eliminated
+							vertex_label += "\n" + elimination_str2;
+						else
+							vertex_label += elimination_str2;
+					}
+				}
 			}
-		}
 			break;
 		default:
 			break;

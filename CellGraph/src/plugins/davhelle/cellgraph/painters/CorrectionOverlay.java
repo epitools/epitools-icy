@@ -53,6 +53,7 @@ public class CorrectionOverlay extends Overlay {
 		this.stGraph = stGraph;
 		this.factory = new GeometryFactory();
 		
+		System.out.println("Looking for potential False positives (FP) and negatives (FN)");
 		markFalsePositives();
 		markFalseNegatives();
 	}
@@ -67,8 +68,10 @@ public class CorrectionOverlay extends Overlay {
 			while(node_it.hasNext()){
 				Node cell = node_it.next();
 				if(cell.hasNext())
-					if(cell.getNext().getBelongingFrame().getFrameNo() > time_point + 1)
+					if(cell.getNext().getBelongingFrame().getFrameNo() > time_point + 1){
 						cell.setErrorTag(TrackingFeedback.FALSE_NEGATIVE.numeric_code);
+						System.out.printf("\t Possible FN: %d @ frame %d\n",cell.getTrackID(),time_point);
+					}
 			}
 					
 		}
@@ -89,15 +92,20 @@ public class CorrectionOverlay extends Overlay {
 			while(division_it.hasNext()){
 				Division division = division_it.next();
 				
+				System.out.println("Analyzed Division of:"+division.getMother().getTrackID());
+				
 				Node child1 = division.getChild1();
 				if(child1.hasObservedElimination())
-					if(child1.getElimination().getTimePoint() == time_point + 1)
+					if(child1.getElimination().getTimePoint() == time_point){
 						child1.setErrorTag(TrackingFeedback.FALSE_POSITIVE.numeric_code);
-				
+						System.out.printf("\t Possible FP: %d @ frame %d\n",child1.getTrackID(),time_point);
+					}
 				Node child2 = division.getChild2();
 				if(child2.hasObservedElimination())
-					if(child2.getElimination().getTimePoint() == time_point + 1)
+					if(child2.getElimination().getTimePoint() == time_point){
 						child2.setErrorTag(TrackingFeedback.FALSE_POSITIVE.numeric_code);
+						System.out.printf("\t Possible FP: %d @ frame %d\n",child1.getTrackID(),time_point);
+					}
 			}
 		}
 	}
@@ -114,9 +122,22 @@ public class CorrectionOverlay extends Overlay {
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet())
-			 	if(cell.getGeometry().contains(point_geometry)){
+			 	if(cell.getGeometry().contains(point_geometry) && 
+			 			cell.getErrorTag() == TrackingFeedback.FALSE_POSITIVE.numeric_code){
 			 		cell.setErrorTag(TrackingFeedback.DEFAULT.numeric_code);
+			 		System.out.println("Corrected potential FP: "+cell.getTrackID());
 			 	}
+			
+			if(time_point > 0){
+				//Help the user see a cell that went missing from the previous frame
+				FrameGraph previous_frame = stGraph.getFrame(time_point - 1);
+				for(Node cell: previous_frame.vertexSet())
+					if(cell.getGeometry().contains(point_geometry) && 
+							cell.getErrorTag() == TrackingFeedback.FALSE_NEGATIVE.numeric_code){
+				 		cell.setErrorTag(TrackingFeedback.DEFAULT.numeric_code);
+				 		System.out.println("Corrected potential FN: "+cell.getTrackID());
+				 	}
+			}
 		}
 
 	}
@@ -127,16 +148,24 @@ public class CorrectionOverlay extends Overlay {
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
+			
+			//Help the user see a cell which potentially doesn't exist
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet())
-			 	if(cell.getErrorTag() == TrackingFeedback.FALSE_NEGATIVE.numeric_code){
-			 		g.setColor(Color.yellow);
-			 		g.fill(cell.toShape());
-			 	}
-			 	else if(cell.getErrorTag() == TrackingFeedback.FALSE_POSITIVE.numeric_code){
+			 	 if(cell.getErrorTag() == TrackingFeedback.FALSE_POSITIVE.numeric_code){
 			 		g.setColor(Color.red);
 			 		g.fill(cell.toShape());
 			 	}
+			
+			if(time_point > 0){
+				//Help the user see a cell that went missing from the previous frame
+				FrameGraph previous_frame = stGraph.getFrame(time_point - 1);
+				for(Node cell: previous_frame.vertexSet())
+					if(cell.getErrorTag() == TrackingFeedback.FALSE_NEGATIVE.numeric_code){
+				 		g.setColor(Color.yellow);
+				 		g.fill(cell.toShape());
+				 	}
+			}
 		}
     }
 

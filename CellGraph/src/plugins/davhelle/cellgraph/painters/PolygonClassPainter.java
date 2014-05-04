@@ -26,11 +26,13 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class PolygonClassPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
+	private boolean use_numbers;
 	
 	
-	public PolygonClassPainter(SpatioTemporalGraph stGraph) {
+	public PolygonClassPainter(SpatioTemporalGraph stGraph, boolean use_numbers) {
 		super("Polygon class");
 		this.stGraph = stGraph;
+		this.use_numbers = use_numbers;
 	}
 
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
@@ -40,28 +42,55 @@ public class PolygonClassPainter extends Overlay{
 		if(time_point < stGraph.size()){
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.white);
 			
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 8));
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 12));
 			
 			for(Node cell: frame_i.vertexSet()){
-
-//				if(cell.onBoundary())
-//					g.setColor(Color.white);
-//				else
-					
-
-				//Fill cell shape
-				//if(!cell.onBoundary())
-				//g.draw(cell.toShape());
 				
+				if(cell.onBoundary())
+					continue;
+
 				Coordinate centroid = 
 						cell.getCentroid().getCoordinate();
 				
-				g.drawString(Integer.toString(frame_i.degreeOf(cell)), 
+				int cell_degree = frame_i.degreeOf(cell);
+				
+				if(use_numbers){
+				g.setColor(Color.white);
+				g.drawString(Integer.toString(cell_degree), 
 						(float)centroid.x - 2  , 
 						(float)centroid.y + 2);
-
+				}
+				else{
+					switch(cell_degree){ //Colors following Ishihara, 2013
+						case 4:
+							g.setColor(new Color(223, 0, 8)); //red
+							g.fill(cell.toShape());
+							break;
+						case 5:
+							g.setColor(new Color(84, 176, 26)); //green
+							g.fill(cell.toShape());
+							break;
+						case 6:
+							g.setColor(new Color(190, 190, 190)); //grey
+							g.fill(cell.toShape());
+							break;
+						case 7:
+							g.setColor(new Color(18, 51, 143)); //blue
+							g.fill(cell.toShape());
+							break;
+						case 8:
+							g.setColor(new Color(158, 53, 145)); //violet
+							g.fill(cell.toShape());
+							break;
+						case 9:
+							g.setColor(new Color(236, 239, 0)); //yellow
+							g.fill(cell.toShape());
+							break;
+						default:
+							continue;
+					}
+				}
 			}
 		}
 	}

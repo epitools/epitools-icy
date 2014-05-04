@@ -310,8 +310,9 @@ public class CellPainter extends EzPlug {
 							break;
 
 						case POLYGON_CLASS: 
+							boolean draw_polygonal_numbers = false;
 							sequence.addPainter(
-									new PolygonClassPainter(wing_disc_movie));
+									new PolygonClassPainter(wing_disc_movie,draw_polygonal_numbers));
 							break;
 						
 						case POLYGON_TILE:

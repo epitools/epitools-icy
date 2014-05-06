@@ -130,6 +130,9 @@ public class CellPainter extends EzPlug {
 	private EzVarBoolean varBooleanPlotDivisions;
 	private EzVarBoolean varBooleanPlotEliminations;
 	private EzVarBoolean varBooleanFillCells;
+	private EzVarInteger varHighlightClass;
+	private EzVarBoolean varBooleanColorClass;
+	private EzVarEnum<CellColor> varPolygonColor;
 
 	@Override
 	protected void initialize() {
@@ -149,8 +152,10 @@ public class CellPainter extends EzPlug {
 		varBooleanCCenter = new EzVarBoolean("Centers", true);
 		varBooleanWriteCenters = new EzVarBoolean("Write cell centers to disk",false);
 		varBooleanDerivedPolygons = new EzVarBoolean("Derived Polygons", false);
+		varPolygonColor = new EzVarEnum<CellColor>("Polygon color", CellColor.values(),CellColor.RED);
 		EzGroup groupCellMap = new EzGroup("CELLS elements",
 				varBooleanPolygon,
+				varPolygonColor,
 				varBooleanDerivedPolygons,
 				varBooleanCCenter,
 				varBooleanWriteCenters);
@@ -163,6 +168,15 @@ public class CellPainter extends EzPlug {
 		EzGroup groupVoronoiMap = new EzGroup("VORONOI elements",
 				varBooleanAreaDifference,
 				varBooleanVoronoiDiagram);	
+		
+		//Polygon No view
+		//TODO add color code!
+		varBooleanColorClass = new EzVarBoolean("Draw Numbers", false);
+		varHighlightClass = new EzVarInteger("Highlight class (0=none)",0,0,10,1);
+		
+		EzGroup groupPolygonClass = new EzGroup("POLYGON_CLASS elements",
+				varBooleanColorClass,
+				varHighlightClass);
 		
 		//Area Threshold View
 		varAreaThreshold = new EzVarDouble("Area threshold", 100, 0, 2000, 1);
@@ -224,6 +238,7 @@ public class CellPainter extends EzPlug {
 				varUpdatePainterMode,
 				varPlotting,
 				groupCellMap,
+				groupPolygonClass,
 				groupVoronoiMap,
 				groupAreaThreshold,
 				groupDivisions,
@@ -235,6 +250,7 @@ public class CellPainter extends EzPlug {
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
 		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
+		varPlotting.addVisibilityTriggerTo(groupPolygonClass, PlotEnum.POLYGON_CLASS);
 		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
 		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, PlotEnum.AREA_THRESHOLD);
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
@@ -310,9 +326,12 @@ public class CellPainter extends EzPlug {
 							break;
 
 						case POLYGON_CLASS: 
-							boolean draw_polygonal_numbers = false;
+							boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
+							int highlight_polygonal_class = varHighlightClass.getValue();
 							sequence.addPainter(
-									new PolygonClassPainter(wing_disc_movie,draw_polygonal_numbers));
+									new PolygonClassPainter(wing_disc_movie,
+											draw_polygonal_numbers,
+											highlight_polygonal_class));
 							break;
 						
 						case POLYGON_TILE:
@@ -563,7 +582,7 @@ public class CellPainter extends EzPlug {
 		}
 		
 		if(varBooleanPolygon.getValue()){
-			Painter polygons = new PolygonPainter(wing_disc_movie);
+			Painter polygons = new PolygonPainter(wing_disc_movie,varPolygonColor.getValue().getColor());
 			sequence.addPainter(polygons);
 		}
 		

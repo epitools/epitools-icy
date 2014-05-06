@@ -26,10 +26,12 @@ import icy.sequence.Sequence;
 public class PolygonPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
+	private Color painter_color;
 	
-	public PolygonPainter(SpatioTemporalGraph spatioTemporalGraph){
+	public PolygonPainter(SpatioTemporalGraph spatioTemporalGraph,Color painter_color){
 		super("Polygons");
 		this.stGraph = spatioTemporalGraph;
+		this.painter_color = painter_color;
 	}
 
 	
@@ -42,7 +44,7 @@ public class PolygonPainter extends Overlay{
 			//TODO include 3D information!
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.red);
+			g.setColor(painter_color);
 	
 			for(Node cell: frame_i.vertexSet())
 				g.draw((cell.toShape()));

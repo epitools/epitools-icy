@@ -16,6 +16,7 @@ import icy.painter.Painter;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -327,7 +328,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			if(varDoTracking.getValue())
 				applyTracking(wing_disc_movie);
 			else
-				sequence.addPainter(new PolygonPainter(wing_disc_movie));
+				sequence.addPainter(new PolygonPainter(wing_disc_movie,Color.red));
 			
 			if(varSaveTracking.getValue())
 				saveTracking(wing_disc_movie);
@@ -505,7 +506,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 		if(varCutBorder.getValue()){
 			borderUpdate.applyBoundaryCondition();
-			sequence.addPainter(borderUpdate);
+			//sequence.addPainter(borderUpdate);
 		}
 		else
 			borderUpdate.markOnly();

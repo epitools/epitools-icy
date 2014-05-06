@@ -27,12 +27,14 @@ public class PolygonClassPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
 	private boolean use_numbers;
+	private int highlight_no;
 	
 	
-	public PolygonClassPainter(SpatioTemporalGraph stGraph, boolean use_numbers) {
+	public PolygonClassPainter(SpatioTemporalGraph stGraph, boolean use_numbers, int hightlight_no) {
 		super("Polygon class");
 		this.stGraph = stGraph;
 		this.use_numbers = use_numbers;
+		this.highlight_no = hightlight_no;
 	}
 
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
@@ -54,6 +56,10 @@ public class PolygonClassPainter extends Overlay{
 						cell.getCentroid().getCoordinate();
 				
 				int cell_degree = frame_i.degreeOf(cell);
+				
+				if(highlight_no != 0)
+					if(cell_degree != highlight_no)
+						continue;
 				
 				if(use_numbers){
 				g.setColor(Color.white);
@@ -84,7 +90,7 @@ public class PolygonClassPainter extends Overlay{
 							g.fill(cell.toShape());
 							break;
 						case 9:
-							g.setColor(new Color(236, 239, 0)); //yellow
+							g.setColor(new Color(128, 45, 20)); //brown
 							g.fill(cell.toShape());
 							break;
 						default:

@@ -402,8 +402,10 @@ public class CellPainter extends EzPlug {
 							break;
 						case SAVE_TAG_XLS:
 							new CellWorkbook(wing_disc_movie);
+							break;
 						case SAVE_SKELETONS:
 							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
+							break;
 						case CORRECTION_HINTS:
 							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 							break;

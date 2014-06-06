@@ -132,6 +132,10 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 			String csv_y_over_time = getSequentialYCoordinates(vertex);
 			vertex_label = csv_y_over_time;
 			break;
+		case SEQ_NODE_DEGREE:
+			String csv_degree_over_time = getSequentialNodeDegree(vertex);
+			vertex_label = csv_degree_over_time;
+			break;
 		case ELIMINATION:
 			//Mutually exclusive events, either cells is eliminated
 			//or children.
@@ -172,6 +176,20 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		return vertex_label;
 	}
 	
+	private String getSequentialNodeDegree(Node vertex) {
+		
+		String csv_degree_over_time = String.format("%d,%d",
+				vertex.getTrackID(),vertex.getNeighbors().size());
+		
+		Node cell = vertex;
+		while(cell.hasNext()){
+			cell = cell.getNext();
+			csv_degree_over_time += String.format(",%d", cell.getNeighbors().size());
+		}
+		
+		return csv_degree_over_time;
+	}
+
 	private String getSequentialYCoordinates(Node vertex) {
 		
 		double cell_y = vertex.getCentroid().getY();

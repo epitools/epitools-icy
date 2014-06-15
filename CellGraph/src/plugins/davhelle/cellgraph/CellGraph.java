@@ -436,7 +436,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		try{
 			//Set true to suppress default mechanism
-			input_file = varFile.getValue(false);
+			input_file = varFile.getValue(true);
 		}
 		catch(EzException e){
 			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
@@ -445,9 +445,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Default file to use
 		if(input_file == null){
-			String default_file = "frame_000.tif";
+			String default_file = "skeletons_crop_t28-68_t0000.tif";//frame_000.tif";
 			//"Neo0_skeleton_001.png";
-			String default_dir = "/Users/davide/Documents/segmentation/Epitools/converted_skeleton/";
+			String default_dir = "/Users/davide/data/neo/1/crop/"; ///Users/davide/Documents/segmentation/Epitools/converted_skeleton/";
 			//old "/Users/davide/Documents/segmentation/Epitools/Neo0/Skeleton/";
 			//previous default: /Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif
 			input_file = new File(default_dir+default_file);

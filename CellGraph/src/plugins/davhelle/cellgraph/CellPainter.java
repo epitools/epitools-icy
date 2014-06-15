@@ -49,6 +49,7 @@ import plugins.davhelle.cellgraph.painters.ColorTagPainter;
 import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.GraphPainter;
+import plugins.davhelle.cellgraph.painters.NeighborChangeFrequencyOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
@@ -88,7 +89,7 @@ public class CellPainter extends EzPlug {
 		SAVE_TAG,
 		SAVE_TAG_XLS,
 		SAVE_SKELETONS,
-		CORRECTION_HINTS
+		CORRECTION_HINTS, CHANGE_FREQUENCY
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -408,6 +409,9 @@ public class CellPainter extends EzPlug {
 							break;
 						case CORRECTION_HINTS:
 							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+							break;
+						case CHANGE_FREQUENCY:
+							sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
 							break;
 						default:
 							break;

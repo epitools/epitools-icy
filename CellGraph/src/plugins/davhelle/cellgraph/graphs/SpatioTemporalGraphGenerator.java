@@ -60,16 +60,16 @@ public class SpatioTemporalGraphGenerator {
 		String frame_file_name = file_name_generator.getFileName(frame_no);
 		
 		long startTime = System.currentTimeMillis();
-		FrameGraph frame_from_generator = 
+		FrameGraph frame = 
 				frame_generator.generateFrame(frame_no, frame_file_name);
 		long endTime = System.currentTimeMillis();
 		
-		FrameGraph frame = new FrameGraph();
 		stGraph.setFrame(frame, frame_no);
 		
 		System.out.println(String.format(
-				"\t Found %d cells in %d milliseconds",
-				frame_from_generator.size(),
+				"Frame %d: Found %d cells in %d milliseconds",
+				frame_no,
+				frame.size(),
 				endTime - startTime));
 	}
 	

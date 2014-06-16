@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
@@ -49,25 +50,35 @@ public class NeighborChangeFrequencyOverlay extends Overlay {
 		this.stGraph = stGraph;
 		
 		for(Node cell: stGraph.getFrame(0).vertexSet()){
+			compute_neighbor_change_frequency(cell);
 			
-			int time_points = 0;
-			int changes = 0;
-			int previous_degree = cell.getNeighbors().size();
-			
-			Node next = cell;
-			while(next.hasNext()){
-				time_points++;
-				next = next.getNext();
-				int current_degree = next.getNeighbors().size();
-				if(current_degree != previous_degree)
-					changes++;
-				previous_degree = current_degree;
-			}
+			//repeat analysis on progeny if present
+			if(cell.hasObservedDivision()){
+				Division division = cell.getDivision();
+				compute_neighbor_change_frequency(division.getChild1());
+				compute_neighbor_change_frequency(division.getChild2());
+			}	
+		}
+	}
 
-			if(time_points > 1){
-				float change_frequency = changes / (float)(time_points);
-				change_frequencies.put(cell,change_frequency);
-			}
+	private void compute_neighbor_change_frequency(Node cell) {
+		int time_points = 0;
+		int changes = 0;
+		int previous_degree = cell.getNeighbors().size();
+		
+		Node next = cell;
+		while(next.hasNext()){
+			time_points++;
+			next = next.getNext();
+			int current_degree = next.getNeighbors().size();
+			if(current_degree != previous_degree)
+				changes++;
+			previous_degree = current_degree;
+		}
+
+		if(time_points > 1){
+			float change_frequency = changes / (float)(time_points);
+			change_frequencies.put(cell,change_frequency);
 		}
 	}
 	

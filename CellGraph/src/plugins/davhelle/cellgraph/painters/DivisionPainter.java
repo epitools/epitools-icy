@@ -67,7 +67,7 @@ public class DivisionPainter extends Overlay {
 					
 					if(PLOT_DIVISIONS)
 						if(cell.getFirst().hasObservedDivision()){
-							g.setColor(Color.green);
+							g.setColor(Color.blue);
 							if(FILL_CELLS)
 								g.fill(cell.toShape());
 							else

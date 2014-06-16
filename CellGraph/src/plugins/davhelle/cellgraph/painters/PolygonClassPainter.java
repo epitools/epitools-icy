@@ -45,7 +45,7 @@ public class PolygonClassPainter extends Overlay{
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 12));
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 8));
 			
 			for(Node cell: frame_i.vertexSet()){
 				

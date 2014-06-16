@@ -1,6 +1,7 @@
 package plugins.davhelle.cellgraph.painters;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.HashMap;
 
@@ -12,6 +13,29 @@ import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
+/**
+ * The generated overlay represents the amount of 
+ * neighbor changes undergone by every cell over 
+ * the available time points.
+ * 
+ * The current version simply sums the changes from one
+ * frame to the next. E.g. given a cell that has the following
+ * neighbor counts: 5,4,5,5,6 
+ *  sum of changes: 0 1 1 0 1 = 3
+ * ratio of change: 3/5 => in 60% percent of the 
+ * 						   frames a neighbor change occurred 
+ * 
+ * The final ratio is used to color the cells
+ * green  - low change ratio ( 0 - 15 % of the available frames show change in neighbor count)
+ * yellow - intermediate change ratio ( 15 - 35%)
+ * red	  -	increased change ratio (35 - 55 %)
+ * purple -	very high change ratio (55%+)
+ * 
+ * Pitfalls: This version highlights only the instability of the cell count, not the stability of a change.
+ *
+ * @author Davide Heller
+ *
+ */
 public class NeighborChangeFrequencyOverlay extends Overlay {
 
 	HashMap<Node,Float> change_frequencies;
@@ -50,16 +74,27 @@ public class NeighborChangeFrequencyOverlay extends Overlay {
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
+		
+		g.setFont(new Font("TimesRoman", Font.PLAIN, 5));
+		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet()){
-				if(change_frequencies.containsKey(cell)){
-					float fixed_hue_factor = 0.3f;
-					float final_cell_color = change_frequencies.get(cell) * fixed_hue_factor;
-					g.setColor(Color.getHSBColor( final_cell_color , 1f, 1f));
+				
+				Node ancestor = cell.getFirst();
+				if(change_frequencies.containsKey(ancestor)){
+					float fixed_hue_factor = -0.7f;
+					float fixed_hue_shift = 0.3f;
+					float final_cell_color = change_frequencies.get(ancestor) * fixed_hue_factor + fixed_hue_shift;
+					g.setColor(Color.getHSBColor( final_cell_color , 0.7f, 1f));
 					g.fill(cell.toShape());
+					g.setColor(Color.white);
+					String label = String.format("%.2f",change_frequencies.get(ancestor) ); //final_cell_color
+					g.drawString(label, 
+							(float)cell.getCentroid().getX() - 2  , 
+							(float)cell.getCentroid().getY() + 7);
 				}
 			}
 		}

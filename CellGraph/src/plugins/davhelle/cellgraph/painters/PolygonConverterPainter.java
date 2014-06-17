@@ -282,5 +282,9 @@ public class PolygonConverterPainter extends Overlay{
 				}
 		}
 	}
+	
+	public int getTileNumber(){
+		return polyMap.size();
+	}
 }
 

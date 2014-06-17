@@ -42,7 +42,8 @@ public class T1Transitions {
 			 int cell_no = 0;
 			 for(Node n: stGraph.getFrame(i).vertexSet()){
 				 System.out.printf("Cell %d - ",cell_no++);
-				 new PolygonalCellTile(n);
+				 PolygonalCellTile tile = new PolygonalCellTile(n);
+				 System.out.printf("\tFound %d intersection/s\n",tile.getTileIntersectionNo());
 			 }
 		 }
 	}

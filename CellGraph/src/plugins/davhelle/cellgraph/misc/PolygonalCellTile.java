@@ -5,6 +5,8 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
+import java.util.HashMap;
+
 import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -20,11 +22,12 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class PolygonalCellTile {
 
 	Node source_node;
+	HashMap<Node,Geometry> source_tiles; 
 	
 	public PolygonalCellTile(Node n){
 		
-		
 		this.source_node = n;
+		this.source_tiles = new HashMap<Node, Geometry>();
 		
 		Geometry source_geo = source_node.getGeometry();
 		System.out.printf("Centroid:%.2f,%.2f\n",
@@ -37,17 +40,26 @@ public class PolygonalCellTile {
 			Geometry neighbor_geo = neighbor.getGeometry();
 			
 			Geometry intersection = source_geo.intersection(neighbor_geo);
+			source_tiles.put(neighbor, intersection);
 			
 			double intersection_length = intersection.getLength();
-			
-			
-			//intersection length and geometry number will vary 
+			int intersection_geometry_no = intersection.getNumGeometries();
+			//intersection length and geometry number will differ 
 			//since an oblique geometry has length 1.41 vs 1 of vertical and horizontal
 			System.out.printf("\tFound valid intersection with length: %.2f\n\t\twith %d geometries\n",
-							intersection_length,intersection.getNumGeometries());
+							intersection_length,intersection_geometry_no);
 		
 		
 		}
+	}
+	
+	/**
+	 * Returns the number of identified intersections to neighboring cells
+	 * 
+	 * @return the number of intersections
+	 */
+	public int getTileIntersectionNo(){
+		return source_tiles.size();
 	}
 
 }

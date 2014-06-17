@@ -8,6 +8,8 @@ import java.io.File;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
+import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
+import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 
 /**
@@ -34,14 +36,8 @@ public class T1Transitions {
 		  
 		 assert stGraph.size() == no_of_test_files: "wrong frame no";
 		 
-		 PolygonConverterPainter polygonal_tile = new PolygonConverterPainter(stGraph);
-
-		 int tile_number = polygonal_tile.getTileNumber();
-		 
-		 assert tile_number == 2: String.format("Tile numbers not correct: %d",tile_number);
-		 
-		 System.out.println(String.format("Successfully identified %d tiles",tile_number));
-
+		 for(Node n: stGraph.getFrame(0).vertexSet())
+			 new PolygonalCellTile(n);
 	}
 
 }

@@ -7,7 +7,6 @@ package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
-import icy.painter.AbstractPainter;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
@@ -15,14 +14,20 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
+/**
+ * Overlay to represent the neighborhood degree with either
+ * numbers or colors. Color scheme follows the convention established
+ * in the paper of Ishihara et al., 2013
+ * 
+ * @author Davide Heller
+ *
+ */
 public class PolygonClassPainter extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
@@ -68,7 +73,7 @@ public class PolygonClassPainter extends Overlay{
 						(float)centroid.y + 2);
 				}
 				else{
-					switch(cell_degree){ //Colors following Ishihara, 2013
+					switch(cell_degree){ 
 						case 4:
 							g.setColor(new Color(223, 0, 8)); //red
 							g.fill(cell.toShape());

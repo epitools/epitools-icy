@@ -25,8 +25,9 @@ public class T1Transitions {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		  File test_file = new File("/Users/davide/tmp/T1/test2/test2_t0000.tif");
-		  int no_of_test_files = 3;
+		  File test_file = new File("/Users/davide/tmp/T1/test/test_t0000.tif");
+		  //File test_file = new File("/Users/davide/tmp/T1/test2/test2_t0000.tif");
+		  int no_of_test_files = 1;
 		  
 		  SpatioTemporalGraph stGraph = 
 				  new SpatioTemporalGraphGenerator(
@@ -36,8 +37,14 @@ public class T1Transitions {
 		  
 		 assert stGraph.size() == no_of_test_files: "wrong frame no";
 		 
-		 for(Node n: stGraph.getFrame(0).vertexSet())
-			 new PolygonalCellTile(n);
+		 for(int i=0; i < no_of_test_files; i++){
+			 System.out.printf("Anlalyzing frame %d\n", i);
+			 int cell_no = 0;
+			 for(Node n: stGraph.getFrame(i).vertexSet()){
+				 System.out.printf("Cell %d - ",cell_no++);
+				 new PolygonalCellTile(n);
+			 }
+		 }
 	}
 
 }

@@ -51,12 +51,7 @@ public class T1Transitions {
 			 System.out.printf("Anlalyzing frame %d\n", i);
 			 FrameGraph frame = stGraph.getFrame(i);
 			for(Node n: frame.vertexSet()){
-				 System.out.printf("Cell %d - ",n.getTrackID());
-				 //new constructor which populates the frame with the correct weights too
-				 //test whether cellGraph still works after change of Graph Type
 				 PolygonalCellTile tile = new PolygonalCellTile(n,frame);
-				 System.out.printf("\tFound %d intersection/s\n",tile.getTileIntersectionNo());
-				 
 			}
 		 }
 		 
@@ -65,7 +60,7 @@ public class T1Transitions {
 		 for(Node n: first_frame.vertexSet()){
 			 for(Node neighbor: n.getNeighbors()){
 				 if(!tested_nodes.contains(neighbor)){
-					 System.out.printf("Edge evolution for %s:\n\tframe %d: %.2f\n",
+					 System.out.printf("Edge evolution for %s:\n\tframe %d:\t%.2f\n",
 							 PolygonalCellTile.getCellPairKey(n, neighbor),
 							 first_frame.getFrameNo(),
 							 first_frame.getEdgeWeight(
@@ -80,7 +75,7 @@ public class T1Transitions {
 						 //Search if the same neighborhood connection exists
 						 for(Node next_neighbor: next.getNeighbors()){
 							 if(next_neighbor.getFirst() == neighbor)
-								 System.out.printf("\tframe %d: %.2f\n",
+								 System.out.printf("\tframe %d:\t%.2f\n",
 										 current_frame.getFrameNo(),
 										 current_frame.getEdgeWeight(
 												 current_frame.getEdge(next, next_neighbor)));

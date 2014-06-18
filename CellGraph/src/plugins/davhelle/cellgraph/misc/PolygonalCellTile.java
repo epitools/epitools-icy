@@ -5,17 +5,14 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 
-import org.jgrapht.WeightedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * PolygonalCellTile generates a Tile representation of a 
@@ -36,26 +33,17 @@ public class PolygonalCellTile {
 		this.source_tiles = new HashMap<Node, Geometry>();
 		
 		Geometry source_geo = source_node.getGeometry();
-		System.out.printf("Centroid:%.2f,%.2f\n",
-				source_geo.getCentroid().getX(),
-				source_geo.getCentroid().getY());
 
-		int neighbor_no = 0;
 		for(Node neighbor: n.getNeighbors()){
 			
-			System.out.printf("\tAnalyzing neighbor %d:\n",neighbor_no++);
 			Geometry neighbor_geo = neighbor.getGeometry();
-			
 			Geometry intersection = source_geo.intersection(neighbor_geo);
 			source_tiles.put(neighbor, intersection);
 			
-			double intersection_length = intersection.getLength();
-			int intersection_geometry_no = intersection.getNumGeometries();
+			//double intersection_length = intersection.getLength();
+			//int intersection_geometry_no = intersection.getNumGeometries();
 			//intersection length and geometry number will differ 
 			//since an oblique geometry has length 1.41 vs 1 of vertical and horizontal
-			System.out.printf("\tFound valid intersection with length: %.2f\n\t\twith %d geometries\n",
-							intersection_length,intersection_geometry_no);
-		
 		
 		}
 	}

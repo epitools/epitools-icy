@@ -27,45 +27,39 @@ public class PolygonalCellTile {
 	Node source_node;
 	HashMap<Node,Geometry> source_tiles; 
 	
+	/**
+	 * Finds the connecting cell edges to the respective neighbors
+	 * and stores them. Additionally it registers the length of the
+	 * found geometry as weight of the PolygonalCellTile
+	 * 
+	 * @param n considered node / cell
+	 */
 	public PolygonalCellTile(Node n){
 		
 		this.source_node = n;
 		this.source_tiles = new HashMap<Node, Geometry>();
 		
+		FrameGraph frame = source_node.getBelongingFrame(); 
 		Geometry source_geo = source_node.getGeometry();
 
 		for(Node neighbor: n.getNeighbors()){
 			
 			Geometry neighbor_geo = neighbor.getGeometry();
 			Geometry intersection = source_geo.intersection(neighbor_geo);
+			
 			source_tiles.put(neighbor, intersection);
 			
-			//double intersection_length = intersection.getLength();
-			//int intersection_geometry_no = intersection.getNumGeometries();
-			//intersection length and geometry number will differ 
-			//since an oblique geometry has length 1.41 vs 1 of vertical and horizontal
-		
-		}
-	}
-	
-	/**
-	 * updates weighted graph
-	 * 
-	 * @param n node to analyze
-	 * @param frame Substitute with n.getBelongingFrame!
-	 */
-	public PolygonalCellTile(Node n, FrameGraph frame) {
-		
-		this(n);
-
-		for(Node neighbor: n.getNeighbors()){
-			Geometry intersection = source_tiles.get(neighbor);
+			//updated weighted graph with edge length
 			double intersection_length = intersection.getLength();
 			DefaultWeightedEdge e = frame.getEdge(source_node, neighbor);
-			
 			frame.setEdgeWeight(e, intersection_length);
-		}
+			
+			//int intersection_geometry_no = intersection.getNumGeometries();
+			//intersection length and geometry number can differ 
+			//since an oblique geometry has length 1.41 
+			//versus length 1 of a vertical and horizontal geometry
 		
+		}
 	}
 
 	/**

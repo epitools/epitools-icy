@@ -51,7 +51,7 @@ public class T1Transitions {
 			 System.out.printf("Anlalyzing frame %d\n", i);
 			 FrameGraph frame = stGraph.getFrame(i);
 			for(Node n: frame.vertexSet()){
-				 PolygonalCellTile tile = new PolygonalCellTile(n,frame);
+				 PolygonalCellTile tile = new PolygonalCellTile(n);
 			}
 		 }
 		 

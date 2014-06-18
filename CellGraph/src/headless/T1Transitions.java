@@ -55,7 +55,17 @@ public class T1Transitions {
 			}
 		 }
 		 
-		 FrameGraph first_frame = stGraph.getFrame(0);
+		 reportEdgeEvolution(stGraph);
+	}
+
+	/**
+	 * Follow every edge for every available time point and
+	 * report it's lengths
+	 * 
+	 * @param stGraph
+	 */
+	private static void reportEdgeEvolution(SpatioTemporalGraph stGraph) {
+		FrameGraph first_frame = stGraph.getFrame(0);
 		 HashSet<Node> tested_nodes = new HashSet<Node>();
 		 for(Node n: first_frame.vertexSet()){
 			 for(Node neighbor: n.getNeighbors()){

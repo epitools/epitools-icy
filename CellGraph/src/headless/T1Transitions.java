@@ -64,16 +64,30 @@ public class T1Transitions {
 		 for(Node n: first_frame.vertexSet()){
 			 for(Node neighbor: n.getNeighbors()){
 				 if(!tested_nodes.contains(neighbor)){
-					 System.out.printf("Starting with edge between %s:",
-							 PolygonalCellTile.getCellPairKey(n, neighbor));
+					 System.out.printf("Edge evolution for %s:\n\tframe %d: %.2f\n",
+							 PolygonalCellTile.getCellPairKey(n, neighbor),
+							 first_frame.getFrameNo(),
+							 first_frame.getEdgeWeight(
+									 first_frame.getEdge(n, neighbor)));
 					 
+					 //Follow edge if it is projected in the future
+					 Node next = n;
+					 while(next.hasNext()){
+						 next = next.getNext();
+						 FrameGraph current_frame = next.getBelongingFrame();
+						 
+						 //Search if the same neighborhood connection exists
+						 for(Node next_neighbor: next.getNeighbors()){
+							 if(next_neighbor.getFirst() == neighbor)
+								 System.out.printf("\tframe %d: %.2f\n",
+										 current_frame.getFrameNo(),
+										 current_frame.getEdgeWeight(
+												 current_frame.getEdge(next, next_neighbor)));
+						 }
+					 }
 				 }
 			 }
 			 tested_nodes.add(n);
 		 }
-					 
-					 
-					 
 	}
-
 }

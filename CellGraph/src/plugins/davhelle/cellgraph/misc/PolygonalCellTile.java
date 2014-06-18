@@ -72,6 +72,20 @@ public class PolygonalCellTile {
 	}
 	
 	/**
+	 * Returns the geometry representing the intersection between the 
+	 * source and a neighboring cell
+	 * 
+	 * @param neighboring cell, if node is not a neighbor null is returned
+	 * @return intersection geometry
+	 */
+	public Geometry getTileEdge(Node neighbor){
+		if(source_tiles.containsKey(neighbor))
+			return source_tiles.get(neighbor);
+		else
+			return null;
+	}
+	
+	/**
 	 * Provides a unique identifier for a pair of cells 
 	 * given their trackID. The order is not relevant.
 	 * 

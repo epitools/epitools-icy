@@ -8,21 +8,22 @@ import org.jgrapht.ext.EdgeNameProvider;
 import org.jgrapht.ext.GraphMLExporter;
 import org.jgrapht.ext.IntegerEdgeNameProvider;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 public class GraphExporter {
 	
-	GraphMLExporter<Node, DefaultEdge> graphML_exporter;
+	GraphMLExporter<Node, DefaultWeightedEdge> graphML_exporter;
 	
 	public GraphExporter(ExportFieldType export_field) {
 		VertexIdProvider vertex_id_provider = new VertexIdProvider();
 		VertexLabelProvider vertex_label_provider = new VertexLabelProvider(export_field);
-		EdgeNameProvider<DefaultEdge> edge_id_provider = new IntegerEdgeNameProvider<DefaultEdge>();
-		EdgeNameProvider<DefaultEdge> edge_label_provider = null;
+		EdgeNameProvider<DefaultWeightedEdge> edge_id_provider = new IntegerEdgeNameProvider<DefaultWeightedEdge>();
+		EdgeNameProvider<DefaultWeightedEdge> edge_label_provider = null;
 		
-		graphML_exporter = new GraphMLExporter<Node, DefaultEdge>(
+		graphML_exporter = new GraphMLExporter<Node, DefaultWeightedEdge>(
 				vertex_id_provider, 
 				vertex_label_provider, 
 				edge_id_provider, 

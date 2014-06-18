@@ -4,7 +4,11 @@
 package headless;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
@@ -44,12 +48,32 @@ public class T1Transitions {
 		 
 		 for(int i=0; i < no_of_test_files; i++){
 			 System.out.printf("Anlalyzing frame %d\n", i);
-			 for(Node n: stGraph.getFrame(i).vertexSet()){
+			 FrameGraph frame = stGraph.getFrame(i);
+			for(Node n: frame.vertexSet()){
 				 System.out.printf("Cell %d - ",n.getTrackID());
-				 PolygonalCellTile tile = new PolygonalCellTile(n);
+				 //new constructor which populates the frame with the correct weights too
+				 //test whether cellGraph still works after change of Graph Type
+				 PolygonalCellTile tile = new PolygonalCellTile(n,frame);
 				 System.out.printf("\tFound %d intersection/s\n",tile.getTileIntersectionNo());
-			 }
+				 
+			}
 		 }
+		 
+		 FrameGraph first_frame = stGraph.getFrame(0);
+		 HashSet<Node> tested_nodes = new HashSet<Node>();
+		 for(Node n: first_frame.vertexSet()){
+			 for(Node neighbor: n.getNeighbors()){
+				 if(!tested_nodes.contains(neighbor)){
+					 System.out.printf("Starting with edge between %s:",
+							 PolygonalCellTile.getCellPairKey(n, neighbor));
+					 
+				 }
+			 }
+			 tested_nodes.add(n);
+		 }
+					 
+					 
+					 
 	}
 
 }

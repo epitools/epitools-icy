@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultWeightedEdge;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -53,7 +54,7 @@ public class GraphPainter extends Overlay{
 			g.setColor(Color.orange);
 			
 			//paint all the edges of the graph
-			for(DefaultEdge edge: frame_i.edgeSet()){
+			for(DefaultWeightedEdge edge: frame_i.edgeSet()){
 				
 				//extract points
 				Point a = frame_i.getEdgeSource(edge).getCentroid();

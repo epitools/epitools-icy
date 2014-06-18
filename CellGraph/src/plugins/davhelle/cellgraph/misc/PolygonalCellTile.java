@@ -5,10 +5,16 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
+
+import org.jgrapht.WeightedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultWeightedEdge;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -36,6 +42,7 @@ public class PolygonalCellTile {
 
 		int neighbor_no = 0;
 		for(Node neighbor: n.getNeighbors()){
+			
 			System.out.printf("\tAnalyzing neighbor %d:\n",neighbor_no++);
 			Geometry neighbor_geo = neighbor.getGeometry();
 			
@@ -54,12 +61,57 @@ public class PolygonalCellTile {
 	}
 	
 	/**
+	 * updates weighted graph
+	 * 
+	 * @param n node to analyze
+	 * @param frame Substitute with n.getBelongingFrame!
+	 */
+	public PolygonalCellTile(Node n, FrameGraph frame) {
+		
+		this(n);
+
+		for(Node neighbor: n.getNeighbors()){
+			Geometry intersection = source_tiles.get(neighbor);
+			double intersection_length = intersection.getLength();
+			DefaultWeightedEdge e = frame.getEdge(source_node, neighbor);
+			
+			frame.setEdgeWeight(e, intersection_length);
+		}
+		
+	}
+
+	/**
 	 * Returns the number of identified intersections to neighboring cells
 	 * 
 	 * @return the number of intersections
 	 */
 	public int getTileIntersectionNo(){
 		return source_tiles.size();
+	}
+	
+	/**
+	 * Provides a unique identifier for a pair of cells 
+	 * given their trackID. The order is not relevant.
+	 * 
+	 * @param a one cell of the tuple
+	 * @param b the other cell of the tuple 
+	 * @return identifier for cell 
+	 */
+	public static String getCellPairKey(Node a, Node b){
+		
+		//order cells according to TrackId
+		int min = a.getTrackID();
+		int max = b.getTrackID();
+		if(min > max){
+			min = b.getTrackID();
+			max = a.getTrackID();
+		}
+		
+		//Concatenate the two with the interleaving symbol '<->'
+		String key = String.format("%d<->%d",min,max);
+		//given the incremental order also a unique integer could be formed
+		
+		return key;
 	}
 
 }

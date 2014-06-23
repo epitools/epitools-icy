@@ -7,6 +7,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
+
+import org.jgrapht.graph.DefaultWeightedEdge;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -41,7 +44,7 @@ public class T1Transitions {
 		//Input files
 		File test_file = new File("/Users/davide/tmp/T1/test/test_t0000.tif");
 		//File test_file = new File("/Users/davide/tmp/T1/test2/test2_t0000.tif");
-		int no_of_test_files = 40;
+		int no_of_test_files = 2;
 
 		SpatioTemporalGraph stGraph = createSpatioTemporalGraph(test_file,
 				no_of_test_files);
@@ -49,10 +52,86 @@ public class T1Transitions {
 		HashMap<Node, PolygonalCellTile> cell_tiles = createPolygonalTiles(
 				no_of_test_files, stGraph);
 
-		//Follow division
-		reportIncidenceOfMitoticPlane(stGraph, cell_tiles);
+		//analysis functions
+//		reportIncidenceOfMitoticPlane(stGraph, cell_tiles); //works only with "/Users/davide/tmp/T1/test/test_t0000.tif" !!
+//		reportEdgeEvolution(stGraph);
+		
+		//Detect T1 transitions
+		//1 - start - Find cells that changed their neighborhood
+		int current_time_point = 1;
+		FrameGraph frame = stGraph.getFrame(current_time_point);
+		for(Node n: frame.vertexSet()){
+			if(n.hasPrevious()){
+				Node p = n.getPrevious();
+				if(frame.degreeOf(n) > p.getBelongingFrame().degreeOf(p)){
+					//1 - stop - detected neighbor gain
+					System.out.printf("%d gained a side\n",n.getTrackID());
+					
+					checkDivisionExplanation(cell_tiles,
+							current_time_point, n);
 
-		//reportEdgeEvolution(stGraph);
+					//If unresolved hypothesize a neighbor rearrangement 
+					//   -> new object & forward/backward analysis
+					//a. who is the new neighbor
+					FrameGraph previous_frame = p.getBelongingFrame();
+					Node gained_neighbor = null;
+					for(Node neighbor: n.getNeighbors()){
+						if(previous_frame.containsEdge(p, neighbor.getPrevious())){
+							System.out.printf("Edge %s was maintained\n",PolygonalCellTile.getCellPairKey(p, neighbor));
+							
+						}else{
+							System.out.printf("Edge %s is new\n",PolygonalCellTile.getCellPairKey(p, neighbor));
+							gained_neighbor = neighbor;
+						}
+					}
+					
+					//Find loosers
+					Geometry gained_side = cell_tiles.get(n).getTileEdge(gained_neighbor);
+					for(Node neighbor: n.getNeighbors()){
+						if(neighbor != gained_neighbor)
+							if(gained_side.intersects(neighbor.getGeometry()))
+								System.out.printf("\tLoosing neighbor is %d\n",neighbor.getTrackID());
+							
+					}
+					
+					
+					
+					
+				}
+			}
+		}
+		
+		//Cluster transitions according to their length
+		
+	}
+
+	private static void checkDivisionExplanation(
+			HashMap<Node, PolygonalCellTile> cell_tiles,
+			int current_time_point, Node n) {
+		
+		for(Node neighbor: n.getNeighbors()){
+			//2 - start - Check for close by Division that might explain the change
+			if(neighbor.hasObservedDivision()){
+				Division d = neighbor.getDivision();
+				if(d.getTimePoint() == current_time_point){
+					//Does the mitotic plane touch n
+					Node child1 = d.getChild1();
+					Node child2 = d.getChild2();
+
+					PolygonalCellTile daughter_cell_tile = cell_tiles.get(child1);
+					Geometry mitotic_plane = daughter_cell_tile.getTileEdge(child2);
+
+					if(n.getGeometry().intersects(mitotic_plane)){
+						//2 - stop - the neighbor gain can be explained through the division
+						System.out.printf("%d gained a side due to %d dividing into %d and %d\n",
+								n.getTrackID(),
+								d.getMother(),
+								d.getChild1(),
+								d.getChild2());
+					}
+				}
+			}
+		}
 	}
 
 	private static void reportIncidenceOfMitoticPlane(

@@ -43,35 +43,21 @@ public class T1Transitions {
 		//File test_file = new File("/Users/davide/tmp/T1/test2/test2_t0000.tif");
 		int no_of_test_files = 40;
 
-		System.out.println("Creating graph..");
-		SpatioTemporalGraph stGraph = 
-				new SpatioTemporalGraphGenerator(
-						GraphType.TISSUE_EVOLUTION,
-						test_file, 
-						no_of_test_files).getStGraph();
+		SpatioTemporalGraph stGraph = createSpatioTemporalGraph(test_file,
+				no_of_test_files);
 
-		assert stGraph.size() == no_of_test_files: "wrong frame no";
-
-		System.out.println("Identifying the border..");
-		new BorderCells(stGraph).markOnly();
-		
-		System.out.println("Removing small cells..");
-		new SmallCellRemover(stGraph).removeCellsBelow(10.0);
-
-		System.out.println("Tracking cells..");
-		new HungarianTracking(stGraph, 5, 5.0,1.0).track();
-
-		System.out.println("Identifying the tiles..");
-		HashMap<Node,PolygonalCellTile> cell_tiles = new HashMap<Node, PolygonalCellTile>();
-		for(int i=0; i < no_of_test_files; i++){
-			FrameGraph frame = stGraph.getFrame(i);
-			for(Node n: frame.vertexSet()){
-				PolygonalCellTile tile = new PolygonalCellTile(n);
-				cell_tiles.put(n, tile);
-			}
-		}
+		HashMap<Node, PolygonalCellTile> cell_tiles = createPolygonalTiles(
+				no_of_test_files, stGraph);
 
 		//Follow division
+		reportIncidenceOfMitoticPlane(stGraph, cell_tiles);
+
+		//reportEdgeEvolution(stGraph);
+	}
+
+	private static void reportIncidenceOfMitoticPlane(
+			SpatioTemporalGraph stGraph,
+			HashMap<Node, PolygonalCellTile> cell_tiles) {
 		Division division_node_11 = null;
 		for(Node n: stGraph.getFrame(0).vertexSet()){
 			if(n.hasObservedDivision())
@@ -103,8 +89,42 @@ public class T1Transitions {
 						neighbor.getTrackID(),neighbor.getCentroid().getX(),neighbor.getCentroid().getY());
 			}
 		}
+	}
 
-		//reportEdgeEvolution(stGraph);
+	private static HashMap<Node, PolygonalCellTile> createPolygonalTiles(
+			int no_of_test_files, SpatioTemporalGraph stGraph) {
+		System.out.println("Identifying the tiles..");
+		HashMap<Node,PolygonalCellTile> cell_tiles = new HashMap<Node, PolygonalCellTile>();
+		for(int i=0; i < no_of_test_files; i++){
+			FrameGraph frame = stGraph.getFrame(i);
+			for(Node n: frame.vertexSet()){
+				PolygonalCellTile tile = new PolygonalCellTile(n);
+				cell_tiles.put(n, tile);
+			}
+		}
+		return cell_tiles;
+	}
+
+	private static SpatioTemporalGraph createSpatioTemporalGraph(
+			File test_file, int no_of_test_files) {
+		System.out.println("Creating graph..");
+		SpatioTemporalGraph stGraph = 
+				new SpatioTemporalGraphGenerator(
+						GraphType.TISSUE_EVOLUTION,
+						test_file, 
+						no_of_test_files).getStGraph();
+
+		assert stGraph.size() == no_of_test_files: "wrong frame no";
+
+		System.out.println("Identifying the border..");
+		new BorderCells(stGraph).markOnly();
+		
+		System.out.println("Removing small cells..");
+		new SmallCellRemover(stGraph).removeCellsBelow(10.0);
+
+		System.out.println("Tracking cells..");
+		new HungarianTracking(stGraph, 5, 5.0,1.0).track();
+		return stGraph;
 	}
 
 	/**

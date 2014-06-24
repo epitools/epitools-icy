@@ -84,14 +84,14 @@ public class T1Transition {
 			assert source != target: "Same node for source and target!";
 			
 			while(source.hasNext()){
-				if(source.getBelongingFrame() != frame)
+				if(source.getBelongingFrame() == frame)
 					break;
 				else
 					source = source.getNext();
 			}
 			
 			while(target.hasNext()){
-				if(target.getBelongingFrame() != frame)
+				if(target.getBelongingFrame() == frame)
 					break;
 				else
 					target = target.getNext();

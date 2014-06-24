@@ -45,7 +45,7 @@ public class T1Transitions {
 		//Input files
 		File test_file = new File("/Users/davide/tmp/T1/test/test_t0000.tif");
 		//File test_file = new File("/Users/davide/tmp/T1/test2/test2_t0000.tif");
-		int no_of_test_files = 3;
+		int no_of_test_files = 10;
 
 		SpatioTemporalGraph stGraph = createSpatioTemporalGraph(test_file,
 				no_of_test_files);
@@ -80,10 +80,9 @@ public class T1Transitions {
 					FrameGraph previous_frame = p.getBelongingFrame();
 					Node gained_neighbor = null;
 					for(Node neighbor: n.getNeighbors()){
-						if(previous_frame.containsEdge(p, neighbor.getPrevious())){
+						if(previous_frame.containsEdge(p, neighbor.getPrevious()))
 							System.out.printf("Edge %s was maintained\n",PolygonalCellTile.getCellPairKey(p, neighbor));
-							
-						}else{
+						else{
 							//TODO test reversibility of edge source/target in undirected Graph
 							transition.gained_edge = frame.getEdge(n, neighbor);
 							System.out.printf("Edge %s is new\n",PolygonalCellTile.getCellPairKey(p, neighbor));
@@ -95,28 +94,32 @@ public class T1Transitions {
 					
 					//Find losers
 					Geometry gained_side = cell_tiles.get(n).getTileEdge(gained_neighbor);
-					for(Node neighbor: n.getNeighbors()){
+					for(Node neighbor: n.getNeighbors())
 						if(neighbor != gained_neighbor)
-							if(gained_side.intersects(neighbor.getGeometry())){
+							if(gained_side.intersects(neighbor.getGeometry()))
 								transition.addLooser(neighbor);
-								System.out.printf("\tLoosing neighbor is %d\n",neighbor.getTrackID());
-							}
-					}			
 					
 					//seek into the future
 					assert transition.sanity_check(): "Something is wrong with the detected transition";
 					
 					Node next = n;
 					while(next.hasNext()){
-						next = next.getNext();
 						FrameGraph current_frame = next.getBelongingFrame();
 						if(transition.isActive(current_frame))
-							System.out.printf("Transition %s exists at %d\n",transition.toString(),current_frame.getFrameNo());
+							System.out.printf("Transition %s exists in frame %d\n",transition.toString(),current_frame.getFrameNo());
 						else
-							System.out.printf("Transition %s does NOT exist at %d\n",transition.toString(),current_frame.getFrameNo());
+							System.out.printf("Transition %s does NOT exist in frame %d\n",transition.toString(),current_frame.getFrameNo());
+						next = next.getNext();
 					}
 					
 					
+					//TODO: Can you answer the binary question if each edge is present or 
+					//not for all frames? 
+					//=> How many stable edges are there?
+					//=> What is the minimal length for a stable edge?
+					//=> What to include in the T1Transition object?
+					//=> Tentative visualization? (using the geometry included in the object..)
+					// 	 => a bit like for the correction helper (overlay stuff from the previous frame)
 					
 				}
 			}

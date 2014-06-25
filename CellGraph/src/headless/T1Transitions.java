@@ -5,6 +5,7 @@ package headless;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -57,6 +58,8 @@ public class T1Transitions {
 //		reportIncidenceOfMitoticPlane(stGraph, cell_tiles); //works only with "/Users/davide/tmp/T1/test/test_t0000.tif" !!
 //		reportEdgeEvolution(stGraph);
 		
+		HashMap<Integer, T1Transition> transition_map = new HashMap<Integer, T1Transition>();
+		
 		//Detect T1 transitions
 		//1 - start - Find cells that changed their neighborhood
 		int current_time_point = 1;
@@ -70,9 +73,6 @@ public class T1Transitions {
 					
 					checkDivisionExplanation(cell_tiles,
 							current_time_point, n);
-
-					T1Transition transition = new T1Transition(frame);
-					transition.addWinner(n);
 					
 					//If unresolved hypothesize a neighbor rearrangement 
 					//   -> new object & forward/backward analysis
@@ -84,13 +84,34 @@ public class T1Transitions {
 							System.out.printf("Edge %s was maintained\n",PolygonalCellTile.getCellPairKey(p, neighbor));
 						else{
 							//TODO test reversibility of edge source/target in undirected Graph
-							transition.gained_edge = frame.getEdge(n, neighbor);
 							System.out.printf("Edge %s is new\n",PolygonalCellTile.getCellPairKey(p, neighbor));
 							gained_neighbor = neighbor;
-							transition.addWinner(neighbor);
 						}
 					}
 					
+					int[] winner_tuple = {n.getTrackID(),gained_neighbor.getTrackID()};
+					Arrays.sort(winner_tuple);
+					
+					if(winner_tuple[0] == -1)
+						continue;
+					
+					int transition_key = Arrays.hashCode(winner_tuple);
+					
+					if(transition_map.containsKey(transition_key)){
+						//Transition is already being recorded -> add smth if necessary
+						System.out.printf("Transition %s already detected\n",transition_map.get(transition_key).toString());
+						continue;
+					}
+					
+					
+					T1Transition transition = new T1Transition(frame);
+					transition.addWinner(n);
+					transition.addWinner(gained_neighbor);
+					
+					//substitute with cell_tiles edge geometry
+					transition.gained_edge = frame.getEdge(n, gained_neighbor);
+					
+					transition_map.put(transition_key, transition);
 					
 					//Find losers
 					Geometry gained_side = cell_tiles.get(n).getTileEdge(gained_neighbor);
@@ -111,7 +132,6 @@ public class T1Transitions {
 							System.out.printf("Transition %s does NOT exist in frame %d\n",transition.toString(),current_frame.getFrameNo());
 						next = next.getNext();
 					}
-					
 					
 					//TODO: Can you answer the binary question if each edge is present or 
 					//not for all frames? 

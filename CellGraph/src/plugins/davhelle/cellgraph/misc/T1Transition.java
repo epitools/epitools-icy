@@ -4,6 +4,7 @@
 package plugins.davhelle.cellgraph.misc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
 
@@ -52,6 +53,16 @@ public class T1Transition {
 	
 	public void addLooser(Node loser){
 		losers.add(loser.getFirst());
+	}
+	
+	public int[] getWinners(){
+		if(this.sanity_check()){
+			int[] winner_tuple =  {winners.get(0).getTrackID(),winners.get(1).getTrackID()};
+			Arrays.sort(winner_tuple);
+			return(winner_tuple);
+		}
+		else
+			return null;
 	}
 	
 	@Override

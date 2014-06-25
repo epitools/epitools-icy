@@ -77,6 +77,34 @@ public class T1Transition {
 	}
 
 	/**
+	 * @return the lost_edge
+	 */
+	public DefaultWeightedEdge getLost_edge() {
+		return lost_edge;
+	}
+
+	/**
+	 * @param lost_edge the lost_edge to set
+	 */
+	public void setLost_edge(DefaultWeightedEdge lost_edge) {
+		this.lost_edge = lost_edge;
+	}
+
+	/**
+	 * @return the gained_edge
+	 */
+	public DefaultWeightedEdge getGained_edge() {
+		return gained_edge;
+	}
+
+	/**
+	 * @param gained_edge the gained_edge to set
+	 */
+	public void setGained_edge(DefaultWeightedEdge gained_edge) {
+		this.gained_edge = gained_edge;
+	}
+
+	/**
 	 * Test whether the T1 transition is active by 
 	 * checking if the gained edge still exists at
 	 * the frame of input.

@@ -109,7 +109,7 @@ public class T1Transitions {
 					transition.addWinner(gained_neighbor);
 					
 					//substitute with cell_tiles edge geometry
-					transition.gained_edge = frame.getEdge(n, gained_neighbor);
+					transition.setGained_edge(frame.getEdge(n, gained_neighbor));
 					
 					transition_map.put(transition_key, transition);
 					

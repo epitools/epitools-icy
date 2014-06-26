@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.Point;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
@@ -54,7 +55,7 @@ public class GraphPainter extends Overlay{
 			g.setColor(Color.orange);
 			
 			//paint all the edges of the graph
-			for(DefaultWeightedEdge edge: frame_i.edgeSet()){
+			for(Edge edge: frame_i.edgeSet()){
 				
 				//extract points
 				Point a = frame_i.getEdgeSource(edge).getCentroid();

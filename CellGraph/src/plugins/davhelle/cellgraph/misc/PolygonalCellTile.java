@@ -10,6 +10,7 @@ import java.util.HashMap;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -51,7 +52,7 @@ public class PolygonalCellTile {
 			
 			//updated weighted graph with edge length
 			double intersection_length = intersection.getLength();
-			DefaultWeightedEdge e = frame.getEdge(source_node, neighbor);
+			Edge e = frame.getEdge(source_node, neighbor);
 			frame.setEdgeWeight(e, intersection_length);
 			
 			//int intersection_geometry_no = intersection.getNumGeometries();

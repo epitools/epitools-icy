@@ -9,6 +9,7 @@ import java.util.Arrays;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -19,8 +20,8 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class T1Transition {
 	
-	public DefaultWeightedEdge lost_edge;
-	public DefaultWeightedEdge gained_edge;
+	public Edge lost_edge;
+	public Edge gained_edge;
 	public ArrayList<Node> winners;
 	public ArrayList<Node> losers;
 	FrameGraph detection_frame;
@@ -40,11 +41,16 @@ public class T1Transition {
 	}
 
 	public boolean sanity_check() {
-		if(winners.size() == 2 &&
-				losers.size() == 2)
-			return true;
-		else
+		if(winners.size() < 2)
 			return false;
+		
+		
+		for(Node n: winners)
+			if(n.getTrackID() == -1)
+				return false;
+		
+		return true;
+		
 	}
 	
 	public void addWinner(Node winner){
@@ -55,14 +61,23 @@ public class T1Transition {
 		losers.add(loser.getFirst());
 	}
 	
-	public int[] getWinners(){
+	public int getHashCode(){
 		if(this.sanity_check()){
-			int[] winner_tuple =  {winners.get(0).getTrackID(),winners.get(1).getTrackID()};
+			
+			int[] winner_tuple =  new int[winners.size()];
+			
+			for(int i=0; i < winners.size(); i++){
+				winner_tuple[i] = winners.get(i).getTrackID();
+			}
+				
 			Arrays.sort(winner_tuple);
-			return(winner_tuple);
+			
+			int winner_hash = Arrays.hashCode(winner_tuple);
+			
+			return winner_hash;
 		}
 		else
-			return null;
+			return 0;
 	}
 	
 	@Override
@@ -86,7 +101,7 @@ public class T1Transition {
 	/**
 	 * @param lost_edge the lost_edge to set
 	 */
-	public void setLost_edge(DefaultWeightedEdge lost_edge) {
+	public void setLost_edge(Edge lost_edge) {
 		this.lost_edge = lost_edge;
 	}
 
@@ -100,7 +115,7 @@ public class T1Transition {
 	/**
 	 * @param gained_edge the gained_edge to set
 	 */
-	public void setGained_edge(DefaultWeightedEdge gained_edge) {
+	public void setGained_edge(Edge gained_edge) {
 		this.gained_edge = gained_edge;
 	}
 

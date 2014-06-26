@@ -51,8 +51,7 @@ public class T1Transitions {
 		SpatioTemporalGraph stGraph = createSpatioTemporalGraph(test_file,
 				no_of_test_files);
 
-		HashMap<Node, PolygonalCellTile> cell_tiles = createPolygonalTiles(
-				no_of_test_files, stGraph);
+		HashMap<Node, PolygonalCellTile> cell_tiles = createPolygonalTiles(stGraph);
 
 		//analysis functions
 //		reportIncidenceOfMitoticPlane(stGraph, cell_tiles); //works only with "/Users/davide/tmp/T1/test/test_t0000.tif" !!
@@ -214,11 +213,10 @@ public class T1Transitions {
 		}
 	}
 
-	private static HashMap<Node, PolygonalCellTile> createPolygonalTiles(
-			int no_of_test_files, SpatioTemporalGraph stGraph) {
+	public static HashMap<Node, PolygonalCellTile> createPolygonalTiles(SpatioTemporalGraph stGraph) {
 		System.out.println("Identifying the tiles..");
 		HashMap<Node,PolygonalCellTile> cell_tiles = new HashMap<Node, PolygonalCellTile>();
-		for(int i=0; i < no_of_test_files; i++){
+		for(int i=0; i < stGraph.size(); i++){
 			FrameGraph frame = stGraph.getFrame(i);
 			for(Node n: frame.vertexSet()){
 				PolygonalCellTile tile = new PolygonalCellTile(n);
@@ -228,7 +226,7 @@ public class T1Transitions {
 		return cell_tiles;
 	}
 
-	private static SpatioTemporalGraph createSpatioTemporalGraph(
+	public static SpatioTemporalGraph createSpatioTemporalGraph(
 			File test_file, int no_of_test_files) {
 		System.out.println("Creating graph..");
 		SpatioTemporalGraph stGraph = 

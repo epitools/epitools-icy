@@ -16,6 +16,7 @@ import org.jgrapht.graph.ListenableUndirectedWeightedGraph;
 
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Elimination;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -31,9 +32,9 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, DefaultWeightedEdge> {
+public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 	
-	private NeighborIndex<Node, DefaultWeightedEdge> neighborList;
+	private NeighborIndex<Node, Edge> neighborList;
 	private ArrayList<Division> divisions;
 	private ArrayList<Elimination> eliminations;
 	private int frame_no; 
@@ -43,13 +44,13 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, DefaultW
 	 * and then addes the neighborList.
 	 */
 	public FrameGraph(int frame_no){
-		super(DefaultWeightedEdge.class);
+		super(Edge.class);
 		
 		//specify the frame no which the graph represents
 		this.frame_no = frame_no;
 		
 		//create the neighborIndexList
-		this.neighborList = new NeighborIndex<Node, DefaultWeightedEdge>(this);
+		this.neighborList = new NeighborIndex<Node, Edge>(this);
 		this.addGraphListener(neighborList);
 		
 		//initialize division list

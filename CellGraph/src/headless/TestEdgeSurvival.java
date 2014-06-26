@@ -2,6 +2,8 @@ package headless;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -29,12 +31,23 @@ public class TestEdgeSurvival {
 		//for every considered edge
 		//neighbors must be alive, divide or be eliminated.
 		
+		HashSet<Integer> tracked_edges = new HashSet<Integer>();
+		
 		for(int i=0; i<stGraph.size(); i++){
+			
 			FrameGraph frame_i = stGraph.getFrame(i);
 			int no_of_tracked_edges = 0;
 			for(Edge e: frame_i.edgeSet()){
-				if(e.isTracked(frame_i))
-					no_of_tracked_edges++;
+				if(e.isTracked(frame_i)){
+					
+					int edge_track_code = e.trackHashCode(frame_i);
+				
+					if(i==0)
+						tracked_edges.add(edge_track_code);
+					
+					if(tracked_edges.contains(edge_track_code))
+						no_of_tracked_edges++;
+				}
 			}
 			System.out.printf("Sample contains %d trackable edges in frame %d\n",no_of_tracked_edges,i);
 		}

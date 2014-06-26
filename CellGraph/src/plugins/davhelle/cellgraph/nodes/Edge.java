@@ -3,6 +3,8 @@
  */
 package plugins.davhelle.cellgraph.nodes;
 
+import java.util.Arrays;
+
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -40,6 +42,25 @@ public class Edge extends DefaultWeightedEdge {
 			is_tracked = false;
 		
 		return is_tracked;
+	}
+	
+	public int trackHashCode(FrameGraph frame){
+		
+		//dangerous
+		if(!frame.containsEdge(this))
+			return -1;
+
+		int[] vertex_track_ids =  new int[2];
+
+		vertex_track_ids[0] = frame.getEdgeSource(this).getTrackID();
+		vertex_track_ids[1] = frame.getEdgeTarget(this).getTrackID();
+
+		Arrays.sort(vertex_track_ids);
+
+		int track_hash_code = Arrays.hashCode(vertex_track_ids);
+
+		return track_hash_code;
+
 	}
 
 }

@@ -1,6 +1,7 @@
 package headless;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,7 +56,24 @@ public class TestEdgeSurvival {
 			}
 			System.out.printf("Sample contains %d/%d trackable edges in frame %d\n",
 					no_of_tracked_edges,frame_i.edgeSet().size(),i);
+			
+			//introduce the difference between lost edge because of tracking and because of T1
+			ArrayList<Long> to_eliminate = new ArrayList<Long>();
+			for(long track_code:tracked_edges.keySet()){
+				int[] pair = Edge.getCodePair(track_code);
+				for(int track_id: pair){
+					if(!frame_i.hasTrackID(track_id)){
+						to_eliminate.add(track_code);
+						break;
+					}
+				}
+			}
+			
+			for(long track_code:to_eliminate)
+				tracked_edges.remove(track_code);
 		}
+		
+		
 		
 		int edge_survival_count = 0;
 		for(long track_code:tracked_edges.keySet()){

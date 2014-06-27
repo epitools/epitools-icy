@@ -1,6 +1,7 @@
 package headless;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class TestEdgeSurvival {
 		//for every considered edge
 		//neighbors must be alive, divide or be eliminated.
 		
-		HashSet<Integer> tracked_edges = new HashSet<Integer>();
+		HashMap<Long,Integer> tracked_edges = new HashMap<Long,Integer>();
 		
 		for(int i=0; i<stGraph.size(); i++){
 			
@@ -40,16 +41,25 @@ public class TestEdgeSurvival {
 			for(Edge e: frame_i.edgeSet()){
 				if(e.isTracked(frame_i)){
 					
-					int edge_track_code = e.trackHashCode(frame_i);
+					long edge_track_code = e.getPairCode(frame_i);
 				
 					if(i==0)
-						tracked_edges.add(edge_track_code);
+						tracked_edges.put(edge_track_code,0);
 					
-					if(tracked_edges.contains(edge_track_code))
+					if(tracked_edges.containsKey(edge_track_code)){
+						int old = tracked_edges.get(edge_track_code);
+						tracked_edges.put(edge_track_code, old + 1);
 						no_of_tracked_edges++;
+					}
 				}
 			}
-			System.out.printf("Sample contains %d trackable edges in frame %d\n",no_of_tracked_edges,i);
+			System.out.printf("Sample contains %d/%d trackable edges in frame %d\n",
+					no_of_tracked_edges,frame_i.edgeSet().size(),i);
+		}
+		
+		for(long track_code:tracked_edges.keySet()){
+			int[] pair = Edge.getCodePair(track_code);
+			System.out.printf("%s(%d)\n",Arrays.toString(pair),tracked_edges.get(track_code));
 		}
 		
 		//if edge not present in i+1: increase temporal edge otherwise skip or discard if s/t nodes absent

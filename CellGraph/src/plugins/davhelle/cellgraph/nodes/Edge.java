@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.misc.CantorPairing;
 
 /**
  * @author Davide Heller
@@ -44,9 +45,10 @@ public class Edge extends DefaultWeightedEdge {
 		return is_tracked;
 	}
 	
-	public int trackHashCode(FrameGraph frame){
+	public int getTrackHashCode(FrameGraph frame){
 		
-		//dangerous
+		//TODO: dangerous, this harms the reversibilty of the cantor function
+		//also there is no safety check for the input being natural numbers
 		if(!frame.containsEdge(this))
 			return -1;
 
@@ -62,5 +64,35 @@ public class Edge extends DefaultWeightedEdge {
 		return track_hash_code;
 
 	}
+	
+	public long getPairCode(FrameGraph frame){
+		
+		if(!frame.containsEdge(this))
+			return -1;
+		
+		int a = frame.getEdgeSource(this).getTrackID();
+		int b = frame.getEdgeTarget(this).getTrackID();
+		
+		if(a<b)
+			return CantorPairing.compute(a, b);
+		else
+			return CantorPairing.compute(b, a);
+		
+	}
+	
+	public static int[] getCodePair(long code){
+		
+		//TODO: proper -1 management
+		
+		if(code < 0){
+			int[] invalid_pair = {-1,-1};
+			return invalid_pair;
+		}
+		else
+			return CantorPairing.reverse(code);
+		
+	}
+	
+
 
 }

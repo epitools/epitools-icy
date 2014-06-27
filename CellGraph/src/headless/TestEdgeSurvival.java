@@ -57,10 +57,19 @@ public class TestEdgeSurvival {
 					no_of_tracked_edges,frame_i.edgeSet().size(),i);
 		}
 		
+		int edge_survival_count = 0;
 		for(long track_code:tracked_edges.keySet()){
 			int[] pair = Edge.getCodePair(track_code);
-			System.out.printf("%s(%d)\n",Arrays.toString(pair),tracked_edges.get(track_code));
+			int pair_survival_time = tracked_edges.get(track_code);
+			
+			if(pair_survival_time == 10)
+				edge_survival_count++;
+			else
+				System.out.printf("%s(%d)\n",Arrays.toString(pair),pair_survival_time);
 		}
+		
+		double pct_edge_sourvival = edge_survival_count / (double)tracked_edges.size() * 100;
+		System.out.printf("Percentage of survived edges:%.2f\n",pct_edge_sourvival);
 		
 		//if edge not present in i+1: increase temporal edge otherwise skip or discard if s/t nodes absent
 		//final divide edge according to length to measure stability

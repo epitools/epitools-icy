@@ -134,4 +134,12 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 		return has_track_id;
 	}
 	
+	public Node getNode(int track_id){
+		for(Node n: this.vertexSet())
+			if(n.getTrackID() == track_id)
+				return n;
+		
+		return null;
+	}
+	
 }

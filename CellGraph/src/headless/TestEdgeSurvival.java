@@ -24,11 +24,11 @@ public class TestEdgeSurvival {
 		File test_file = new File("/Users/davide/tmp/T1/test/test_t0000.tif");
 		int no_of_test_files = 10;
 
-		SpatioTemporalGraph stGraph = T1Transitions.createSpatioTemporalGraph(test_file,
+		SpatioTemporalGraph stGraph = StGraphUtils.createDefaultGraph(test_file,
 				no_of_test_files);
 
 		//TODO: What about the polygonal tile storing the geometries of the edges?
-		HashMap<Node, PolygonalCellTile> cell_tiles = T1Transitions.createPolygonalTiles(stGraph);
+		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
 		
 		//for every considered edge
 		//neighbors must be alive, divide or be eliminated.

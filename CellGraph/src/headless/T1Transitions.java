@@ -48,10 +48,10 @@ public class T1Transitions {
 		//File test_file = new File("/Users/davide/tmp/T1/test2/test2_t0000.tif");
 		int no_of_test_files = 10;
 
-		SpatioTemporalGraph stGraph = createSpatioTemporalGraph(test_file,
+		SpatioTemporalGraph stGraph = StGraphUtils.createDefaultGraph(test_file,
 				no_of_test_files);
 
-		HashMap<Node, PolygonalCellTile> cell_tiles = createPolygonalTiles(stGraph);
+		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
 
 		//analysis functions
 //		reportIncidenceOfMitoticPlane(stGraph, cell_tiles); //works only with "/Users/davide/tmp/T1/test/test_t0000.tif" !!
@@ -213,40 +213,9 @@ public class T1Transitions {
 		}
 	}
 
-	public static HashMap<Node, PolygonalCellTile> createPolygonalTiles(SpatioTemporalGraph stGraph) {
-		System.out.println("Identifying the tiles..");
-		HashMap<Node,PolygonalCellTile> cell_tiles = new HashMap<Node, PolygonalCellTile>();
-		for(int i=0; i < stGraph.size(); i++){
-			FrameGraph frame = stGraph.getFrame(i);
-			for(Node n: frame.vertexSet()){
-				PolygonalCellTile tile = new PolygonalCellTile(n);
-				cell_tiles.put(n, tile);
-			}
-		}
-		return cell_tiles;
-	}
 
-	public static SpatioTemporalGraph createSpatioTemporalGraph(
-			File test_file, int no_of_test_files) {
-		System.out.println("Creating graph..");
-		SpatioTemporalGraph stGraph = 
-				new SpatioTemporalGraphGenerator(
-						GraphType.TISSUE_EVOLUTION,
-						test_file, 
-						no_of_test_files).getStGraph();
 
-		assert stGraph.size() == no_of_test_files: "wrong frame no";
 
-		System.out.println("Identifying the border..");
-		new BorderCells(stGraph).markOnly();
-		
-		System.out.println("Removing small cells..");
-		new SmallCellRemover(stGraph).removeCellsBelow(10.0);
-
-		System.out.println("Tracking cells..");
-		new HungarianTracking(stGraph, 5, 5.0,1.0).track();
-		return stGraph;
-	}
 
 	/**
 	 * Follow every edge for every available time point and

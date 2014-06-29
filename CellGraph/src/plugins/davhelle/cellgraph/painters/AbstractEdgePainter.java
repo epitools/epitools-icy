@@ -12,7 +12,7 @@ import java.util.HashMap;
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
 
-import headless.T1Transitions;
+import headless.DetectT1Transitions;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
@@ -35,8 +35,8 @@ public class AbstractEdgePainter extends Overlay {
 	
 	private SpatioTemporalGraph stGraph;
 	private ShapeWriter writer;
-	private HashMap<Edge,Geometry> stable_set;
-	private HashMap<Edge, Geometry> unstable_set;
+	private HashMap<Long,Geometry> stable_set;
+	private HashMap<Long, Geometry> unstable_set;
 
 	/**
 	 * @param name
@@ -45,8 +45,8 @@ public class AbstractEdgePainter extends Overlay {
 		super("Abstract Edge Painter");
 		
 		this.stGraph = stGraph;
-		this.stable_set = new HashMap<Edge, Geometry>();
-		this.unstable_set = new HashMap<Edge, Geometry>();
+		this.stable_set = new HashMap<Long, Geometry>();
+		this.unstable_set = new HashMap<Long, Geometry>();
 		this.writer = new ShapeWriter();
 		
 		HashMap<Long, Integer> edge_stability = computeEdgeStability(stGraph);
@@ -66,10 +66,10 @@ public class AbstractEdgePainter extends Overlay {
 
 			if(pair_survival_time == stGraph.size()){
 				edge_survival_count++;
-				stable_set.put(ab,a_tile.getTileEdge(b));
+				stable_set.put(track_code,a_tile.getTileEdge(b));
 			}
 			else
-				unstable_set.put(ab,a_tile.getTileEdge(b));
+				unstable_set.put(track_code,a_tile.getTileEdge(b));
 		}
 		
 		double pct_edge_sourvival = edge_survival_count / (double)edge_stability.size() * 100;
@@ -78,13 +78,13 @@ public class AbstractEdgePainter extends Overlay {
 		//if edge not present in i+1: increase temporal edge otherwise skip or discard if s/t nodes absent
 		//final divide edge according to length to measure stability
 		
-		System.out.println("Stable edge length:");
-		for(Edge e: stable_set.keySet())
-			System.out.printf("%.2f\n",frame0.getEdgeWeight(e));
-		
-		System.out.println("Unstable edge length:");
-		for(Edge e: unstable_set.keySet())
-			System.out.printf("%.2f\n",frame0.getEdgeWeight(e));
+//		System.out.println("Stable edge length:");
+//		for(Edge e: stable_set.keySet())
+//			System.out.printf("%.2f\n",frame0.getEdgeWeight(e));
+//		
+//		System.out.println("Unstable edge length:");
+//		for(Edge e: unstable_set.keySet())
+//			System.out.printf("%.2f\n",frame0.getEdgeWeight(e));
 
 	}
 	
@@ -96,14 +96,15 @@ public class AbstractEdgePainter extends Overlay {
 		if(time_point < stGraph.size()){
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Edge e: frame_i.edgeSet()){
-				if(this.stable_set.containsKey(e)){
+				long track_code = e.getPairCode(frame_i);
+				if(this.stable_set.containsKey(track_code)){
 					g.setColor(Color.GREEN);
-					g.draw(writer.toShape(stable_set.get(e)));
+					g.draw(writer.toShape(stable_set.get(track_code)));
 				}
 				else{
-					if(this.unstable_set.containsKey(e)){
+					if(this.unstable_set.containsKey(track_code)){
 						g.setColor(Color.red);
-						g.draw(writer.toShape(unstable_set.get(e)));
+						g.draw(writer.toShape(unstable_set.get(track_code)));
 					}
 				}
 			}

@@ -36,7 +36,7 @@ import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
  * @author Davide Heller
  *
  */
-public class T1Transitions {
+public class DetectT1Transitions {
 
 	/**
 	 * @param args

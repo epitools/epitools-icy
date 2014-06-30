@@ -7,6 +7,8 @@ import java.util.Arrays;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.CantorPairing;
 
@@ -16,10 +18,14 @@ import plugins.davhelle.cellgraph.misc.CantorPairing;
  */
 public class Edge extends DefaultWeightedEdge {
 
+	//optional geometry field
+	private Geometry geometry;
+
 	/**
 	 * An Edge For StGraphs
 	 */
 	public Edge() {
+		this.geometry = null;
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -93,6 +99,36 @@ public class Edge extends DefaultWeightedEdge {
 		
 	}
 	
+	public boolean hasGeometry(){
+		return geometry != null;
+	}
+	
+	public void computeGeometry(FrameGraph frame){
+		
+		Node source = frame.getEdgeSource(this);
+		Node target = frame.getEdgeTarget(this);
+		
+		Geometry source_geometry = source.getGeometry();
+		Geometry target_geometry = target.getGeometry();
+		
+		if(source_geometry.intersects(target_geometry))
+			this.geometry = source_geometry.intersection(target_geometry); 
+		
+	}
+	
+	/**
+	 * @return the geometry
+	 */
+	public Geometry getGeometry() {
+		return geometry;
+	}
+
+	/**
+	 * @param geometry the geometry to set
+	 */
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
+	}
 
 
 }

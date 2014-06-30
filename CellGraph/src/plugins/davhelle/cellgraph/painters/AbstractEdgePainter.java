@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -34,8 +35,9 @@ public class AbstractEdgePainter extends Overlay {
 	
 	private SpatioTemporalGraph stGraph;
 	private ShapeWriter writer;
-	private HashMap<Long,Geometry> stable_set;
-	private HashMap<Long, Geometry> unstable_set;
+	private HashSet<Long> stable_set;
+	private HashSet<Long> unstable_set;
+	private HashSet<Long> novel_set;
 
 	/**
 	 * @param name
@@ -44,31 +46,23 @@ public class AbstractEdgePainter extends Overlay {
 		super("Abstract Edge Painter");
 		
 		this.stGraph = stGraph;
-		this.stable_set = new HashMap<Long, Geometry>();
-		this.unstable_set = new HashMap<Long, Geometry>();
+		this.stable_set = new HashSet<Long>();
+		this.unstable_set = new HashSet<Long>();
+		this.novel_set = new HashSet<Long>();
 		this.writer = new ShapeWriter();
 		
 		HashMap<Long, Integer> edge_stability = computeEdgeStability(stGraph);
 		
-		FrameGraph frame0 = stGraph.getFrame(0);
 		int edge_survival_count = 0;
 		for(long track_code:edge_stability.keySet()){
-			int[] pair = Edge.getCodePair(track_code);
-
-			Node a = frame0.getNode(pair[0]);
-			Node b = frame0.getNode(pair[1]);
-
-			Edge ab = frame0.getEdge(a, b);
-			PolygonalCellTile a_tile = new PolygonalCellTile(a);
-
 			int pair_survival_time = edge_stability.get(track_code);
 
 			if(pair_survival_time == stGraph.size()){
 				edge_survival_count++;
-				stable_set.put(track_code,a_tile.getTileEdge(b));
+				stable_set.add(track_code);
 			}
 			else
-				unstable_set.put(track_code,a_tile.getTileEdge(b));
+				unstable_set.add(track_code);
 		}
 		
 		double pct_edge_sourvival = edge_survival_count / (double)edge_stability.size() * 100;
@@ -77,14 +71,6 @@ public class AbstractEdgePainter extends Overlay {
 		//if edge not present in i+1: increase temporal edge otherwise skip or discard if s/t nodes absent
 		//final divide edge according to length to measure stability
 		
-//		System.out.println("Stable edge length:");
-//		for(Edge e: stable_set.keySet())
-//			System.out.printf("%.2f\n",frame0.getEdgeWeight(e));
-//		
-//		System.out.println("Unstable edge length:");
-//		for(Edge e: unstable_set.keySet())
-//			System.out.printf("%.2f\n",frame0.getEdgeWeight(e));
-
 	}
 	
 	@Override
@@ -96,23 +82,31 @@ public class AbstractEdgePainter extends Overlay {
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Edge e: frame_i.edgeSet()){
 				long track_code = e.getPairCode(frame_i);
-				if(this.stable_set.containsKey(track_code)){
-					g.setColor(Color.GREEN);
-					g.draw(writer.toShape(stable_set.get(track_code)));
+				
+				if(this.stable_set.contains(track_code)){
+					g.setColor(Color.green);
+					g.draw(writer.toShape(e.getGeometry()));
 				}
 				else{
-					if(this.unstable_set.containsKey(track_code)){
+					if(this.unstable_set.contains(track_code)){
 						g.setColor(Color.red);
-						g.draw(writer.toShape(unstable_set.get(track_code)));
+						g.draw(writer.toShape(e.getGeometry()));
+					}
+					else{
+						if(this.novel_set.contains(track_code)){
+							g.setColor(Color.yellow);
+							g.draw(writer.toShape(e.getGeometry()));
+						}
 					}
 				}
 			}
 		}
     }
-
+	
 	private HashMap<Long, Integer> computeEdgeStability(
 			SpatioTemporalGraph stGraph) {
 		HashMap<Long,Integer> tracked_edges = new HashMap<Long,Integer>();
+		HashSet<Long> eliminated_edges = new HashSet<Long>();
 		
 		for(int i=0; i<stGraph.size(); i++){
 			
@@ -120,6 +114,8 @@ public class AbstractEdgePainter extends Overlay {
 			int no_of_tracked_edges = 0;
 			for(Edge e: frame_i.edgeSet()){
 				if(e.isTracked(frame_i)){
+					
+					e.computeGeometry(frame_i);
 					
 					long edge_track_code = e.getPairCode(frame_i);
 				
@@ -130,6 +126,12 @@ public class AbstractEdgePainter extends Overlay {
 						int old = tracked_edges.get(edge_track_code);
 						tracked_edges.put(edge_track_code, old + 1);
 						no_of_tracked_edges++;
+					}
+					else{
+					if(!eliminated_edges.contains(edge_track_code)){
+						//novel edge most likely
+						novel_set.add(edge_track_code);
+					}
 					}
 				}
 			}
@@ -148,8 +150,10 @@ public class AbstractEdgePainter extends Overlay {
 				}
 			}
 			
-			for(long track_code:to_eliminate)
+			for(long track_code:to_eliminate){
 				tracked_edges.remove(track_code);
+				eliminated_edges.add(track_code);
+			}
 		}
 		return tracked_edges;
 	}

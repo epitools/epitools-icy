@@ -55,6 +55,10 @@ public class PolygonalCellTile {
 			Edge e = frame.getEdge(source_node, neighbor);
 			frame.setEdgeWeight(e, intersection_length);
 			
+//			if(!e.hasGeometry()){
+//				e.setGeometry(intersection);
+//			}
+			
 			//int intersection_geometry_no = intersection.getNumGeometries();
 			//intersection length and geometry number can differ 
 			//since an oblique geometry has length 1.41 

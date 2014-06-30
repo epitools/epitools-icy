@@ -83,25 +83,20 @@ public class AbstractEdgePainter extends Overlay {
 			for(Edge e: frame_i.edgeSet()){
 				long track_code = e.getPairCode(frame_i);
 				
-				if(this.stable_set.contains(track_code)){
-					g.setColor(Color.green);
-					g.draw(writer.toShape(e.getGeometry()));
-				}
-				else{
-					if(this.unstable_set.contains(track_code)){
-						g.setColor(Color.red);
-						g.draw(writer.toShape(e.getGeometry()));
-					}
-					else{
-						if(this.novel_set.contains(track_code)){
-							g.setColor(Color.yellow);
-							g.draw(writer.toShape(e.getGeometry()));
-						}
-					}
-				}
+				if(stable_set.contains(track_code))
+					drawEdge(g,e,Color.green);
+				else if(unstable_set.contains(track_code))
+					drawEdge(g,e,Color.red);
+				else if(novel_set.contains(track_code))
+					drawEdge(g,e,Color.yellow);
 			}
 		}
     }
+	
+	public void drawEdge(Graphics2D g, Edge e, Color color){
+		g.setColor(color);
+		g.draw(writer.toShape(e.getGeometry()));
+	}
 	
 	private HashMap<Long, Integer> computeEdgeStability(
 			SpatioTemporalGraph stGraph) {
@@ -127,11 +122,8 @@ public class AbstractEdgePainter extends Overlay {
 						tracked_edges.put(edge_track_code, old + 1);
 						no_of_tracked_edges++;
 					}
-					else{
-					if(!eliminated_edges.contains(edge_track_code)){
-						//novel edge most likely
+					else if(!eliminated_edges.contains(edge_track_code)){
 						novel_set.add(edge_track_code);
-					}
 					}
 				}
 			}

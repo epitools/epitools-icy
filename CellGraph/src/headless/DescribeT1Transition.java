@@ -18,7 +18,7 @@ public class DescribeT1Transition {
 		
 		//Input files
 		File test_file = new File("/Users/davide/data/neo/1/T1_examples/T1_at_x62-y56/T1atx62-y56t0000.tif");
-		int no_of_test_files = 10;
+		int no_of_test_files = 99;
 
 		SpatioTemporalGraph stGraph = StGraphUtils.createDefaultGraph(test_file,no_of_test_files);
 		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
@@ -109,12 +109,17 @@ public class DescribeT1Transition {
 				
 				if(transition.length() > 2){
 
-					System.out.printf("Transition %s is persistent\n",
-							transition.toString());
+					System.out.printf("Side Loss: %s @ %d is persistent for %d frames\n",
+							Arrays.toString(transition.getLoserNodes()),
+							transition.getDetectionTime(),
+							transition.length());
 					
-				//extract tile geometry and find find neighboring cells
-				//transition.findSideGain(cell_tiles);
-				
+					//extract tile geometry and find find neighboring cells
+					transition.findSideGain(cell_tiles);
+					
+					System.out.printf("Proposed Side Gain: %s\n",
+							Arrays.toString(transition.getWinnerNodes()));
+					
 				//check if they are connected in LOST frame 
 				//and if they are unconnected in previous frame
 				//transition.checkConnectivityAssumption();

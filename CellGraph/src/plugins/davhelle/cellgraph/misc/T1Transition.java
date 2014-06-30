@@ -3,9 +3,13 @@
  */
 package plugins.davhelle.cellgraph.misc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import com.vividsolutions.jts.geom.Geometry;
+
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -37,11 +41,13 @@ public class T1Transition {
 		return -1;
 	}
 	
-	private int computeTransitionLength(int start){
+	private int computeTransitionLength(){
 		int transition_length = 0;
-		for(int i=start; i<lost_edge_track.length; i++)
-			if(lost_edge_track[i])
+		for(int i=detection_time_point; i<lost_edge_track.length; i++)
+			if(!lost_edge_track[i])
 				transition_length++;
+			else
+				break;
 		
 		return transition_length;
 	}
@@ -57,7 +63,7 @@ public class T1Transition {
 		this.detection_time_point = findFirstMissingFrameNo();
 		assert detection_time_point > 0: "transition could not be identified";
 		
-		this.transition_length = computeTransitionLength(detection_time_point);
+		this.transition_length = computeTransitionLength();
 		
 		winner_nodes = new int[2];
 		Arrays.fill(winner_nodes, -1);
@@ -66,15 +72,59 @@ public class T1Transition {
 	
 	@Override
 	public String toString(){
-			return String.format("[%d + %d, %d - %d]",
+			return String.format("[%d + %d, %d - %d] @ %d",
 					winner_nodes[0],winner_nodes[1],
-					loser_nodes[0],loser_nodes[1]);
+					loser_nodes[0],loser_nodes[1],
+					detection_time_point);
+	}
+	
+	public int[] getLoserNodes(){
+		return loser_nodes;
+	}
+	
+	public int[] getWinnerNodes(){
+		return winner_nodes;
+	}
+	
+	public int getDetectionTime(){
+		return detection_time_point;
 	}
 
 
 	public void findSideGain(HashMap<Node, PolygonalCellTile> cell_tiles) {
 		
-		//Geometry.edge
+		FrameGraph previous_frame = stGraph.getFrame(detection_time_point - 1);
+		
+		assert previous_frame.hasTrackID(loser_nodes[0]): "Looser node not found in previous frame";
+		assert previous_frame.hasTrackID(loser_nodes[1]): "Looser node not found in previous frame";
+		
+		Node l1 = previous_frame.getNode(loser_nodes[0]);
+		Node l2 = previous_frame.getNode(loser_nodes[1]);
+		
+		Geometry lost_edge = cell_tiles.get(l1).getTileEdge(l2);
+		
+		ArrayList<Integer> side_gain_nodes = new ArrayList<Integer>();
+		
+		for(Node n: l1.getNeighbors())
+			if(lost_edge.intersects(n.getGeometry()))
+				if(!n.equals(l2))
+					side_gain_nodes.add(n.getTrackID());
+		
+		assert side_gain_nodes.size() == 2:
+			String.format("Winner nodes are more than expected %s",side_gain_nodes.toString());
+		
+		winner_nodes[0] = side_gain_nodes.get(0);
+		winner_nodes[1] = side_gain_nodes.get(1);
+		
+		FrameGraph detection_frame = stGraph.getFrame(detection_time_point);
+		
+		assert detection_frame.hasTrackID(winner_nodes[0]): "Winner node not found in detection frame";
+		assert detection_frame.hasTrackID(winner_nodes[1]): "Winner node not found in detection frame";
+		
+		Node w1 = detection_frame.getNode(winner_nodes[0]);
+		Node w2 = detection_frame.getNode(winner_nodes[1]);
+		
+		assert detection_frame.containsEdge(w1, w2): "No winner edge found in detection frame";
 		
 	}
 

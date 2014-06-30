@@ -109,21 +109,28 @@ public class DetectT1Transition {
 				
 				if(transition.length() > 2){
 
-					System.out.printf("Side Loss: %s @ %d is persistent for %d frames\n",
+					System.out.printf("Accepted Side Loss: %s @ %d is persistent for %d frames\n",
 							Arrays.toString(transition.getLoserNodes()),
 							transition.getDetectionTime(),
 							transition.length());
 					
 					//extract tile geometry and find find neighboring cells
+					//check if they are connected in LOST frame 
+					//and if they are unconnected in previous frame
+					//transition.checkConnectivityAssumption();
 					transition.findSideGain(cell_tiles);
 					
-					System.out.printf("Proposed Side Gain: %s\n",
+					System.out.printf("\tProposed Side Gain: %s\n",
 							Arrays.toString(transition.getWinnerNodes()));
 					
-				//check if they are connected in LOST frame 
-				//and if they are unconnected in previous frame
-				//transition.checkConnectivityAssumption();
 				}
+				else{
+					System.out.printf("Rejected Side Loss: %s @ %d is persistent only for %d frames\n",
+							Arrays.toString(transition.getLoserNodes()),
+							transition.getDetectionTime(),
+							transition.length());
+				}
+				
 			}
 				
 		}

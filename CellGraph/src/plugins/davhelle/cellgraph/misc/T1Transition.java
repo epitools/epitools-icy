@@ -43,11 +43,18 @@ public class T1Transition {
 	
 	private int computeTransitionLength(){
 		int transition_length = 0;
+		int[] transition_vector = new int[lost_edge_track.length];
 		for(int i=detection_time_point; i<lost_edge_track.length; i++)
-			if(!lost_edge_track[i])
+			if(!lost_edge_track[i]){
+				transition_vector[i] = transition_vector[i-1] + 1;
 				transition_length++;
+			}
 			else
 				break;
+		
+		System.out.printf("Transition vector of %s:\t%s\n",
+				Arrays.toString(loser_nodes),
+				Arrays.toString(transition_vector));
 		
 		return transition_length;
 	}
@@ -101,6 +108,7 @@ public class T1Transition {
 		Node l1 = previous_frame.getNode(loser_nodes[0]);
 		Node l2 = previous_frame.getNode(loser_nodes[1]);
 		
+		//TODO: substitute with intersection?
 		Geometry lost_edge = cell_tiles.get(l1).getTileEdge(l2);
 		
 		ArrayList<Integer> side_gain_nodes = new ArrayList<Integer>();

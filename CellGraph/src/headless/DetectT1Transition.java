@@ -12,7 +12,7 @@ import plugins.davhelle.cellgraph.misc.T1Transition;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-public class DescribeT1Transition {
+public class DetectT1Transition {
 
 	public static void main(String[] args){
 		

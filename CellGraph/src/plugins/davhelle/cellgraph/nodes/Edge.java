@@ -68,8 +68,11 @@ public class Edge extends DefaultWeightedEdge {
 
 		int[] vertex_track_ids =  new int[2];
 
-		vertex_track_ids[0] = frame.getEdgeSource(this).getTrackID();
-		vertex_track_ids[1] = frame.getEdgeTarget(this).getTrackID();
+		Node source_node = frame.getEdgeSource(this);
+		Node target_node = frame.getEdgeTarget(this);
+
+		vertex_track_ids[0] = source_node.getTrackID();
+		vertex_track_ids[1] = target_node.getTrackID();
 
 		Arrays.sort(vertex_track_ids);
 
@@ -84,8 +87,17 @@ public class Edge extends DefaultWeightedEdge {
 		if(!frame.containsEdge(this))
 			return -1;
 		
-		int a = frame.getEdgeSource(this).getTrackID();
-		int b = frame.getEdgeTarget(this).getTrackID();
+		Node source_node = frame.getEdgeSource(this);
+		Node target_node = frame.getEdgeTarget(this);
+
+//		if(source_node.hasObservedDivision())
+//			source_node = source_node.getDivision().getMother();
+//		
+//		if(target_node.hasObservedDivision())
+//			target_node = target_node.getDivision().getMother();
+		
+		int a = source_node.getTrackID();
+		int b = target_node.getTrackID();
 		
 		if(a<b)
 			return CantorPairing.compute(a, b);

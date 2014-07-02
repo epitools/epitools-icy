@@ -55,6 +55,7 @@ public class T1Transition {
 		for(int i=detection_time_point; i<lost_edge_track.length; i++)
 			if(!lost_edge_track[i]){
 				transition_vector[i] = transition_vector[i-1] + 1;
+				transition_vector[i-1] = 0;
 				transition_length++;
 			}
 			else

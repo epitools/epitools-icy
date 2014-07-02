@@ -27,11 +27,22 @@ public class DetectT1Transition {
 
 	public static void main(String[] args){
 		
+		final boolean use_test = false;
+		
+		SpatioTemporalGraph stGraph = null;
+		
 		//Input files
-		File test_file = new File("/Users/davide/data/neo/1/T1_examples/T1_at_x62-y56/T1atx62-y56t0000.tif");
-		int no_of_test_files = 99;
-
-		SpatioTemporalGraph stGraph = StGraphUtils.createDefaultGraph(test_file,no_of_test_files);
+		if(use_test){
+			File test_file = new File(
+					"/Users/davide/data/neo/1/T1_examples/T1_at_x62-y56/T1atx62-y56t0000.tif");
+			int no_of_test_files = 20;
+			stGraph = StGraphUtils.createDefaultGraph(test_file,no_of_test_files);
+		}
+		else
+			stGraph = StGraphUtils.loadNeo(1);
+		
+		assert stGraph != null: "Spatio temporal graph creation failed!";
+		
 		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
 		HashMap<Long, boolean[]> tracked_edges = new HashMap<Long,boolean[]>();
 		
@@ -46,7 +57,9 @@ public class DetectT1Transition {
 			removeUntrackedEdges(tracked_edges, frame_i);
 		}
 		
-		findTransitions(stGraph, cell_tiles, tracked_edges);
+		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges);
+		
+		System.out.printf("Found %d stable transitions\n",transition_no);
 	
 	}
 
@@ -104,10 +117,12 @@ public class DetectT1Transition {
 	}
 	
 
-	private static void findTransitions(
+	private static int findTransitions(
 			SpatioTemporalGraph stGraph,
 			HashMap<Node, PolygonalCellTile> cell_tiles,
 			HashMap<Long, boolean[]> tracked_edges) {
+		
+		int stable_transition_no = 0;
 		
 		//find changes in neighborhood
 		for(long track_code:tracked_edges.keySet()){
@@ -119,6 +134,8 @@ public class DetectT1Transition {
 				T1Transition transition = new T1Transition(stGraph, pair, edge_track);
 				
 				if(transition.length() > 2){
+					
+					stable_transition_no++;
 
 					System.out.printf("Accepted Side Loss: %s @ %d is persistent for %d frames\n",
 							Arrays.toString(transition.getLoserNodes()),
@@ -143,12 +160,11 @@ public class DetectT1Transition {
 				}
 				
 			}
-				
+			
 		}
-		
+
+		return stable_transition_no;
 	}
-
-
 
 	
 }

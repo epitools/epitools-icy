@@ -131,7 +131,14 @@ public class AbstractEdgePainter extends Overlay {
 						no_of_tracked_edges++;
 					}
 					else if(!eliminated_edges.contains(edge_track_code)){
-						novel_set.add(edge_track_code);
+						
+						Node source_node = frame_i.getEdgeSource(e);
+						Node target_node = frame_i.getEdgeTarget(e);
+						
+						if(source_node.hasObservedDivision() || target_node.hasObservedDivision())
+							continue;
+						else
+							novel_set.add(edge_track_code);
 					}
 				}
 			}

@@ -36,20 +36,20 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class CsvTrackReader extends TrackingAlgorithm{
 
-	private String output_directory;
+	private String input_directory;
 	private int linkage_threshold;
 	
 	public static final String tracking_file_pattern = "tracking_t%03d.csv";
 	public static final String division_file_pattern = "divisions.csv";
 	public static final String elimination_file_pattern = "eliminations.csv";
 	
-	public CsvTrackReader(SpatioTemporalGraph stGraph,String output_directory) {
+	public CsvTrackReader(SpatioTemporalGraph stGraph,String input_directory) {
 		 super(stGraph,false);
 		 //Make sure directory ends with slash
 		 //TODO: Substitute this whith new File(parent, child)
-		 if(output_directory.charAt(output_directory.length() - 1) != '/')
-			 output_directory += "/";
-		 this.output_directory = output_directory;
+		 if(input_directory.charAt(input_directory.length() - 1) != '/')
+			 input_directory += "/";
+		 this.input_directory = input_directory;
 		 //default linkage range (how many frame to go back to find a cell with the same id)
 		 //might be adapted. TODO
 		 this.linkage_threshold = 5;
@@ -61,13 +61,13 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		readTrackingIds();
 		readDivisions();
 		readEliminations();
-		System.out.println("Successfully read tracking form: "+output_directory);
+		System.out.println("Successfully read tracking form: "+input_directory);
 	}
 	
 	public void readTrackingIds(){
 		for(int i=0; i < stGraph.size(); i++){
 			FrameGraph frame = stGraph.getFrame(i);
-			String file_name = output_directory + String.format(tracking_file_pattern,i);
+			String file_name = input_directory + String.format(tracking_file_pattern,i);
 			File input_file = new File(file_name);
 			read(frame,input_file,ExportFieldType.TRACKING_POSITION);
 		}
@@ -76,7 +76,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	public void readDivisions(){
 		if(stGraph.size() > 0){
 			FrameGraph frame = stGraph.getFrame(0);
-			String file_name = output_directory + String.format(division_file_pattern);
+			String file_name = input_directory + String.format(division_file_pattern);
 			File input_file = new File(file_name);
 			read(frame,input_file,ExportFieldType.DIVISION);
 		}
@@ -85,7 +85,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	public void readEliminations(){
 		if(stGraph.size() > 0){
 			FrameGraph frame = stGraph.getFrame(0);
-			String file_name = output_directory + String.format(elimination_file_pattern);
+			String file_name = input_directory + String.format(elimination_file_pattern);
 			File input_file = new File(file_name);
 			read(frame,input_file,ExportFieldType.ELIMINATION);
 		}

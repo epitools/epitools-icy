@@ -13,6 +13,8 @@ package plugins.davhelle.cellgraph.misc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -61,9 +63,20 @@ public class T1Transition {
 			else
 				break;
 		
-		System.out.printf("Transition vector of %s:\t%s\n",
-				Arrays.toString(loser_nodes),
-				Arrays.toString(transition_vector));
+		
+		//Count the number of Transitions (i.e. minimum number of consecutive losses is 3)
+		Arrays.sort(transition_vector);
+		int array_end = transition_vector.length - 1;
+		for(int i=array_end; i>=0; i--){
+			if(transition_vector[i] < 3){
+				System.out.printf("Found %d permanent track/s out of %d persistent change/s\n",
+						array_end - i, transition_length);
+				break;
+			}
+		}
+		
+		//review which transition is given as output
+		
 		
 		return transition_length;
 	}
@@ -133,15 +146,15 @@ public class T1Transition {
 		winner_nodes[0] = side_gain_nodes.get(0);
 		winner_nodes[1] = side_gain_nodes.get(1);
 		
-		FrameGraph detection_frame = stGraph.getFrame(detection_time_point);
-		
-		assert detection_frame.hasTrackID(winner_nodes[0]): "Winner node not found in detection frame";
-		assert detection_frame.hasTrackID(winner_nodes[1]): "Winner node not found in detection frame";
-		
-		Node w1 = detection_frame.getNode(winner_nodes[0]);
-		Node w2 = detection_frame.getNode(winner_nodes[1]);
-		
-		assert detection_frame.containsEdge(w1, w2): "No winner edge found in detection frame";
+//		FrameGraph detection_frame = stGraph.getFrame(detection_time_point);
+//		
+//		assert detection_frame.hasTrackID(winner_nodes[0]): "Winner node not found in detection frame";
+//		assert detection_frame.hasTrackID(winner_nodes[1]): "Winner node not found in detection frame";
+//		
+//		Node w1 = detection_frame.getNode(winner_nodes[0]);
+//		Node w2 = detection_frame.getNode(winner_nodes[1]);
+//		
+//		assert detection_frame.containsEdge(w1, w2): "No winner edge found in detection frame";
 		
 	}
 

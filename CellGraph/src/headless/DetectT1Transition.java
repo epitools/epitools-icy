@@ -59,7 +59,7 @@ public class DetectT1Transition {
 		
 		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges);
 		
-		System.out.printf("Found %d stable transitions\n",transition_no);
+		System.out.printf("Found %d stable transition/s\n",transition_no);
 	
 	}
 

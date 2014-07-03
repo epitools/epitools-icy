@@ -12,6 +12,7 @@
 package headless;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -47,7 +48,7 @@ public class DetectT1Transition {
 		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
 		
 		System.out.println("\nFinding T1 transitions..");
-		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges);
+		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges).size();
 		System.out.printf("Found %d stable transition/s\n",transition_no);
 	
 	}
@@ -61,25 +62,24 @@ public class DetectT1Transition {
 	}
 	
 
-	public static int findTransitions(
+	public static ArrayList<T1Transition> findTransitions(
 			SpatioTemporalGraph stGraph,
 			HashMap<Node, PolygonalCellTile> cell_tiles,
 			HashMap<Long, boolean[]> tracked_edges) {
 		
-		int stable_transition_no = 0;
+		ArrayList<T1Transition> stable_transitions = new ArrayList<T1Transition>();
 		
 		//find changes in neighborhood
 		for(long track_code:tracked_edges.keySet()){
 			boolean[] edge_track = tracked_edges.get(track_code);
 			
 			if(!hasStableTrack(edge_track)){
-				//determine when the change happened the first time
+				//determine whether a persistent Edge Change occurred
 				int[] pair = Edge.getCodePair(track_code);
 				T1Transition transition = new T1Transition(stGraph, pair, edge_track);
 				
 				if(transition.length() > 2){
 					
-					stable_transition_no++;
 
 					System.out.printf("Accepted Side Loss: %s @ %d is persistent for %d frames\n",
 							Arrays.toString(transition.getLoserNodes()),
@@ -95,6 +95,7 @@ public class DetectT1Transition {
 					System.out.printf("\tProposed Side Gain: %s\n",
 							Arrays.toString(transition.getWinnerNodes()));
 					
+					stable_transitions.add(transition);
 				}
 				else{
 					System.out.printf("Rejected Side Loss: %s @ %d is persistent only for %d frames\n",
@@ -107,7 +108,7 @@ public class DetectT1Transition {
 			
 		}
 
-		return stable_transition_no;
+		return stable_transitions;
 	}
 
 	

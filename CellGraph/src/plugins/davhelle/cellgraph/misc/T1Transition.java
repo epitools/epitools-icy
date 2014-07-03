@@ -52,6 +52,8 @@ public class T1Transition {
 	}
 	
 	private int computeTransitionLength(){
+		
+		//compute the transition vector, i.e. length of every transition
 		int transition_length = 0;
 		int[] transition_vector = new int[lost_edge_track.length];
 		for(int i=detection_time_point; i<lost_edge_track.length; i++)
@@ -60,24 +62,32 @@ public class T1Transition {
 				transition_vector[i-1] = 0;
 				transition_length++;
 			}
-			else
-				break;
 		
+		//find the first transition that is higher than set detection threshold
+		int detection_threshold = 2;
+		for(int i=0; i<transition_vector.length; i++) {
+			if(transition_vector[i] > detection_threshold){
+				transition_length = transition_vector[i];
+				detection_time_point = i - transition_length  + 1;
+				break;
+			}
+		}
 		
 		//Count the number of Transitions (i.e. minimum number of consecutive losses is 3)
 		Arrays.sort(transition_vector);
 		int array_end = transition_vector.length - 1;
 		for(int i=array_end; i>=0; i--){
-			if(transition_vector[i] < 3){
-				System.out.printf("Found %d permanent track/s out of %d persistent change/s\n",
-						array_end - i, transition_length);
+			if(transition_vector[i] < 1){
+				System.out.printf("Found %d permanent track/s out of %d persistent change/s: %s\n",
+						array_end - i, 
+						transition_length,
+						Arrays.toString(
+								Arrays.copyOfRange(transition_vector, i+1, array_end+1)));
 				break;
 			}
 		}
 		
 		//review which transition is given as output
-		
-		
 		return transition_length;
 	}
 	

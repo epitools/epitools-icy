@@ -27,7 +27,7 @@ public class DetectT1Transition {
 
 	public static void main(String[] args){
 		
-		final boolean use_test = false;
+		final boolean use_test = true;
 		
 		SpatioTemporalGraph stGraph = null;
 		
@@ -44,6 +44,9 @@ public class DetectT1Transition {
 		assert stGraph != null: "Spatio temporal graph creation failed!";
 		
 		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
+		
+		System.out.println("\nAnalyzing the cell edges..");
+		
 		HashMap<Long, boolean[]> tracked_edges = new HashMap<Long,boolean[]>();
 		
 		initializeTrackedEdges(stGraph, tracked_edges);

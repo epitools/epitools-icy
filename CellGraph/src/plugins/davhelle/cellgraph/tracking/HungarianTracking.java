@@ -133,8 +133,6 @@ public class HungarianTracking extends TrackingAlgorithm{
 			
 			long startTime = System.currentTimeMillis();
 			
-			System.out.println("\n******************Linking frame "+time_point+"...\n");
-			
 			if(time_point > 0){
 				Map<String, Stack<Node>> unmarried = linkTimePoint(time_point);
 				
@@ -146,7 +144,7 @@ public class HungarianTracking extends TrackingAlgorithm{
 			
 			long endTime = System.currentTimeMillis();
 			
-			System.out.printf("...Linking frame %d took %d milliseconds******************\n",
+			System.out.printf("Linked frame %d in %d milliseconds\n",
 					time_point,(endTime-startTime));
 		}
 		

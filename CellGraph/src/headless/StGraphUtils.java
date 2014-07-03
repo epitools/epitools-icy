@@ -60,13 +60,14 @@ public class StGraphUtils {
 		System.out.println("Identifying the tiles..");
 		HashMap<Node,PolygonalCellTile> cell_tiles = new HashMap<Node, PolygonalCellTile>();
 		for(int i=0; i < stGraph.size(); i++){
-			printProgBar(i, stGraph.size());
+			printProgressBar(i, stGraph.size());
 			FrameGraph frame = stGraph.getFrame(i);
 			for(Node n: frame.vertexSet()){
 				PolygonalCellTile tile = new PolygonalCellTile(n);
 				cell_tiles.put(n, tile);
 			}
 		}
+		printProgressBar(stGraph.size(), stGraph.size());
 		System.out.println();
 		return cell_tiles;
 	}
@@ -110,7 +111,7 @@ public class StGraphUtils {
 	}
 	
 	//adapted from: http://nakkaya.com/2009/11/08/command-line-progress-bar/
-	public static void printProgBar(int current, int max){
+	public static void printProgressBar(int current, int max){
 		int percent = (current * 100) / max;
 		
 	    StringBuilder bar = new StringBuilder("[");

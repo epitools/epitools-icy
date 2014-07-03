@@ -12,16 +12,15 @@
 package headless;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.T1Transition;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.tracking.EdgeTracking;
 
 public class DetectT1Transition {
 
@@ -40,77 +39,19 @@ public class DetectT1Transition {
 		}
 		else
 			stGraph = StGraphUtils.loadNeo(1);
-		
 		assert stGraph != null: "Spatio temporal graph creation failed!";
 		
 		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
 		
 		System.out.println("\nAnalyzing the cell edges..");
+		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
 		
-		HashMap<Long, boolean[]> tracked_edges = new HashMap<Long,boolean[]>();
-		
-		initializeTrackedEdges(stGraph, tracked_edges);
-		
-		for(int i=1; i<stGraph.size(); i++)
-		{
-			FrameGraph frame_i = stGraph.getFrame(i);
-			
-			trackEdges(tracked_edges, frame_i);
-			
-			removeUntrackedEdges(tracked_edges, frame_i);
-		}
-		
+		System.out.println("\nFinding T1 transitions..");
 		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges);
-		
 		System.out.printf("Found %d stable transition/s\n",transition_no);
 	
 	}
 
-	private static void initializeTrackedEdges(SpatioTemporalGraph stGraph,
-			HashMap<Long, boolean[]> tracked_edges) {
-		FrameGraph first_frame = stGraph.getFrame(0);
-		for(Edge e: first_frame.edgeSet()){
-			if(e.isTracked(first_frame)){
-				long track_code = e.getPairCode(first_frame);
-				tracked_edges.put(track_code, new boolean[stGraph.size()]);
-				tracked_edges.get(track_code)[0] = true;
-			}
-		}
-	}
-	
-	private static void trackEdges(
-			HashMap<Long, boolean[]> tracked_edges,
-			FrameGraph frame_i) {
-		
-		for(Edge e: frame_i.edgeSet()){
-			if(e.isTracked(frame_i)){
-				
-				long edge_track_code = e.getPairCode(frame_i);
-				
-				if(tracked_edges.containsKey(edge_track_code))
-					tracked_edges.get(edge_track_code)[frame_i.getFrameNo()] = true;
-			}
-		}
-	}
-	
-	private static void removeUntrackedEdges(
-			HashMap<Long, boolean[]> tracked_edges, FrameGraph frame_i) {
-		//introduce the difference between lost edge because of tracking and because of T1
-		ArrayList<Long> to_eliminate = new ArrayList<Long>();
-		for(long track_code:tracked_edges.keySet()){
-			int[] pair = Edge.getCodePair(track_code);
-			for(int track_id: pair){
-				if(!frame_i.hasTrackID(track_id)){
-					to_eliminate.add(track_code);
-					break;
-				}
-			}
-		}
-		
-		for(long track_code:to_eliminate)
-			tracked_edges.remove(track_code);
-	}
-	
 	public static boolean hasStableTrack(boolean[] edge_track){
 		for(boolean tracked_in_frame_i: edge_track)
 			if(!tracked_in_frame_i)
@@ -120,7 +61,7 @@ public class DetectT1Transition {
 	}
 	
 
-	private static int findTransitions(
+	public static int findTransitions(
 			SpatioTemporalGraph stGraph,
 			HashMap<Node, PolygonalCellTile> cell_tiles,
 			HashMap<Long, boolean[]> tracked_edges) {

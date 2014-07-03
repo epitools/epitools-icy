@@ -56,6 +56,7 @@ import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackPainter;
+import plugins.davhelle.cellgraph.painters.TransitionOverlay;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
 
@@ -412,8 +413,8 @@ public class CellPainter extends EzPlug {
 							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 							break;
 						case CHANGE_FREQUENCY:
-							
-							sequence.addOverlay(new AbstractEdgePainter(wing_disc_movie));
+							sequence.addOverlay(new TransitionOverlay(wing_disc_movie));
+							//sequence.addOverlay(new AbstractEdgePainter(wing_disc_movie));
 							//sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
 							break;
 						default:

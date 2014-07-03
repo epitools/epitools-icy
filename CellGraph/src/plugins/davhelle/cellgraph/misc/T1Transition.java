@@ -17,10 +17,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
+import org.netlib.util.intW;
+
 import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -121,6 +124,14 @@ public class T1Transition {
 		return loser_nodes;
 	}
 	
+	public boolean hasWinners(){
+		for(int winner: winner_nodes)
+			if(winner == -1)
+				return false;
+
+		return true;
+	}
+	
 	public int[] getWinnerNodes(){
 		return winner_nodes;
 	}
@@ -128,6 +139,7 @@ public class T1Transition {
 	public int getDetectionTime(){
 		return detection_time_point;
 	}
+	
 
 
 	public void findSideGain(HashMap<Node, PolygonalCellTile> cell_tiles) {
@@ -141,12 +153,19 @@ public class T1Transition {
 		Node l2 = previous_frame.getNode(loser_nodes[1]);
 		
 		//TODO: substitute with intersection?
-		Geometry lost_edge = cell_tiles.get(l1).getTileEdge(l2);
+//		assert previous_frame.containsEdge(l1, l2): "Input edge is missing in previous frame";
+//		Edge lost_edge = previous_frame.getEdge(l1, l2);
+//		
+//		Geometry lost_edge_geometry = 
+//		if(lost_edge.hasGeometry()){
+//			
+//		}
+		Geometry lost_edge_geometry = cell_tiles.get(l1).getTileEdge(l2);
 		
 		ArrayList<Integer> side_gain_nodes = new ArrayList<Integer>();
 		
 		for(Node n: l1.getNeighbors())
-			if(lost_edge.intersects(n.getGeometry()))
+			if(lost_edge_geometry.intersects(n.getGeometry()))
 				if(!n.equals(l2))
 					side_gain_nodes.add(n.getTrackID());
 		

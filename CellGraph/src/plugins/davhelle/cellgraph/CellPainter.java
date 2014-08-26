@@ -50,6 +50,7 @@ import plugins.davhelle.cellgraph.painters.ColorTagPainter;
 import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.GraphPainter;
+import plugins.davhelle.cellgraph.painters.IntesityGraphOverlay;
 import plugins.davhelle.cellgraph.painters.NeighborChangeFrequencyOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
@@ -382,9 +383,13 @@ public class CellPainter extends EzPlug {
 						break;
 						case GRAPH_PAINTER:
 							
-							sequence.addPainter(
-									new GraphPainter(
-											wing_disc_movie));
+							sequence.addOverlay(
+									new IntesityGraphOverlay(
+											wing_disc_movie, sequence));
+							
+//							sequence.addPainter(
+//									new GraphPainter(
+//											wing_disc_movie));
 							
 							break;
 						case GRAPH_EXPORT:
@@ -407,15 +412,15 @@ public class CellPainter extends EzPlug {
 							new CellWorkbook(wing_disc_movie);
 							break;
 						case SAVE_SKELETONS:
-							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
+							sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
+//							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
 							break;
 						case CORRECTION_HINTS:
-							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+							sequence.addOverlay(new AbstractEdgePainter(wing_disc_movie));
+							//sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 							break;
 						case CHANGE_FREQUENCY:
 							sequence.addOverlay(new TransitionOverlay(wing_disc_movie));
-							//sequence.addOverlay(new AbstractEdgePainter(wing_disc_movie));
-							//sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
 							break;
 						default:
 							break;

@@ -28,12 +28,28 @@ public class Edge extends DefaultWeightedEdge {
 
 	//optional geometry field
 	private Geometry geometry;
+	private double value;
+
+	/**
+	 * @return the value
+	 */
+	public double getValue() {
+		return value;
+	}
+
+	/**
+	 * @param value the value to set
+	 */
+	public void setValue(double value) {
+		this.value = value;
+	}
 
 	/**
 	 * An Edge For StGraphs
 	 */
 	public Edge() {
 		this.geometry = null;
+		this.value = -1.0;
 		// TODO Auto-generated constructor stub
 	}
 	

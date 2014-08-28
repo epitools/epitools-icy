@@ -467,8 +467,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varDirectInput.getValue(), 
 				varTool.getValue());
 		
+		this.getUI().setProgressBarMessage("Creating Spatial Graphs...");
+
 		//Generate a FrameGraph for each time point/input file
-		for(int i = 0; i< varMaxT.getValue(); i++){
+		int time_points_no = varMaxT.getValue();
+		for(int i = 0; i< time_points_no; i++){
+			
 			//check existance
 			String abs_path = file_name_generator.getFileName(i);
 
@@ -498,11 +502,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 			//wing_disc_movie.setFrame(current_frame, current_file_no);
 			wing_disc_movie.addFrame(frame_from_generator);
 			
+			this.getUI().setProgressBarValue(i/(double)time_points_no);
+			
 		}
+		
+		this.getUI().setProgressBarValue(0);
 		
 	}
 
 	private void applyBorderOptions(TissueEvolution wing_disc_movie) {
+		
+		this.getUI().setProgressBarMessage("Setting Boundary Conditions...");
+		
 		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 		if(varCutBorder.getValue()){
 			borderUpdate.applyBoundaryCondition();
@@ -527,6 +538,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 	private void applyTracking(SpatioTemporalGraph wing_disc_movie){
 		if(wing_disc_movie.size() > 1){
+			
+			this.getUI().setProgressBarMessage("Tracking Graphs...");
+			
 			TrackingAlgorithm tracker = null;
 					
 			switch(varTrackingAlgorithm.getValue()){

@@ -24,6 +24,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EdgeRoi;
 import plugins.davhelle.cellgraph.nodes.Edge;
+import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.kernel.roi.roi2d.ROI2DShape;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
@@ -55,25 +56,36 @@ public class IntesityGraphOverlay extends Overlay{
 		this.buffer_shape = new	HashMap<Edge, Shape>();
 		this.sequence = sequence;
 		
-		FrameGraph frame_i = stGraph.getFrame(0);
+		int i = 0;
 		
-		double abs_max = 0;
+		//Todo loop over all frames
+		FrameGraph frame_i = stGraph.getFrame(i);
+		
+		double sum_mean_cell_background = 0;
 		
 		for(Edge e: frame_i.edgeSet()){
 			e.computeGeometry(frame_i);
-			double e_max = this.computeEdgeIntensity(e);
-			if(abs_max < e_max)
-				abs_max = e_max;
+			double cell_background = this.computeEdgeIntensity(e,i);
+			sum_mean_cell_background += cell_background;
 		}
 		
+		double overall_mean_cell_background = sum_mean_cell_background / frame_i.edgeSet().size();
+		
+		//normalization should be done through
+		//cell intensity (see zallen paper)
+		int counter = 1;
 		for(Edge e: frame_i.edgeSet()){
-			double abs_value = e.getValue();
-			e.setValue(abs_value/abs_max);
+			double rel_value = e.getValue();
+			double norm_value = rel_value/overall_mean_cell_background;
+			System.out.printf("%d:\t%.2f\t%.2f\n",counter++,rel_value,norm_value);
+			e.setValue(rel_value);
 		}
 		
+		
+		System.out.printf("Overall background correction is: %.2f\n",overall_mean_cell_background);
 	}
 	
-	private double computeEdgeIntensity(Edge e){
+	private double computeEdgeIntensity(Edge e, int frame_no){
 		
 		Geometry edge_geo = e.getGeometry();
 		
@@ -91,21 +103,35 @@ public class IntesityGraphOverlay extends Overlay{
 		int t=0;
 		int c=0;
 		
+		//TODO possibly use getIntensityInfo here
 		double mean_intensity = 
 				ROIUtil.getMeanIntensity(
 						sequence,
 						edge_roi,
 						z, t, c);
 
-		double max_intensity = 
-				ROIUtil.getMaxIntensity(
-						sequence,
-						edge_roi,
-						z, t, c);
+		//retrieve avg intensity of flanking cells
 		
-		e.setValue(mean_intensity);
+		//who are the flanking cells?
+		FrameGraph frame = stGraph.getFrame(frame_no);
+		Node source = frame.getEdgeSource(e);
+		Node target = frame.getEdgeTarget(e);
 		
-		return max_intensity;
+		EdgeRoi source_roi = new EdgeRoi(writer.toShape(source.getGeometry()));
+		EdgeRoi target_roi = new EdgeRoi(writer.toShape(target.getGeometry()));
+		
+		double source_mean = ROIUtil.getMeanIntensity(sequence, source_roi, z, t, c);
+		double target_mean = ROIUtil.getMeanIntensity(sequence, target_roi, z, t, c);
+		
+		//dubious definition
+		double mean_cell_background = (source_mean + target_mean)/2;
+		
+		double final_edge_value = mean_intensity - mean_cell_background;
+		
+		//TODO re-think name of value
+		e.setValue(final_edge_value);
+		
+		return mean_cell_background;
 	}
 
 	@Override

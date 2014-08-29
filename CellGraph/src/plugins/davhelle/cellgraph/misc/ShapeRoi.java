@@ -11,12 +11,12 @@ import plugins.kernel.roi.roi2d.ROI2DShape;
  * @author Davide Heller
  *
  */
-public class EdgeRoi extends ROI2DShape {
+public class ShapeRoi extends ROI2DShape {
 
 	/**
 	 * @param Takes a input shape and creates a ROI
 	 */
-	public EdgeRoi(Shape shape) {
+	public ShapeRoi(Shape shape) {
 		super(shape);
 	}
 

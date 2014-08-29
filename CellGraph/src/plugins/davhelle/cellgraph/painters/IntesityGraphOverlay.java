@@ -5,29 +5,6 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Shape;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DefaultWeightedEdge;
-
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-
-import plugins.adufour.ezplug.EzGUI;
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.misc.ShapeRoi;
-import plugins.davhelle.cellgraph.nodes.Edge;
-import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.kernel.roi.roi2d.ROI2DShape;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
@@ -35,8 +12,26 @@ import icy.roi.ROI;
 import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import plugins.adufour.ezplug.EzGUI;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.misc.ShapeRoi;
+import plugins.davhelle.cellgraph.nodes.Edge;
+import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.awt.ShapeWriter;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+
 /**
- * Class to visualize all the edges of a 
+ * Class to visualize the intensity underlying edges of the
  * spatial-temporal graph as overlay in icy.
  * 
  * @author Davide Heller
@@ -63,42 +58,35 @@ public class IntesityGraphOverlay extends Overlay{
 		this.buffer_background = new HashMap<Node, Double>();
 		this.sequence = sequence;
 		
-		int i = 0;
+		gui.setProgressBarMessage("Computing Edge Intensities");
+		for(int i = 0; i < stGraph.size(); i++){
 		
 		//Todo loop over all frames
 		FrameGraph frame_i = stGraph.getFrame(i);
 		
 		double sum_mean_cell_background = 0;
-		int counter = 0;
 		
-		gui.setProgressBarMessage("Computing Edge Intensities");
 		for(Edge e: frame_i.edgeSet()){
-			gui.setProgressBarValue(counter++/(double)(frame_i.edgeSet().size()));
 			e.computeGeometry(frame_i);
 			double cell_background = computeEdgeIntensity(e,i);
 			sum_mean_cell_background += cell_background;
 		}
 		double overall_mean_cell_background = sum_mean_cell_background / frame_i.edgeSet().size();
 		
-		counter = 0;
-		gui.setProgressBarValue(counter);
-		gui.setProgressBarMessage("Computing Vertex Intensities");
-		
-		for(Node n: frame_i.vertexSet()){
-			gui.setProgressBarValue(counter++/(double)(frame_i.vertexSet().size()));
+		for(Node n: frame_i.vertexSet())
+			//reduce geometry of the cell areas to an exclusion with
+			//the expanded edges
 			reduce(n,i);
-		}
 		
 		//normalization should be done through
 		//cell intensity (see zallen paper)
-		counter = 0;
+		int counter = 0;
 		gui.setProgressBarValue(counter);
 		gui.setProgressBarMessage("Computing Vertex Intensities");
 		
 		double min = Double.MAX_VALUE;
 		double max = Double.MIN_VALUE;
 		
-		gui.setProgressBarMessage("Computing Normal Intensities");
 		for(Edge e: frame_i.edgeSet()){
 			
 			double org_value = e.getValue();
@@ -109,8 +97,8 @@ public class IntesityGraphOverlay extends Overlay{
 			
 			double norm_value = rel_value/overall_mean_cell_background;
 			
-			System.out.printf("%d:\t%.2f\t%.2f\t%.2f\n",
-					counter++,org_value,rel_value,norm_value);
+//			System.out.printf("%d:\t%.2f\t%.2f\t%.2f\n",
+//					counter++,org_value,rel_value,norm_value);
 			
 			e.setValue(norm_value);
 			
@@ -119,13 +107,14 @@ public class IntesityGraphOverlay extends Overlay{
 			else if(norm_value < min)
 				min = norm_value;
 			
-			gui.setProgressBarValue(counter/(double)(frame_i.edgeSet().size()));
 
 		}
 		
+		gui.setProgressBarValue(i/(double)(stGraph.size()));
 		
 		System.out.printf("Overall background correction is: %.2f\n",overall_mean_cell_background);
 		System.out.printf("Min/max relative value is: %.2f\t%.2f\n",min,max);
+		}
 	}
 	
 	private double computeEdgeIntensity(Edge e, int frame_no){
@@ -231,12 +220,12 @@ public class IntesityGraphOverlay extends Overlay{
 				
 				
 				Color hsbColor = Color.getHSBColor(
-						(float)(edge.getValue()),
+						(float)(edge.getValue() * 0.8 + 0.5),
 						1f,
 						1f);
 				
 				g.setColor(hsbColor);
-				g.fill(egde_shape);
+				g.draw(egde_shape);
 				
 				
 				

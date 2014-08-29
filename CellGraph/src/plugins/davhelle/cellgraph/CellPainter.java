@@ -92,7 +92,7 @@ public class CellPainter extends EzPlug {
 		SAVE_TAG,
 		SAVE_TAG_XLS,
 		SAVE_SKELETONS,
-		CORRECTION_HINTS, CHANGE_FREQUENCY
+		CORRECTION_HINTS, CHANGE_FREQUENCY, EDGE_INTENSITY
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -183,7 +183,7 @@ public class CellPainter extends EzPlug {
 				varHighlightClass);
 		
 		//Area Threshold View
-		varAreaThreshold = new EzVarDouble("Area threshold", 100, 0, 2000, 1);
+		varAreaThreshold = new EzVarDouble("Area threshold", 0.9, 0, 10, 0.1);
 		
 		EzGroup groupAreaThreshold = new EzGroup("AREA_THRESHOLD elements",
 				varAreaThreshold);
@@ -357,7 +357,7 @@ public class CellPainter extends EzPlug {
 							sequence.addPainter(
 									new AreaThresholdPainter(
 											wing_disc_movie, 
-											varAreaThreshold.getValue()));
+											varAreaThreshold));
 							break;
 
 						case ALWAYS_TRACKED: 
@@ -381,15 +381,18 @@ public class CellPainter extends EzPlug {
 									varBooleanDrawDisplacement.getValue());
 							
 						break;
-						case GRAPH_PAINTER:
+						case EDGE_INTENSITY:
 							
 							sequence.addOverlay(
 									new IntesityGraphOverlay(
-											wing_disc_movie, sequence));
+											wing_disc_movie, sequence, this.getUI()));
 							
-//							sequence.addPainter(
-//									new GraphPainter(
-//											wing_disc_movie));
+							break;
+							
+						case GRAPH_PAINTER:	
+							sequence.addOverlay(
+									new GraphPainter(
+											wing_disc_movie));
 							
 							break;
 						case GRAPH_EXPORT:

@@ -16,6 +16,8 @@ import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+
+import plugins.adufour.ezplug.EzVarDouble;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -34,10 +36,12 @@ public class AreaThresholdPainter extends Overlay{
 	
 	private double min_area;
 	private double max_area;
+	private EzVarDouble areaThreshold;
 	
-	public AreaThresholdPainter(SpatioTemporalGraph spatioTemporalGraph, double areaThreshold){
+	public AreaThresholdPainter(SpatioTemporalGraph spatioTemporalGraph, EzVarDouble varAreaThreshold){
 		super("Cells colored according to area");
 		this.stGraph = spatioTemporalGraph;
+		this.areaThreshold = varAreaThreshold; 
 	
 		toDraw = new ArrayList<Node>();
 		
@@ -76,9 +80,9 @@ public class AreaThresholdPainter extends Overlay{
 				
 				//adapt for certain color range
 				//by multiplying with factor
-				double range_factor = 0.9;
+				//double range_factor = 0.9;
 				
-				h = h * range_factor;
+				h = h * areaThreshold.getValue();
 				
 				//revert
 				//h = Math.abs(h - range_factor);

@@ -13,6 +13,7 @@ import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.util.ArrayList;
@@ -46,7 +47,10 @@ public class IntesityGraphOverlay extends Overlay{
 	
 	private HashMap<Edge,ROI> buffer_roi;
 	private HashMap<Edge,Shape> buffer_shape;
-	private HashMap<Node,Double> buffer_background;
+	private HashMap<Node,Double> cell_background;
+	private HashMap<Node,Double> cell_edges;
+	private double min;
+	private double max;
 	
 	public IntesityGraphOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzGUI gui) {
 		super("Graph edges");
@@ -55,7 +59,8 @@ public class IntesityGraphOverlay extends Overlay{
 		this.writer = new ShapeWriter();
 		this.buffer_shape = new	HashMap<Edge, Shape>();
 		this.buffer_roi = new HashMap<Edge, ROI>();
-		this.buffer_background = new HashMap<Node, Double>();
+		this.cell_background = new HashMap<Node, Double>();
+		this.cell_edges = new HashMap<Node, Double>();
 		this.sequence = sequence;
 		
 		gui.setProgressBarMessage("Computing Edge Intensities");
@@ -84,8 +89,8 @@ public class IntesityGraphOverlay extends Overlay{
 		gui.setProgressBarValue(counter);
 		gui.setProgressBarMessage("Computing Vertex Intensities");
 		
-		double min = Double.MAX_VALUE;
-		double max = Double.MIN_VALUE;
+		this.min = Double.MAX_VALUE;
+		this.max = Double.MIN_VALUE;
 		
 		for(Edge e: frame_i.edgeSet()){
 			
@@ -95,18 +100,13 @@ public class IntesityGraphOverlay extends Overlay{
 			
 			double rel_value = e.getValue();
 			
-			double norm_value = rel_value/overall_mean_cell_background;
+			System.out.printf("%d:\t%.2f\t%.2f\n",
+					counter++,org_value,rel_value);
 			
-//			System.out.printf("%d:\t%.2f\t%.2f\t%.2f\n",
-//					counter++,org_value,rel_value,norm_value);
-			
-			e.setValue(norm_value);
-			
-			if(norm_value > max)
-				max = norm_value;
-			else if(norm_value < min)
-				min = norm_value;
-			
+			if(rel_value > max)
+				max = rel_value;
+			else if(rel_value < min)
+				min = rel_value;
 
 		}
 		
@@ -165,23 +165,31 @@ public class IntesityGraphOverlay extends Overlay{
 		if(s.getNeighbors().isEmpty())
 			return;
 		
+		//combine edge rois
 		ArrayList<ROI> rois = new ArrayList<ROI>();
 		for(Node t: frame.getNeighborsOf(s)){
 			Edge e = frame.getEdge(s, t);
 			rois.add(buffer_roi.get(e));
 		}
-			
+		
+		//Define Edge Roi region
+		ROI edge_union = ROIUtil.getUnion(rois);
+		
+		//Define Interior Roi region
 		ROI ring =	ROIUtil.getIntersection(rois);
 		ShapeRoi s_roi = new ShapeRoi(writer.toShape(s.getGeometry()));
-		
 		ROI s_minimal = ROIUtil.subtract(s_roi, ring);
+		
+		//Compute intensities
 		int z=0;
 		int t=0;
 		int c=0;
 		double s_mean = ROIUtil.getMeanIntensity(sequence, s_minimal, z, t, c);
+		double mean_edge_intensity = ROIUtil.getMeanIntensity(sequence, edge_union, z, t, c);
 
-		buffer_background.put(s,s_mean);
-		
+		//Save results
+		cell_background.put(s,s_mean);
+		cell_edges.put(s, mean_edge_intensity);
 	}
 	
 	private void normalize_edge(Edge e, int frame_no){
@@ -191,13 +199,17 @@ public class IntesityGraphOverlay extends Overlay{
 		Node source = frame.getEdgeSource(e);
 		Node target = frame.getEdgeTarget(e);
 		
-		double source_mean = buffer_background.get(source);
-		double target_mean = buffer_background.get(target);
+		//retrieve intensities
+		double source_mean = cell_background.get(source);
+		double target_mean = cell_background.get(target);
+		double source_edges = cell_edges.get(source);
+		double target_edges = cell_edges.get(target);
 
 		//dubious definition
 		double mean_cell_background = (source_mean + target_mean)/2;
+		double mean_cell_edges = (source_edges + target_edges)/2;
 		
-		double final_edge_value = e.getValue() - mean_cell_background;
+		double final_edge_value = (e.getValue() - mean_cell_background)/mean_cell_edges;
 		
 		e.setValue(final_edge_value);		
 	}
@@ -227,9 +239,10 @@ public class IntesityGraphOverlay extends Overlay{
 				g.setColor(hsbColor);
 				g.draw(egde_shape);
 				
-				
-				
 			}
+			
+			//draw scale bar
+			//todo
 		}
 	}
 	

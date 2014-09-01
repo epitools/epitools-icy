@@ -17,6 +17,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import plugins.adufour.ezplug.EzGUI;
@@ -51,6 +52,7 @@ public class IntesityGraphOverlay extends Overlay{
 	private HashMap<Node,Double> cell_edges;
 	private double min;
 	private double max;
+	private double[] heat_map;
 	
 	public IntesityGraphOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzGUI gui) {
 		super("Graph edges");
@@ -86,11 +88,14 @@ public class IntesityGraphOverlay extends Overlay{
 		//normalization should be done through
 		//cell intensity (see zallen paper)
 		int counter = 0;
-		gui.setProgressBarValue(counter);
 		gui.setProgressBarMessage("Computing Vertex Intensities");
 		
 		this.min = Double.MAX_VALUE;
 		this.max = Double.MIN_VALUE;
+		
+		int edge_no = frame_i.edgeSet().size();
+		double[] intensity_values = new double[edge_no];
+		int e_i = 0;
 		
 		for(Edge e: frame_i.edgeSet()){
 			
@@ -108,6 +113,22 @@ public class IntesityGraphOverlay extends Overlay{
 			else if(rel_value < min)
 				min = rel_value;
 
+			intensity_values[e_i++] = rel_value;
+		}
+		
+		//Find out the color map
+		Arrays.sort(intensity_values);
+		int step_no = 10; 
+		int step = edge_no / step_no;
+		this.heat_map = new double[step_no];
+		
+		for(e_i = 0; e_i < 10; e_i ++){
+			int index = e_i * step;
+
+			if(index >= edge_no)
+				index = edge_no - 1;
+			
+			heat_map[e_i] = intensity_values[index];
 		}
 		
 		gui.setProgressBarValue(i/(double)(stGraph.size()));
@@ -217,7 +238,8 @@ public class IntesityGraphOverlay extends Overlay{
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas){
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
+		Graphics2D g2d = (Graphics2D)g;
+		
 		if(time_point < stGraph.size()){
 		
 			FrameGraph frame_i = stGraph.getFrame(time_point);
@@ -237,12 +259,25 @@ public class IntesityGraphOverlay extends Overlay{
 						1f);
 				
 				g.setColor(hsbColor);
-				g.draw(egde_shape);
+				//add switch here to use either fill or draw via ezPlug
+				g.fill(egde_shape);
 				
 			}
 			
 			//draw scale bar
-			//todo
+			for(int i=0; i<heat_map.length; i++){
+				
+				Color hsbColor = Color.getHSBColor(
+						(float)(heat_map[i] * 0.8 + 0.5),
+						1f,
+						1f);
+				
+				g2d.setColor(hsbColor);
+				
+				g2d.fillRect(20*i + 30,30,20, 20);
+			
+			}
+			
 		}
 	}
 	

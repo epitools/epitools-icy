@@ -46,8 +46,10 @@ public class IntesityGraphOverlay extends Overlay{
 	private ShapeWriter writer;
 	private Sequence sequence;
 	
+	
 	private HashMap<Edge,ROI> buffer_roi;
 	private HashMap<Edge,Shape> buffer_shape;
+	private HashMap<Edge,Double> edge_color;
 	private HashMap<Node,Double> cell_background;
 	private HashMap<Node,Double> cell_edges;
 	private double min;
@@ -61,6 +63,7 @@ public class IntesityGraphOverlay extends Overlay{
 		this.writer = new ShapeWriter();
 		this.buffer_shape = new	HashMap<Edge, Shape>();
 		this.buffer_roi = new HashMap<Edge, ROI>();
+		this.edge_color = new HashMap<Edge, Double>();
 		this.cell_background = new HashMap<Node, Double>();
 		this.cell_edges = new HashMap<Node, Double>();
 		this.sequence = sequence;
@@ -100,10 +103,7 @@ public class IntesityGraphOverlay extends Overlay{
 		for(Edge e: frame_i.edgeSet()){
 			
 			double org_value = e.getValue();
-			
-			normalize_edge(e,i);
-			
-			double rel_value = e.getValue();
+			double rel_value = normalize_edge(e,i);;
 			
 			System.out.printf("%d:\t%.2f\t%.2f\n",
 					counter++,org_value,rel_value);
@@ -143,7 +143,7 @@ public class IntesityGraphOverlay extends Overlay{
 		Geometry edge_geo = e.getGeometry();
 		
 		//taking 3px buffer distance from edge
-		Geometry edge_buffer = edge_geo.buffer(3.0);
+		Geometry edge_buffer = edge_geo.buffer(5.0);
 		
 		Shape egde_shape = writer.toShape(edge_buffer);
 		
@@ -213,7 +213,7 @@ public class IntesityGraphOverlay extends Overlay{
 		cell_edges.put(s, mean_edge_intensity);
 	}
 	
-	private void normalize_edge(Edge e, int frame_no){
+	private double normalize_edge(Edge e, int frame_no){
 		
 		FrameGraph frame = stGraph.getFrame(frame_no);
 		
@@ -230,9 +230,13 @@ public class IntesityGraphOverlay extends Overlay{
 		double mean_cell_background = (source_mean + target_mean)/2;
 		double mean_cell_edges = (source_edges + target_edges)/2;
 		
-		double final_edge_value = (e.getValue() - mean_cell_background)/mean_cell_edges;
+		double abs_edge_value = e.getValue() - mean_cell_background;
 		
-		e.setValue(final_edge_value);		
+		double final_edge_value = abs_edge_value / mean_cell_edges;
+		
+		edge_color.put(e, final_edge_value);	
+		
+		return final_edge_value;
 	}
 
 	@Override
@@ -254,13 +258,13 @@ public class IntesityGraphOverlay extends Overlay{
 				
 				
 				Color hsbColor = Color.getHSBColor(
-						(float)(edge.getValue() * 0.8 + 0.5),
+						(float)(edge_color.get(edge) * 0.8 + 0.5),
 						1f,
 						1f);
 				
 				g.setColor(hsbColor);
 				//add switch here to use either fill or draw via ezPlug
-				g.fill(egde_shape);
+				g.draw(egde_shape);
 				
 			}
 			

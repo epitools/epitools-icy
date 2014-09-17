@@ -213,4 +213,10 @@ public class DummyNode implements Node {
 
 	}
 
+	@Override
+	public boolean hasColorTag() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

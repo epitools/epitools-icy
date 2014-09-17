@@ -238,7 +238,7 @@ public class CellPainter extends EzPlug {
 		EzGroup groupSaveSkeleton = new EzGroup("SAVE_SKELETON elements",varSaveSkeleton);
 
 		//Painter
-		EzGroup groupPainters = new EzGroup("Painters",
+		EzGroup groupPainters = new EzGroup("Overlays",
 				varUpdatePainterMode,
 				varPlotting,
 				groupCellMap,

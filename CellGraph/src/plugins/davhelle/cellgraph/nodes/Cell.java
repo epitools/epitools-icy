@@ -88,7 +88,7 @@ public class Cell implements Node {
 		this.elimination = null;
 		
 		//color_tag, default black
-		this.color_tag = Color.black;
+		this.color_tag = null;
 	}
 
 	/* (non-Javadoc)
@@ -290,6 +290,11 @@ public class Cell implements Node {
 	@Override
 	public void setColorTag(Color color_tag) {
 		this.color_tag = color_tag;
+	}
+	
+	@Override
+	public boolean hasColorTag(){
+		return this.color_tag != null;
 	}
 
 }

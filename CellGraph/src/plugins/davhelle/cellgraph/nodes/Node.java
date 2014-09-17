@@ -268,6 +268,13 @@ public interface Node{
 	public Color getColorTag();
 	
 	/**
+	 * Assign color tag to the cell
+	 * 
+	 * @return the color tag
+	 */
+	public boolean hasColorTag();
+	
+	/**
 	 * Get the color assigned to the cell
 	 * 
 	 * @param color_tag the color tag to set

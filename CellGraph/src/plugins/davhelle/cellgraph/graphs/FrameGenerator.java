@@ -14,6 +14,7 @@ import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.PolygonReader;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
+import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -69,6 +70,13 @@ public class FrameGenerator {
 		case VTK_MESH:
 			
 			this.polygonReader = new JtsVtkReader();
+			break;
+		
+		case WKT:
+			
+			this.polygonReader = new WktPolygonImporter();
+			break;
+		default:
 			break;		
 		}
 		
@@ -88,6 +96,12 @@ public class FrameGenerator {
 		
 		ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons(file_name);
 		
+		populateFrame(frame, polygonMesh);
+
+		return frame;
+	}
+
+	public void populateFrame(FrameGraph frame, ArrayList<Polygon> polygonMesh) {
 		//insert all polygons into graph as CellPolygons
 		ArrayList<Cell> cell_list = new ArrayList<Cell>();
 		
@@ -131,8 +145,6 @@ public class FrameGenerator {
 						frame.addEdge(a, b);
 			}
 		}
-
-		return frame;
 	}
 			
 

@@ -8,5 +8,5 @@ package plugins.davhelle.cellgraph.io;
  *
  */
 public enum InputType {
-	VTK_MESH, SKELETON,
+	VTK_MESH, SKELETON,WKT,
 }

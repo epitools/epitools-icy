@@ -22,22 +22,54 @@ import plugins.davhelle.cellgraph.nodes.Node;
  *
  */
 public class WktPolygonExporter {
+	
+	private WKTWriter writer;
+	
+	public WktPolygonExporter(){
+		writer = new WKTWriter(2);
+	}
 
 	/**
 	 * @param wing_disc_movie 
 	 * 
 	 */
 	public WktPolygonExporter(SpatioTemporalGraph stGraph,String frame_file_name) {
-		
-		WKTWriter writer = new WKTWriter(2);
+		this();
 		
 		int frame_no_to_export = 0;
-		File frame_file = new File(frame_file_name);
 		FrameGraph frame = stGraph.getFrame(frame_no_to_export);
 		
+		exportFrame(frame, frame_file_name);
+		
+	}
+	
+	public WktPolygonExporter(SpatioTemporalGraph stGraph){
+		this();
+		
+		String temporary_folder = "/Users/davide/tmp/wkt_export/"; 
+		
+		for(int i=0; i < stGraph.size(); i++){
+			FrameGraph frame = stGraph.getFrame(i);
+
+			String output_name = "";
+
+			if(frame.hasFileSource()){
+				File source_file = new File(frame.getFileSource());
+				output_name = temporary_folder + source_file.getName() + ".wkt";
+			}
+			else
+				output_name = temporary_folder + i + ".wkt";
+
+			exportFrame(frame, output_name);
+		}
+	}
+
+	public void exportFrame(FrameGraph frame, String frame_file_name) {		
+		
+		File frame_file = new File(frame_file_name);
 		
 		try {
-
+			
 			frame_file.createNewFile();
 			
 			FileWriter fw = new FileWriter(frame_file.getAbsoluteFile());
@@ -56,7 +88,7 @@ public class WktPolygonExporter {
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Something went wrong while attempting to write: "+frame_file_name);
-		}			
+		}
 	}
 		
 }

@@ -94,6 +94,8 @@ public class FrameGenerator {
 		
 		FrameGraph frame = new FrameGraph(frame_no);
 		
+		frame.setFileSource(file_name);
+		
 		ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons(file_name);
 		
 		populateFrame(frame, polygonMesh);

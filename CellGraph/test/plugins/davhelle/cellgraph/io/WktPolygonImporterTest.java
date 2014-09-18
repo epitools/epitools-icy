@@ -48,7 +48,7 @@ public class WktPolygonImporterTest {
 	public void testPerformance(){
 
 		long startTime = System.currentTimeMillis();
-		WktPolygonExporterTest.loadTestGraph();
+		WktPolygonExporterTest.loadTestGraph(1);
 		long endTime = System.currentTimeMillis();
 		long old_time = endTime - startTime;
 
@@ -63,6 +63,36 @@ public class WktPolygonImporterTest {
 		long dt = new_time-old_time;
 		System.out.printf("New: %d\nOld: %d\nDifference: %d(%.3f times faster)\n",
 				new_time,old_time,dt,old_time/(double)new_time);
+
+	}
+	
+	@Test
+	public void testMultipleFrameInput(){
+
+		int file_no = 10;
+
+		SpatioTemporalGraph stGraph = new TissueEvolution();
+		FrameGenerator frame_generator = new FrameGenerator(
+				InputType.WKT,
+				false, 
+				null);
+
+		//Check file correctness
+		for(int i=0; i < file_no; i++){
+			String expected_wkt_file = String.format("/Users/davide/tmp/wkt_export/skeletons_crop_t28-68_t%04d.tif.wkt",i);
+			Assert.assertTrue(new File(expected_wkt_file).exists());
+
+			long startTime = System.currentTimeMillis();
+			FrameGraph frame = frame_generator.generateFrame(i, expected_wkt_file);
+			long endTime = System.currentTimeMillis();
+			long new_time = endTime - startTime;
+
+			stGraph.setFrame(frame,i);
+			System.out.printf("Frame %d: Found %d cells in %d milliseconds\n",i,frame.size(),new_time);
+
+		}
+
+		Assert.assertEquals(stGraph.size(), file_no);
 
 	}
 }

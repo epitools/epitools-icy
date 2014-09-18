@@ -1,5 +1,7 @@
 package plugins.davhelle.cellgraph.io;
 
+import headless.StGraphUtils;
+
 import java.io.File;
 
 import org.testng.Assert;
@@ -101,5 +103,50 @@ public class WktPolygonImporterTest {
 
 		}
 		return stGraph;
+	}
+	
+	@Test
+	public void testLoadNeo1Wkt(){
+		
+		long startTime = System.currentTimeMillis();
+		StGraphUtils.loadNeoWoTracking(1);
+		long endTime = System.currentTimeMillis();
+		long old_time = endTime - startTime;
+
+
+		long startTime2 = System.currentTimeMillis();
+		WktPolygonImporterTest.loadWktNeo1();
+		long endTime2 = System.currentTimeMillis();
+		long new_time = endTime2 - startTime2;
+
+		Assert.assertTrue(old_time > new_time, "The new method is slower");
+
+		long dt = new_time-old_time;
+		System.out.printf("New: %d\nOld: %d\nDifference: %d(%.3f times faster)\n",
+				new_time,old_time,dt,old_time/(double)new_time);
+		
+	}
+
+	public static void loadWktNeo1() {
+		SpatioTemporalGraph stGraph = new TissueEvolution();
+		FrameGenerator frame_generator = new FrameGenerator(
+				InputType.WKT,
+				false, 
+				null);
+
+		//Check file correctness
+		for(int i=0; i < 99; i++){
+			String expected_wkt_file = String.format("/Users/davide/tmp/wkt_export/neo1_skeleton_%03d.tif.wkt",i+1);
+			Assert.assertTrue(new File(expected_wkt_file).exists());
+
+			long startTime = System.currentTimeMillis();
+			FrameGraph frame = frame_generator.generateFrame(i, expected_wkt_file);
+			long endTime = System.currentTimeMillis();
+			long new_time = endTime - startTime;
+
+			stGraph.setFrame(frame,i);
+			System.out.printf("Frame %d: Found %d cells in %d milliseconds\n",i,frame.size(),new_time);
+
+		}
 	}
 }

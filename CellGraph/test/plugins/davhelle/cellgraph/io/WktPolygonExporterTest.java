@@ -1,5 +1,7 @@
 package plugins.davhelle.cellgraph.io;
 
+import headless.StGraphUtils;
+
 import java.io.File;
 
 import org.testng.Assert;
@@ -91,4 +93,17 @@ public class WktPolygonExporterTest {
 		  Assert.assertTrue(new File(expected_wkt_file).exists());
 	  }
   }
+  
+  @Test
+  public void testNeo1output(){
+	  SpatioTemporalGraph stGraph = StGraphUtils.loadNeoWoTracking(1);
+	  
+	  //Write out all frames at once
+	  long startTime = System.currentTimeMillis();
+	  new WktPolygonExporter(stGraph);
+	  long wkt_write_time = System.currentTimeMillis() - startTime;
+	  
+	  System.out.printf("Took %d to write wkt_files\n",wkt_write_time);
+  }
+
 }

@@ -58,4 +58,37 @@ public class WktPolygonExporterTest {
 	  }
 	  
   }
+  
+  @Test
+  public void testWTKvsWBK(){
+	  SpatioTemporalGraph stGraph = WktPolygonExporterTest.loadTestGraph(10);
+	  
+	  //Check file correctness
+	  for(int i=0; i < stGraph.size(); i++){
+			FrameGraph frame = stGraph.getFrame(i);
+			String expected_source_file = String.format("/Users/davide/data/neo/1/crop/skeletons_crop_t28-68_t%04d.tif",i); 
+			Assert.assertEquals(frame.getFileSource(), expected_source_file);
+	  }
+	  
+	  //Write out all frames at once
+	  long startTime = System.currentTimeMillis();
+	  new WktPolygonExporter(stGraph);
+	  long wktTime = System.currentTimeMillis() - startTime;
+	  new WkbPolygonExporter(stGraph);
+	  long wkbTime = System.currentTimeMillis() - startTime - wktTime;
+	  
+	  System.out.printf("WKT: %d\nWKB: %d\n",wktTime,wkbTime);
+	  
+	  //Check file correctness
+	  for(int i=0; i < stGraph.size(); i++){
+		  String expected_wkt_file = String.format("/Users/davide/tmp/wkt_export/skeletons_crop_t28-68_t%04d.tif.wkt",i);
+		  Assert.assertTrue(new File(expected_wkt_file).exists());
+	  }
+	  
+	  //Check file correctness
+	  for(int i=0; i < stGraph.size(); i++){
+		  String expected_wkt_file = String.format("/Users/davide/tmp/wkt_export/skeletons_crop_t28-68_t%04d.tif.wkb",i);
+		  Assert.assertTrue(new File(expected_wkt_file).exists());
+	  }
+  }
 }

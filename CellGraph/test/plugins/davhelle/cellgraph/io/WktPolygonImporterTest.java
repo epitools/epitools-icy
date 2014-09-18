@@ -46,15 +46,17 @@ public class WktPolygonImporterTest {
 
 	@Test
 	public void testPerformance(){
+		
+		int test_file_no = 10;
 
 		long startTime = System.currentTimeMillis();
-		WktPolygonExporterTest.loadTestGraph(1);
+		WktPolygonExporterTest.loadTestGraph(test_file_no);
 		long endTime = System.currentTimeMillis();
 		long old_time = endTime - startTime;
 
 
 		long startTime2 = System.currentTimeMillis();
-		WktPolygonImporterTest.loadWtkTestGraph();
+		WktPolygonImporterTest.loadWtkTestGraph(test_file_no);
 		long endTime2 = System.currentTimeMillis();
 		long new_time = endTime2 - startTime2;
 
@@ -71,6 +73,13 @@ public class WktPolygonImporterTest {
 
 		int file_no = 10;
 
+		SpatioTemporalGraph stGraph = loadWtkTestGraph(file_no);
+
+		Assert.assertEquals(stGraph.size(), file_no);
+
+	}
+	
+	public static SpatioTemporalGraph loadWtkTestGraph(int file_no) {
 		SpatioTemporalGraph stGraph = new TissueEvolution();
 		FrameGenerator frame_generator = new FrameGenerator(
 				InputType.WKT,
@@ -91,8 +100,6 @@ public class WktPolygonImporterTest {
 			System.out.printf("Frame %d: Found %d cells in %d milliseconds\n",i,frame.size(),new_time);
 
 		}
-
-		Assert.assertEquals(stGraph.size(), file_no);
-
+		return stGraph;
 	}
 }

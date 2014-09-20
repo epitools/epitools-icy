@@ -44,11 +44,7 @@ public class WktPolygonExporter {
 		
 	}
 	
-	public void export(Geometry geometry, int i){
-
-		String temporary_folder = "/Users/davide/tmp/wkt_export/boundary";
-
-		String output_name = temporary_folder + i + ".wkt";
+	public void export(Geometry geometry, String output_name){
 
 		File frame_file = new File(output_name);
 

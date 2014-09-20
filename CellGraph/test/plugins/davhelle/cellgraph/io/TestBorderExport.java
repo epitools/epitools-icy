@@ -32,10 +32,10 @@ public class TestBorderExport {
 		
 		WktPolygonExporter exporter = new WktPolygonExporter();
 		for(int i=0; i<stGraph.size(); i++){
-			
-			exporter.export(boundaries[i], i);
-			
 			String expected_wkt_file = String.format("%sboundary%d.wkt",test_folder,i);
+			
+			exporter.export(boundaries[i], expected_wkt_file);
+			
 			Assert.assertTrue(new File(expected_wkt_file).exists());
 		}
 	}
@@ -82,4 +82,5 @@ public class TestBorderExport {
 		long boundaryTime = System.currentTimeMillis() - startTime;		
 		System.out.printf("Loading the border took: %d ms\n",boundaryTime);
 	}
+	
 }

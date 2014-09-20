@@ -20,6 +20,7 @@ import java.util.Iterator;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -245,14 +246,19 @@ public class BorderCells extends Overlay{
 	 */
 	public void markOnly() {
 		
+		WktPolygonExporter bounary_exporter = new WktPolygonExporter();
+		
 		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
 			
-			markBoundaryCellsInFrame(time_point_i);
+			Geometry boundary = markBoundaryCellsInFrame(time_point_i);
+			
+			bounary_exporter.export(boundary,time_point_i);
+			
 		}
 	}
 
-	private void markBoundaryCellsInFrame(int time_point_i) {
+	private Geometry markBoundaryCellsInFrame(int time_point_i) {
 		FrameGraph frame_i = stGraph.getFrame(time_point_i);
 
 		//set up polygon container
@@ -287,6 +293,8 @@ public class BorderCells extends Overlay{
 			if(is_border)
 				n.setBoundary(true);
 		}
+		
+		return boundary;
 	}
 
 }

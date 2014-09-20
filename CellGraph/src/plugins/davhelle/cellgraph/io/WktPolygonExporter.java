@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -41,6 +42,36 @@ public class WktPolygonExporter {
 		
 		exportFrame(frame, frame_file_name);
 		
+	}
+	
+	public void export(Geometry geometry, int i){
+
+		String temporary_folder = "/Users/davide/tmp/wkt_export/boundary";
+
+		String output_name = temporary_folder + i + ".wkt";
+
+		File frame_file = new File(output_name);
+
+		try {
+
+			frame_file.createNewFile();
+
+			FileWriter fw = new FileWriter(frame_file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+
+			String node_string = writer.write(geometry);
+			if(node_string.length() > 0){
+				bw.write(node_string);
+				bw.newLine();
+			}
+
+			bw.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Something went wrong while attempting to write "+output_name);
+		}
+
 	}
 	
 	public WktPolygonExporter(SpatioTemporalGraph stGraph){

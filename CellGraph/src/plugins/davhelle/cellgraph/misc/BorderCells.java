@@ -244,57 +244,63 @@ public class BorderCells extends Overlay{
 	 * 
 	 * 
 	 */
-	public void markOnly() {
+	public Geometry[] markOnly() {
 		
-		WktPolygonExporter bounary_exporter = new WktPolygonExporter();
+		Geometry[] boundaries = new Geometry[stGraph.size()];
 		
 		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
-			
-			Geometry boundary = markBoundaryCellsInFrame(time_point_i);
-			
-			bounary_exporter.export(boundary,time_point_i);
-			
+			FrameGraph frame_i = stGraph.getFrame(time_point_i);
+			Geometry boundary = findBorderCells(frame_i);
+			markBorderCells(frame_i,boundary);
+			boundaries[time_point_i] = boundary;
 		}
+		
+		return boundaries;
 	}
 
-	private Geometry markBoundaryCellsInFrame(int time_point_i) {
-		FrameGraph frame_i = stGraph.getFrame(time_point_i);
+	/**
+	 * Find the border geometry by computing the union of all cells
+	 * 
+	 * @param frame_i
+	 * @return
+	 */
+	private Geometry findBorderCells(FrameGraph frame_i) {
 
 		//set up polygon container
-
 		Geometry[] output = new Geometry[frame_i.size()];
 		Iterator<Node> node_it = frame_i.iterator();
 		for(int i=0; i<frame_i.size(); i++){
 			output[i] = node_it.next().getGeometry();
 		}		
 
-		//Create union of all polygons
-//			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-//			Geometry union = polygonCollection.buffer(0);
-		
-		//More robust method
+		//create union
 		Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
 
-		//Compute boundary ring
+		//Compute boundary ring (linear ring)
 		Geometry boundary = union.getBoundary();
-//			LinearRing borderRing = (LinearRing) boundary;
 		
-		//Check via intersection if cell is border cell
-		node_it = frame_i.iterator();
-		for(int i=0; i<frame_i.size(); i++){
+		markBorderCells(frame_i, boundary);
+		
+		return boundary;
+	}
 
-			Node n = node_it.next();
+	/**
+	 * Mark all the nodes that intersect the boundary Geometry
+	 * 
+	 * @param frame_i
+	 * @param boundary
+	 */
+	public void markBorderCells(FrameGraph frame_i, Geometry boundary) {
+
+		for(Node n: frame_i.vertexSet()){
 			Geometry p = n.getGeometry();
-			
 			boolean is_border = p.intersects(boundary);
 
 			//Set border flag if intersect
 			if(is_border)
 				n.setBoundary(true);
 		}
-		
-		return boundary;
 	}
 
 }

@@ -155,6 +155,7 @@ public class FrameGenerator {
 
 		//TODO more efficient search
 		Iterator<Node> cell_it = frame.iterator();
+		int counter = 0;
 		
 		while(cell_it.hasNext()){
 			Cell a = (Cell)cell_it.next();
@@ -168,6 +169,7 @@ public class FrameGenerator {
 			for(Polygon intersection_neighbor: intersections){
 				Cell b = index_to_cell.get(intersection_neighbor);
 				if(!frame.containsEdge(a, b)) {
+					counter++;
 					Geometry geometry_b = b.getGeometry();
 					if(cached_a.touches(geometry_b)){
 						frame.addEdge(a, b);
@@ -175,6 +177,8 @@ public class FrameGenerator {
 				}
 			}
 		}
+		
+		System.out.printf("Performed %d touch lookups\n",counter);
 		
 	}
 			

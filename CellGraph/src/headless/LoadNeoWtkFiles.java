@@ -34,10 +34,22 @@ public class LoadNeoWtkFiles {
 						new File(String.format("%sPolygons_000.wtk",export_folder)), 
 						20, InputType.WKT).getStGraph();
 		
+		loadBorder(export_folder, stGraph);
+		
+		long loadTime = System.currentTimeMillis() - startTime;		
+		System.out.printf("Loading Neo0 in wkt took:\t%d ms\n",loadTime);
+		
+	}
+
+	public static void loadBorder(String export_folder,
+			SpatioTemporalGraph stGraph) {
 		WktPolygonImporter wkt_importer = new WktPolygonImporter();
 		BorderCells border = new BorderCells(stGraph);
 
 		for(int i=0; i < stGraph.size(); i++){
+			
+			long startTime = System.currentTimeMillis();
+
 			String expected_wkt_file = String.format("%sBorder_%d.wtk",export_folder,i);
 			Assert.assertTrue(new File(expected_wkt_file).exists());
 			
@@ -46,11 +58,11 @@ public class LoadNeoWtkFiles {
 			
 			FrameGraph frame = stGraph.getFrame(i);
 			border.markBorderCells(frame, boundaries.get(0));
+			
+			long loadTime = System.currentTimeMillis() - startTime;		
+			System.out.printf("Boundary %d: loaded in %d ms\n",i,loadTime);
+
 		}
-		
-		long loadTime = System.currentTimeMillis() - startTime;		
-		System.out.printf("Loading Neo0 in wkt took:\t%d ms\n",loadTime);
-		
 	}
 
 }

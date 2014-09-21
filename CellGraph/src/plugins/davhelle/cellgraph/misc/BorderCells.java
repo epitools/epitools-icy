@@ -27,6 +27,8 @@ import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 /**
@@ -43,11 +45,13 @@ public class BorderCells extends Overlay{
 
 	private SpatioTemporalGraph stGraph;
 	private HashMap<FrameGraph,Geometry> frame_ring_map;
+	private PreparedGeometryFactory cached_factory;
 	
 	public BorderCells(SpatioTemporalGraph stGraph) {
 		super("Border cells");
 		//Set data structures
 		this.stGraph = stGraph;
+		cached_factory = new PreparedGeometryFactory();
 		this.frame_ring_map = new HashMap<FrameGraph,Geometry>();
 	}
 	
@@ -293,12 +297,11 @@ public class BorderCells extends Overlay{
 	 */
 	public void markBorderCells(FrameGraph frame_i, Geometry boundary) {
 
+		PreparedGeometry cached_boundary = cached_factory.create(boundary);
+		
 		for(Node n: frame_i.vertexSet()){
 			Geometry p = n.getGeometry();
-			boolean is_border = p.intersects(boundary);
-
-			//Set border flag if intersect
-			if(is_border)
+			if(cached_boundary.intersects(p))
 				n.setBoundary(true);
 		}
 	}

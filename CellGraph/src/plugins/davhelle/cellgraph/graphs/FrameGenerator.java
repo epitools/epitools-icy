@@ -156,7 +156,8 @@ public class FrameGenerator {
 		//TODO more efficient search
 		Iterator<Node> cell_it = frame.iterator();
 		int counter = 0;
-		
+		int counter_b = 0;
+
 		while(cell_it.hasNext()){
 			Cell a = (Cell)cell_it.next();
 			Geometry geometry_a = a.getGeometry();
@@ -167,18 +168,63 @@ public class FrameGenerator {
 					(ArrayList<Polygon>) index.query(geometry_a.getEnvelopeInternal());
 			
 			for(Polygon intersection_neighbor: intersections){
+				
+				Geometry geometry_b = intersection_neighbor;
+				if(geometry_a.hashCode() == geometry_b.hashCode())
+					continue;
+				
 				Cell b = index_to_cell.get(intersection_neighbor);
 				if(!frame.containsEdge(a, b)) {
-					counter++;
-					Geometry geometry_b = b.getGeometry();
-					if(cached_a.touches(geometry_b)){
+					
+					
+//					long startTime = System.currentTimeMillis();
+					boolean cells_do_touch = cached_a.intersects(b.getGeometry());
+//					long touchTime = System.currentTimeMillis() - startTime;
+//					System.out.println(touchTime);
+					
+					
+					if(cells_do_touch){
+						counter++;
 						frame.addEdge(a, b);
 					}
+					
+					boolean cells_do_intersect = cached_a.intersects(b.getGeometry());
+					if(cells_do_intersect && !cells_do_touch){
+						if(geometry_a.hashCode() == geometry_b.hashCode())
+							counter_b++;
+					}
+					
 				}
 			}
 		}
 		
-		System.out.printf("Performed %d touch lookups\n",counter);
+		//TODO old
+		
+//		while(cell_it.hasNext()){
+//			Cell a = (Cell)cell_it.next();
+//			ArrayList<Polygon> intersections = (ArrayList<Polygon>) index.query(a.getGeometry().getEnvelopeInternal());
+//			PreparedGeometry cached_a = cached_factory.create(a.getGeometry());
+//			Iterator<Cell> neighbor_it = cell_list.iterator();
+//			while(neighbor_it.hasNext()){
+//				Cell b = neighbor_it.next();
+//				//avoid creating the connection twice
+//				if(!frame.containsEdge(a, b))
+//					counter++;
+//					
+//					long startTime = System.currentTimeMillis();
+//					boolean cells_do_touch = cached_a.touches(b.getGeometry());
+//					long touchTime = System.currentTimeMillis() - startTime;
+//					System.out.println(touchTime);
+//
+//					if(cells_do_touch){
+//						assert intersections.contains(b.getGeometry()): "Polygon not contained!";
+//						frame.addEdge(a, b);
+//					}
+//			}
+//		}
+		
+		
+		System.out.printf("%d touch \tvs %d intersect\n",counter,counter_b);
 		
 	}
 			

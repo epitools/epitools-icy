@@ -23,7 +23,9 @@ public class TestBorderExport {
 		SpatioTemporalGraph stGraph = loadTestStGraph();
 
 		long startTime = System.currentTimeMillis();
-		Geometry boundaries[] = new BorderCells(stGraph).markOnly();
+		BorderCells border = new BorderCells(stGraph);
+		border.markOnly();
+		Geometry boundaries[] = border.getBoundaries();
 		long boundaryTime = System.currentTimeMillis() - startTime;
 		System.out.printf("Identifying the border took: %d ms\n",boundaryTime);
 		

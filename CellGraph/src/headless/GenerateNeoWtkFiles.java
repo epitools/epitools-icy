@@ -39,7 +39,7 @@ public class GenerateNeoWtkFiles {
 		BorderCells border_generator = new BorderCells(stGraph);
 		border_generator.removeOneBoundaryLayerFromAllFrames();
 		border_generator.removeOneBoundaryLayerFromFrame(0);
-		Geometry[] boundaries = border_generator.markOnly();
+		Geometry[] boundaries = border_generator.getBoundaries();
 		
 		System.out.println("Removing small cells..");
 		new SmallCellRemover(stGraph).removeCellsBelow(10.0);
@@ -48,16 +48,16 @@ public class GenerateNeoWtkFiles {
 		System.out.printf("Loading Neo0 took:\t%d ms\n",LoadTime);
 		
 		//Saving information in Well-Known-Text (WKT) Format
-		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
-		String export_folder = "/Users/davide/tmp/neo0_wkt/";
-		
-		for(int i=0; i < stGraph.size(); i++){
-			wkt_exporter.export(boundaries[i], String.format("%sBorder_%d.wtk",export_folder,i));
-			wkt_exporter.exportFrame(stGraph.getFrame(i), String.format("%sPolygons_%d.wtk",export_folder,i));
-		}
-		
-		long SaveTime = System.currentTimeMillis() - startTime - LoadTime;		
-		System.out.printf("Saving Neo0 in wkt took:\t%d ms\n",SaveTime);
+//		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
+//		String export_folder = "/Users/davide/tmp/neo0_wkt/";
+//		
+//		for(int i=0; i < stGraph.size(); i++){
+//			wkt_exporter.export(boundaries[i], String.format("%sBorder_%d.wtk",export_folder,i));
+//			wkt_exporter.exportFrame(stGraph.getFrame(i), String.format("%sPolygons_%d.wtk",export_folder,i));
+//		}
+//		
+//		long SaveTime = System.currentTimeMillis() - startTime - LoadTime;		
+//		System.out.printf("Saving Neo0 in wkt took:\t%d ms\n",SaveTime);
 
 	}
 

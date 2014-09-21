@@ -22,8 +22,7 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
  * Class identifies the cells which constitute the border 
  * of the given selection. The task is achieved by consid-
  * ering the union of all cells and asking which polygons
- * intersect with the outer ring. Currently this is an un-
- * optimized version and takes some time. SysOut given.  
+ * intersect with the outer ring.  
  * 
  * @author Davide Heller
  *
@@ -32,12 +31,23 @@ public class BorderCells{
 
 	private SpatioTemporalGraph stGraph;
 	private PreparedGeometryFactory cached_factory;
+	private Geometry[] boundaries;
 	
+	/**
+	 * @return the boundaries for all frames
+	 */
+	public Geometry[] getBoundaries() {
+		return boundaries;
+	}
+
+
 	public BorderCells(SpatioTemporalGraph stGraph) {
 		//Set data structures
 		this.stGraph = stGraph;
+		boundaries = new Geometry[stGraph.size()];
 		cached_factory = new PreparedGeometryFactory();
 	}
+	
 	
 	/**
 	 * The boundary cells of every frame are identified by merging all Node geometries.
@@ -67,6 +77,8 @@ public class BorderCells{
 			markBorderCells(frame_i, new_boundary);
 			long e4 = System.currentTimeMillis() - e3 - e2 - e1 - s;		
 
+			boundaries[time_point_i] = new_boundary;
+			
 			System.out.printf("Boundary %d:\t%d\t%d\t%d\t%d\n",time_point_i,e1,e2,e3,e4);
 			
 		}
@@ -96,6 +108,8 @@ public class BorderCells{
 		//update boundary
 		Geometry new_boundary = findBorderCells(frame_i);
 		markBorderCells(frame_i, new_boundary);
+		
+		boundaries[time_point_i] = new_boundary;
 
 		System.out.println("Removed one outer layer!");
 		
@@ -131,9 +145,7 @@ public class BorderCells{
 	 * 
 	 * 
 	 */
-	public Geometry[] markOnly() {
-		
-		Geometry[] boundaries = new Geometry[stGraph.size()];
+	public void markOnly() {
 		
 		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
@@ -142,8 +154,6 @@ public class BorderCells{
 			markBorderCells(frame_i,boundary);
 			boundaries[time_point_i] = boundary;
 		}
-		
-		return boundaries;
 	}
 
 	/**

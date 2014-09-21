@@ -20,6 +20,8 @@ import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 /**
  * FrameGenerator is a helper class to create FrameGraph objects
@@ -33,6 +35,8 @@ import com.vividsolutions.jts.geom.Polygon;
 public class FrameGenerator {
 	
 	PolygonReader polygonReader;
+	private PreparedGeometryFactory cached_factory;
+
 	
 	/**
 	 * Initializes the parameters
@@ -79,6 +83,8 @@ public class FrameGenerator {
 		default:
 			break;		
 		}
+		
+		cached_factory = new PreparedGeometryFactory();
 		
 	}
 	
@@ -138,12 +144,13 @@ public class FrameGenerator {
 		
 		while(cell_it.hasNext()){
 			Cell a = (Cell)cell_it.next();
+			PreparedGeometry cached_a = cached_factory.create(a.getGeometry());
 			Iterator<Cell> neighbor_it = cell_list.iterator();
 			while(neighbor_it.hasNext()){
 				Cell b = neighbor_it.next();
 				//avoid creating the connection twice
 				if(!frame.containsEdge(a, b))
-					if(a.getGeometry().touches(b.getGeometry()))
+					if(cached_a.touches(b.getGeometry()))
 						frame.addEdge(a, b);
 			}
 		}

@@ -43,6 +43,7 @@ import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
+import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
@@ -515,24 +516,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 		this.getUI().setProgressBarMessage("Setting Boundary Conditions...");
 		
 		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-		if(varCutBorder.getValue()){
-			borderUpdate.applyBoundaryCondition();
-			//sequence.addPainter(borderUpdate);
-		}
+		if(varCutBorder.getValue())
+			borderUpdate.removeOneBoundaryLayerFromAllFrames();
 		else
 			borderUpdate.markOnly();
 	
-		//tracking: link the graph in the temporal dimension
-		
-		//removing outer layers of first frame to ensure accurate tracking
+		//removing outer layers of first frame to ensure more accurate tracking
 		if(varDoTracking.getValue()){
 			BorderCells remover = new BorderCells(wing_disc_movie);
 			for(int i=0; i < varBorderEliminationNo.getValue();i++)
 				remover.removeOneBoundaryLayerFromFrame(0);
 	
-	
-			//update to new boundary conditions
-			remover.markOnly();
 		}
 	}
 

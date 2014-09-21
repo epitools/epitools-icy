@@ -37,7 +37,7 @@ public class GenerateNeoWtkFiles {
 		
 		System.out.println("Identifying the border..");
 		BorderCells border_generator = new BorderCells(stGraph);
-		border_generator.applyBoundaryCondition();
+		border_generator.removeOneBoundaryLayerFromAllFrames();
 		border_generator.removeOneBoundaryLayerFromFrame(0);
 		Geometry[] boundaries = border_generator.markOnly();
 		

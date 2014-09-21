@@ -7,18 +7,14 @@ import icy.gui.frame.IcyFrame;
 import icy.gui.viewer.Viewer;
 import icy.image.IcyBufferedImage;
 import icy.image.IcyBufferedImageUtil;
-import icy.imagej.ImageJUtil;
 import icy.main.Icy;
 import icy.painter.Painter;
-import icy.plugin.PluginDescriptor;
 import icy.plugin.PluginLauncher;
-import icy.plugin.PluginLoader;
 import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 import ij.ImagePlus;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -28,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import loci.formats.FormatException;
-
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
@@ -43,7 +38,6 @@ import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
-import plugins.tprovoost.painting.Painting;
 
 /**
  * Tool to apply manual modifications to skeleton files
@@ -325,7 +319,7 @@ public class CellEditor extends EzPlug{
 					//Apply default conditions from CellGraph plugin 
 					//TODO make flexible!
 					BorderCells borderUpdater = new BorderCells(wing_disc_movie);
-					borderUpdater.applyBoundaryConditionsToFrame(time_point);
+					borderUpdater.removeOneBoundaryLayerFromFrame(time_point);
 					if(wing_disc_movie.hasTracking() && time_point == 0)
 						borderUpdater.removeOneBoundaryLayerFromFrame(0);
 					

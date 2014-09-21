@@ -98,9 +98,8 @@ public class StGraphUtils {
 
 		System.out.println("Identifying the border..");
 		BorderCells border_generator = new BorderCells(stGraph);
-		border_generator.applyBoundaryCondition();
+		border_generator.removeOneBoundaryLayerFromAllFrames();
 		border_generator.removeOneBoundaryLayerFromFrame(0);
-		border_generator.markOnly();
 		
 		System.out.println("Removing small cells..");
 		new SmallCellRemover(stGraph).removeCellsBelow(10.0);

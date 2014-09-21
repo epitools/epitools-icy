@@ -8,6 +8,7 @@ package plugins.davhelle.cellgraph.graphs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
@@ -22,6 +23,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 /**
  * FrameGenerator is a helper class to create FrameGraph objects
@@ -110,6 +112,12 @@ public class FrameGenerator {
 	}
 
 	public void populateFrame(FrameGraph frame, ArrayList<Polygon> polygonMesh) {
+		
+		//Create Index
+		STRtree index = new STRtree();
+		for(Polygon p: polygonMesh)
+			index.insert(p.getEnvelopeInternal(), p);
+		
 		//insert all polygons into graph as CellPolygons
 		ArrayList<Cell> cell_list = new ArrayList<Cell>();
 		
@@ -144,14 +152,17 @@ public class FrameGenerator {
 		
 		while(cell_it.hasNext()){
 			Cell a = (Cell)cell_it.next();
+			ArrayList<Polygon> intersections = (ArrayList<Polygon>) index.query(a.getGeometry().getEnvelopeInternal());
 			PreparedGeometry cached_a = cached_factory.create(a.getGeometry());
 			Iterator<Cell> neighbor_it = cell_list.iterator();
 			while(neighbor_it.hasNext()){
 				Cell b = neighbor_it.next();
 				//avoid creating the connection twice
 				if(!frame.containsEdge(a, b))
-					if(cached_a.touches(b.getGeometry()))
+					if(cached_a.touches(b.getGeometry())){
+						assert intersections.contains(b.getGeometry()): "Polygon not contained!";
 						frame.addEdge(a, b);
+					}
 			}
 		}
 	}

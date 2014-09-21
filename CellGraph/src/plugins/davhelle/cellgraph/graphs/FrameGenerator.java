@@ -119,6 +119,7 @@ public class FrameGenerator {
 		ArrayList<Cell> cell_list = new ArrayList<Cell>();
 		
 		//order polygons according to cell center position
+		//in order to insert them into the graph in geometric order (x,y) 
 		ComparablePolygon[] poly_array = new ComparablePolygon[polygonMesh.size()];
 		for(int k=0; k < poly_array.length; k++)
 			poly_array[k] = new ComparablePolygon(polygonMesh.get(k));
@@ -145,18 +146,15 @@ public class FrameGenerator {
 		/* Algorithm to find neighborhood relationships between polygons
 		 * 
 		 * for every polygon
-		 * 	for every non assigned face
-		 * 	 find neighboring polygon
-		 * 	  add edge to graph if neighbor found
-		 * 	  if all faces assigned 
-		 * 	   exclude from list
+		 * 	obtain the STRtree neighbors
+		 *	
+		 *	if edge doesn't already exist
+		 * 	  if str_tree_neighbor intersects
+		 * 		 add edge to graph. 
 		 *    
 		 */
 
-		//TODO more efficient search
 		Iterator<Node> cell_it = frame.iterator();
-		int counter = 0;
-		int counter_b = 0;
 
 		while(cell_it.hasNext()){
 			Cell a = (Cell)cell_it.next();
@@ -176,55 +174,15 @@ public class FrameGenerator {
 				Cell b = index_to_cell.get(intersection_neighbor);
 				if(!frame.containsEdge(a, b)) {
 					
+					boolean cells_intersect = cached_a.intersects(b.getGeometry());
 					
-//					long startTime = System.currentTimeMillis();
-					boolean cells_do_touch = cached_a.intersects(b.getGeometry());
-//					long touchTime = System.currentTimeMillis() - startTime;
-//					System.out.println(touchTime);
-					
-					
-					if(cells_do_touch){
-						counter++;
+					if(cells_intersect){
 						frame.addEdge(a, b);
-					}
-					
-					boolean cells_do_intersect = cached_a.intersects(b.getGeometry());
-					if(cells_do_intersect && !cells_do_touch){
-						if(geometry_a.hashCode() == geometry_b.hashCode())
-							counter_b++;
 					}
 					
 				}
 			}
-		}
-		
-		//TODO old
-		
-//		while(cell_it.hasNext()){
-//			Cell a = (Cell)cell_it.next();
-//			ArrayList<Polygon> intersections = (ArrayList<Polygon>) index.query(a.getGeometry().getEnvelopeInternal());
-//			PreparedGeometry cached_a = cached_factory.create(a.getGeometry());
-//			Iterator<Cell> neighbor_it = cell_list.iterator();
-//			while(neighbor_it.hasNext()){
-//				Cell b = neighbor_it.next();
-//				//avoid creating the connection twice
-//				if(!frame.containsEdge(a, b))
-//					counter++;
-//					
-//					long startTime = System.currentTimeMillis();
-//					boolean cells_do_touch = cached_a.touches(b.getGeometry());
-//					long touchTime = System.currentTimeMillis() - startTime;
-//					System.out.println(touchTime);
-//
-//					if(cells_do_touch){
-//						assert intersections.contains(b.getGeometry()): "Polygon not contained!";
-//						frame.addEdge(a, b);
-//					}
-//			}
-//		}
-		
-		
-		System.out.printf("%d touch \tvs %d intersect\n",counter,counter_b);
+		}		
 		
 	}
 			

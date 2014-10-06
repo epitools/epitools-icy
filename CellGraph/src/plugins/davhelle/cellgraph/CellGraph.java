@@ -19,7 +19,12 @@ import icy.swimmingPool.SwimmingObject;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import org.testng.Assert;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
@@ -44,6 +49,7 @@ import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 import plugins.davhelle.cellgraph.io.WktPolygonExporter;
+import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
@@ -515,18 +521,32 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		this.getUI().setProgressBarMessage("Setting Boundary Conditions...");
 		
-		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-		if(varCutBorder.getValue())
-			borderUpdate.removeOneBoundaryLayerFromAllFrames();
-		else
-			borderUpdate.markOnly();
-	
-		//removing outer layers of first frame to ensure more accurate tracking
-		if(varDoTracking.getValue()){
-			BorderCells remover = new BorderCells(wing_disc_movie);
-			for(int i=0; i < varBorderEliminationNo.getValue();i++)
-				remover.removeOneBoundaryLayerFromFrame(0);
-	
+		if(varInput.getValue() == InputType.WKT){
+			WktPolygonImporter wkt_importer = new WktPolygonImporter();
+			BorderCells border = new BorderCells(wing_disc_movie);
+			String export_folder = "/Users/davide/data/neo/0/skeletons_wkt/";
+			for(int i=0; i < wing_disc_movie.size(); i++){
+				String expected_wkt_file = String.format("%sborder_%03d.wkt",export_folder,i);
+				ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
+
+				FrameGraph frame = wing_disc_movie.getFrame(i);
+				border.markBorderCells(frame, boundaries.get(0));
+			}
+		}
+		else{
+			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
+			if(varCutBorder.getValue())
+				borderUpdate.removeOneBoundaryLayerFromAllFrames();
+			else
+				borderUpdate.markOnly();
+
+			//removing outer layers of first frame to ensure more accurate tracking
+			if(varDoTracking.getValue()){
+				BorderCells remover = new BorderCells(wing_disc_movie);
+				for(int i=0; i < varBorderEliminationNo.getValue();i++)
+					remover.removeOneBoundaryLayerFromFrame(0);
+
+			}
 		}
 	}
 

@@ -12,7 +12,7 @@ import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 
-public class GenerateNeoWtkFiles {
+public class SaveNeoWtkFiles {
 
 	/**
 	 * @param args
@@ -33,7 +33,7 @@ public class GenerateNeoWtkFiles {
 				new SpatioTemporalGraphGenerator(
 						GraphType.TISSUE_EVOLUTION,
 						skeletons[1], 
-						20).getStGraph();
+						100).getStGraph();
 		
 		System.out.println("Identifying the border..");
 		BorderCells border_generator = new BorderCells(stGraph);
@@ -48,16 +48,16 @@ public class GenerateNeoWtkFiles {
 		System.out.printf("Loading Neo0 took:\t%d ms\n",LoadTime);
 		
 		//Saving information in Well-Known-Text (WKT) Format
-//		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
-//		String export_folder = "/Users/davide/tmp/neo0_wkt/";
-//		
-//		for(int i=0; i < stGraph.size(); i++){
-//			wkt_exporter.export(boundaries[i], String.format("%sBorder_%d.wtk",export_folder,i));
-//			wkt_exporter.exportFrame(stGraph.getFrame(i), String.format("%sPolygons_%d.wtk",export_folder,i));
-//		}
-//		
-//		long SaveTime = System.currentTimeMillis() - startTime - LoadTime;		
-//		System.out.printf("Saving Neo0 in wkt took:\t%d ms\n",SaveTime);
+		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
+		String export_folder = "/Users/davide/data/neo/0/skeletons_wkt/";
+		
+		for(int i=0; i < stGraph.size(); i++){
+			wkt_exporter.export(boundaries[i], String.format("%sborder_%03d.wkt",export_folder,i));
+			wkt_exporter.exportFrame(stGraph.getFrame(i), String.format("%sskeleton_%03d.wkt",export_folder,i));
+		}
+		
+		long SaveTime = System.currentTimeMillis() - startTime - LoadTime;		
+		System.out.printf("Saving Neo0 in wkt took:\t%d ms\n",SaveTime);
 
 	}
 

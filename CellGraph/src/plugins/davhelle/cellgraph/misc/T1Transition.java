@@ -13,18 +13,13 @@ package plugins.davhelle.cellgraph.misc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-
-import org.netlib.util.intW;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Class to represent the gain and loss dynamics of edges between cells

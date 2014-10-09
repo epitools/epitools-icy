@@ -148,6 +148,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		reviewDivisionsAndEliminations();
 		
 		reportTrackingResults();
+		
+		stGraph.setTracking(true);
 	}
 
 	/**
@@ -223,6 +225,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 * @param time_point
 	 */
 	private void propagateTimePoint(int time_point) {
+		
+		int intersection_no = 0;
 
 		//Update with str-tree for spatial indexing
 		
@@ -239,6 +243,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 						
 						if(cached_current.intersects(next_geometry))
 						{
+							intersection_no++;
+							
 							Geometry intersection = next_geometry.intersection(current.getGeometry());
 							if(intersection.getArea() > 10){
 								next.addParentCandidate(current);
@@ -263,6 +269,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			
 			
 		}
+		
+		//System.out.printf("Propagation finished with %d intersections", intersection_no);
 	}
 
 	private void reportTrackingResults() {

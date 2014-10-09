@@ -231,7 +231,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varInput = new EzVarEnum<InputType>(
 				"Input type",InputType.values(), InputType.SKELETON);
 			
-		//Should the data be directly imported from a particular tool datastructure
+		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Direct import", true);
 		
 		//In case yes, what particular program was used
@@ -253,17 +253,24 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varAreaThreshold = new EzVarDouble("Area threshold", 10, 0, Double.MAX_VALUE, 0.1);
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
-		
-		EzGroup groupInputPrameters = new EzGroup("Input Parameters",
-				varInput,
+		EzGroup inputTypeGroup = new EzGroup("Input type parameters",
 				varDirectInput,
 				varTool,
 				varFile, 
 				varMaxT,
 				varCutBorder,
 				varRemoveSmallCells,
-				varAreaThreshold		
+				varAreaThreshold
 				);
+		
+		EzGroup groupInputPrameters = new EzGroup("INPUT options",
+				varInput,
+				inputTypeGroup	
+				);
+		
+		varInput.addVisibilityTriggerTo(varDirectInput, InputType.SKELETON);
+		varInput.addVisibilityTriggerTo(varTool, InputType.SKELETON);
+		
 		return groupInputPrameters;
 	}
 
@@ -298,7 +305,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		varLoadFile = new EzVarFolder("Select csv location", "");
 		
-		EzGroup groupTracking = new EzGroup("TRACKING elements",
+		EzGroup groupTracking = new EzGroup("TRACKING options",
 				varTrackingAlgorithm,
 				groupTrackingParameters,
 				varLoadFile

@@ -380,6 +380,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		sequence = varSequence.getValue();
 		
+		if(varSaveWkt.getValue()){
+			if(faultyInputCheck(varWktFolder.getValue() == null,
+					"SaveWKT feature requires an ouput directory: please review!"))
+				return true;
+
+			File output_directory = varWktFolder.getValue();
+
+			if(faultyInputCheck(!output_directory.isDirectory(), "Output WKT directory is not valid, please review"))
+				return true;
+
+		}
+		
 		//TODO integrate these into respective classes!
 		if(varDoTracking.getValue()){
 			

@@ -240,7 +240,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/Documents/segmentation/");
+				"Input files", "/Users/davide/data/");
 	
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
@@ -346,11 +346,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 				return;
 			
 			//Border identification + discard/mark
-			applyBorderOptions(wing_disc_movie);
+			Geometry[] boundaries = applyBorderOptions(wing_disc_movie);
 			
 			//Small cell handling, executed after border options 
 			if(varRemoveSmallCells.getValue())
 				new SmallCellRemover(wing_disc_movie).removeCellsBelow(varAreaThreshold.getValue());
+			
+			if(varSaveWkt.getValue() && varInput.getValue() != InputType.WKT)
+				saveWktSkeletons(wing_disc_movie, boundaries);
 			
 			if(varDoTracking.getValue())
 				applyTracking(wing_disc_movie);
@@ -364,6 +367,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 			if(varUseSwimmingPool.getValue())
 				pushToSwimingPool(wing_disc_movie);	
 		}
+	}
+
+	/**
+	 * @param wing_disc_movie
+	 * @param boundaries
+	 */
+	public void saveWktSkeletons(SpatioTemporalGraph wing_disc_movie,
+			Geometry[] boundaries) {
+		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
+		String export_folder = varWktFolder.getValue().getAbsolutePath();
+		
+		for(int i=0; i < wing_disc_movie.size(); i++){
+			wkt_exporter.export(boundaries[i], String.format("%s/border_%03d.wkt",export_folder,i));
+			wkt_exporter.exportFrame(wing_disc_movie.getFrame(i), String.format("%s/skeleton_%03d.wkt",export_folder,i));
+		}
+		
+		System.out.println("Successfully saved Wkt Files to: "+export_folder);
 	}
 
 	/**
@@ -549,16 +569,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 	}
 
-	private void applyBorderOptions(TissueEvolution wing_disc_movie) {
+	private Geometry[] applyBorderOptions(TissueEvolution wing_disc_movie) {
 		
 		this.getUI().setProgressBarMessage("Setting Boundary Conditions...");
+
+		BorderCells border = new BorderCells(wing_disc_movie);
 		
 		if(varInput.getValue() == InputType.WKT){
 			WktPolygonImporter wkt_importer = new WktPolygonImporter();
-			BorderCells border = new BorderCells(wing_disc_movie);
-			String export_folder = "/Users/davide/data/neo/0/skeletons_wkt/";
+			String export_folder = varFile.getValue().getParent();
+			System.out.println("Extracting wkt boundaries from:"+export_folder);
 			for(int i=0; i < wing_disc_movie.size(); i++){
-				String expected_wkt_file = String.format("%sborder_%03d.wkt",export_folder,i);
+				String expected_wkt_file = String.format("%s/border_%03d.wkt",export_folder,i);
 				ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
 
 				FrameGraph frame = wing_disc_movie.getFrame(i);
@@ -566,20 +588,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 		}
 		else{
-			BorderCells borderUpdate = new BorderCells(wing_disc_movie);
 			if(varCutBorder.getValue())
-				borderUpdate.removeOneBoundaryLayerFromAllFrames();
+				border.removeOneBoundaryLayerFromAllFrames();
 			else
-				borderUpdate.markOnly();
+				border.markOnly();
 
 			//removing outer layers of first frame to ensure more accurate tracking
-			if(varDoTracking.getValue()){
-				BorderCells remover = new BorderCells(wing_disc_movie);
+			if(varDoTracking.getValue())
 				for(int i=0; i < varBorderEliminationNo.getValue();i++)
-					remover.removeOneBoundaryLayerFromFrame(0);
-
-			}
+					border.removeOneBoundaryLayerFromFrame(0);
 		}
+		
+		return border.getBoundaries();
 	}
 
 	private void applyTracking(SpatioTemporalGraph wing_disc_movie){

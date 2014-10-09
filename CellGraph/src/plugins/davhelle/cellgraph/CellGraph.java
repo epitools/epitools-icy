@@ -146,7 +146,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//Save Track to CSV files
 	EzVarBoolean varSaveTracking;
-	EzVarFolder varSaveFile;
+	EzVarFolder varTrackingFolder;
 	
 	//Load Track from CSV files
 	EzVarFolder varLoadFile;
@@ -156,6 +156,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//sequence to paint on 
 	Sequence sequence;
+	EzVarFolder varWktFolder;
+	EzVarBoolean varSaveWkt;
 	
 	@Override
 	protected void initialize()
@@ -182,16 +184,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Usage of temporary ICY-memory (java object swimming pool)
 		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
 		
+		//Save skeletons using the well-known-text format (jts)
+		varSaveWkt = new EzVarBoolean("Save Wkt Skeletons",false);
+		varWktFolder = new EzVarFolder("WKT output folder", "");
+		
+		//Save tracking in csv format
 		varSaveTracking = new EzVarBoolean("Save Tracking",false);
-		varSaveFile = new EzVarFolder("select output folder", "");
+		varTrackingFolder = new EzVarFolder("Tracking output folder", "");
 		EzGroup groupFiles = new EzGroup(
 				"", 
 				varUpdatePainterMode,
 				groupInputPrameters,
+				varSaveWkt,
+				varWktFolder,
 				varDoTracking,
 				groupTracking,
 				varSaveTracking,
-				varSaveFile,
+				varTrackingFolder,
 				varUseSwimmingPool
 				);
 		
@@ -199,14 +208,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//set visibility according to choice
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupFiles, false);
+		varSaveWkt.addVisibilityTriggerTo(varWktFolder, true);
 		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
 		varDoTracking.addVisibilityTriggerTo(varSaveTracking,true);
-		varSaveTracking.addVisibilityTriggerTo(varSaveFile, true);
+		varSaveTracking.addVisibilityTriggerTo(varTrackingFolder, true);
 		
 		//cleaner way? This can still be tricked if the user selects it and then
 		//changes the Tracking Algorithm to CSV
 		varTrackingAlgorithm.addVisibilityTriggerTo(varSaveTracking, 
 				TrackEnum.NN,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
+		
+		varInput.addVisibilityTriggerTo(varSaveWkt,
+				InputType.SKELETON,InputType.VTK_MESH);
 		varDirectInput.addVisibilityTriggerTo(varTool, true);
 		
 		this.setTimeDisplay(true);
@@ -389,11 +402,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 			
 			if(varSaveTracking.getValue()){
-				if(faultyInputCheck(varSaveFile.getValue() == null,
+				if(faultyInputCheck(varTrackingFolder.getValue() == null,
 					"SaveTrack feature requires an ouput directory: please review!"))
 					return true;
 				
-				File output_directory = varSaveFile.getValue();
+				File output_directory = varTrackingFolder.getValue();
 				
 				if(faultyInputCheck(!output_directory.isDirectory(), "Output directory is not valid, please review"))
 					return true;
@@ -418,7 +431,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//TODO: save-check
 		
-		String output_folder = varSaveFile.getValue().getAbsolutePath();
+		String output_folder = varTrackingFolder.getValue().getAbsolutePath();
 		
 		CsvTrackWriter track_writer = new CsvTrackWriter(wing_disc_movie,output_folder);
 		track_writer.write();

@@ -48,6 +48,36 @@ public class SpatioTemporalGraphGenerator {
 			addFrame(i);
 			
 	}
+	
+	public SpatioTemporalGraphGenerator(GraphType type, File input_file, int time_points, InputType input_type) {
+		switch(type){
+			case TISSUE_EVOLUTION:
+				this.stGraph = new TissueEvolution();
+			break;
+		}
+		
+		boolean use_direct_input = true;
+		
+		this.file_name_generator = new FileNameGenerator(
+				input_file,
+				InputType.SKELETON, 
+				use_direct_input,
+				SegmentationProgram.SeedWater);
+		
+		this.frame_generator = new FrameGenerator(
+				input_type,
+				use_direct_input, 
+				SegmentationProgram.SeedWater);
+		
+		//check if files exist
+		for(int i=0;i<time_points;i++)
+			checkFileExistence(i);
+		
+		//populate spatiotemporal graph
+		for(int i=0;i<time_points;i++)
+			addFrame(i);
+			
+	}
 
 	private void checkFileExistence(int i) {
 		String time_point_file_name = file_name_generator.getFileName(i);

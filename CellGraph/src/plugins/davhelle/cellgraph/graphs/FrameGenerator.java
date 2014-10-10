@@ -7,18 +7,25 @@ package plugins.davhelle.cellgraph.graphs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.PolygonReader;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
+import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 /**
  * FrameGenerator is a helper class to create FrameGraph objects
@@ -32,6 +39,8 @@ import com.vividsolutions.jts.geom.Polygon;
 public class FrameGenerator {
 	
 	PolygonReader polygonReader;
+	private PreparedGeometryFactory cached_factory;
+
 	
 	/**
 	 * Initializes the parameters
@@ -69,8 +78,17 @@ public class FrameGenerator {
 		case VTK_MESH:
 			
 			this.polygonReader = new JtsVtkReader();
+			break;
+		
+		case WKT:
+			
+			this.polygonReader = new WktPolygonImporter();
+			break;
+		default:
 			break;		
 		}
+		
+		cached_factory = new PreparedGeometryFactory();
 		
 	}
 	
@@ -86,12 +104,22 @@ public class FrameGenerator {
 		
 		FrameGraph frame = new FrameGraph(frame_no);
 		
+		frame.setFileSource(file_name);
+		
 		ArrayList<Polygon> polygonMesh = polygonReader.extractPolygons(file_name);
+		
+		populateFrame(frame, polygonMesh);
+
+		return frame;
+	}
+
+	public void populateFrame(FrameGraph frame, ArrayList<Polygon> polygonMesh) {
 		
 		//insert all polygons into graph as CellPolygons
 		ArrayList<Cell> cell_list = new ArrayList<Cell>();
 		
 		//order polygons according to cell center position
+		//in order to insert them into the graph in geometric order (x,y) 
 		ComparablePolygon[] poly_array = new ComparablePolygon[polygonMesh.size()];
 		for(int k=0; k < poly_array.length; k++)
 			poly_array[k] = new ComparablePolygon(polygonMesh.get(k));
@@ -99,40 +127,63 @@ public class FrameGenerator {
 		//order polygons according to comparator class
 		Arrays.sort(poly_array);
 		
-		//obtain the polygons back and create cells
+		//obtain the polygons back and create cells & index
+		STRtree index = new STRtree();
+		HashMap<Polygon, Cell> index_to_cell = new HashMap<Polygon, Cell>();
+
 		for(ComparablePolygon polygon: poly_array){
-			Cell c = new Cell(polygon.getPolygon(),frame);
+			Polygon cell_polygon = polygon.getPolygon();
+			
+			Cell c = new Cell(cell_polygon,frame);
 			cell_list.add(c);
 			frame.addVertex(c);
+
+			//Populate tree and conversion map
+			index.insert(cell_polygon.getEnvelopeInternal(), cell_polygon);
+			index_to_cell.put(cell_polygon, c);
 		}
 		
 		/* Algorithm to find neighborhood relationships between polygons
 		 * 
 		 * for every polygon
-		 * 	for every non assigned face
-		 * 	 find neighboring polygon
-		 * 	  add edge to graph if neighbor found
-		 * 	  if all faces assigned 
-		 * 	   exclude from list
+		 * 	obtain the STRtree neighbors
+		 *	
+		 *	if edge doesn't already exist
+		 * 	  if str_tree_neighbor intersects
+		 * 		 add edge to graph. 
 		 *    
 		 */
 
-		//TODO more efficient search
 		Iterator<Node> cell_it = frame.iterator();
-		
+
 		while(cell_it.hasNext()){
 			Cell a = (Cell)cell_it.next();
-			Iterator<Cell> neighbor_it = cell_list.iterator();
-			while(neighbor_it.hasNext()){
-				Cell b = neighbor_it.next();
-				//avoid creating the connection twice
-				if(!frame.containsEdge(a, b))
-					if(a.getGeometry().touches(b.getGeometry()))
+			Geometry geometry_a = a.getGeometry();
+			PreparedGeometry cached_a = cached_factory.create(geometry_a);
+			
+			//Get candidates from STRtree
+			ArrayList<Polygon> intersections = 
+					(ArrayList<Polygon>) index.query(geometry_a.getEnvelopeInternal());
+			
+			for(Polygon intersection_neighbor: intersections){
+				
+				Geometry geometry_b = intersection_neighbor;
+				if(geometry_a.hashCode() == geometry_b.hashCode())
+					continue;
+				
+				Cell b = index_to_cell.get(intersection_neighbor);
+				if(!frame.containsEdge(a, b)) {
+					
+					boolean cells_intersect = cached_a.intersects(b.getGeometry());
+					
+					if(cells_intersect){
 						frame.addEdge(a, b);
+					}
+					
+				}
 			}
-		}
-
-		return frame;
+		}		
+		
 	}
 			
 

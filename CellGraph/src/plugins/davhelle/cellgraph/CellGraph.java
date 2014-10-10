@@ -19,7 +19,12 @@ import icy.swimmingPool.SwimmingObject;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import org.testng.Assert;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
@@ -43,6 +48,8 @@ import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
+import plugins.davhelle.cellgraph.io.WktPolygonExporter;
+import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
@@ -139,7 +146,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//Save Track to CSV files
 	EzVarBoolean varSaveTracking;
-	EzVarFolder varSaveFile;
+	EzVarFolder varTrackingFolder;
 	
 	//Load Track from CSV files
 	EzVarFolder varLoadFile;
@@ -149,6 +156,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//sequence to paint on 
 	Sequence sequence;
+	EzVarFolder varWktFolder;
+	EzVarBoolean varSaveWkt;
 	
 	@Override
 	protected void initialize()
@@ -175,16 +184,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Usage of temporary ICY-memory (java object swimming pool)
 		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
 		
+		//Save skeletons using the well-known-text format (jts)
+		varSaveWkt = new EzVarBoolean("Save Wkt Skeletons",false);
+		varWktFolder = new EzVarFolder("WKT output folder", "");
+		
+		//Save tracking in csv format
 		varSaveTracking = new EzVarBoolean("Save Tracking",false);
-		varSaveFile = new EzVarFolder("select output folder", "");
+		varTrackingFolder = new EzVarFolder("Tracking output folder", "");
 		EzGroup groupFiles = new EzGroup(
 				"", 
 				varUpdatePainterMode,
 				groupInputPrameters,
+				varSaveWkt,
+				varWktFolder,
 				varDoTracking,
 				groupTracking,
 				varSaveTracking,
-				varSaveFile,
+				varTrackingFolder,
 				varUseSwimmingPool
 				);
 		
@@ -192,14 +208,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//set visibility according to choice
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupFiles, false);
+		varSaveWkt.addVisibilityTriggerTo(varWktFolder, true);
 		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
 		varDoTracking.addVisibilityTriggerTo(varSaveTracking,true);
-		varSaveTracking.addVisibilityTriggerTo(varSaveFile, true);
+		varSaveTracking.addVisibilityTriggerTo(varTrackingFolder, true);
 		
 		//cleaner way? This can still be tricked if the user selects it and then
 		//changes the Tracking Algorithm to CSV
 		varTrackingAlgorithm.addVisibilityTriggerTo(varSaveTracking, 
 				TrackEnum.NN,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
+		
+		varInput.addVisibilityTriggerTo(varSaveWkt,
+				InputType.SKELETON,InputType.VTK_MESH);
 		varDirectInput.addVisibilityTriggerTo(varTool, true);
 		
 		this.setTimeDisplay(true);
@@ -211,7 +231,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varInput = new EzVarEnum<InputType>(
 				"Input type",InputType.values(), InputType.SKELETON);
 			
-		//Should the data be directly imported from a particular tool datastructure
+		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Direct import", true);
 		
 		//In case yes, what particular program was used
@@ -220,7 +240,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/Documents/segmentation/");
+				"Input files", "/Users/davide/data/");
 	
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
@@ -233,17 +253,24 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varAreaThreshold = new EzVarDouble("Area threshold", 10, 0, Double.MAX_VALUE, 0.1);
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
-		
-		EzGroup groupInputPrameters = new EzGroup("Input Parameters",
-				varInput,
+		EzGroup inputTypeGroup = new EzGroup("Input type parameters",
 				varDirectInput,
 				varTool,
 				varFile, 
 				varMaxT,
 				varCutBorder,
 				varRemoveSmallCells,
-				varAreaThreshold		
+				varAreaThreshold
 				);
+		
+		EzGroup groupInputPrameters = new EzGroup("INPUT options",
+				varInput,
+				inputTypeGroup	
+				);
+		
+		varInput.addVisibilityTriggerTo(varDirectInput, InputType.SKELETON);
+		varInput.addVisibilityTriggerTo(varTool, InputType.SKELETON);
+		
 		return groupInputPrameters;
 	}
 
@@ -278,7 +305,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		varLoadFile = new EzVarFolder("Select csv location", "");
 		
-		EzGroup groupTracking = new EzGroup("TRACKING elements",
+		EzGroup groupTracking = new EzGroup("TRACKING options",
 				varTrackingAlgorithm,
 				groupTrackingParameters,
 				varLoadFile
@@ -319,11 +346,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 				return;
 			
 			//Border identification + discard/mark
-			applyBorderOptions(wing_disc_movie);
+			Geometry[] boundaries = applyBorderOptions(wing_disc_movie);
 			
 			//Small cell handling, executed after border options 
 			if(varRemoveSmallCells.getValue())
 				new SmallCellRemover(wing_disc_movie).removeCellsBelow(varAreaThreshold.getValue());
+			
+			if(varSaveWkt.getValue() && varInput.getValue() != InputType.WKT)
+				saveWktSkeletons(wing_disc_movie, boundaries);
 			
 			if(varDoTracking.getValue())
 				applyTracking(wing_disc_movie);
@@ -340,6 +370,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 	}
 
 	/**
+	 * @param wing_disc_movie
+	 * @param boundaries
+	 */
+	public void saveWktSkeletons(SpatioTemporalGraph wing_disc_movie,
+			Geometry[] boundaries) {
+		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
+		String export_folder = varWktFolder.getValue().getAbsolutePath();
+		
+		for(int i=0; i < wing_disc_movie.size(); i++){
+			wkt_exporter.export(boundaries[i], String.format("%s/border_%03d.wkt",export_folder,i));
+			wkt_exporter.exportFrame(wing_disc_movie.getFrame(i), String.format("%s/skeleton_%03d.wkt",export_folder,i));
+		}
+		
+		System.out.println("Successfully saved Wkt Files to: "+export_folder);
+	}
+
+	/**
 	 * Safety checks for wrong GUI input
 	 * 
 	 * @return true if input is wrong
@@ -352,6 +399,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 			return true;
 		
 		sequence = varSequence.getValue();
+		
+		if(varSaveWkt.getValue()){
+			if(faultyInputCheck(varWktFolder.getValue() == null,
+					"SaveWKT feature requires an ouput directory: please review!"))
+				return true;
+
+			File output_directory = varWktFolder.getValue();
+
+			if(faultyInputCheck(!output_directory.isDirectory(), "Output WKT directory is not valid, please review"))
+				return true;
+
+		}
 		
 		//TODO integrate these into respective classes!
 		if(varDoTracking.getValue()){
@@ -382,11 +441,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 			
 			if(varSaveTracking.getValue()){
-				if(faultyInputCheck(varSaveFile.getValue() == null,
+				if(faultyInputCheck(varTrackingFolder.getValue() == null,
 					"SaveTrack feature requires an ouput directory: please review!"))
 					return true;
 				
-				File output_directory = varSaveFile.getValue();
+				File output_directory = varTrackingFolder.getValue();
 				
 				if(faultyInputCheck(!output_directory.isDirectory(), "Output directory is not valid, please review"))
 					return true;
@@ -411,7 +470,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//TODO: save-check
 		
-		String output_folder = varSaveFile.getValue().getAbsolutePath();
+		String output_folder = varTrackingFolder.getValue().getAbsolutePath();
 		
 		CsvTrackWriter track_writer = new CsvTrackWriter(wing_disc_movie,output_folder);
 		track_writer.write();
@@ -510,30 +569,37 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 	}
 
-	private void applyBorderOptions(TissueEvolution wing_disc_movie) {
+	private Geometry[] applyBorderOptions(TissueEvolution wing_disc_movie) {
 		
 		this.getUI().setProgressBarMessage("Setting Boundary Conditions...");
+
+		BorderCells border = new BorderCells(wing_disc_movie);
 		
-		BorderCells borderUpdate = new BorderCells(wing_disc_movie);
-		if(varCutBorder.getValue()){
-			borderUpdate.applyBoundaryCondition();
-			//sequence.addPainter(borderUpdate);
+		if(varInput.getValue() == InputType.WKT){
+			WktPolygonImporter wkt_importer = new WktPolygonImporter();
+			String export_folder = varFile.getValue().getParent();
+			System.out.println("Extracting wkt boundaries from:"+export_folder);
+			for(int i=0; i < wing_disc_movie.size(); i++){
+				String expected_wkt_file = String.format("%s/border_%03d.wkt",export_folder,i);
+				ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
+
+				FrameGraph frame = wing_disc_movie.getFrame(i);
+				border.markBorderCells(frame, boundaries.get(0));
+			}
 		}
-		else
-			borderUpdate.markOnly();
-	
-		//tracking: link the graph in the temporal dimension
+		else{
+			if(varCutBorder.getValue())
+				border.removeOneBoundaryLayerFromAllFrames();
+			else
+				border.markOnly();
+
+			//removing outer layers of first frame to ensure more accurate tracking
+			if(varDoTracking.getValue())
+				for(int i=0; i < varBorderEliminationNo.getValue();i++)
+					border.removeOneBoundaryLayerFromFrame(0);
+		}
 		
-		//removing outer layers of first frame to ensure accurate tracking
-		if(varDoTracking.getValue()){
-			BorderCells remover = new BorderCells(wing_disc_movie);
-			for(int i=0; i < varBorderEliminationNo.getValue();i++)
-				remover.removeOneBoundaryLayerFromFrame(0);
-	
-	
-			//update to new boundary conditions
-			remover.markOnly();
-		}
+		return border.getBoundaries();
 	}
 
 	private void applyTracking(SpatioTemporalGraph wing_disc_movie){

@@ -20,6 +20,7 @@ import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
 import plugins.davhelle.cellgraph.io.CsvTrackReader;
+import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
@@ -97,9 +98,8 @@ public class StGraphUtils {
 
 		System.out.println("Identifying the border..");
 		BorderCells border_generator = new BorderCells(stGraph);
-		border_generator.applyBoundaryCondition();
+		border_generator.removeOneBoundaryLayerFromAllFrames();
 		border_generator.removeOneBoundaryLayerFromFrame(0);
-		border_generator.markOnly();
 		
 		System.out.println("Removing small cells..");
 		new SmallCellRemover(stGraph).removeCellsBelow(10.0);
@@ -107,6 +107,30 @@ public class StGraphUtils {
 		System.out.println("Tracking cells..");
 		
 		new CsvTrackReader(stGraph, tracking_folder.getAbsolutePath()).track();
+		return stGraph;
+	}
+	
+	public static SpatioTemporalGraph loadNeoWoTracking(int i){
+		
+		String sample_folder = String.format("/Users/davide/data/neo/%d/",i);
+		File skeleton_folder = new File(sample_folder+"skeletons");
+
+		assert skeleton_folder.isDirectory(): "Skeleton Input is not a directory";
+		
+		File[] skeletons = skeleton_folder.listFiles();
+		Arrays.sort(skeletons);
+		
+		System.out.println("First skeleton:"+skeletons[0].getAbsolutePath());
+				
+		System.out.println("Creating graph..");
+		SpatioTemporalGraph stGraph = 
+				new SpatioTemporalGraphGenerator(
+						GraphType.TISSUE_EVOLUTION,
+						skeletons[0], 
+						skeletons.length).getStGraph();
+
+		assert stGraph.size() == skeletons.length: "wrong frame no";
+
 		return stGraph;
 	}
 	

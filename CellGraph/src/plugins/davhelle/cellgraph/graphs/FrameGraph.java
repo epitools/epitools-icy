@@ -37,7 +37,8 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 	private NeighborIndex<Node, Edge> neighborList;
 	private ArrayList<Division> divisions;
 	private ArrayList<Elimination> eliminations;
-	private int frame_no; 
+	private int frame_no;
+	private String file_source; 
 	
 	/**
 	 * Constructor builds an empty ListenableUndirectedGraph at first
@@ -48,6 +49,7 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 		
 		//specify the frame no which the graph represents
 		this.frame_no = frame_no;
+		this.file_source = "";
 		
 		//create the neighborIndexList
 		this.neighborList = new NeighborIndex<Node, Edge>(this);
@@ -140,6 +142,18 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 				return n;
 		
 		return null;
+	}
+
+	public void setFileSource(String file_name) {
+		this.file_source = file_name;
+	}
+	
+	public String getFileSource() {
+		return this.file_source;
+	}
+	
+	public boolean hasFileSource(){
+		return !this.file_source.isEmpty();
 	}
 	
 }

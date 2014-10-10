@@ -5,50 +5,49 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.AbstractPainter;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
-
-import java.awt.Color;
-import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 /**
  * Class identifies the cells which constitute the border 
  * of the given selection. The task is achieved by consid-
  * ering the union of all cells and asking which polygons
- * intersect with the outer ring. Currently this is an un-
- * optimized version and takes some time. SysOut given.  
+ * intersect with the outer ring.  
  * 
  * @author Davide Heller
  *
  */
-public class BorderCells extends Overlay{
+public class BorderCells{
 
 	private SpatioTemporalGraph stGraph;
-	private HashMap<FrameGraph,Geometry> frame_ring_map;
+	private PreparedGeometryFactory cached_factory;
+	private Geometry[] boundaries;
 	
+	/**
+	 * @return the boundaries for all frames
+	 */
+	public Geometry[] getBoundaries() {
+		return boundaries;
+	}
+
+
 	public BorderCells(SpatioTemporalGraph stGraph) {
-		super("Border cells");
 		//Set data structures
 		this.stGraph = stGraph;
-		this.frame_ring_map = new HashMap<FrameGraph,Geometry>();
+		boundaries = new Geometry[stGraph.size()];
+		cached_factory = new PreparedGeometryFactory();
 	}
+	
 	
 	/**
 	 * The boundary cells of every frame are identified by merging all Node geometries.
@@ -59,91 +58,31 @@ public class BorderCells extends Overlay{
 	 * 
 	 * TODO: split the method to allow for separate removal and labeling of boundary cells
 	 */
-	public void applyBoundaryCondition(){
+	public void removeOneBoundaryLayerFromAllFrames(){
 		
-		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
 			
-			applyBoundaryConditionsToFrame(time_point_i);
-		}
-	}
-
-	public void applyBoundaryConditionsToFrame(int time_point_i) {
-		long startTime = System.currentTimeMillis();
-		FrameGraph frame_i = stGraph.getFrame(time_point_i);
-
-		//set up polygon container
-
-		Geometry[] output = new Geometry[frame_i.size()];
-		Iterator<Node> node_it = frame_i.iterator();
-		for(int i=0; i<frame_i.size(); i++){
-			output[i] = node_it.next().getGeometry();
-		}		
-
-		//Create union of all polygons
-//			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-//			Geometry union = polygonCollection.buffer(0);
-		
-		//On avg.faster and more robust method
-		Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
-
-		//Compute boundary ring
-		Geometry boundary = union.getBoundary();
-//			LinearRing borderRing = (LinearRing) boundary;
-
-		
-		//Get first boundary ring (not proper polygons)
-		ArrayList<Node> wrong_cells = new ArrayList<Node>();
-		
-		//Check via intersection if cell is border cell
-		node_it = frame_i.iterator();
-		for(int i=0; i<frame_i.size(); i++){
-
-			Node n = node_it.next();
-			Geometry p = n.getGeometry();
+			long s = System.currentTimeMillis();
+			FrameGraph frame_i = stGraph.getFrame(time_point_i);
 			
-			boolean is_border = p.intersects(boundary);
-
+			Geometry old_boundary = findBorderCells(frame_i);
+			long e1 = System.currentTimeMillis() - s;
 			
-			//Cancel wrong boundary
-			if(is_border)
-				wrong_cells.add(n);
+			removeBoundaryLayer(frame_i, old_boundary);
+			long e2 = System.currentTimeMillis() - e1 - s;
+			
+			Geometry new_boundary = findBorderCells(frame_i);
+			long e3 = System.currentTimeMillis() - e2 - e1 - s;
+			
+			markBorderCells(frame_i, new_boundary);
+			long e4 = System.currentTimeMillis() - e3 - e2 - e1 - s;		
 
+			boundaries[time_point_i] = new_boundary;
+			
+			System.out.printf("Boundary %d:\t%d\t%d\t%d\t%d\n",time_point_i,e1,e2,e3,e4);
+			
 		}
 		
-		//Can't remove vertices while iterating so doining it now
-		ArrayList<Geometry> wrong_boundary = new ArrayList<Geometry>();
-		for(Node n: wrong_cells)
-			if(frame_i.removeVertex(n))
-				wrong_boundary.add(n.getGeometry());
-
-		//Outer polygon boundary for which statistics won't computed
-//			GeometryCollection polygonBoundary = 
-//					new GeometryCollection(
-//							wrong_boundary.toArray(
-//									new Geometry[wrong_boundary.size()]),
-//									new GeometryFactory());
-//			
-//			Geometry polygonRing = polygonBoundary.buffer(0);
-		
-		//faster method as above
-		Geometry polygonRing = CascadedPolygonUnion.union(wrong_boundary);
-				
-		frame_ring_map.put(frame_i, polygonRing);
-		
-		node_it = frame_i.iterator();
-		for(int i=0; i<frame_i.size(); i++){
-			Node n = node_it.next();
-			Geometry p = n.getGeometry();
-			
-			boolean is_border = p.intersects(polygonRing);
-			
-			//Remember good boundary
-			n.setBoundary(is_border);
-		}
-		
-		long endTime = System.currentTimeMillis();		
-		System.out.println("Applied boundary conditions to frame "+time_point_i+" in " + (endTime - startTime) + " milliseconds");
 	}
 	
 	
@@ -162,82 +101,45 @@ public class BorderCells extends Overlay{
 			time_point_i = 0;
 
 		FrameGraph frame_i = stGraph.getFrame(time_point_i);
-
-		//set up polygon container
-		Geometry[] output = new Geometry[frame_i.size()];
-		Iterator<Node> node_it = frame_i.iterator();
-		for(int i=0; i<frame_i.size(); i++){
-			output[i] = node_it.next().getGeometry();
-		}		
-
-		//Create union of all polygons
-//		GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-//		Geometry union = polygonCollection.buffer(0);
 		
-		//faster method as in main routine
-		Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
-
-		//Compute boundary ring
-		Geometry boundary = union.getBoundary();
-//		LinearRing borderRing = (LinearRing) boundary;
+		Geometry boundary = findBorderCells(frame_i);
+		removeBoundaryLayer(frame_i, boundary);
 		
-		//Check via intersection if cell is border cell
-		node_it = frame_i.iterator();
-		ArrayList<Node> borderCells = new ArrayList<Node>();
-		for(int i=0; i<frame_i.size(); i++){
-
-			Node n = node_it.next();
-			Geometry p = n.getGeometry();
-			
-			boolean is_border = p.intersects(boundary);
-
-			//Set border flag if intersect
-			if(is_border)
-				borderCells.add(n);
-		}
-
-		//Can't remove vertices while iterating so doining it now
-		for(Node n: borderCells)
-			if(!frame_i.removeVertex(n))
-				System.out.println("Elimination went wrong, please check!");
-
+		//update boundary
+		Geometry new_boundary = findBorderCells(frame_i);
+		markBorderCells(frame_i, new_boundary);
 		
+		boundaries[time_point_i] = new_boundary;
+
 		System.out.println("Removed one outer layer!");
 		
 	}
-	
-	
-	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
 
-		if(time_point < stGraph.size()){
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.orange);
-			ShapeWriter shapeWriter = new ShapeWriter();
-			if(frame_ring_map.containsKey(frame_i)){
-				Geometry ring = frame_ring_map.get(frame_i);
-				g.draw(shapeWriter.toShape(ring));
-			}
-				
-			
-//			for(Node cell: frame_i.vertexSet()){
-//
-//				if(cell.onBoundary())
-//					g.setColor(Color.white);
-//				else
-//					g.setColor(Color.green);
-//
-//				//Fill cell shape
-//				//if(!cell.onBoundary())
-//				g.fill(cell.toShape());
-//
-//			}
-		}
+	/**
+	 * Removes all cells on the boundary from the graph
+	 * 
+	 * @param frame_i
+	 * @param boundary
+	 */
+	public void removeBoundaryLayer(FrameGraph frame_i, Geometry boundary) {
 		
-	}
+		//Check via intersection if cell is border cell
+		ArrayList<Node> borderCells = new ArrayList<Node>();
+		PreparedGeometry cached_boundary = cached_factory.create(boundary);
+		
+		for(Node n: frame_i.vertexSet()){
+			Geometry p = n.getGeometry();
+			if(cached_boundary.intersects(p))
+				borderCells.add(n);
+		}
 
+		//Can't remove vertices while iterating so doing it now
+		for(Node n: borderCells)
+			if(!frame_i.removeVertex(n))
+				System.out.println("Elimination went wrong, please check!");
+	}
+	
+	
 	/**
 	 * Only mark border cells without eliminating them
 	 * 
@@ -247,44 +149,52 @@ public class BorderCells extends Overlay{
 		
 		//Identify the boundary for every frame
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
-			
-			markBoundaryCellsInFrame(time_point_i);
+			FrameGraph frame_i = stGraph.getFrame(time_point_i);
+			Geometry boundary = findBorderCells(frame_i);
+			markBorderCells(frame_i,boundary);
+			boundaries[time_point_i] = boundary;
 		}
 	}
 
-	private void markBoundaryCellsInFrame(int time_point_i) {
-		FrameGraph frame_i = stGraph.getFrame(time_point_i);
+	/**
+	 * Find the border geometry by computing the union of all cells
+	 * 
+	 * @param frame_i
+	 * @return
+	 */
+	private Geometry findBorderCells(FrameGraph frame_i) {
 
 		//set up polygon container
-
 		Geometry[] output = new Geometry[frame_i.size()];
 		Iterator<Node> node_it = frame_i.iterator();
 		for(int i=0; i<frame_i.size(); i++){
 			output[i] = node_it.next().getGeometry();
 		}		
 
-		//Create union of all polygons
-//			GeometryCollection polygonCollection = new GeometryCollection(output, new GeometryFactory());
-//			Geometry union = polygonCollection.buffer(0);
-		
-		//More robust method
+		//create union
 		Geometry union = CascadedPolygonUnion.union(Arrays.asList(output));
 
-		//Compute boundary ring
+		//Compute boundary ring (linear ring)
 		Geometry boundary = union.getBoundary();
-//			LinearRing borderRing = (LinearRing) boundary;
 		
-		//Check via intersection if cell is border cell
-		node_it = frame_i.iterator();
-		for(int i=0; i<frame_i.size(); i++){
+		markBorderCells(frame_i, boundary);
+		
+		return boundary;
+	}
 
-			Node n = node_it.next();
+	/**
+	 * Mark all the nodes that intersect the boundary Geometry
+	 * 
+	 * @param frame_i
+	 * @param boundary
+	 */
+	public void markBorderCells(FrameGraph frame_i, Geometry boundary) {
+
+		PreparedGeometry cached_boundary = cached_factory.create(boundary);
+		
+		for(Node n: frame_i.vertexSet()){
 			Geometry p = n.getGeometry();
-			
-			boolean is_border = p.intersects(boundary);
-
-			//Set border flag if intersect
-			if(is_border)
+			if(cached_boundary.intersects(p))
 				n.setBoundary(true);
 		}
 	}

@@ -169,7 +169,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 			    		int division_time_point = Integer.parseInt(content[1]);
 			    		
 			    		//safety check, skip division if corresponding frame is missing
-			    		if(division_time_point > stGraph.size())
+			    		if(division_time_point >= stGraph.size())
 			    			continue;
 			    		
 			    		int child1_id = Integer.parseInt(content[2]);

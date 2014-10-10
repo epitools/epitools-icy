@@ -17,6 +17,8 @@ import java.util.Stack;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.distance.DistanceOp;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -94,6 +96,15 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 */
 	private double coverage_factor;	
 	
+	
+	/**
+	 * Caching for performance increase
+	 * on repetitive intersection operation 
+	 * on the same geometry.
+	 */
+	private PreparedGeometryFactory cached_factory;
+
+	
 	/**
 	 * Initializes Neighbor tracking
 	 * 
@@ -113,6 +124,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		this.lambda1 = lambda1;
 		this.lambda2 = lambda2;
 		this.coverage_factor = 0.5;
+		
+		cached_factory = new PreparedGeometryFactory();
 	}
 	
 	@Override
@@ -135,6 +148,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 		reviewDivisionsAndEliminations();
 		
 		reportTrackingResults();
+		
+		stGraph.setTracking(true);
 	}
 
 	/**
@@ -210,33 +225,39 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 	 * @param time_point
 	 */
 	private void propagateTimePoint(int time_point) {
+		
+		int intersection_no = 0;
 
-		//TODO [performance enhancement] use neighborhood to find candidates in next frame:
-		//find out which node the previous neighbor candidated for and use it
-		//as starting node in the next graph to find all other correspondences
-		//idea: keep last of previously propagated nodes or iterate on a neighbor basis
-		//      e.g. and spreading towards a certain k-neighborhood (risk?)
+		//Update with str-tree for spatial indexing
 		
 		for(Node current: stGraph.getFrame(time_point).vertexSet())
 		{	
+			PreparedGeometry cached_current = cached_factory.create(current.getGeometry());
+			
 			//only propagate what has been successfully in current frame.
 			if(current.getTrackID() != -1)
 			{	
 				for(int i=1; i <= linkrange && time_point + i < stGraph.size(); i++)
-					for(Node next: stGraph.getFrame(time_point + i).vertexSet())
+					for(Node next: stGraph.getFrame(time_point + i).vertexSet()) {
+						Geometry next_geometry = next.getGeometry();
 						
-						if(next.getGeometry().intersects(current.getGeometry()))
+						if(cached_current.intersects(next_geometry))
 						{
-							if(next.getGeometry().intersection(current.getGeometry()).getArea() > 10){
-							next.addParentCandidate(current);
+							intersection_no++;
 							
-							if( VERBOSE && current.getTrackID() == follow_ID)
-								System.out.println(follow_ID + " propagated to [" +
-										Math.round(next.getCentroid().getX()) + 
-										"," +
-										Math.round(next.getCentroid().getY()) + "] @ frame "+(time_point+i));
+							Geometry intersection = next_geometry.intersection(current.getGeometry());
+							if(intersection.getArea() > 10){
+								next.addParentCandidate(current);
+
+								if( VERBOSE && current.getTrackID() == follow_ID)
+									System.out.printf("%d propagated to [%.0f,%.0f] @ frame %d",
+											follow_ID,
+											next.getCentroid().getX(),
+											next.getCentroid().getY(),
+											time_point+i);
 							}
-						}								
+						}
+					}								
 			}
 			//also check in case of a division that the brother cell is present
 			if(current.hasObservedDivision())
@@ -248,6 +269,8 @@ public class NearestNeighborTracking extends TrackingAlgorithm{
 			
 			
 		}
+		
+		//System.out.printf("Propagation finished with %d intersections", intersection_no);
 	}
 
 	private void reportTrackingResults() {

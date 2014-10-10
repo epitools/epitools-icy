@@ -218,8 +218,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varTrackingAlgorithm.addVisibilityTriggerTo(varSaveTracking, 
 				TrackEnum.NN,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
 		
+		//These commands should only be available when the inputType is not wkt
 		varInput.addVisibilityTriggerTo(varSaveWkt,
 				InputType.SKELETON,InputType.VTK_MESH);
+		varInput.addVisibilityTriggerTo(varCutBorder,
+				InputType.SKELETON,InputType.VTK_MESH);
+		
 		varDirectInput.addVisibilityTriggerTo(varTool, true);
 		
 		this.setTimeDisplay(true);

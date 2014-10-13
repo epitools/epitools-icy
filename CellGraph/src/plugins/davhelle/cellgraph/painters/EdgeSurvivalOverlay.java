@@ -19,12 +19,14 @@ import icy.sequence.Sequence;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -51,7 +53,7 @@ public class EdgeSurvivalOverlay extends Overlay {
 	 * @param name
 	 */
 	public EdgeSurvivalOverlay(SpatioTemporalGraph stGraph) {
-		super("Abstract Edge Painter");
+		super("Edge Survival");
 		
 		this.stGraph = stGraph;
 		this.stable_set = new HashSet<Long>();
@@ -91,12 +93,16 @@ public class EdgeSurvivalOverlay extends Overlay {
 			for(Edge e: frame_i.edgeSet()){
 				long track_code = e.getPairCode(frame_i);
 				
+				if(e.hasDivision())
+					track_code = e.getAlternativeTrackID();
+				
 				if(stable_set.contains(track_code))
 					drawEdge(g,e,Color.green);
 				else if(unstable_set.contains(track_code))
 					drawEdge(g,e,Color.red);
 				else if(novel_set.contains(track_code))
 					drawEdge(g,e,Color.yellow);
+					
 			}
 		}
     }
@@ -116,9 +122,9 @@ public class EdgeSurvivalOverlay extends Overlay {
 			FrameGraph frame_i = stGraph.getFrame(i);
 			int no_of_tracked_edges = 0;
 			for(Edge e: frame_i.edgeSet()){
-				if(e.isTracked(frame_i)){
+				if(e.isTracked(frame_i)){ //both source and target nodes are tracked in this frame
 					
-					e.computeGeometry(frame_i);
+					e.computeGeometry(frame_i); //TODO: put into initial loading / i.e. graph creation
 					
 					long edge_track_code = e.getPairCode(frame_i);
 				
@@ -126,8 +132,7 @@ public class EdgeSurvivalOverlay extends Overlay {
 						tracked_edges.put(edge_track_code,0);
 					
 					if(tracked_edges.containsKey(edge_track_code)){
-						int old = tracked_edges.get(edge_track_code);
-						tracked_edges.put(edge_track_code, old + 1);
+						updateTrackEntry(tracked_edges, edge_track_code);
 						no_of_tracked_edges++;
 					}
 					else if(!eliminated_edges.contains(edge_track_code)){
@@ -135,9 +140,46 @@ public class EdgeSurvivalOverlay extends Overlay {
 						Node source_node = frame_i.getEdgeSource(e);
 						Node target_node = frame_i.getEdgeTarget(e);
 						
-						if(source_node.hasObservedDivision() || target_node.hasObservedDivision())
-							continue;
+						//options:
+						//- new edge
+						//		- no divisions involved 
+						//- old edge but part of division event
+						//		- division involved 
+						//			- BUT non_dividing cell has not both children as neighbor	
+						//- split edge (divided by division)
+						//		- division involved 
+						//			- AND non_dividing cell neighbors both children
+						//- division plane
+						//		- between children
+						
+						if(source_node.hasObservedDivision() || target_node.hasObservedDivision()){
+							if(source_node.hasObservedDivision() && target_node.hasObservedDivision()){
+								continue;
+							}
+							else{
+								
+								long division_code = -1;
+								
+								//Find out which node divides (source or target)
+								//and compute the alternative id (i.e. using mother node's id)
+								if(source_node.hasObservedDivision())
+									division_code = computeAlternativeId(
+											e, source_node, target_node);
+								else
+									division_code = computeAlternativeId(
+											e, target_node, source_node);
+								
+								if(tracked_edges.containsKey(division_code)){
+									updateTrackEntry(tracked_edges,division_code);
+									System.out.println("Successfully updated edge "+
+											Arrays.toString(Edge.getCodePair(division_code)));
+								}
+							
+							}
+						}
 						else
+							//check if the origin is the same
+								//if not assign as normal cell boundary	
 							novel_set.add(edge_track_code);
 					}
 				}
@@ -146,22 +188,54 @@ public class EdgeSurvivalOverlay extends Overlay {
 					no_of_tracked_edges,frame_i.edgeSet().size(),i);
 			
 			//introduce the difference between lost edge because of tracking and because of T1
-			ArrayList<Long> to_eliminate = new ArrayList<Long>();
-			for(long track_code:tracked_edges.keySet()){
-				int[] pair = Edge.getCodePair(track_code);
-				for(int track_id: pair){
-					if(!frame_i.hasTrackID(track_id)){
-						to_eliminate.add(track_code);
-						break;
-					}
-				}
-			}
+			//based on the fact whether the edge participants are both in the frame
+			//i.e. if one cell is not tracked anymore the edge can't be tracked either.
 			
-			for(long track_code:to_eliminate){
-				tracked_edges.remove(track_code);
-				eliminated_edges.add(track_code);
-			}
+			//conflicts with the tracking of dividing cell edges. 
+			
+//			ArrayList<Long> to_eliminate = new ArrayList<Long>();
+//			for(long track_code:tracked_edges.keySet()){
+//				int[] pair = Edge.getCodePair(track_code);
+//				for(int track_id: pair){
+//					if(!frame_i.hasTrackID(track_id)){
+//						to_eliminate.add(track_code);
+//						break;
+//					}
+//				}
+//			}
+//			
+//			for(long track_code:to_eliminate){
+//				tracked_edges.remove(track_code);
+//				eliminated_edges.add(track_code);
+//			}
 		}
 		return tracked_edges;
+	}
+
+	/**
+	 * @param e
+	 * @param dividing_node
+	 * @param other_node
+	 * @return
+	 */
+	private long computeAlternativeId(Edge e, Node dividing_node, Node other_node) {
+		//TODO check whether input node is actually dividing
+		Division division = dividing_node.getDivision();
+		Node mother = division.getMother();
+		long division_code = Edge.computePairCode(mother.getTrackID(), other_node.getTrackID());
+		
+		e.setDivision(true);
+		e.setAlternativeTrackID(division_code);
+		return division_code;
+	}
+
+	/**
+	 * @param tracked_edges
+	 * @param edge_track_code
+	 */
+	private void updateTrackEntry(HashMap<Long, Integer> tracked_edges,
+			long edge_track_code) {
+		int old = tracked_edges.get(edge_track_code);
+		tracked_edges.put(edge_track_code, old + 1);
 	}
 }

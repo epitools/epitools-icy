@@ -29,7 +29,19 @@ public class Edge extends DefaultWeightedEdge {
 	//optional geometry field
 	private Geometry geometry;
 	private double value;
-
+	private boolean touches_division;
+	private long alternative_track_id;
+	
+	/**
+	 * An Edge For StGraphs
+	 */
+	public Edge() {
+		this.geometry = null;
+		this.value = -1.0;
+		this.touches_division = false;
+		this.alternative_track_id = -1;
+		// TODO Auto-generated constructor stub
+	}
 	/**
 	 * @return the value
 	 */
@@ -44,14 +56,6 @@ public class Edge extends DefaultWeightedEdge {
 		this.value = value;
 	}
 
-	/**
-	 * An Edge For StGraphs
-	 */
-	public Edge() {
-		this.geometry = null;
-		this.value = -1.0;
-		// TODO Auto-generated constructor stub
-	}
 	
 	/**
 	 * Checks whether the vertices of the edge are tracked.
@@ -115,11 +119,20 @@ public class Edge extends DefaultWeightedEdge {
 		int a = source_node.getTrackID();
 		int b = target_node.getTrackID();
 		
+		return computePairCode(a, b);
+		
+	}
+
+	/**
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static long computePairCode(int a, int b) {
 		if(a<b)
 			return CantorPairing.compute(a, b);
 		else
 			return CantorPairing.compute(b, a);
-		
 	}
 	
 	public static int[] getCodePair(long code){
@@ -164,6 +177,31 @@ public class Edge extends DefaultWeightedEdge {
 	 */
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
+	}
+
+	
+	/**
+	 * @return True if either nodes is a dividing node
+	 */
+	public boolean hasDivision() {
+		return touches_division;
+	}
+	
+	public void setDivision(boolean touches_division){
+		this.touches_division = touches_division;
+	}
+	
+	/**
+	 * @return the alternative_track_id
+	 */
+	public long getAlternativeTrackID() {
+		return alternative_track_id;
+	}
+	/**
+	 * @param alternative_track_id the alternative_track_id to set
+	 */
+	public void setAlternativeTrackID(long alternative_track_id) {
+		this.alternative_track_id = alternative_track_id;
 	}
 
 

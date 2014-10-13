@@ -233,7 +233,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	private EzGroup initializeInputGUI() {
 		//What input is given
 		varInput = new EzVarEnum<InputType>(
-				"Input type",InputType.values(), InputType.SKELETON);
+				"Input type",InputType.values(), InputType.WKT);
 			
 		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Direct import", true);
@@ -499,7 +499,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		try{
 			//Set true to suppress default mechanism
-			input_file = varFile.getValue(true);
+			input_file = varFile.getValue(false);
 		}
 		catch(EzException e){
 			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
@@ -508,12 +508,21 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Default file to use
 		if(input_file == null){
-			String default_file = "skeletons_crop_t28-68_t0000.tif";//frame_000.tif";
+			String default_file = "skeleton_000.wkt";
+			//"skeletons_crop_t28-68_t0000.tif";
+			//frame_000.tif";
 			//"Neo0_skeleton_001.png";
-			String default_dir = "/Users/davide/data/neo/1/crop/"; ///Users/davide/Documents/segmentation/Epitools/converted_skeleton/";
-			//old "/Users/davide/Documents/segmentation/Epitools/Neo0/Skeleton/";
-			//previous default: /Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif
-			input_file = new File(default_dir+default_file);
+			String default_dir = "/Users/davide/data/neo/1/crop_wkt/"; 
+			//"Users/davide/Documents/segmentation/Epitools/converted_skeleton/";
+			//"/Users/davide/Documents/segmentation/Epitools/Neo0/Skeleton/";
+			//"/Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif
+
+			varFile.setValue(new File(default_dir+default_file));
+			input_file = varFile.getValue();
+			varMaxT.setValue(10);
+			varTrackingAlgorithm.setValue(TrackEnum.CSV);
+			varLoadFile.setValue(new File(default_dir));
+			
 		}
 		
 		FileNameGenerator file_name_generator = new FileNameGenerator(

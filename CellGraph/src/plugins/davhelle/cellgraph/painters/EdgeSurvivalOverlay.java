@@ -39,7 +39,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Davide Heller
  *
  */
-public class AbstractEdgePainter extends Overlay {
+public class EdgeSurvivalOverlay extends Overlay {
 	
 	private SpatioTemporalGraph stGraph;
 	private ShapeWriter writer;
@@ -50,7 +50,7 @@ public class AbstractEdgePainter extends Overlay {
 	/**
 	 * @param name
 	 */
-	public AbstractEdgePainter(SpatioTemporalGraph stGraph) {
+	public EdgeSurvivalOverlay(SpatioTemporalGraph stGraph) {
 		super("Abstract Edge Painter");
 		
 		this.stGraph = stGraph;

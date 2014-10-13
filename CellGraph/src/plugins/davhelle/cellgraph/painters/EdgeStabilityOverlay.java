@@ -41,7 +41,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Davide Heller
  *
  */
-public class EdgeSurvivalOverlay extends Overlay {
+public class EdgeStabilityOverlay extends Overlay {
 	
 	private SpatioTemporalGraph stGraph;
 	private ShapeWriter writer;
@@ -52,7 +52,7 @@ public class EdgeSurvivalOverlay extends Overlay {
 	/**
 	 * @param name
 	 */
-	public EdgeSurvivalOverlay(SpatioTemporalGraph stGraph) {
+	public EdgeStabilityOverlay(SpatioTemporalGraph stGraph) {
 		super("Edge Survival");
 		
 		this.stGraph = stGraph;

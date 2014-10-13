@@ -39,7 +39,7 @@ import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.davhelle.cellgraph.painters.AbstractEdgePainter;
+import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
@@ -434,7 +434,7 @@ public class CellPainter extends EzPlug {
 							sequence.addOverlay(new TransitionOverlay(wing_disc_movie));
 							break;
 						case EDGE_STABILITY:
-							sequence.addOverlay(new AbstractEdgePainter(wing_disc_movie));
+							sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
 							break;
 						case NEIGHBOR_STABILITY:
 							sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));

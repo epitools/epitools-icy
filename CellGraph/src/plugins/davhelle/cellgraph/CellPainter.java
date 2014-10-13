@@ -92,7 +92,7 @@ public class CellPainter extends EzPlug {
 		SAVE_TAG,
 		SAVE_TAG_XLS,
 		SAVE_SKELETONS,
-		CORRECTION_HINTS, CHANGE_FREQUENCY, EDGE_INTENSITY, EDGE_STABILITY, NEIGHBOR_STABILITY
+		CORRECTION_HINTS, TRANSITIONS, EDGE_STABILITY, NEIGHBOR_STABILITY, EDGE_INTENSITY
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -430,7 +430,7 @@ public class CellPainter extends EzPlug {
 							
 						// Edge Dynamics	
 							
-						case CHANGE_FREQUENCY:
+						case TRANSITIONS:
 							sequence.addOverlay(new TransitionOverlay(wing_disc_movie));
 							break;
 						case EDGE_STABILITY:

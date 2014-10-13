@@ -76,9 +76,10 @@ public class DetectT1Transition {
 			if(!hasStableTrack(edge_track)){
 				//determine whether a persistent Edge Change occurred
 				int[] pair = Edge.getCodePair(track_code);
+				
 				T1Transition transition = new T1Transition(stGraph, pair, edge_track);
 				
-				if(transition.length() > 2){
+				if(transition.length() > 2 && !transition.onBoundary()){
 					
 
 					System.out.printf("Accepted Side Loss: %s @ %d is persistent for %d frames\n",

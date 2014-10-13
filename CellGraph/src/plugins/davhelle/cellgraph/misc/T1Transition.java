@@ -135,8 +135,19 @@ public class T1Transition {
 		return detection_time_point;
 	}
 	
-
-
+	//Check if looser nodes are on the boundary
+	public boolean onBoundary(){
+		FrameGraph previous_frame = stGraph.getFrame(detection_time_point - 1);
+		
+		Node l1 = previous_frame.getNode(loser_nodes[0]);
+		Node l2 = previous_frame.getNode(loser_nodes[1]);
+		
+		if(l1.onBoundary() || l2.onBoundary())
+			return true;
+		else
+			return false;
+	}
+	
 	public void findSideGain(HashMap<Node, PolygonalCellTile> cell_tiles) {
 		
 		FrameGraph previous_frame = stGraph.getFrame(detection_time_point - 1);
@@ -146,7 +157,7 @@ public class T1Transition {
 		
 		Node l1 = previous_frame.getNode(loser_nodes[0]);
 		Node l2 = previous_frame.getNode(loser_nodes[1]);
-		
+				
 		//TODO: substitute with intersection?
 //		assert previous_frame.containsEdge(l1, l2): "Input edge is missing in previous frame";
 //		Edge lost_edge = previous_frame.getEdge(l1, l2);
@@ -166,6 +177,15 @@ public class T1Transition {
 		
 		assert side_gain_nodes.size() == 2:
 			String.format("Winner nodes are more than expected %s",side_gain_nodes.toString());
+		
+		if(side_gain_nodes.size() == 1){
+			System.out.printf("Problems with winner node %d in frame %d, Loosers (%d,%d) ",
+					side_gain_nodes.get(0),
+					detection_time_point,
+					loser_nodes[0],
+					loser_nodes[1]
+					);
+		}
 		
 		winner_nodes[0] = side_gain_nodes.get(0);
 		winner_nodes[1] = side_gain_nodes.get(1);

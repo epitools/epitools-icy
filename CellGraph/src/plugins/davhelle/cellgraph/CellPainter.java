@@ -321,7 +321,7 @@ public class CellPainter extends EzPlug {
 
 						switch (USER_CHOICE){
 						case BORDER: 
-							sequence.addPainter(
+							sequence.addOverlay(
 									new BorderPainter(wing_disc_movie));
 							break;
 
@@ -332,14 +332,14 @@ public class CellPainter extends EzPlug {
 						case POLYGON_CLASS: 
 							boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
 							int highlight_polygonal_class = varHighlightClass.getValue();
-							sequence.addPainter(
+							sequence.addOverlay(
 									new PolygonClassPainter(wing_disc_movie,
 											draw_polygonal_numbers,
 											highlight_polygonal_class));
 							break;
 						
 						case POLYGON_TILE:
-							sequence.addPainter(
+							sequence.addOverlay(
 									new PolygonConverterPainter(wing_disc_movie));
 							break;
 							
@@ -354,14 +354,14 @@ public class CellPainter extends EzPlug {
 							break;
 
 						case AREA_THRESHOLD: 
-							sequence.addPainter(
+							sequence.addOverlay(
 									new AreaThresholdPainter(
 											wing_disc_movie, 
 											varAreaThreshold));
 							break;
 
 						case ALWAYS_TRACKED: 
-							sequence.addPainter(
+							sequence.addOverlay(
 									new AlwaysTrackedCellsOverlay(
 											wing_disc_movie));
 							break;
@@ -395,17 +395,13 @@ public class CellPainter extends EzPlug {
 											wing_disc_movie));
 							
 							break;
-						case GRAPH_EXPORT:
-							graphExportMode(
-									wing_disc_movie,
-									varExportType.getValue(),
-									varOutputFile.getValue(false),
-									varFrameNo.getValue());
-							break;
+
+						//Tagging
+						
 						case COLOR_TAG:
-							sequence.addPainter(
+							sequence.addOverlay(
 									new CellMarker(wing_disc_movie,varCellColor));
-							sequence.addPainter(
+							sequence.addOverlay(
 									new ColorTagPainter(wing_disc_movie));
 							break;
 						case SAVE_TAG:
@@ -414,12 +410,26 @@ public class CellPainter extends EzPlug {
 						case SAVE_TAG_XLS:
 							new CellWorkbook(wing_disc_movie);
 							break;
+							
+						//Export and Corrections
+							
+						case GRAPH_EXPORT:
+							graphExportMode(
+									wing_disc_movie,
+									varExportType.getValue(),
+									varOutputFile.getValue(false),
+									varFrameNo.getValue());
+							break;	
 						case SAVE_SKELETONS:
 							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
 							break;
 						case CORRECTION_HINTS:
 							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 							break;
+							
+							
+						// Edge Dynamics	
+							
 						case CHANGE_FREQUENCY:
 							sequence.addOverlay(new TransitionOverlay(wing_disc_movie));
 							break;

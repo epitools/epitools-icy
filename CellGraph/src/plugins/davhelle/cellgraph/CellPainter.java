@@ -92,7 +92,7 @@ public class CellPainter extends EzPlug {
 		SAVE_TAG,
 		SAVE_TAG_XLS,
 		SAVE_SKELETONS,
-		CORRECTION_HINTS, CHANGE_FREQUENCY, EDGE_INTENSITY
+		CORRECTION_HINTS, CHANGE_FREQUENCY, EDGE_INTENSITY, EDGE_STABILITY, NEIGHBOR_STABILITY
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -415,15 +415,19 @@ public class CellPainter extends EzPlug {
 							new CellWorkbook(wing_disc_movie);
 							break;
 						case SAVE_SKELETONS:
-							sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
-//							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
+							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
 							break;
 						case CORRECTION_HINTS:
-							sequence.addOverlay(new AbstractEdgePainter(wing_disc_movie));
-							//sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 							break;
 						case CHANGE_FREQUENCY:
 							sequence.addOverlay(new TransitionOverlay(wing_disc_movie));
+							break;
+						case EDGE_STABILITY:
+							sequence.addOverlay(new AbstractEdgePainter(wing_disc_movie));
+							break;
+						case NEIGHBOR_STABILITY:
+							sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
 							break;
 						default:
 							break;

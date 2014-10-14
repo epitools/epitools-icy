@@ -20,6 +20,10 @@ import icy.canvas.IcyCanvas;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -27,6 +31,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.T1Transition;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.tracking.EdgeTracking;
 
@@ -56,6 +61,84 @@ public class TransitionOverlay extends Overlay{
 		
 		this.transitions = DetectT1Transition.findTransitions(stGraph, cell_tiles, tracked_edges);
 	
+	}
+	
+	/**
+	 * Save transitions in CSV format
+	 * 
+	 * @param file_name
+	 */
+	public void saveToCsv(String file_name){
+		StringBuilder builder_main = new StringBuilder();
+		StringBuilder builder_loser = new StringBuilder();
+		
+		for(T1Transition t1: transitions){
+			builder_main.append(t1.getDetectionTime());
+			builder_main.append(',');
+			builder_main.append(t1.length());
+			builder_main.append(',');
+			
+			int[] loser_ids = t1.getLoserNodes();
+				
+			for(int i=0; i<stGraph.size(); i++){
+				FrameGraph frame_i = stGraph.getFrame(i);
+				Node[] losers = new Node[loser_ids.length];
+				for(int j=0; j<loser_ids.length; j++){
+					int loser_id = loser_ids[j];
+					if(frame_i.hasTrackID(loser_id))
+						losers[j] = frame_i.getNode(loser_id);
+				}
+				
+				if(frame_i.containsEdge(losers[0], losers[1])){
+					Edge e = frame_i.getEdge(losers[0], losers[1]);
+					builder_loser.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
+					builder_loser.append(',');
+					
+					if(i==0){
+						builder_main.append(String.format("%.2f,%.2f", 
+								e.getGeometry().getCentroid().getX(),
+								e.getGeometry().getCentroid().getY()));
+					}
+				}
+				else{
+					builder_loser.append(0.0);
+					builder_loser.append(',');
+				}
+			}
+			//Append length of the edges
+			//looser before
+			//winner after
+			//check whether long looser/winner exist.
+			builder_main.append('\n');
+			builder_loser.append('\n');
+		}
+		
+		File main_output_file = new File(file_name+"_main.csv");
+		writeOutBuilder(builder_main, main_output_file);
+		
+		File loser_output_file = new File(file_name+"_loser.csv");
+		writeOutBuilder(builder_loser, loser_output_file);
+		
+		System.out.printf("Successfully wrote to:\n\t%s\n\t%s\n",
+				main_output_file.getName(),
+				loser_output_file.getName());
+		
+	}
+
+	/**
+	 * @param builder_main
+	 * @param output_file
+	 */
+	public void writeOutBuilder(StringBuilder builder_main, File output_file) {
+		FileWriter fstream;
+		try {
+			fstream = new FileWriter(output_file);
+			BufferedWriter writer = new BufferedWriter(fstream);
+			writer.append(builder_main);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override

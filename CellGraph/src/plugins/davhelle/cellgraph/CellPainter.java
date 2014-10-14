@@ -431,7 +431,9 @@ public class CellPainter extends EzPlug {
 						// Edge Dynamics	
 							
 						case TRANSITIONS:
-							sequence.addOverlay(new TransitionOverlay(wing_disc_movie));
+							TransitionOverlay t1 = new TransitionOverlay(wing_disc_movie);
+							t1.saveToCsv("/Users/davide/tmp/t1_crop");
+							sequence.addOverlay(t1);
 							break;
 						case EDGE_STABILITY:
 							sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));

@@ -45,19 +45,24 @@ public class PolygonalCellTile {
 
 		for(Node neighbor: n.getNeighbors()){
 			
-			Geometry neighbor_geo = neighbor.getGeometry();
-			Geometry intersection = source_geo.intersection(neighbor_geo);
-			
-			source_tiles.put(neighbor, intersection);
-			
-			//updated weighted graph with edge length
-			double intersection_length = intersection.getLength();
 			Edge e = frame.getEdge(source_node, neighbor);
-			frame.setEdgeWeight(e, intersection_length);
 			
-//			if(!e.hasGeometry()){
-//				e.setGeometry(intersection);
-//			}
+			if(e.hasGeometry()){
+				source_tiles.put(neighbor, e.getGeometry());
+			}
+			else{
+				Geometry neighbor_geo = neighbor.getGeometry();
+				Geometry intersection = source_geo.intersection(neighbor_geo);
+				
+				source_tiles.put(neighbor, intersection);
+				
+				//updated weighted graph with edge length
+				double intersection_length = intersection.getLength();
+				
+				frame.setEdgeWeight(e, intersection_length);
+				e.setGeometry(intersection);
+			}
+
 			
 			//int intersection_geometry_no = intersection.getNumGeometries();
 			//intersection length and geometry number can differ 

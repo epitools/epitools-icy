@@ -39,6 +39,24 @@ public class T1Transition {
 	int detection_time_point;
 	int transition_length;
 	
+	public T1Transition(SpatioTemporalGraph stGraph, int[] pair, boolean[] edge_track) {
+		
+		this.stGraph = stGraph;
+		this.lost_edge_track = edge_track;
+		
+		assert pair.length == 2: "input pair is not of length 2";
+		this.loser_nodes = pair;
+		
+		this.detection_time_point = findFirstMissingFrameNo();
+		assert detection_time_point > 0: "transition could not be identified";
+		
+		this.transition_length = computeTransitionLength();
+		
+		winner_nodes = new int[2];
+		Arrays.fill(winner_nodes, -1);
+		
+	}
+
 	private int findFirstMissingFrameNo(){
 		//TODO what if this is not the correct start
 		
@@ -89,23 +107,6 @@ public class T1Transition {
 		return transition_length;
 	}
 	
-	public T1Transition(SpatioTemporalGraph stGraph, int[] pair, boolean[] edge_track) {
-		
-		this.stGraph = stGraph;
-		this.lost_edge_track = edge_track;
-		
-		assert pair.length == 2: "input pair is not of length 2";
-		this.loser_nodes = pair;
-		
-		this.detection_time_point = findFirstMissingFrameNo();
-		assert detection_time_point > 0: "transition could not be identified";
-		
-		this.transition_length = computeTransitionLength();
-		
-		winner_nodes = new int[2];
-		Arrays.fill(winner_nodes, -1);
-		
-	}
 	
 	@Override
 	public String toString(){

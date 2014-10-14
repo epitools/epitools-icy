@@ -57,22 +57,6 @@ public class StGraphUtils {
 		return stGraph;
 	}
 	
-	public static HashMap<Node, PolygonalCellTile> createPolygonalTiles(SpatioTemporalGraph stGraph) {
-		System.out.println("Identifying the tiles..");
-		HashMap<Node,PolygonalCellTile> cell_tiles = new HashMap<Node, PolygonalCellTile>();
-		for(int i=0; i < stGraph.size(); i++){
-			printProgressBar(i, stGraph.size());
-			FrameGraph frame = stGraph.getFrame(i);
-			for(Node n: frame.vertexSet()){
-				PolygonalCellTile tile = new PolygonalCellTile(n);
-				cell_tiles.put(n, tile);
-			}
-		}
-		printProgressBar(stGraph.size(), stGraph.size());
-		System.out.println();
-		return cell_tiles;
-	}
-	
 	public static SpatioTemporalGraph loadNeo(int i){
 		
 		String sample_folder = String.format("/Users/davide/data/neo/%d/",i);
@@ -132,26 +116,6 @@ public class StGraphUtils {
 		assert stGraph.size() == skeletons.length: "wrong frame no";
 
 		return stGraph;
-	}
-	
-	//adapted from: http://nakkaya.com/2009/11/08/command-line-progress-bar/
-	public static void printProgressBar(int current, int max){
-		int percent = (current * 100) / max;
-		
-	    StringBuilder bar = new StringBuilder("[");
-
-	    for(int i = 0; i < 50; i++){
-	        if( i < (percent/2)){
-	            bar.append("=");
-	        }else if( i == (percent/2)){
-	            bar.append(">");
-	        }else{
-	            bar.append(" ");
-	        }
-	    }
-
-	    bar.append("]   " + percent + "%     ");
-	    System.out.print("\r" + bar.toString());
 	}
 	
 	

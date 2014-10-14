@@ -18,6 +18,7 @@ import java.util.HashMap;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
+import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.T1Transition;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -42,7 +43,7 @@ public class DetectT1Transition {
 			stGraph = StGraphUtils.loadNeo(1);
 		assert stGraph != null: "Spatio temporal graph creation failed!";
 		
-		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
+		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph);
 		
 		System.out.println("\nAnalyzing the cell edges..");
 		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);

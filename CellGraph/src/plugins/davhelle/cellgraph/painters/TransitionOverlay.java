@@ -30,6 +30,7 @@ import java.util.HashMap;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
+import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.T1Transition;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -56,7 +57,7 @@ public class TransitionOverlay extends Overlay{
 		this.stGraph = stGraph;
 		
 		//TODO move createPolygonalTiles to PolygonalCellTile class
-		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
+		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph);
 		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
 		
 		this.transitions = DetectT1Transition.findTransitions(stGraph, cell_tiles, tracked_edges);

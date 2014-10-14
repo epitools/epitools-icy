@@ -21,6 +21,7 @@ import java.util.Set;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
+import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -39,7 +40,7 @@ public class TestEdgeSurvival {
 				no_of_test_files);
 
 		//TODO: What about the polygonal tile storing the geometries of the edges?
-		HashMap<Node, PolygonalCellTile> cell_tiles = StGraphUtils.createPolygonalTiles(stGraph);
+		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph);
 		
 		//for every considered edge
 		//neighbors must be alive, divide or be eliminated.

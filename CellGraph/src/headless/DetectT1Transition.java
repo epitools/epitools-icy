@@ -70,6 +70,7 @@ public class DetectT1Transition {
 		ArrayList<T1Transition> stable_transitions = new ArrayList<T1Transition>();
 		
 		//find changes in neighborhood
+		edge_loop:
 		for(long track_code:tracked_edges.keySet()){
 			boolean[] edge_track = tracked_edges.get(track_code);
 			
@@ -95,6 +96,13 @@ public class DetectT1Transition {
 					
 					System.out.printf("\tProposed Side Gain: %s\n",
 							Arrays.toString(transition.getWinnerNodes()));
+					
+					//check whether the winners contain dividing cells/exclude for now.
+					for(int track_id: transition.getWinnerNodes())
+						if(stGraph.getFrame(0).hasTrackID(track_id))
+							if(stGraph.getFrame(0).getNode(track_id).hasObservedDivision())
+								continue edge_loop;
+
 					
 					stable_transitions.add(transition);
 				}

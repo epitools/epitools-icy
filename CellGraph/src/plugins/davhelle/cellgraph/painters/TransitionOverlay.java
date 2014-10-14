@@ -71,6 +71,7 @@ public class TransitionOverlay extends Overlay{
 	public void saveToCsv(String file_name){
 		StringBuilder builder_main = new StringBuilder();
 		StringBuilder builder_loser = new StringBuilder();
+		StringBuilder builder_winner = new StringBuilder();
 		
 		for(T1Transition t1: transitions){
 			builder_main.append(t1.getDetectionTime());
@@ -78,18 +79,23 @@ public class TransitionOverlay extends Overlay{
 			builder_main.append(t1.length());
 			builder_main.append(',');
 			
-			Edge first_looser_edge = extractEdgeLength(builder_loser, t1);
+			Edge first_looser_edge = extractEdgeLength(builder_loser, t1, true);
+			Edge first_winner_edge = extractEdgeLength(builder_winner, t1, false);
 			
 			if(first_looser_edge != null)
-				builder_main.append(String.format("%.2f,%.2f", 
+				builder_main.append(String.format("%.2f,%.2f,", 
 						first_looser_edge.getGeometry().getCentroid().getX(),
 						first_looser_edge.getGeometry().getCentroid().getY()));
-			//Append length of the edges
-			//looser before
-			//winner after
-			//check whether long looser/winner exist.
+			
+			if(first_winner_edge != null)
+				builder_main.append(String.format("%.2f,%.2f,", 
+						first_winner_edge.getGeometry().getCentroid().getX(),
+						first_winner_edge.getGeometry().getCentroid().getY()));
+			
+			//TODO trim last comma position
 			builder_main.append('\n');
 			builder_loser.append('\n');
+			builder_winner.append('\n');
 		}
 		
 		File main_output_file = new File(file_name+"_main.csv");
@@ -98,46 +104,58 @@ public class TransitionOverlay extends Overlay{
 		File loser_output_file = new File(file_name+"_loser.csv");
 		writeOutBuilder(builder_loser, loser_output_file);
 		
-		System.out.printf("Successfully wrote to:\n\t%s\n\t%s\n",
+		File winner_output_file = new File(file_name+"_winner.csv");
+		writeOutBuilder(builder_winner, winner_output_file);
+		
+		System.out.printf("Successfully wrote to:\n\t%s\n\t%s\n\t%s\n",
 				main_output_file.getName(),
-				loser_output_file.getName());
+				loser_output_file.getName(),
+				winner_output_file.getName());
 		
 	}
 
 	/**
+	 * For every time point the method extracts the associated
+	 * 
+	 * 
 	 * @param builder_loser
 	 * @param t1
 	 * @return
 	 */
-	private Edge extractEdgeLength(StringBuilder builder_loser, T1Transition t1) {
-		int[] loser_ids = t1.getLoserNodes();
-		Edge first_looser_edge = null;
+	private Edge extractEdgeLength(StringBuilder builder_loser, T1Transition t1, boolean extract_loser) {
+		int[] cell_ids = null;
+		if(extract_loser)
+			cell_ids = t1.getLoserNodes();
+		else
+			cell_ids = t1.getWinnerNodes();
+		
+		Edge first_edge = null;
 			
 		for(int i=0; i<stGraph.size(); i++){
 			FrameGraph frame_i = stGraph.getFrame(i);
 
-			Node[] losers = new Node[loser_ids.length];
+			Node[] cell_nodes = new Node[cell_ids.length];
 			
-			for(int j=0; j<loser_ids.length; j++){
-				int loser_id = loser_ids[j];
+			for(int j=0; j<cell_ids.length; j++){
+				int loser_id = cell_ids[j];
 				if(frame_i.hasTrackID(loser_id))
-					losers[j] = frame_i.getNode(loser_id);
+					cell_nodes[j] = frame_i.getNode(loser_id);
 			}
 			
-			if(frame_i.containsEdge(losers[0], losers[1])){
-				Edge e = frame_i.getEdge(losers[0], losers[1]);
+			if(frame_i.containsEdge(cell_nodes[0], cell_nodes[1])){
+				Edge e = frame_i.getEdge(cell_nodes[0], cell_nodes[1]);
 				builder_loser.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
 				builder_loser.append(',');
 				
-				if(frame_i.getFrameNo()==0)
-					first_looser_edge = e;
+				if(first_edge == null)
+					first_edge = e;
 			}
 			else{
 				builder_loser.append(0.0);
 				builder_loser.append(',');
 			}				
 		}
-		return first_looser_edge;
+		return first_edge;
 	}
 
 	/**

@@ -108,10 +108,19 @@ public class DetectT1Transition {
 					stable_transitions.add(transition);
 				}
 				else{
+					
+					if(transition.onBoundary()){
+						System.out.printf("Rejected Side Loss: %s @ %d occurs on Boundary\n",
+								Arrays.toString(transition.getLoserNodes()),
+								transition.getDetectionTime(),
+								transition.length());
+					}
+					else{
 					System.out.printf("Rejected Side Loss: %s @ %d is persistent only for %d frames\n",
 							Arrays.toString(transition.getLoserNodes()),
 							transition.getDetectionTime(),
 							transition.length());
+					}
 				}
 				
 			}

@@ -137,6 +137,7 @@ public class CellPainter extends EzPlug {
 	private EzVarInteger varHighlightClass;
 	private EzVarBoolean varBooleanColorClass;
 	private EzVarEnum<CellColor> varPolygonColor;
+	private EzVarBoolean varSaveTransitions;
 
 	@Override
 	protected void initialize() {
@@ -237,6 +238,10 @@ public class CellPainter extends EzPlug {
 		varSaveSkeleton = new EzVarFile("Output File", "");
 		EzGroup groupSaveSkeleton = new EzGroup("SAVE_SKELETON elements",varSaveSkeleton);
 
+		//Save transitions
+		varSaveTransitions = new EzVarBoolean("Save transition statistics", true);
+		EzGroup groupSaveTransitions = new EzGroup("TRANSITIONS elements",varSaveTransitions);
+		
 		//Painter
 		EzGroup groupPainters = new EzGroup("Overlays",
 				varUpdatePainterMode,
@@ -249,7 +254,8 @@ public class CellPainter extends EzPlug {
 				groupTracking,
 				groupExport,
 				groupMarker,
-				groupSaveSkeleton
+				groupSaveSkeleton,
+				groupSaveTransitions
 		);
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
@@ -263,6 +269,7 @@ public class CellPainter extends EzPlug {
 		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPH_EXPORT);
 		varPlotting.addVisibilityTriggerTo(groupMarker, PlotEnum.COLOR_TAG);
 		varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, PlotEnum.SAVE_SKELETONS);
+		varPlotting.addVisibilityTriggerTo(groupSaveTransitions, PlotEnum.TRANSITIONS);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -432,7 +439,8 @@ public class CellPainter extends EzPlug {
 							
 						case TRANSITIONS:
 							TransitionOverlay t1 = new TransitionOverlay(wing_disc_movie, this);
-							t1.saveToCsv("/Users/davide/tmp/t1_crop");
+							if(varSaveTransitions.getValue())
+								t1.saveToCsv();
 							sequence.addOverlay(t1);
 							break;
 						case EDGE_STABILITY:

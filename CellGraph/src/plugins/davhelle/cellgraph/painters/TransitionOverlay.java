@@ -16,6 +16,7 @@ import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.canvas.IcyCanvas;
+import icy.gui.dialog.SaveDialog;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -72,7 +73,14 @@ public class TransitionOverlay extends Overlay{
 	 * 
 	 * @param file_name
 	 */
-	public void saveToCsv(String file_name){
+	public void saveToCsv(){
+		
+		String file_name = SaveDialog.chooseFile(
+				"Please choose where to save the CSV transitions statistics", 
+				"/Users/davide/tmp/",
+				"t1_transitions",
+				"");
+		
 		StringBuilder builder_main = new StringBuilder();
 		StringBuilder builder_loser = new StringBuilder();
 		StringBuilder builder_winner = new StringBuilder();

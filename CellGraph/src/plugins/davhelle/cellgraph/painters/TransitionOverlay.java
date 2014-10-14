@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import plugins.adufour.ezplug.EzPlug;
+import plugins.davhelle.cellgraph.CellPainter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
@@ -52,14 +54,15 @@ public class TransitionOverlay extends Overlay{
 	final Color loser_color = Color.cyan;
 	final Color winner_color = Color.magenta;
 	
-	public TransitionOverlay(SpatioTemporalGraph stGraph) {
+	public TransitionOverlay(SpatioTemporalGraph stGraph, EzPlug plugin) {
 		super("Transition Painter");
 		this.stGraph = stGraph;
 		
 		//TODO move createPolygonalTiles to PolygonalCellTile class
-		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph);
-		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
+		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
+		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph, plugin);
 		
+		plugin.getUI().setProgressBarMessage("Analyzing Transitions..");
 		this.transitions = DetectT1Transition.findTransitions(stGraph, cell_tiles, tracked_edges);
 	
 	}

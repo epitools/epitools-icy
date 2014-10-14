@@ -6,6 +6,7 @@ package plugins.davhelle.cellgraph.tracking;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import plugins.adufour.ezplug.EzPlug;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Edge;
@@ -32,6 +33,28 @@ public class EdgeTracking {
 			trackEdgesInFrame(tracked_edges, frame_i);
 			
 			removeUntrackedEdges(tracked_edges, frame_i);
+		}
+		return tracked_edges;
+	}
+	
+	public static HashMap<Long, boolean[]> trackEdges(
+			SpatioTemporalGraph stGraph, EzPlug plugin) {
+		HashMap<Long, boolean[]> tracked_edges = new HashMap<Long,boolean[]>();
+		
+		plugin.getUI().setProgressBarMessage("Tracking Edges..");
+		plugin.getUI().setProgressBarValue(0.0);
+		
+		initializeTrackedEdges(stGraph, tracked_edges);
+		
+		for(int i=1; i<stGraph.size(); i++)
+		{
+			FrameGraph frame_i = stGraph.getFrame(i);
+			
+			trackEdgesInFrame(tracked_edges, frame_i);
+			
+			removeUntrackedEdges(tracked_edges, frame_i);
+
+			plugin.getUI().setProgressBarValue((double)i/stGraph.size());
 		}
 		return tracked_edges;
 	}

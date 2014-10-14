@@ -78,33 +78,12 @@ public class TransitionOverlay extends Overlay{
 			builder_main.append(t1.length());
 			builder_main.append(',');
 			
-			int[] loser_ids = t1.getLoserNodes();
-				
-			for(int i=0; i<stGraph.size(); i++){
-				FrameGraph frame_i = stGraph.getFrame(i);
-				Node[] losers = new Node[loser_ids.length];
-				for(int j=0; j<loser_ids.length; j++){
-					int loser_id = loser_ids[j];
-					if(frame_i.hasTrackID(loser_id))
-						losers[j] = frame_i.getNode(loser_id);
-				}
-				
-				if(frame_i.containsEdge(losers[0], losers[1])){
-					Edge e = frame_i.getEdge(losers[0], losers[1]);
-					builder_loser.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
-					builder_loser.append(',');
-					
-					if(i==0){
-						builder_main.append(String.format("%.2f,%.2f", 
-								e.getGeometry().getCentroid().getX(),
-								e.getGeometry().getCentroid().getY()));
-					}
-				}
-				else{
-					builder_loser.append(0.0);
-					builder_loser.append(',');
-				}
-			}
+			Edge first_looser_edge = extractEdgeLength(builder_loser, t1);
+			
+			if(first_looser_edge != null)
+				builder_main.append(String.format("%.2f,%.2f", 
+						first_looser_edge.getGeometry().getCentroid().getX(),
+						first_looser_edge.getGeometry().getCentroid().getY()));
 			//Append length of the edges
 			//looser before
 			//winner after
@@ -123,6 +102,42 @@ public class TransitionOverlay extends Overlay{
 				main_output_file.getName(),
 				loser_output_file.getName());
 		
+	}
+
+	/**
+	 * @param builder_loser
+	 * @param t1
+	 * @return
+	 */
+	private Edge extractEdgeLength(StringBuilder builder_loser, T1Transition t1) {
+		int[] loser_ids = t1.getLoserNodes();
+		Edge first_looser_edge = null;
+			
+		for(int i=0; i<stGraph.size(); i++){
+			FrameGraph frame_i = stGraph.getFrame(i);
+
+			Node[] losers = new Node[loser_ids.length];
+			
+			for(int j=0; j<loser_ids.length; j++){
+				int loser_id = loser_ids[j];
+				if(frame_i.hasTrackID(loser_id))
+					losers[j] = frame_i.getNode(loser_id);
+			}
+			
+			if(frame_i.containsEdge(losers[0], losers[1])){
+				Edge e = frame_i.getEdge(losers[0], losers[1]);
+				builder_loser.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
+				builder_loser.append(',');
+				
+				if(frame_i.getFrameNo()==0)
+					first_looser_edge = e;
+			}
+			else{
+				builder_loser.append(0.0);
+				builder_loser.append(',');
+			}				
+		}
+		return first_looser_edge;
 	}
 
 	/**

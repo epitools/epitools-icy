@@ -55,7 +55,7 @@ public class TransitionOverlay extends Overlay{
 	final Color loser_color = Color.cyan;
 	final Color winner_color = Color.magenta;
 	
-	public TransitionOverlay(SpatioTemporalGraph stGraph, EzPlug plugin) {
+	public TransitionOverlay(SpatioTemporalGraph stGraph, CellPainter plugin) {
 		super("Transition Painter");
 		this.stGraph = stGraph;
 		
@@ -64,7 +64,12 @@ public class TransitionOverlay extends Overlay{
 		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph, plugin);
 		
 		plugin.getUI().setProgressBarMessage("Analyzing Transitions..");
-		this.transitions = DetectT1Transition.findTransitions(stGraph, cell_tiles, tracked_edges);
+		this.transitions = DetectT1Transition.findTransitions(
+				stGraph,
+				cell_tiles,
+				tracked_edges,
+				plugin.varMinimalTransitionLength.getValue(),
+				plugin.varMinimalOldSurvival.getValue());
 	
 	}
 	

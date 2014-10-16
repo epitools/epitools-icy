@@ -138,6 +138,8 @@ public class CellPainter extends EzPlug {
 	private EzVarBoolean varBooleanColorClass;
 	private EzVarEnum<CellColor> varPolygonColor;
 	private EzVarBoolean varSaveTransitions;
+	public EzVarInteger varMinimalTransitionLength;
+	public EzVarInteger varMinimalOldSurvival;
 
 	@Override
 	protected void initialize() {
@@ -239,8 +241,13 @@ public class CellPainter extends EzPlug {
 		EzGroup groupSaveSkeleton = new EzGroup("SAVE_SKELETON elements",varSaveSkeleton);
 
 		//Save transitions
+		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,10,1);
+		varMinimalOldSurvival = new EzVarInteger("Minimal old edge persistence [frames]",5,1,10,1);
 		varSaveTransitions = new EzVarBoolean("Save transition statistics", true);
-		EzGroup groupSaveTransitions = new EzGroup("TRANSITIONS elements",varSaveTransitions);
+		EzGroup groupTransitions = new EzGroup("TRANSITIONS elements",
+				varMinimalTransitionLength,
+				varMinimalOldSurvival,
+				varSaveTransitions);
 		
 		//Painter
 		EzGroup groupPainters = new EzGroup("Overlays",
@@ -255,7 +262,7 @@ public class CellPainter extends EzPlug {
 				groupExport,
 				groupMarker,
 				groupSaveSkeleton,
-				groupSaveTransitions
+				groupTransitions
 		);
 		
 		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
@@ -269,7 +276,7 @@ public class CellPainter extends EzPlug {
 		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPH_EXPORT);
 		varPlotting.addVisibilityTriggerTo(groupMarker, PlotEnum.COLOR_TAG);
 		varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, PlotEnum.SAVE_SKELETONS);
-		varPlotting.addVisibilityTriggerTo(groupSaveTransitions, PlotEnum.TRANSITIONS);
+		varPlotting.addVisibilityTriggerTo(groupTransitions, PlotEnum.TRANSITIONS);
 		super.addEzComponent(groupPainters);
 		
 		

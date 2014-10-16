@@ -49,7 +49,7 @@ public class DetectT1Transition {
 		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
 		
 		System.out.println("\nFinding T1 transitions..");
-		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges).size();
+		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges,5,5).size();
 		System.out.printf("Found %d stable transition/s\n",transition_no);
 	
 	}
@@ -66,7 +66,10 @@ public class DetectT1Transition {
 	public static ArrayList<T1Transition> findTransitions(
 			SpatioTemporalGraph stGraph,
 			HashMap<Node, PolygonalCellTile> cell_tiles,
-			HashMap<Long, boolean[]> tracked_edges) {
+			HashMap<Long, boolean[]> tracked_edges,
+			int minimalTransitionLength,
+			int minimalOldEdgeSurvivalLength
+			) {
 		
 		ArrayList<T1Transition> stable_transitions = new ArrayList<T1Transition>();
 		
@@ -82,9 +85,9 @@ public class DetectT1Transition {
 				T1Transition transition = new T1Transition(stGraph, pair, edge_track);
 				
 				if(
-						transition.length() > 5 && 					//new edge detected at least for X frames consecutively
+						transition.length() > minimalTransitionLength && 					//new edge detected at least for X frames consecutively
 						!transition.onBoundary() && 				//transition should not occur on boundary
-						transition.getOldEdgeSurvivalLength() > 5 	//old edge visible for at least X frames
+						transition.getOldEdgeSurvivalLength() > minimalOldEdgeSurvivalLength 	//old edge visible for at least X frames
 						){
 					
 

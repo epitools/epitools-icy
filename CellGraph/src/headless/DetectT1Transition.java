@@ -81,7 +81,11 @@ public class DetectT1Transition {
 				
 				T1Transition transition = new T1Transition(stGraph, pair, edge_track);
 				
-				if(transition.length() > 2 && !transition.onBoundary()){
+				if(
+						transition.length() > 5 && 					//new edge detected at least for X frames consecutively
+						!transition.onBoundary() && 				//transition should not occur on boundary
+						transition.getOldEdgeSurvivalLength() > 5 	//old edge visible for at least X frames
+						){
 					
 
 					System.out.printf("Accepted Side Loss: %s @ %d is persistent for %d frames\n",

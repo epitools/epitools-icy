@@ -31,60 +31,95 @@ public class T1Transition {
 	
 	private SpatioTemporalGraph stGraph;
 
-	int[] loser_nodes;
-	int[] winner_nodes;
+	/**
+	 * Track Id's of nodes that will
+	 * respectively loose or win a 
+	 * neighbor relationship. 
+	 */
+	int[] loserNodes;
+	int[] winnerNodes;
 	
-	boolean[] lost_edge_track;
+	/**
+	 * For every time point store the
+	 * presence or absence of the old
+	 * edge
+	 */
+	boolean[] lostEdgeTrack;
 	
-	int detection_time_point;
-	int transition_length;
+	/**
+	 * Store when the first stable transition
+	 * Occurs. 
+	 */
+	int detectionTimePoint;
+
+	/**
+	 * Store for how long the new edge
+	 * could be observed consecutively
+	 */
+	int transitionLength;
 	
+	/**
+	 * Store the amount of time points
+	 * where the old edge could be
+	 * detected 
+	 */
+	int oldEdgeSurvivalLength;
+	
+
 	public T1Transition(SpatioTemporalGraph stGraph, int[] pair, boolean[] edge_track) {
 		
 		this.stGraph = stGraph;
-		this.lost_edge_track = edge_track;
+		this.lostEdgeTrack = edge_track;
 		
 		assert pair.length == 2: "input pair is not of length 2";
-		this.loser_nodes = pair;
+		this.loserNodes = pair;
 		
-		this.detection_time_point = findFirstMissingFrameNo();
-		assert detection_time_point > 0: "transition could not be identified";
+		this.detectionTimePoint = findFirstMissingFrameNo();
+		assert detectionTimePoint > 0: "transition could not be identified";
 		
-		this.transition_length = computeTransitionLength();
+		this.oldEdgeSurvivalLength = 0;
+		this.transitionLength = computeTransitionLength();
 		
-		winner_nodes = new int[2];
-		Arrays.fill(winner_nodes, -1);
+		winnerNodes = new int[2];
+		Arrays.fill(winnerNodes, -1);
 		
 	}
 
 	private int findFirstMissingFrameNo(){
 		//TODO what if this is not the correct start
 		
-		for(int i=0; i<lost_edge_track.length; i++)
-			if(!lost_edge_track[i])
+		for(int i=0; i<lostEdgeTrack.length; i++)
+			if(!lostEdgeTrack[i])
 				return i;
 		
 		return -1;
 	}
 	
+	/**
+	 * Determine how long the transition was observed
+	 * 
+	 * @return
+	 */
 	private int computeTransitionLength(){
 		
 		//compute the transition vector, i.e. length of every transition
 		int transition_length = 0;
-		int[] transition_vector = new int[lost_edge_track.length];
-		for(int i=detection_time_point; i<lost_edge_track.length; i++)
-			if(!lost_edge_track[i]){
+		int[] transition_vector = new int[lostEdgeTrack.length];
+		for(int i=detectionTimePoint; i<lostEdgeTrack.length; i++)
+			if(!lostEdgeTrack[i]){
 				transition_vector[i] = transition_vector[i-1] + 1;
 				transition_vector[i-1] = 0;
 				transition_length++;
 			}
+			else
+				oldEdgeSurvivalLength++;
 		
 		//find the first transition that is higher than set detection threshold
 		int detection_threshold = 2;
 		for(int i=0; i<transition_vector.length; i++) {
 			if(transition_vector[i] > detection_threshold){
 				transition_length = transition_vector[i];
-				detection_time_point = i - transition_length  + 1;
+				detectionTimePoint = i - transition_length  + 1;
 				break;
 			}
 		}
@@ -111,17 +146,17 @@ public class T1Transition {
 	@Override
 	public String toString(){
 			return String.format("[%d + %d, %d - %d] @ %d",
-					winner_nodes[0],winner_nodes[1],
-					loser_nodes[0],loser_nodes[1],
-					detection_time_point);
+					winnerNodes[0],winnerNodes[1],
+					loserNodes[0],loserNodes[1],
+					detectionTimePoint);
 	}
 	
 	public int[] getLoserNodes(){
-		return loser_nodes;
+		return loserNodes;
 	}
 	
 	public boolean hasWinners(){
-		for(int winner: winner_nodes)
+		for(int winner: winnerNodes)
 			if(winner == -1)
 				return false;
 
@@ -129,19 +164,29 @@ public class T1Transition {
 	}
 	
 	public int[] getWinnerNodes(){
-		return winner_nodes;
+		return winnerNodes;
 	}
 	
 	public int getDetectionTime(){
-		return detection_time_point;
+		return detectionTimePoint;
+	}
+
+	/**
+	 * Return how many time points
+	 * contain the old edge.
+	 * 
+	 * @return the oldEdgeSurvivalLength
+	 */
+	public int getOldEdgeSurvivalLength() {
+		return oldEdgeSurvivalLength;
 	}
 	
 	//Check if looser nodes are on the boundary
 	public boolean onBoundary(){
-		FrameGraph previous_frame = stGraph.getFrame(detection_time_point - 1);
+		FrameGraph previous_frame = stGraph.getFrame(detectionTimePoint - 1);
 		
-		Node l1 = previous_frame.getNode(loser_nodes[0]);
-		Node l2 = previous_frame.getNode(loser_nodes[1]);
+		Node l1 = previous_frame.getNode(loserNodes[0]);
+		Node l2 = previous_frame.getNode(loserNodes[1]);
 		
 		if(l1.onBoundary() || l2.onBoundary())
 			return true;
@@ -151,13 +196,13 @@ public class T1Transition {
 	
 	public void findSideGain(HashMap<Node, PolygonalCellTile> cell_tiles) {
 		
-		FrameGraph previous_frame = stGraph.getFrame(detection_time_point - 1);
+		FrameGraph previous_frame = stGraph.getFrame(detectionTimePoint - 1);
 		
-		assert previous_frame.hasTrackID(loser_nodes[0]): "Looser node not found in previous frame";
-		assert previous_frame.hasTrackID(loser_nodes[1]): "Looser node not found in previous frame";
+		assert previous_frame.hasTrackID(loserNodes[0]): "Looser node not found in previous frame";
+		assert previous_frame.hasTrackID(loserNodes[1]): "Looser node not found in previous frame";
 		
-		Node l1 = previous_frame.getNode(loser_nodes[0]);
-		Node l2 = previous_frame.getNode(loser_nodes[1]);
+		Node l1 = previous_frame.getNode(loserNodes[0]);
+		Node l2 = previous_frame.getNode(loserNodes[1]);
 				
 		//TODO: substitute with intersection?
 //		assert previous_frame.containsEdge(l1, l2): "Input edge is missing in previous frame";
@@ -182,14 +227,14 @@ public class T1Transition {
 		if(side_gain_nodes.size() == 1){
 			System.out.printf("Problems with winner node %d in frame %d, Loosers (%d,%d) ",
 					side_gain_nodes.get(0),
-					detection_time_point,
-					loser_nodes[0],
-					loser_nodes[1]
+					detectionTimePoint,
+					loserNodes[0],
+					loserNodes[1]
 					);
 		}
 		
-		winner_nodes[0] = side_gain_nodes.get(0);
-		winner_nodes[1] = side_gain_nodes.get(1);
+		winnerNodes[0] = side_gain_nodes.get(0);
+		winnerNodes[1] = side_gain_nodes.get(1);
 		
 //		FrameGraph detection_frame = stGraph.getFrame(detection_time_point);
 //		
@@ -204,6 +249,6 @@ public class T1Transition {
 	}
 
 	public int length() {
-		return transition_length;
+		return transitionLength;
 	}
 }

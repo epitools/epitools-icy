@@ -104,7 +104,12 @@ public class TransitionOverlay extends Overlay{
 						first_winner_edge.getGeometry().getCentroid().getX(),
 						first_winner_edge.getGeometry().getCentroid().getY()));
 			
-			//TODO trim last comma position
+			//trim last comma position
+			builder_main.setLength(builder_main.length() - 1);
+			builder_loser.setLength(builder_loser.length() - 1);
+			builder_winner.setLength(builder_winner.length() - 1);
+			
+			//next line
 			builder_main.append('\n');
 			builder_loser.append('\n');
 			builder_winner.append('\n');

@@ -56,7 +56,7 @@ public class TransitionOverlay extends Overlay{
 	final Color winner_color = Color.magenta;
 	
 	public TransitionOverlay(SpatioTemporalGraph stGraph, CellPainter plugin) {
-		super("Transition Painter");
+		super(String.format("Transition Painter (min=%d)",plugin.varMinimalTransitionLength.getValue()));
 		this.stGraph = stGraph;
 		
 		//TODO move createPolygonalTiles to PolygonalCellTile class

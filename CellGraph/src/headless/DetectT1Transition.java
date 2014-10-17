@@ -106,6 +106,8 @@ public class DetectT1Transition {
 							Arrays.toString(transition.getWinnerNodes()));
 					
 					//check whether the winners contain dividing cells/exclude for now.
+					//this excludes cells that are going to divide but not the daughter
+					//cells since their id cannot be present in the first frame!
 					for(int track_id: transition.getWinnerNodes())
 						if(stGraph.getFrame(0).hasTrackID(track_id))
 							if(stGraph.getFrame(0).getNode(track_id).hasObservedDivision())

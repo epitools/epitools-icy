@@ -241,8 +241,8 @@ public class CellPainter extends EzPlug {
 		EzGroup groupSaveSkeleton = new EzGroup("SAVE_SKELETON elements",varSaveSkeleton);
 
 		//Save transitions
-		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,10,1);
-		varMinimalOldSurvival = new EzVarInteger("Minimal old edge persistence [frames]",5,1,10,1);
+		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
+		varMinimalOldSurvival = new EzVarInteger("Minimal old edge persistence [frames]",5,1,100,1);
 		varSaveTransitions = new EzVarBoolean("Save transition statistics", true);
 		EzGroup groupTransitions = new EzGroup("TRANSITIONS elements",
 				varMinimalTransitionLength,

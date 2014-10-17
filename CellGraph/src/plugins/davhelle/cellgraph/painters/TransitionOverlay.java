@@ -70,6 +70,8 @@ public class TransitionOverlay extends Overlay{
 				tracked_edges,
 				plugin.varMinimalTransitionLength.getValue(),
 				plugin.varMinimalOldSurvival.getValue());
+		
+		System.out.println("Transitions found: "+transitions.size());
 	
 	}
 	

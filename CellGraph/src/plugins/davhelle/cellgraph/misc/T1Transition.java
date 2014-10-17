@@ -75,9 +75,9 @@ public class T1Transition {
 		this.loserNodes = pair;
 		
 		this.detectionTimePoint = findFirstMissingFrameNo();
+		this.oldEdgeSurvivalLength = detectionTimePoint;
 		assert detectionTimePoint > 0: "transition could not be identified";
 		
-		this.oldEdgeSurvivalLength = 0;
 		this.transitionLength = computeTransitionLength();
 		
 		winnerNodes = new int[2];

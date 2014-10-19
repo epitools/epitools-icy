@@ -32,6 +32,7 @@ import plugins.adufour.ezplug.EzPlug;
 import plugins.davhelle.cellgraph.CellPainter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.T1Transition;
@@ -123,13 +124,13 @@ public class TransitionOverlay extends Overlay{
 		}
 		
 		File main_output_file = new File(file_name+"_main.csv");
-		writeOutBuilder(builder_main, main_output_file);
+		CsvWriter.writeOutBuilder(builder_main, main_output_file);
 		
 		File loser_output_file = new File(file_name+"_loser.csv");
-		writeOutBuilder(builder_loser, loser_output_file);
+		CsvWriter.writeOutBuilder(builder_loser, loser_output_file);
 		
 		File winner_output_file = new File(file_name+"_winner.csv");
-		writeOutBuilder(builder_winner, winner_output_file);
+		CsvWriter.writeOutBuilder(builder_winner, winner_output_file);
 		
 		System.out.printf("Successfully wrote to:\n\t%s\n\t%s\n\t%s\n",
 				main_output_file.getName(),
@@ -180,22 +181,6 @@ public class TransitionOverlay extends Overlay{
 			}				
 		}
 		return first_edge;
-	}
-
-	/**
-	 * @param builder_main
-	 * @param output_file
-	 */
-	public void writeOutBuilder(StringBuilder builder_main, File output_file) {
-		FileWriter fstream;
-		try {
-			fstream = new FileWriter(output_file);
-			BufferedWriter writer = new BufferedWriter(fstream);
-			writer.append(builder_main);
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	@Override

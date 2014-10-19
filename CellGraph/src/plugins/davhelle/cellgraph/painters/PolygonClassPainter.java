@@ -6,6 +6,7 @@
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
+import icy.gui.dialog.SaveDialog;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
@@ -13,9 +14,11 @@ import icy.sequence.Sequence;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.io.File;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -104,6 +107,44 @@ public class PolygonClassPainter extends Overlay{
 				}
 			}
 		}
+	}
+
+	public void saveToCsv() {
+		String file_name = SaveDialog.chooseFile(
+				"Please choose where to save the CSV PolygonClass statistics", 
+				"/Users/davide/tmp/",
+				"t1_transitions",
+				"");
+		
+		StringBuilder builder_main = new StringBuilder();
+		
+		for(int time_point=0; time_point < stGraph.size(); time_point++){
+			
+			FrameGraph frame_i = stGraph.getFrame(time_point);
+			
+			String prefix = "";
+			
+			for(Node cell: frame_i.vertexSet()){
+				
+				if(cell.onBoundary())
+					continue;
+
+				int cell_degree = frame_i.degreeOf(cell);
+
+				builder_main.append(prefix);
+				builder_main.append(cell_degree);
+				
+				//update after first time
+				prefix = ",";
+				
+			}
+			
+			builder_main.append('\n');
+		}
+		
+		File main_output_file = new File(file_name+".csv");
+		CsvWriter.writeOutBuilder(builder_main, main_output_file);
+			
 	}
 	
 }

@@ -6,7 +6,9 @@
 package plugins.davhelle.cellgraph.io;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -280,6 +282,22 @@ public class CsvWriter {
 			System.err.println("Error: " + e.getMessage());
 		}
 		
+	}
+	
+	/**
+	 * @param builder_main
+	 * @param output_file
+	 */
+	public static void writeOutBuilder(StringBuilder builder_main, File output_file) {
+		FileWriter fstream;
+		try {
+			fstream = new FileWriter(output_file);
+			BufferedWriter writer = new BufferedWriter(fstream);
+			writer.append(builder_main);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	

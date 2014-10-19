@@ -140,6 +140,7 @@ public class CellPainter extends EzPlug {
 	private EzVarBoolean varSaveTransitions;
 	public EzVarInteger varMinimalTransitionLength;
 	public EzVarInteger varMinimalOldSurvival;
+	private EzVarBoolean varSavePolyClass;
 
 	@Override
 	protected void initialize() {
@@ -180,10 +181,11 @@ public class CellPainter extends EzPlug {
 		//TODO add color code!
 		varBooleanColorClass = new EzVarBoolean("Draw Numbers", false);
 		varHighlightClass = new EzVarInteger("Highlight class (0=none)",0,0,10,1);
-		
+		varSavePolyClass = new EzVarBoolean("Save polygon class statistics", false);
 		EzGroup groupPolygonClass = new EzGroup("POLYGON_CLASS elements",
 				varBooleanColorClass,
-				varHighlightClass);
+				varHighlightClass,
+				varSavePolyClass);
 		
 		//Area Threshold View
 		varAreaThreshold = new EzVarDouble("Area threshold", 0.9, 0, 10, 0.1);
@@ -346,10 +348,19 @@ public class CellPainter extends EzPlug {
 						case POLYGON_CLASS: 
 							boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
 							int highlight_polygonal_class = varHighlightClass.getValue();
+							
+							
+							PolygonClassPainter pc_painter =  new PolygonClassPainter(
+									wing_disc_movie,
+									draw_polygonal_numbers,
+									highlight_polygonal_class);
+							
+							if(varSavePolyClass.getValue() && varSavePolyClass.isVisible()){
+								pc_painter.saveToCsv();
+							}
+							
 							sequence.addOverlay(
-									new PolygonClassPainter(wing_disc_movie,
-											draw_polygonal_numbers,
-											highlight_polygonal_class));
+									pc_painter);
 							break;
 						
 						case POLYGON_TILE:

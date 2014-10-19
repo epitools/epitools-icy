@@ -532,6 +532,14 @@ public class CellPainter extends EzPlug {
 		//substitute this method with graph write out.
 		//CsvWriter.custom_write_out(wing_disc_movie); 
 		
+		directDividingNeighborSimulation(wing_disc_movie);
+	}
+
+	/**
+	 * @param wing_disc_movie
+	 */
+	private void directDividingNeighborSimulation(
+			SpatioTemporalGraph wing_disc_movie) {
 		final int sim_no = 10000;
 		System.out.println(sim_no + "simulations");
 		FrameGraph frame_i = wing_disc_movie.getFrame(0);

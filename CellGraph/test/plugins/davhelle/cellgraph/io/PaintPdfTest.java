@@ -84,16 +84,9 @@ public class PaintPdfTest {
 			
 			
 			//draw all polygons in Graph
-			for(Node n: frame.vertexSet()){
-				PolygonalCellTile tile = new PolygonalCellTile(n);
-				for(Node neighbor: n.getNeighbors()){
-					Geometry edge = tile.getTileEdge(neighbor);
+			for(Node n: frame.vertexSet())
+				pdfGraphics.draw(writer.toShape(n.getGeometry()));
 				
-					pdfGraphics.draw(writer.toShape(edge));
-				}
-				
-				break;
-			}
 			
 			//close
 			pdfGraphics.dispose();

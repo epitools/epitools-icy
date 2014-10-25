@@ -224,7 +224,8 @@ public class TransitionOverlay extends Overlay{
 			Graphics2D pdfGraphics = (Graphics2D) job.getGraphics(format);
 			
 			//paint
-			paintFrame(pdfGraphics,0);
+			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
+			this.paintFrame(pdfGraphics,0);
 			
 			//close
 			pdfGraphics.dispose();

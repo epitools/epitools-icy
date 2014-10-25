@@ -141,6 +141,7 @@ public class CellPainter extends EzPlug {
 	public EzVarInteger varMinimalTransitionLength;
 	public EzVarInteger varMinimalOldSurvival;
 	private EzVarBoolean varSavePolyClass;
+	private EzVarBoolean varSaveToPdf;
 
 	@Override
 	protected void initialize() {
@@ -245,11 +246,13 @@ public class CellPainter extends EzPlug {
 		//Save transitions
 		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
 		varMinimalOldSurvival = new EzVarInteger("Minimal old edge persistence [frames]",5,1,100,1);
-		varSaveTransitions = new EzVarBoolean("Save transition statistics", true);
+		varSaveTransitions = new EzVarBoolean("Save transition statistics to CSV", false);
+		varSaveToPdf = new EzVarBoolean("Save transition picture to PDF", false);
 		EzGroup groupTransitions = new EzGroup("TRANSITIONS elements",
 				varMinimalTransitionLength,
 				varMinimalOldSurvival,
-				varSaveTransitions);
+				varSaveTransitions,
+				varSaveToPdf);
 		
 		//Painter
 		EzGroup groupPainters = new EzGroup("Overlays",
@@ -459,6 +462,10 @@ public class CellPainter extends EzPlug {
 							TransitionOverlay t1 = new TransitionOverlay(wing_disc_movie, this);
 							if(varSaveTransitions.getValue())
 								t1.saveToCsv();
+							
+							if(varSaveToPdf.getValue())
+								t1.saveToPdf();
+							
 							sequence.addOverlay(t1);
 							break;
 						case EDGE_STABILITY:

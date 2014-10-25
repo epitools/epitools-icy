@@ -10,6 +10,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import gnu.jpdf.PDFJob;
 import headless.DetectT1Transition;
 import headless.StGraphUtils;
 import icy.main.Icy;
@@ -21,12 +22,18 @@ import icy.gui.dialog.SaveDialog;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import com.vividsolutions.jts.awt.ShapeWriter;
 
 import plugins.adufour.ezplug.EzPlug;
 import plugins.davhelle.cellgraph.CellPainter;
@@ -188,45 +195,95 @@ public class TransitionOverlay extends Overlay{
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			
-			//try to color the cells that loose the bond
-			for(T1Transition t1: transitions){
-				int[] losers = t1.getLoserNodes();
-				
-				for(int loser_id: losers){
-					if(frame_i.hasTrackID(loser_id)){
-						Node loser = frame_i.getNode(loser_id);
-						g.setColor(loser_color);
-						g.fill(loser.toShape());
-					}
-				}
-			}
-			
-			for(T1Transition t1: transitions){
-				if(t1.hasWinners()){
-					int[] winner_ids = t1.getWinnerNodes();
-					Node[] winners = new Node[winner_ids.length];
-					g.setColor(winner_color);
-					
-					for(int i=0; i<winner_ids.length; i++){
-						int winner_id = winner_ids[i];
-						if(frame_i.hasTrackID(winner_id)){
-							winners[i] = frame_i.getNode(winner_id);
-							g.draw(winners[i].toShape());
-						}
-					}
-					
-					if(winners[0] != null && winners[1] != null)
-						g.drawLine(
-							(int)winners[0].getCentroid().getX(), 
-							(int)winners[0].getCentroid().getY(),
-							(int)winners[1].getCentroid().getX(), 
-							(int)winners[1].getCentroid().getY());
-				}
-			}
+			paintFrame(g, time_point);
 		}		
 		
+	}
+	
+	public void saveToPdf(){
+		
+		String file_name = SaveDialog.chooseFile(
+				"Please choose where to save the CSV transitions statistics", 
+				"/Users/davide/tmp/",
+				"t1_transitions",
+				"");
+		
+		//PDF generation	
+		try {
+			
+			//open
+			FileOutputStream fileOutputStream;
+			fileOutputStream = new FileOutputStream(new File(file_name));
+			PDFJob job = new PDFJob(fileOutputStream);
+			
+			//apply custom format
+			PageFormat format = new PageFormat();
+			Paper paper=format.getPaper();
+			paper.setSize(1392,1040);
+			format.setPaper(paper);
+			Graphics2D pdfGraphics = (Graphics2D) job.getGraphics(format);
+			
+			//paint
+			paintFrame(pdfGraphics,0);
+			
+			//close
+			pdfGraphics.dispose();
+			job.end();
+			fileOutputStream.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+
+	/**
+	 * @param g
+	 * @param time_point
+	 */
+	private void paintFrame(Graphics2D g, int time_point) {
+		FrameGraph frame_i = stGraph.getFrame(time_point);
+		
+		//try to color the cells that loose the bond
+		for(T1Transition t1: transitions){
+			int[] losers = t1.getLoserNodes();
+			
+			for(int loser_id: losers){
+				if(frame_i.hasTrackID(loser_id)){
+					Node loser = frame_i.getNode(loser_id);
+					g.setColor(loser_color);
+					g.fill(loser.toShape());
+				}
+			}
+		}
+		
+		for(T1Transition t1: transitions){
+			if(t1.hasWinners()){
+				int[] winner_ids = t1.getWinnerNodes();
+				Node[] winners = new Node[winner_ids.length];
+				g.setColor(winner_color);
+				
+				for(int i=0; i<winner_ids.length; i++){
+					int winner_id = winner_ids[i];
+					if(frame_i.hasTrackID(winner_id)){
+						winners[i] = frame_i.getNode(winner_id);
+						g.draw(winners[i].toShape());
+					}
+				}
+				
+				if(winners[0] != null && winners[1] != null)
+					g.drawLine(
+						(int)winners[0].getCentroid().getX(), 
+						(int)winners[0].getCentroid().getY(),
+						(int)winners[1].getCentroid().getX(), 
+						(int)winners[1].getCentroid().getY());
+			}
+		}
 	};
 	
 	

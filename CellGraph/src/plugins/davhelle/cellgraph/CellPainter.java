@@ -225,8 +225,9 @@ public class CellPainter extends EzPlug {
 				
 		
 		//Graph Export Mode
-		varExportType = new EzVarEnum<ExportFieldType>("Export field", ExportFieldType.values(), ExportFieldType.DIVISION);
-		varOutputFile = new EzVarFile("Output File", "/Users/davide/tmp/frame0_" + varExportType.getValue().name() + ".xml");
+		varExportType = new EzVarEnum<ExportFieldType>("Export field", 
+				ExportFieldType.values(), ExportFieldType.STANDARD);
+		varOutputFile = new EzVarFile("Output File", "/Users/davide/analysis");
 		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
 		
 		EzGroup groupExport = new EzGroup("GRAPH_EXPORT elements",
@@ -501,11 +502,52 @@ public class CellPainter extends EzPlug {
 			new AnnounceFrame("No output file specified! Please select");
 		else if(frame_no >= wing_disc_movie.size())
 			new AnnounceFrame("Requested frame no is not available! Please check");
-		else{
+		else if(varExportType.getValue() == ExportFieldType.STANDARD){
+			
+			String base_dir = output_file.getParent();
+			
+			//first frame TODO can add property to field like .getName() = '%s/frame%d.xml')
+			GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
+			int i = 0;
+			exporter.exportFrame(
+					wing_disc_movie.getFrame(i), 
+					String.format("%s/frame%d.xml",base_dir,i));
+		
+			//last frame
+			exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
+			i = wing_disc_movie.size() - 1;
+			exporter.exportFrame(
+					wing_disc_movie.getFrame(i), 
+					String.format("%s/frame%d.xml",base_dir,i));
+			
+			//seq_area
+			exporter = new GraphExporter(ExportFieldType.SEQ_AREA);
+			i = 0;
+			exporter.exportFrame(
+					wing_disc_movie.getFrame(i), 
+					String.format("%s/seq_area.xml",base_dir,i));
+			//seq_x
+			exporter = new GraphExporter(ExportFieldType.SEQ_X);
+			i = 0;
+			exporter.exportFrame(
+					wing_disc_movie.getFrame(i), 
+					String.format("%s/seq_x.xml",base_dir,i));
+			//seq_y
+			exporter = new GraphExporter(ExportFieldType.SEQ_Y);
+			i = 0;
+			exporter.exportFrame(
+					wing_disc_movie.getFrame(i), 
+					String.format("%s/seq_y.xml",base_dir,i));
+			
+			
+		}
+		else
+		{
 			GraphExporter exporter = new GraphExporter(varExportType.getValue());
 			FrameGraph frame_to_export = wing_disc_movie.getFrame(frame_no);
 			exporter.exportFrame(frame_to_export, output_file.getAbsolutePath());
 		}		
+		
 	}
 
 	/**

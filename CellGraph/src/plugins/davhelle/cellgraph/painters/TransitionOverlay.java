@@ -92,7 +92,7 @@ public class TransitionOverlay extends Overlay{
 		
 		String file_name = SaveDialog.chooseFile(
 				"Please choose where to save the CSV transitions statistics", 
-				"/Users/davide/tmp/",
+				"/Users/davide/analysis/",
 				"t1_transitions",
 				"");
 		
@@ -203,9 +203,9 @@ public class TransitionOverlay extends Overlay{
 	public void saveToPdf(){
 		
 		String file_name = SaveDialog.chooseFile(
-				"Please choose where to save the CSV transitions statistics", 
-				"/Users/davide/tmp/",
-				"t1_transitions",
+				"Please choose where to save the PDF transitions image", 
+				"/Users/davide/analysis/",
+				"t1_transitions.pdf",
 				"");
 		
 		//PDF generation	

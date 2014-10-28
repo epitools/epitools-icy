@@ -105,14 +105,21 @@ public class DetectT1Transition {
 					System.out.printf("\tProposed Side Gain: %s\n",
 							Arrays.toString(transition.getWinnerNodes()));
 					
-					//check whether the winners contain dividing cells/exclude for now.
-					//this excludes cells that are going to divide but not the daughter
-					//cells since their id cannot be present in the first frame!
-					for(int track_id: transition.getWinnerNodes())
-						if(stGraph.getFrame(0).hasTrackID(track_id))
+					//Verify winner cells
+					for(int track_id: transition.getWinnerNodes()){
+						//are tracked
+						if(track_id == -1)
+							continue edge_loop;
+						//are not mother cells
+						//check whether the winners contain dividing cells/exclude for now.
+						//this excludes cells that are going to divide but not the daughter
+						//cells since their id cannot be present in the first frame!
+						else if(stGraph.getFrame(0).hasTrackID(track_id))
 							if(stGraph.getFrame(0).getNode(track_id).hasObservedDivision())
 								continue edge_loop;
+					}
 
+					
 					
 					stable_transitions.add(transition);
 				}

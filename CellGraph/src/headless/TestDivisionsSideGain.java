@@ -34,6 +34,7 @@ public class TestDivisionsSideGain {
 		int division_no = 0;
 		int gain_of_side = 0;
 		int two_gaining_cells = 0;
+		int dividing_cells_in_gaining = 0;
 		for(Node cell: frame0.vertexSet()){
 			
 			if(cell.onBoundary())
@@ -87,7 +88,18 @@ public class TestDivisionsSideGain {
 				
 				if(intersecting_neighbor_no > 0){
 					two_gaining_cells++;
-					System.out.printf("%d\t%d\n",cell.getTrackID(),intersecting_neighbor_no);
+					System.out.printf("%d\t%d\t",cell.getTrackID(),intersecting_neighbor_no);
+					for(Node s: s1){
+						char division_star = ' ';
+						if(s.hasObservedDivision()){
+							division_star = '*';
+							dividing_cells_in_gaining++;
+						}
+					
+						System.out.printf("%d%s\t",s.getTrackID(),division_star);
+					}
+					
+					System.out.println();
 				}
 				
 			}
@@ -95,7 +107,7 @@ public class TestDivisionsSideGain {
 		
 		System.out.printf("Found %d/%d divisions with ddns\n",dividing_node_ddns.size(),division_no);
 		System.out.printf("Found %d/%d divisions two gaining neighbors\n",two_gaining_cells,division_no);
-
+		System.out.printf("Found %d/%d divisions in two gaining neighbors\n",dividing_cells_in_gaining,two_gaining_cells*2);
 		
 		 int gain_of_side_with_ddn = 0;
 		 cell_loop:

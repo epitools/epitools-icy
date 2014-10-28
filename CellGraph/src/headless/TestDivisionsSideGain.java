@@ -56,15 +56,18 @@ public class TestDivisionsSideGain {
 				}
 				
 				int time_point_minus_5 = cell.getDivision().getTimePoint() - 5;
-				if(time_point_minus_5 > 0)
+				if(time_point_minus_5 > 0 && !cell.onBoundary())
 				{
 					FrameGraph frame_minus5 = stGraph.getFrame(time_point_minus_5);
 					Node future_cell = frame_minus5.getNode(cell.getTrackID());
 
-					if(future_cell != null)
-						if(frame_minus5.degreeOf(future_cell) > frame0.degreeOf(cell))
+					if(future_cell != null){
+						int poly_class_difference = frame_minus5.degreeOf(future_cell) - frame0.degreeOf(cell);
+						if(poly_class_difference > 0)
 							gain_of_side++;
-					
+						
+						System.out.printf("%d\t%d\n",cell.getTrackID(),poly_class_difference);
+					}
 				}
 			}
 		}

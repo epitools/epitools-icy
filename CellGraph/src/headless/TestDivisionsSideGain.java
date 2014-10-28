@@ -4,7 +4,10 @@
 package headless;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -30,12 +33,16 @@ public class TestDivisionsSideGain {
 		HashMap<Node, ArrayList<Node>> dividing_node_ddns = new HashMap<Node, ArrayList<Node>>();
 		int division_no = 0;
 		int gain_of_side = 0;
-		
+		int two_gaining_cells = 0;
 		for(Node cell: frame0.vertexSet()){
+			
+			if(cell.onBoundary())
+				continue;
 			
 			if(cell.hasObservedDivision()){
 				
-				int division_frame_no = cell.getDivision().getTimePoint();
+				Division division = cell.getDivision();
+				int division_frame_no = division.getTimePoint();
 				division_no++;
 				
 				for(Node n: cell.getNeighbors()){
@@ -55,8 +62,8 @@ public class TestDivisionsSideGain {
 					}
 				}
 				
-				int time_point_minus_5 = cell.getDivision().getTimePoint() - 5;
-				if(time_point_minus_5 > 0 && !cell.onBoundary())
+				int time_point_minus_5 = division_frame_no - 5;
+				if(time_point_minus_5 > 0)
 				{
 					FrameGraph frame_minus5 = stGraph.getFrame(time_point_minus_5);
 					Node future_cell = frame_minus5.getNode(cell.getTrackID());
@@ -66,14 +73,30 @@ public class TestDivisionsSideGain {
 						if(poly_class_difference > 0)
 							gain_of_side++;
 						
-						System.out.printf("%d\t%d\n",cell.getTrackID(),poly_class_difference);
+						//System.out.printf("%d\t%d\n",cell.getTrackID(),poly_class_difference);
 					}
 				}
+				
+				//test to what kind of cell the mitotic plane is adding a neighbor.
+				HashSet<Node> s1 = new HashSet<Node>(division.getChild1().getNeighbors());
+				HashSet<Node> s2 = new HashSet<Node>(division.getChild2().getNeighbors());
+				
+				//intersect
+				s1.retainAll(s2);
+				int intersecting_neighbor_no = s1.size();
+				
+				if(intersecting_neighbor_no > 0){
+					two_gaining_cells++;
+					System.out.printf("%d\t%d\n",cell.getTrackID(),intersecting_neighbor_no);
+				}
+				
 			}
 		}
 		
 		System.out.printf("Found %d/%d divisions with ddns\n",dividing_node_ddns.size(),division_no);
-			
+		System.out.printf("Found %d/%d divisions two gaining neighbors\n",two_gaining_cells,division_no);
+
+		
 		 int gain_of_side_with_ddn = 0;
 		 cell_loop:
 		 for(Node cell: dividing_node_ddns.keySet())

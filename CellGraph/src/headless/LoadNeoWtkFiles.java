@@ -9,6 +9,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
+import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
@@ -67,6 +68,23 @@ public class LoadNeoWtkFiles {
 						time_points, InputType.WKT).getStGraph();
 		
 		loadBorder(export_folder, stGraph);
+		
+		return stGraph;
+	}
+	
+	public static SpatioTemporalGraph loadNeo(int neo_no){
+		
+		//Graph generation
+		int time_points = 100;
+		if(neo_no == 1)
+			time_points = 99;
+		
+		SpatioTemporalGraph stGraph = loadStGraph(neo_no, time_points);
+		
+		//Tracking
+		String sample_folder = String.format("/Users/davide/data/neo/%d/",neo_no);
+		File tracking_folder = new File(sample_folder+"tracking");
+		new CsvTrackReader(stGraph, tracking_folder.getAbsolutePath()).track();
 		
 		return stGraph;
 	}

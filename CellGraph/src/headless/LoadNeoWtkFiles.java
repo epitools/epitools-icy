@@ -59,6 +59,20 @@ public class LoadNeoWtkFiles {
 		File input_file = new File(input_name);
 		
 		//Generating Neo0 stGraph
+		SpatioTemporalGraph stGraph = loadWktStGraph(time_points,
+				export_folder, input_file);
+		
+		return stGraph;
+	}
+
+	/**
+	 * @param time_points
+	 * @param export_folder
+	 * @param input_file
+	 * @return
+	 */
+	private static SpatioTemporalGraph loadWktStGraph(int time_points,
+			String export_folder, File input_file) {
 		System.out.println("Creating graph..");
 		
 		SpatioTemporalGraph stGraph = 
@@ -67,9 +81,27 @@ public class LoadNeoWtkFiles {
 						input_file, 
 						time_points, InputType.WKT).getStGraph();
 		
-		loadBorder(export_folder, stGraph);
+		loadBorder(input_file.getParent(), stGraph);
+		return stGraph;
+	}
+	
+	public static SpatioTemporalGraph loadMarcm(int no){ 
+		int time_points = 60;
+		
+		String export_folder = String.format("/Users/davide/data/marcm/%d/",no);
+		String input_name = "skeletons_wkt/skeleton_000.wkt";
+		File input_file = new File(export_folder +input_name);
+		
+		//Graph generation
+		SpatioTemporalGraph stGraph = loadWktStGraph(time_points,
+				export_folder, input_file);
+		
+		//Tracking
+		File tracking_folder = new File(export_folder+"tracking");
+		new CsvTrackReader(stGraph, tracking_folder.getAbsolutePath()).track();
 		
 		return stGraph;
+		
 	}
 	
 	public static SpatioTemporalGraph loadNeo(int neo_no){
@@ -79,7 +111,12 @@ public class LoadNeoWtkFiles {
 		if(neo_no == 1)
 			time_points = 99;
 		
-		SpatioTemporalGraph stGraph = loadStGraph(neo_no, time_points);
+		String export_folder = String.format("/Users/davide/data/neo/%d/skeletons_wkt/",neo_no);
+		String input_name = String.format("%sskeleton_000.wkt",export_folder);
+		File input_file = new File(input_name);
+		
+		SpatioTemporalGraph stGraph = loadWktStGraph(time_points,
+				export_folder, input_file);
 		
 		//Tracking
 		String sample_folder = String.format("/Users/davide/data/neo/%d/",neo_no);
@@ -98,8 +135,8 @@ public class LoadNeoWtkFiles {
 			
 			long startTime = System.currentTimeMillis();
 
-			String expected_wkt_file = String.format("%sborder_%03d.wkt",export_folder,i);
-			Assert.assertTrue(new File(expected_wkt_file).exists());
+			String expected_wkt_file = String.format("%s/border_%03d.wkt",export_folder,i);
+			Assert.assertTrue(new File(expected_wkt_file).exists(),String.format("%s does not exist",expected_wkt_file));
 			
 			ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
 			Assert.assertEquals(boundaries.size(), 1);

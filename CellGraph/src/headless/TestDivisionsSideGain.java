@@ -26,11 +26,12 @@ public class TestDivisionsSideGain {
 
 	public static void main(String[] args) {
 		
-		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(0);
+		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadMarcm(0);
 		
 		FrameGraph frame0 = stGraph.getFrame(0);
 		
 		HashMap<Node, ArrayList<Node>> dividing_node_ddns = new HashMap<Node, ArrayList<Node>>();
+		HashSet<Node> dividing_node_with_ddn = new HashSet<Node>();
 		int division_no = 0;
 		int gain_of_side = 0;
 		int two_gaining_cells = 0;
@@ -60,6 +61,9 @@ public class TestDivisionsSideGain {
 							dividing_node_ddns.get(cell).add(n);
 							
 						}
+						
+						if(!dividing_node_with_ddn.contains(cell))
+							dividing_node_with_ddn.add(cell);
 					}
 				}
 				
@@ -105,7 +109,8 @@ public class TestDivisionsSideGain {
 			}
 		}
 		
-		System.out.printf("Found %d/%d divisions with ddns\n",dividing_node_ddns.size(),division_no);
+		System.out.printf("Found %d/%d divisions with at least one ddn\n",dividing_node_with_ddn.size(),division_no);
+		System.out.printf("Found %d/%d divisions with at least one ddn dividing before them\n",dividing_node_ddns.size(),division_no);
 		System.out.printf("Found %d/%d divisions two gaining neighbors\n",two_gaining_cells,division_no);
 		System.out.printf("Found %d/%d divisions in two gaining neighbors\n",dividing_cells_in_gaining,two_gaining_cells*2);
 		

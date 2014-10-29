@@ -71,7 +71,7 @@ public class LoadNeoWtkFiles {
 	 * @param input_file
 	 * @return
 	 */
-	private static SpatioTemporalGraph loadWktStGraph(int time_points,
+	public static SpatioTemporalGraph loadWktStGraph(int time_points,
 			String export_folder, File input_file) {
 		System.out.println("Creating graph..");
 		

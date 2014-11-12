@@ -28,7 +28,7 @@ public class DetectT1Transition {
 
 	public static void main(String[] args){
 		
-		final boolean use_test = true;
+		final boolean use_test = false;
 		
 		SpatioTemporalGraph stGraph = null;
 		
@@ -40,7 +40,7 @@ public class DetectT1Transition {
 			stGraph = StGraphUtils.createDefaultGraph(test_file,no_of_test_files);
 		}
 		else
-			stGraph = StGraphUtils.loadNeo(1);
+			stGraph = LoadNeoWtkFiles.loadNeo(0);
 		assert stGraph != null: "Spatio temporal graph creation failed!";
 		
 		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph);
@@ -74,6 +74,8 @@ public class DetectT1Transition {
 		ArrayList<T1Transition> stable_transitions = new ArrayList<T1Transition>();
 		
 		//find changes in neighborhood
+		ArrayList<T1Transition> divisions_with_transitions = new ArrayList<T1Transition>();
+		
 		edge_loop:
 		for(long track_code:tracked_edges.keySet()){
 			boolean[] edge_track = tracked_edges.get(track_code);
@@ -115,8 +117,10 @@ public class DetectT1Transition {
 						//this excludes cells that are going to divide but not the daughter
 						//cells since their id cannot be present in the first frame!
 						else if(stGraph.getFrame(0).hasTrackID(track_id))
-							if(stGraph.getFrame(0).getNode(track_id).hasObservedDivision())
+							if(stGraph.getFrame(0).getNode(track_id).hasObservedDivision()){
+								divisions_with_transitions.add(transition);
 								continue edge_loop;
+							}
 					}
 
 					

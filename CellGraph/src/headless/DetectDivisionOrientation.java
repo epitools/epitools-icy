@@ -48,11 +48,12 @@ public class DetectDivisionOrientation {
 				Geometry child_intersection = child1.getGeometry().intersection(child2.getGeometry());
 				double new_junction_angle = findAngleOfLongestAxis(child_intersection);
 				
+				if(longest_axis_angle_rad != 0.0 || new_junction_angle != 0.0){
 				double angle_difference = Angle.diff(new_junction_angle, longest_axis_angle_rad);
 				System.out.printf(
-						"Angle difference for dividing cell %d: %.2f\n",
-						mother.getTrackID(),
+						"%.2f\n",
 						Angle.toDegrees(angle_difference));
+				}
 			}
 		}
 
@@ -66,11 +67,15 @@ public class DetectDivisionOrientation {
 		MinimumBoundingCircle mbc = new MinimumBoundingCircle(geometry_to_measure);
 		
 		Coordinate[] longest_axis = mbc.getExtremalPoints();
-		assert longest_axis.length == 2: "More than two coordinates!";
+		if(longest_axis.length == 2){ 
 		
 		double longest_axis_angle_rad = Angle.angle(longest_axis[0], longest_axis[1]);
 		double longest_axis_angle_deg = Angle.toDegrees(longest_axis_angle_rad);
 		return longest_axis_angle_rad;
+		}
+		else{
+			return 0.0;
+		}
 	}
 
 }

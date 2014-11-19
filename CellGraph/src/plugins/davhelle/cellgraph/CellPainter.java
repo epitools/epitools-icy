@@ -346,8 +346,8 @@ public class CellPainter extends EzPlug {
 						case BORDER: 
 							sequence.addOverlay(
 									new ConvexHullOverlay(wing_disc_movie));
-							sequence.addOverlay(
-									new BorderPainter(wing_disc_movie));
+							//sequence.addOverlay(
+							//		new BorderPainter(wing_disc_movie));
 							break;
 
 						case CELLS: 

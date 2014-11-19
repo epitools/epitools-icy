@@ -47,10 +47,14 @@ public class ConvexHullOverlay extends Overlay {
 		
 		for(Node n: stGraph.getFrame(0).vertexSet()){
 			
-			Geometry g = n.getGeometry();
-			Geometry convex_hull = new ConvexHull(g).getConvexHull();
+			System.out.printf("Cell elongation of [%.0f,%.0f]:",
+					n.getCentroid().getX(),
+					n.getCentroid().getY());
 			
-			Shape shape = sw.toShape(convex_hull);
+			Geometry g = n.getGeometry();
+			//Geometry convex_hull = new ConvexHull(g).getConvexHull();
+			
+			Shape shape = sw.toShape(g);
 			
 			ShapeRoi imageJ_roi = new ShapeRoi(shape);
 			Roi[] rois = imageJ_roi.getRois();
@@ -62,11 +66,19 @@ public class ConvexHullOverlay extends Overlay {
 			ImageProcessor roi_mask = my_roi.getMask();
 			assert roi_mask != null: "No mask defined";
 //			
-			ImagePlus imp2 = NewImage.createByteImage(
-					"New image", 100, 100, 1, NewImage.FILL_BLACK);
-			ImageProcessor ip = imp2.getProcessor();
+			ImagePlus imp = NewImage.createByteImage(
+					"New image", 500, 500, 1, NewImage.FILL_BLACK);
+			ImageProcessor ip = imp.getProcessor();
 			ip.setRoi(my_roi);
-			//imp2.show();
+			//imp.show();
+			//ip.draw(my_roi);
+//			ip.fill(my_roi);
+			//ij.gui.Overlay overlay = new ij.gui.Overlay(); 
+			//overlay.add((Roi)my_roi); 
+			//imp.setOverlay(overlay); 
+			//imp.show(); 
+			
+			
 			
 			//ImageProcessor ip = imageJ_roi.getMask();
 			//ip.setRoi(2, 2, 2, 2);
@@ -79,6 +91,13 @@ public class ConvexHullOverlay extends Overlay {
 			ef.fit(ip,null);
 			//ef.drawEllipse(ip);
 			//transform this back to a shape somehow
+			
+			System.out.printf("\t%.2f @ %.0f\n",
+					ef.major,
+					ef.angle);
+			
+			imp.close();
+			
 			convexHulls.put(n, ef);	
 		}
 	}
@@ -109,18 +128,14 @@ public class ConvexHullOverlay extends Overlay {
 					 * public void drawEllipse(ImageProcessor ip) 
 					 * 
 					 * */
-					double x0 = ef.xCenter + n.getGeometry().getCentroid().getX();
-			        double y0 = ef.yCenter + n.getGeometry().getCentroid().getY();
+					double x0 = n.getGeometry().getCentroid().getX();
+			        double y0 = n.getGeometry().getCentroid().getY();
 			        double length = ef.major / 2.0;
 			        double x1 = x0 + Math.cos(ef.theta) * length;
 			        double y1 = y0 - Math.sin(ef.theta) * length;
 					
 					g.draw(new Line2D.Double(x0, y0, x1, y1));
 				}
-				if(g.getColor() == Color.green)
-					g.setColor(Color.blue);
-				else
-					g.setColor(Color.green);
 				
 			}
 			

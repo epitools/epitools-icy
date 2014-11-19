@@ -23,6 +23,8 @@ import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.NewImage;
+import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.ShapeRoi;
 import ij.process.EllipseFitter;
@@ -51,12 +53,27 @@ public class ConvexHullOverlay extends Overlay {
 			Shape shape = sw.toShape(convex_hull);
 			
 			ShapeRoi imageJ_roi = new ShapeRoi(shape);
-			ImageProcessor ip = imageJ_roi.getMask();
-			ImagePlus imp = new ImagePlus("Ip", ip);
-
-			//ip.setRoi(imageJ_roi);
-			ij.IJ.runPlugIn(imp,"ij.plugin.filter.ThresholdToSelection","");
-			//Rectangle r = ip.getRoi();
+			Roi[] rois = imageJ_roi.getRois();
+			
+			assert rois.length == 1: "More than one polygon found";
+			assert rois[0] instanceof PolygonRoi: "Non polygonal roi found";
+			PolygonRoi my_roi = (PolygonRoi)rois[0];
+			
+			ImageProcessor roi_mask = my_roi.getMask();
+			assert roi_mask != null: "No mask defined";
+//			
+			ImagePlus imp2 = NewImage.createByteImage(
+					"New image", 100, 100, 1, NewImage.FILL_BLACK);
+			ImageProcessor ip = imp2.getProcessor();
+			ip.setRoi(my_roi);
+			//imp2.show();
+			
+			//ImageProcessor ip = imageJ_roi.getMask();
+			//ip.setRoi(2, 2, 2, 2);
+			
+			//follow the hint of in evernote
+			
+			Rectangle r = ip.getRoi();
 			//visualize results
 			EllipseFitter ef = new EllipseFitter(); 
 			ef.fit(ip,null);
@@ -92,8 +109,8 @@ public class ConvexHullOverlay extends Overlay {
 					 * public void drawEllipse(ImageProcessor ip) 
 					 * 
 					 * */
-					double x0 = ef.xCenter / 2.0;
-			        double y0 = ef.yCenter / 2.0;
+					double x0 = ef.xCenter + n.getGeometry().getCentroid().getX();
+			        double y0 = ef.yCenter + n.getGeometry().getCentroid().getY();
 			        double length = ef.major / 2.0;
 			        double x1 = x0 + Math.cos(ef.theta) * length;
 			        double y1 = y0 - Math.sin(ef.theta) * length;

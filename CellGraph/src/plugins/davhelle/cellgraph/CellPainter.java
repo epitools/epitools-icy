@@ -10,6 +10,7 @@ import icy.main.Icy;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+import icy.canvas.IcyCanvas2D;
 
 import java.awt.Color;
 import java.io.File;
@@ -39,6 +40,7 @@ import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.painters.ConvexHullOverlay;
 import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
@@ -291,6 +293,7 @@ public class CellPainter extends EzPlug {
 	@Override
 	protected void execute() {
 		sequence = varSequence.getValue();
+		
 		if(sequence == null){
 			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
 			return;
@@ -341,6 +344,8 @@ public class CellPainter extends EzPlug {
 
 						switch (USER_CHOICE){
 						case BORDER: 
+							sequence.addOverlay(
+									new ConvexHullOverlay(wing_disc_movie));
 							sequence.addOverlay(
 									new BorderPainter(wing_disc_movie));
 							break;
@@ -460,6 +465,7 @@ public class CellPainter extends EzPlug {
 						// Edge Dynamics	
 							
 						case TRANSITIONS:
+							
 							TransitionOverlay t1 = new TransitionOverlay(wing_disc_movie, this);
 							if(varSaveTransitions.getValue())
 								t1.saveToCsv();
@@ -469,6 +475,7 @@ public class CellPainter extends EzPlug {
 							
 							sequence.addOverlay(t1);
 							break;
+							
 						case EDGE_STABILITY:
 							sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
 							break;

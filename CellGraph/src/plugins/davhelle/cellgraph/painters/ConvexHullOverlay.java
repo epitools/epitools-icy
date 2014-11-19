@@ -53,16 +53,14 @@ public class ConvexHullOverlay extends Overlay {
 			ShapeRoi imageJ_roi = new ShapeRoi(shape);
 			ImageProcessor ip = imageJ_roi.getMask();
 			ImagePlus imp = new ImagePlus("Ip", ip);
-			imp.show();
 
 			//ip.setRoi(imageJ_roi);
-			IJ.runPlugIn("ij.plugin.filter.ThresholdToSelection", "");
+			ij.IJ.runPlugIn(imp,"ij.plugin.filter.ThresholdToSelection","");
 			//Rectangle r = ip.getRoi();
 			//visualize results
 			EllipseFitter ef = new EllipseFitter(); 
 			ef.fit(ip,null);
-			ef.drawEllipse(ip);
-			imp.updateAndDraw();
+			//ef.drawEllipse(ip);
 			//transform this back to a shape somehow
 			convexHulls.put(n, ef);	
 		}

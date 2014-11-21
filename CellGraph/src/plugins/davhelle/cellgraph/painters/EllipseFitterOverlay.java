@@ -1,27 +1,19 @@
-/**
- * 
- */
+/*=========================================================================
+ *
+ *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
+ *  
+ *  All rights reserved.
+ *	
+ *  author:	Davide Heller
+ *  email:	davide.heller@imls.uzh.ch
+ *  
+ *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.Line2D;
-import java.util.HashMap;
-
-import com.vividsolutions.jts.algorithm.ConvexHull;
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Geometry;
-
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.misc.Ellipse;
-import plugins.davhelle.cellgraph.nodes.Node;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.NewImage;
 import ij.gui.PolygonRoi;
@@ -30,19 +22,36 @@ import ij.gui.ShapeRoi;
 import ij.process.EllipseFitter;
 import ij.process.ImageProcessor;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Line2D;
+import java.util.HashMap;
+
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.awt.ShapeWriter;
+import com.vividsolutions.jts.geom.Geometry;
+
 /**
+ * Overlay to display the fitted ellipses for each polygon
+ * 
+ * 
  * @author Davide Heller
+ * @date 21.11.2014
  *
  */
-public class ConvexHullOverlay extends Overlay {
+public class EllipseFitterOverlay extends Overlay {
 
 	private SpatioTemporalGraph stGraph;
-	private HashMap<Node, EllipseFitter> convexHulls;
+	private HashMap<Node, EllipseFitter> fittedElipses;
 	
-	public ConvexHullOverlay(SpatioTemporalGraph spatioTemporalGraph) {
+	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph) {
 		super("Convex hull");
 		stGraph = spatioTemporalGraph;
-		convexHulls = new HashMap<Node, EllipseFitter>();
+		fittedElipses = new HashMap<Node, EllipseFitter>();
 		ShapeWriter sw = new ShapeWriter();
 		
 		//initialize data structure for using imageJs roi functions
@@ -97,7 +106,7 @@ public class ConvexHullOverlay extends Overlay {
 //					ef.angle);
 			
 			
-			convexHulls.put(n, ef);	
+			fittedElipses.put(n, ef);	
 		}
 		
 		imp.close();
@@ -115,8 +124,8 @@ public class ConvexHullOverlay extends Overlay {
 			g.setColor(Color.green);
 			
 			for(Node n: stGraph.getFrame(time_point).vertexSet()){
-				if(convexHulls.containsKey(n)){
-					EllipseFitter ef = convexHulls.get(n);
+				if(fittedElipses.containsKey(n)){
+					EllipseFitter ef = fittedElipses.get(n);
 					/* 
 					 * http://rsb.info.nih.gov/ij/developer/source/ij/process/EllipseFitter.java.html
 					 * 

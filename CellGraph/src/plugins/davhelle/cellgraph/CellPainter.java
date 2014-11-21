@@ -40,7 +40,7 @@ import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.davhelle.cellgraph.painters.ConvexHullOverlay;
+import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
@@ -346,7 +346,7 @@ public class CellPainter extends EzPlug {
 						switch (USER_CHOICE){
 						case TEST:
 							sequence.addOverlay(
-									new ConvexHullOverlay(wing_disc_movie));
+									new EllipseFitterOverlay(wing_disc_movie));
 							break;
 							
 						case BORDER: 

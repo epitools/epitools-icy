@@ -45,6 +45,11 @@ public class ConvexHullOverlay extends Overlay {
 		convexHulls = new HashMap<Node, EllipseFitter>();
 		ShapeWriter sw = new ShapeWriter();
 		
+		//initialize data structure for using imageJs roi functions
+		ImagePlus imp = NewImage.createByteImage(
+				"New image", 500, 500, 1, NewImage.FILL_BLACK);
+		ImageProcessor ip = imp.getProcessor();
+
 		for(Node n: stGraph.getFrame(0).vertexSet()){
 			
 			System.out.printf("Cell elongation of [%.0f,%.0f]:",
@@ -66,9 +71,6 @@ public class ConvexHullOverlay extends Overlay {
 			ImageProcessor roi_mask = my_roi.getMask();
 			assert roi_mask != null: "No mask defined";
 //			
-			ImagePlus imp = NewImage.createByteImage(
-					"New image", 500, 500, 1, NewImage.FILL_BLACK);
-			ImageProcessor ip = imp.getProcessor();
 			ip.setRoi(my_roi);
 			//imp.show();
 			//ip.draw(my_roi);
@@ -77,8 +79,6 @@ public class ConvexHullOverlay extends Overlay {
 			//overlay.add((Roi)my_roi); 
 			//imp.setOverlay(overlay); 
 			//imp.show(); 
-			
-			
 			
 			//ImageProcessor ip = imageJ_roi.getMask();
 			//ip.setRoi(2, 2, 2, 2);
@@ -92,14 +92,15 @@ public class ConvexHullOverlay extends Overlay {
 			//ef.drawEllipse(ip);
 			//transform this back to a shape somehow
 			
-			System.out.printf("\t%.2f @ %.0f\n",
-					ef.major,
-					ef.angle);
+//			System.out.printf("\t%.2f @ %.0f\n",
+//					ef.major,
+//					ef.angle);
 			
-			imp.close();
 			
 			convexHulls.put(n, ef);	
 		}
+		
+		imp.close();
 	}
 	
 	@Override
@@ -128,11 +129,17 @@ public class ConvexHullOverlay extends Overlay {
 					 * public void drawEllipse(ImageProcessor ip) 
 					 * 
 					 * */
-					double x0 = n.getGeometry().getCentroid().getX();
-			        double y0 = n.getGeometry().getCentroid().getY();
-			        double length = ef.major / 2.0;
-			        double x1 = x0 + Math.cos(ef.theta) * length;
-			        double y1 = y0 - Math.sin(ef.theta) * length;
+					
+					double cX = n.getGeometry().getCentroid().getX();
+					double cY = n.getGeometry().getCentroid().getY();
+					double length = ef.major / 2.0;
+					if(length > 10)
+						length -= 5;
+					
+					double x0 = cX - Math.cos(ef.theta) * length;
+			        double y0 = cY + Math.sin(ef.theta) * length;
+			        double x1 = cX + Math.cos(ef.theta) * length;
+			        double y1 = cY - Math.sin(ef.theta) * length;
 					
 					g.draw(new Line2D.Double(x0, y0, x1, y1));
 				}

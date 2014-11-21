@@ -78,6 +78,7 @@ public class CellPainter extends EzPlug {
 	
 	//plotting modes
 	private enum PlotEnum{
+		TEST,
 		CELLS,
 		BORDER, 
 		VORONOI, 
@@ -197,8 +198,8 @@ public class CellPainter extends EzPlug {
 				varAreaThreshold);
 		
 		//Which painter should be shown by default
-		varPlotting = new EzVarEnum<PlotEnum>("Painter type",
-				PlotEnum.values(),PlotEnum.CELLS);
+		varPlotting = new EzVarEnum<PlotEnum>("Overlay type",
+				PlotEnum.values(),PlotEnum.TEST);
 		
 
 		//Division mode
@@ -338,16 +339,19 @@ public class CellPainter extends EzPlug {
 							}
 						}
 						
-						//Painter type
+						//Overlay type
 
 						PlotEnum USER_CHOICE = varPlotting.getValue();
 
 						switch (USER_CHOICE){
-						case BORDER: 
+						case TEST:
 							sequence.addOverlay(
 									new ConvexHullOverlay(wing_disc_movie));
-							//sequence.addOverlay(
-							//		new BorderPainter(wing_disc_movie));
+							break;
+							
+						case BORDER: 
+							sequence.addOverlay(
+									new BorderPainter(wing_disc_movie));
 							break;
 
 						case CELLS: 

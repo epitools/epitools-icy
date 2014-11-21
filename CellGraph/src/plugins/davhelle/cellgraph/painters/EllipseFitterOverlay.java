@@ -61,9 +61,9 @@ public class EllipseFitterOverlay extends Overlay {
 
 		for(Node n: stGraph.getFrame(0).vertexSet()){
 			
-			System.out.printf("Cell elongation of [%.0f,%.0f]:",
-					n.getCentroid().getX(),
-					n.getCentroid().getY());
+//			System.out.printf("Cell elongation of [%.0f,%.0f]:",
+//					n.getCentroid().getX(),
+//					n.getCentroid().getY());
 			
 			Geometry g = n.getGeometry();
 			//Geometry convex_hull = new ConvexHull(g).getConvexHull();

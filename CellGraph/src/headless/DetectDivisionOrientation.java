@@ -3,6 +3,9 @@
  */
 package headless;
 
+import ij.process.EllipseFitter;
+
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.vividsolutions.jts.algorithm.Angle;
@@ -12,6 +15,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -28,17 +32,23 @@ public class DetectDivisionOrientation {
 	public static void main(String[] args) {
 		
 		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(0);
+		HashMap<Node, EllipseFitter> fittedEllipses = 
+				new EllipseFitGenerator(stGraph).getFittedEllipses();
+
 		
-		for(int i=0; i<stGraph.size(); i++){
+		for(int i=5; i<stGraph.size(); i++){
 			FrameGraph frame = stGraph.getFrame(i);
 			Iterator<Division> divisions = frame.divisionIterator();
 			while(divisions.hasNext()){
 				Division d = divisions.next();
 				Node mother = d.getMother();
 				
-				Geometry mother_geomerty = mother.getGeometry();
-				double longest_axis_angle_rad = findAngleOfLongestAxis(mother_geomerty);
-				longest_axis_angle_rad = Math.abs(longest_axis_angle_rad);
+				//recover mother cell 5 frames prior to division
+				FrameGraph frame_prior_rounding = stGraph.getFrame(i - 5);
+				assert frame_prior_rounding.hasTrackID(mother.getTrackID()): String.format("No mother %d at -5",mother.getTrackID());
+				Node mother_before_rounding = frame_prior_rounding.getNode(mother.getTrackID());
+				
+				double longest_axis_angle_rad = fittedEllipses.get(mother_before_rounding).theta;
 				
 				//Get children axis
 				Node child1 = d.getChild1();

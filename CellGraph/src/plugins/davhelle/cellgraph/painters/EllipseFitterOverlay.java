@@ -14,18 +14,10 @@ import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
-import ij.ImagePlus;
-import ij.gui.NewImage;
-import ij.gui.PolygonRoi;
-import ij.gui.Roi;
-import ij.gui.ShapeRoi;
 import ij.process.EllipseFitter;
-import ij.process.ImageProcessor;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 
@@ -33,12 +25,8 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Geometry;
-
 /**
  * Overlay to display the fitted ellipses for each polygon
- * 
  * 
  * @author Davide Heller
  * @date 21.11.2014

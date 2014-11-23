@@ -1,6 +1,13 @@
-/**
- * 
- */
+/*=========================================================================
+ *
+ *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
+ *  
+ *  All rights reserved.
+ *	
+ *  author:	Davide Heller
+ *  email:	davide.heller@imls.uzh.ch
+ *  
+ *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
 import ij.ImagePlus;
@@ -11,15 +18,14 @@ import ij.gui.ShapeRoi;
 import ij.process.EllipseFitter;
 import ij.process.ImageProcessor;
 
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.HashMap;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Geometry;
-
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.awt.ShapeWriter;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Generates EllipseFitter for SpatioTemporalGraph Object

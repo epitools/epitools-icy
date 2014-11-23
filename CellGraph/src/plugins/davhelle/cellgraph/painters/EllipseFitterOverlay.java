@@ -49,65 +49,65 @@ public class EllipseFitterOverlay extends Overlay {
 	private HashMap<Node, EllipseFitter> fittedElipses;
 	
 	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph) {
-		super("Convex hull");
+		super("Ellipse Fitter");
 		stGraph = spatioTemporalGraph;
 		fittedElipses = new HashMap<Node, EllipseFitter>();
 		ShapeWriter sw = new ShapeWriter();
 		
 		//initialize data structure for using imageJs roi functions
 		ImagePlus imp = NewImage.createByteImage(
-				"New image", 500, 500, 1, NewImage.FILL_BLACK);
+				"New image", 1392, 1040, 1, NewImage.FILL_BLACK);
 		ImageProcessor ip = imp.getProcessor();
+		for(int i=0; i<stGraph.size(); i++)
+			for(Node n: stGraph.getFrame(i).vertexSet()){
 
-		for(Node n: stGraph.getFrame(0).vertexSet()){
-			
-//			System.out.printf("Cell elongation of [%.0f,%.0f]:",
-//					n.getCentroid().getX(),
-//					n.getCentroid().getY());
-			
-			Geometry g = n.getGeometry();
-			//Geometry convex_hull = new ConvexHull(g).getConvexHull();
-			
-			Shape shape = sw.toShape(g);
-			
-			ShapeRoi imageJ_roi = new ShapeRoi(shape);
-			Roi[] rois = imageJ_roi.getRois();
-			
-			assert rois.length == 1: "More than one polygon found";
-			assert rois[0] instanceof PolygonRoi: "Non polygonal roi found";
-			PolygonRoi my_roi = (PolygonRoi)rois[0];
-			
-			ImageProcessor roi_mask = my_roi.getMask();
-			assert roi_mask != null: "No mask defined";
-//			
-			ip.setRoi(my_roi);
-			//imp.show();
-			//ip.draw(my_roi);
-//			ip.fill(my_roi);
-			//ij.gui.Overlay overlay = new ij.gui.Overlay(); 
-			//overlay.add((Roi)my_roi); 
-			//imp.setOverlay(overlay); 
-			//imp.show(); 
-			
-			//ImageProcessor ip = imageJ_roi.getMask();
-			//ip.setRoi(2, 2, 2, 2);
-			
-			//follow the hint of in evernote
-			
-			Rectangle r = ip.getRoi();
-			//visualize results
-			EllipseFitter ef = new EllipseFitter(); 
-			ef.fit(ip,null);
-			//ef.drawEllipse(ip);
-			//transform this back to a shape somehow
-			
-//			System.out.printf("\t%.2f @ %.0f\n",
-//					ef.major,
-//					ef.angle);
-			
-			
-			fittedElipses.put(n, ef);	
-		}
+				//			System.out.printf("Cell elongation of [%.0f,%.0f]:",
+				//					n.getCentroid().getX(),
+				//					n.getCentroid().getY());
+
+				Geometry g = n.getGeometry();
+				//Geometry convex_hull = new ConvexHull(g).getConvexHull();
+
+				Shape shape = sw.toShape(g);
+
+				ShapeRoi imageJ_roi = new ShapeRoi(shape);
+				Roi[] rois = imageJ_roi.getRois();
+
+				assert rois.length == 1: "More than one polygon found";
+				assert rois[0] instanceof PolygonRoi: "Non polygonal roi found";
+				PolygonRoi my_roi = (PolygonRoi)rois[0];
+
+				ImageProcessor roi_mask = my_roi.getMask();
+				assert roi_mask != null: "No mask defined";
+				//			
+				ip.setRoi(my_roi);
+				//imp.show();
+				//ip.draw(my_roi);
+				//			ip.fill(my_roi);
+				//ij.gui.Overlay overlay = new ij.gui.Overlay(); 
+				//overlay.add((Roi)my_roi); 
+				//imp.setOverlay(overlay); 
+				//imp.show(); 
+
+				//ImageProcessor ip = imageJ_roi.getMask();
+				//ip.setRoi(2, 2, 2, 2);
+
+				//follow the hint of in evernote
+
+				Rectangle r = ip.getRoi();
+				//visualize results
+				EllipseFitter ef = new EllipseFitter(); 
+				ef.fit(ip,null);
+				//ef.drawEllipse(ip);
+				//transform this back to a shape somehow
+
+				//			System.out.printf("\t%.2f @ %.0f\n",
+				//					ef.major,
+				//					ef.angle);
+
+
+				fittedElipses.put(n, ef);	
+			}
 		
 		imp.close();
 	}

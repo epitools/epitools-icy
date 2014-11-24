@@ -5,6 +5,7 @@ package plugins.davhelle.cellgraph.painters;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 import java.util.HashMap;
 
 import com.vividsolutions.jts.algorithm.Angle;
@@ -70,17 +71,21 @@ public class EllipseFitColorOverlay extends Overlay{
 						double roi_cell_angle = Angle.angle(roi_coor, cell_center);
 
 						double angle_difference = Angle.diff(cell_orientation, roi_cell_angle);
-
-						double normalized_angle = angle_difference/Math.PI;
+						if(angle_difference > Angle.PI_OVER_2)
+							angle_difference = Math.PI - angle_difference;
+						
+						double normalized_angle = angle_difference/Angle.PI_OVER_2;
 						normalized_angle = normalized_angle * 0.3;
 
 						Color hsbColor = Color.getHSBColor(
 								(float)(normalized_angle),
 								1f,
 								1f);
+						
 
 						g.setColor(hsbColor);
 						g.fill((n.toShape()));
+						//g.draw(new Line2D.Double(xp, yp,cell_center.x,cell_center.y));
 					}
 				}
 			}

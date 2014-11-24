@@ -53,6 +53,8 @@ public class EllipseFitterOverlay extends Overlay {
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
+		double[] heat_map = {0.0,0.25,0.5,0.75,1.0};
+		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
@@ -92,12 +94,42 @@ public class EllipseFitterOverlay extends Overlay {
 					
 					g.draw(new Line2D.Double(x0, y0, x1, y1));
 					
-					if(division_orientation.containsKey(n.getFirst()))
-						g.drawString(String.format("%.0f", division_orientation.get(n.getFirst())), 
+					if(division_orientation.containsKey(n.getFirst())){
+						double angle = division_orientation.get(n.getFirst());
+						
+						g.drawString(String.format("%.0f", angle), 
 								(float)cX - 5  , 
 								(float)cY + 5);
 					
+					
+						double normalized_angle = angle/90;
+						normalized_angle = normalized_angle * 0.3;
+						
+					Color hsbColor = Color.getHSBColor(
+							(float)(normalized_angle),
+							1f,
+							1f);
+					
+					g.setColor(hsbColor);
+					g.fill((n.toShape()));
+					g.setColor(Color.green);
+					}
 				}
+				
+				//add color scale bar [0-90]
+				for(int i=0; i<heat_map.length; i++){
+					
+					Color hsbColor = Color.getHSBColor(
+							(float)(heat_map[i] * 0.3),
+							1f,
+							1f);
+					
+					g.setColor(hsbColor);
+					
+					g.fillRect(20*i + 30,30,20,20);
+				
+				}
+				
 				
 			}
 			

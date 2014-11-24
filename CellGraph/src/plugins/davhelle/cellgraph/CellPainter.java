@@ -40,6 +40,7 @@ import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
@@ -95,7 +96,9 @@ public class CellPainter extends EzPlug {
 		SAVE_TAG,
 		SAVE_TAG_XLS,
 		SAVE_SKELETONS,
-		CORRECTION_HINTS, TRANSITIONS, EDGE_STABILITY, NEIGHBOR_STABILITY, EDGE_INTENSITY
+		CORRECTION_HINTS, TRANSITIONS, EDGE_STABILITY, NEIGHBOR_STABILITY, EDGE_INTENSITY, 
+		ELLIPSE_FIT,
+		DIVSION_ORIENTATION
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -346,9 +349,15 @@ public class CellPainter extends EzPlug {
 						switch (USER_CHOICE){
 						case TEST:
 							sequence.addOverlay(
+									new EllipseFitColorOverlay(wing_disc_movie));
+							break;
+						case ELLIPSE_FIT:
+							sequence.addOverlay(
 									new EllipseFitterOverlay(wing_disc_movie));
 							break;
 							
+						case DIVSION_ORIENTATION:
+							break;
 						case BORDER: 
 							sequence.addOverlay(
 									new BorderPainter(wing_disc_movie));

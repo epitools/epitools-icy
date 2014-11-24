@@ -66,9 +66,6 @@ public class DivisionOrientationOverlay extends Overlay {
 						double cY = n.getGeometry().getCentroid().getY();
 						double angle = division_orientation.get(n.getFirst());
 
-						g.drawString(String.format("%.0f", angle), 
-								(float)cX - 5  , 
-								(float)cY + 5);
 
 
 						double normalized_angle = angle/90;
@@ -81,7 +78,11 @@ public class DivisionOrientationOverlay extends Overlay {
 
 						g.setColor(hsbColor);
 						g.fill((n.toShape()));
-						g.setColor(Color.green);
+
+						g.setColor(Color.black);
+						g.drawString(String.format("%.0f", angle), 
+								(float)cX - 5  , 
+								(float)cY + 5);
 					}
 				}
 				

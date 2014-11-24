@@ -69,7 +69,7 @@ public class DetectDivisionOrientation {
 			while(divisions.hasNext()){
 				Division d = divisions.next();
 				Node mother = d.getMother();
-				
+
 				//recover mother cell 5 frames prior to division
 				FrameGraph frame_prior_rounding = stGraph.getFrame(i - prior_frames);
 				if(!frame_prior_rounding.hasTrackID(mother.getTrackID())){
@@ -77,39 +77,47 @@ public class DetectDivisionOrientation {
 					continue;
 				}
 				Node mother_before_rounding = frame_prior_rounding.getNode(mother.getTrackID());
-				
+
 				double longest_axis_angle_rad = fittedEllipses.get(mother_before_rounding).theta;
-				
+
 				//Get children axis
 				Node child1 = d.getChild1();
 				Node child2 = d.getChild2();
-				
+
 				//TODO: possibly substitute here with edge (saved geo)
 				Geometry child_intersection = child1.getGeometry().intersection(child2.getGeometry());
-				double new_junction_angle = findAngleOfLongestAxis(child_intersection);
-				
-				if(new_junction_angle < 0.0)
-					new_junction_angle += Math.PI;
-				
-				
-				new_junction_angle = Math.abs(new_junction_angle - Math.PI);
-				
-				if(longest_axis_angle_rad != 0.0 || new_junction_angle != 0.0){
-				double angle_difference = Angle.diff(new_junction_angle, longest_axis_angle_rad);
-				
-				//The difference should be contained in [0,pi/2]
-				if(angle_difference > Angle.PI_OVER_2)
-					angle_difference = Math.PI - angle_difference;
-				double angle_diff_in_degrees = Angle.toDegrees(angle_difference);
+
+				MinimumBoundingCircle mbc = new MinimumBoundingCircle(child_intersection);
+				Coordinate[] new_junction_ends = mbc.getExtremalPoints();
+				assert new_junction_ends.length == 2: "Line has more than two endings!";
+
+
+				//Form the angle to measure
+				Coordinate tail = new_junction_ends[0];
+				Coordinate tip1 = new_junction_ends[1];
+				Coordinate tip2 = new Coordinate(
+						tail.x - Math.cos(longest_axis_angle_rad),
+						tail.y - Math.sin(longest_axis_angle_rad));
+
+
+				double new_junction_angle = Angle.interiorAngle(tip1, tail, tip2);
+
+				//find the smallest angle within [0,pi/2]
+				if(new_junction_angle > Math.PI)
+					new_junction_angle = Angle.PI_TIMES_2 - new_junction_angle;
+				if(new_junction_angle > Angle.PI_OVER_2)
+					new_junction_angle = Math.PI - new_junction_angle;
+
+				double angle_diff_in_degrees = Angle.toDegrees(new_junction_angle);
 
 				division_orientation.put(mother.getFirst(), Double.valueOf(angle_diff_in_degrees));
-				
-				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
-						mother.getTrackID(),i - prior_frames,
-						Angle.toDegrees(longest_axis_angle_rad),
-						Angle.toDegrees(new_junction_angle),
-						angle_diff_in_degrees);
-				}
+
+				//Inspection
+				//				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
+				//						mother.getTrackID(),i - prior_frames,
+				//						Angle.toDegrees(longest_axis_angle_rad),
+				//						Angle.toDegrees(new_junction_angle),
+				//						angle_diff_in_degrees);
 			}
 		}
 		return division_orientation;

@@ -40,6 +40,7 @@ import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
@@ -355,8 +356,9 @@ public class CellPainter extends EzPlug {
 							sequence.addOverlay(
 									new EllipseFitterOverlay(wing_disc_movie));
 							break;
-							
 						case DIVSION_ORIENTATION:
+							sequence.addOverlay(
+									new DivisionOrientationOverlay(wing_disc_movie));
 							break;
 						case BORDER: 
 							sequence.addOverlay(

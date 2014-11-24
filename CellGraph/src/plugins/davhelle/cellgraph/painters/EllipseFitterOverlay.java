@@ -61,7 +61,7 @@ public class EllipseFitterOverlay extends Overlay {
 			//TODO include 3D information (in case of VTK)!
 			Color old = g.getColor();
 			
-			g.setColor(Color.green);
+			g.setColor(Color.black);
 			int fontSize = 3;
 			g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 			

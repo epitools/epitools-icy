@@ -10,6 +10,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import headless.DetectDivisionOrientation;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
@@ -17,6 +18,7 @@ import icy.sequence.Sequence;
 import ij.process.EllipseFitter;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
@@ -35,12 +37,17 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class EllipseFitterOverlay extends Overlay {
 
 	private SpatioTemporalGraph stGraph;
-	private HashMap<Node, EllipseFitter> fittedElipses;
+	private HashMap<Node, EllipseFitter> fittedEllipses;
+	private HashMap<Node, Double> division_orientation;
 	
 	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph) {
 		super("Ellipse Fitter");
 		stGraph = spatioTemporalGraph;
-		fittedElipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
+		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
+		
+		division_orientation = DetectDivisionOrientation.computeDivisionOrientation(
+				stGraph, fittedEllipses);
+		
 	}
 	
 	@Override
@@ -53,10 +60,12 @@ public class EllipseFitterOverlay extends Overlay {
 			Color old = g.getColor();
 			
 			g.setColor(Color.green);
+			int fontSize = 3;
+			g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 			
 			for(Node n: stGraph.getFrame(time_point).vertexSet()){
-				if(fittedElipses.containsKey(n)){
-					EllipseFitter ef = fittedElipses.get(n);
+				if(fittedEllipses.containsKey(n)){
+					EllipseFitter ef = fittedEllipses.get(n);
 					/* 
 					 * http://rsb.info.nih.gov/ij/developer/source/ij/process/EllipseFitter.java.html
 					 * 
@@ -82,9 +91,16 @@ public class EllipseFitterOverlay extends Overlay {
 			        double y1 = cY - Math.sin(ef.theta) * length;
 					
 					g.draw(new Line2D.Double(x0, y0, x1, y1));
+					
+					if(division_orientation.containsKey(n.getFirst()))
+						g.drawString(String.format("%.0f", division_orientation.get(n.getFirst())), 
+								(float)cX - 5  , 
+								(float)cY + 5);
+					
 				}
 				
 			}
+			
 			
 			g.setColor(old);
 		}

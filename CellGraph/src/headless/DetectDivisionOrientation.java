@@ -35,8 +35,35 @@ public class DetectDivisionOrientation {
 		HashMap<Node, EllipseFitter> fittedEllipses = 
 				new EllipseFitGenerator(stGraph).getFittedEllipses();
 
+		HashMap<Node, Double> division_orientation = computeDivisionOrientation(
+				stGraph, fittedEllipses);
 		
-		for(int i=5; i<stGraph.size(); i++){
+		for(Node cell: division_orientation.keySet())
+			System.out.printf(
+					"%.2f\n",
+					division_orientation.get(cell));
+	}
+
+	/**
+	 * Computes the difference between the orientation of the 
+	 * longest axis of the mother cell prior to division [1]
+	 * and the orientation of the new junction formed between 
+	 * the two daughter cells immediately after division [2]
+	 * 
+	 * @param stGraph
+	 * @param fittedEllipses
+	 * @return
+	 */
+	public static HashMap<Node, Double> computeDivisionOrientation(
+			SpatioTemporalGraph stGraph,
+			HashMap<Node, EllipseFitter> fittedEllipses) {
+		
+		HashMap<Node, Double> division_orientation = new HashMap<Node, Double>();
+		
+		//how many frames before division should the mother cell orientation be detected
+		int prior_frames = 10;
+		
+		for(int i=prior_frames; i<stGraph.size(); i++){
 			FrameGraph frame = stGraph.getFrame(i);
 			Iterator<Division> divisions = frame.divisionIterator();
 			while(divisions.hasNext()){
@@ -44,8 +71,11 @@ public class DetectDivisionOrientation {
 				Node mother = d.getMother();
 				
 				//recover mother cell 5 frames prior to division
-				FrameGraph frame_prior_rounding = stGraph.getFrame(i - 5);
-				assert frame_prior_rounding.hasTrackID(mother.getTrackID()): String.format("No mother %d at -5",mother.getTrackID());
+				FrameGraph frame_prior_rounding = stGraph.getFrame(i - prior_frames);
+				if(!frame_prior_rounding.hasTrackID(mother.getTrackID())){
+					System.out.printf("No time point for mother %d at %d\n",mother.getTrackID(),prior_frames);
+					continue;
+				}
 				Node mother_before_rounding = frame_prior_rounding.getNode(mother.getTrackID());
 				
 				double longest_axis_angle_rad = fittedEllipses.get(mother_before_rounding).theta;
@@ -58,15 +88,31 @@ public class DetectDivisionOrientation {
 				Geometry child_intersection = child1.getGeometry().intersection(child2.getGeometry());
 				double new_junction_angle = findAngleOfLongestAxis(child_intersection);
 				
+				if(new_junction_angle < 0.0)
+					new_junction_angle += Math.PI;
+				
+				
+				new_junction_angle = Math.abs(new_junction_angle - Math.PI);
+				
 				if(longest_axis_angle_rad != 0.0 || new_junction_angle != 0.0){
 				double angle_difference = Angle.diff(new_junction_angle, longest_axis_angle_rad);
-				System.out.printf(
-						"%.2f\n",
-						Angle.toDegrees(angle_difference));
+				
+				//The difference should be contained in [0,pi/2]
+				if(angle_difference > Angle.PI_OVER_2)
+					angle_difference = Math.PI - angle_difference;
+				double angle_diff_in_degrees = Angle.toDegrees(angle_difference);
+
+				division_orientation.put(mother.getFirst(), Double.valueOf(angle_diff_in_degrees));
+				
+				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
+						mother.getTrackID(),i - prior_frames,
+						Angle.toDegrees(longest_axis_angle_rad),
+						Angle.toDegrees(new_junction_angle),
+						angle_diff_in_degrees);
 				}
 			}
 		}
-
+		return division_orientation;
 	}
 
 	/**

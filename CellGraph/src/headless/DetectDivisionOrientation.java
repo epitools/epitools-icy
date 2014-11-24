@@ -79,6 +79,8 @@ public class DetectDivisionOrientation {
 				Node mother_before_rounding = frame_prior_rounding.getNode(mother.getTrackID());
 
 				double longest_axis_angle_rad = fittedEllipses.get(mother_before_rounding).theta;
+				
+				longest_axis_angle_rad = Math.abs(longest_axis_angle_rad - Math.PI);
 
 				//Get children axis
 				Node child1 = d.getChild1();
@@ -93,8 +95,8 @@ public class DetectDivisionOrientation {
 
 
 				//Form the angle to measure
-				Coordinate tail = new_junction_ends[0];
-				Coordinate tip1 = new_junction_ends[1];
+				Coordinate tail = new_junction_ends[1];
+				Coordinate tip1 = new_junction_ends[0];
 				Coordinate tip2 = new Coordinate(
 						tail.x - Math.cos(longest_axis_angle_rad),
 						tail.y - Math.sin(longest_axis_angle_rad));
@@ -113,11 +115,11 @@ public class DetectDivisionOrientation {
 				division_orientation.put(mother.getFirst(), Double.valueOf(angle_diff_in_degrees));
 
 				//Inspection
-				//				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
-				//						mother.getTrackID(),i - prior_frames,
-				//						Angle.toDegrees(longest_axis_angle_rad),
-				//						Angle.toDegrees(new_junction_angle),
-				//						angle_diff_in_degrees);
+				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
+						mother.getTrackID(),i - prior_frames,
+						Angle.toDegrees(longest_axis_angle_rad),
+						Angle.toDegrees(findAngleOfLongestAxis(child_intersection)),
+						Angle.toDegrees(new_junction_angle));
 			}
 		}
 		return division_orientation;
@@ -131,15 +133,10 @@ public class DetectDivisionOrientation {
 		MinimumBoundingCircle mbc = new MinimumBoundingCircle(geometry_to_measure);
 		
 		Coordinate[] longest_axis = mbc.getExtremalPoints();
-		if(longest_axis.length == 2){ 
-		
-		double longest_axis_angle_rad = Angle.angle(longest_axis[0], longest_axis[1]);
-		double longest_axis_angle_deg = Angle.toDegrees(longest_axis_angle_rad);
-		return longest_axis_angle_rad;
-		}
-		else{
+		if(longest_axis.length == 2)
+			return Angle.angle(longest_axis[0], longest_axis[1]);
+		else
 			return 0.0;
-		}
 	}
 
 }

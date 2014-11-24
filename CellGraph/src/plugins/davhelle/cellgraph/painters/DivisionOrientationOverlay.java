@@ -34,7 +34,7 @@ public class DivisionOrientationOverlay extends Overlay {
 	private HashMap<Node, Double> division_orientation;
 	
 	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph) {
-		super("Ellipse Fitter");
+		super("Division Orientation");
 		stGraph = spatioTemporalGraph;
 		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
 		
@@ -66,9 +66,7 @@ public class DivisionOrientationOverlay extends Overlay {
 						double cY = n.getGeometry().getCentroid().getY();
 						double angle = division_orientation.get(n.getFirst());
 
-
-
-						double normalized_angle = angle/90;
+						double normalized_angle = Math.abs(1 - angle/90);
 						normalized_angle = normalized_angle * 0.3;
 
 						Color hsbColor = Color.getHSBColor(

@@ -16,6 +16,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 
+import com.vividsolutions.jts.algorithm.Angle;
+
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -78,6 +80,17 @@ public class DivisionOrientationOverlay extends Overlay {
 						g.fill((n.toShape()));
 
 						g.setColor(Color.black);
+						
+						EllipseFitter ef = fittedEllipses.get(n);
+						
+						//draw the future division axis
+						
+						double x0 = cX - Math.cos(ef.theta - Angle.toRadians(angle)) * 5;
+				        double y0 = cY + Math.sin(ef.theta - Angle.toRadians(angle)) * 5;
+						double x1 = cX + Math.cos(ef.theta - Angle.toRadians(angle)) * 5;
+				        double y1 = cY - Math.sin(ef.theta - Angle.toRadians(angle)) * 5;
+						
+						g.draw(new Line2D.Double(x0, y0,x1,y1));
 						g.drawString(String.format("%.0f", angle), 
 								(float)cX - 5  , 
 								(float)cY + 5);

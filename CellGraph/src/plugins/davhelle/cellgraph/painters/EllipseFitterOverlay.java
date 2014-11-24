@@ -10,7 +10,6 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import headless.DetectDivisionOrientation;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
@@ -38,22 +37,17 @@ public class EllipseFitterOverlay extends Overlay {
 
 	private SpatioTemporalGraph stGraph;
 	private HashMap<Node, EllipseFitter> fittedEllipses;
-	private HashMap<Node, Double> division_orientation;
 	
 	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph) {
 		super("Ellipse Fitter");
 		stGraph = spatioTemporalGraph;
 		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
 		
-		division_orientation = DetectDivisionOrientation.computeDivisionOrientation(
-				stGraph, fittedEllipses);
-		
 	}
 	
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
-		double[] heat_map = {0.0,0.25,0.5,0.75,1.0};
 		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 

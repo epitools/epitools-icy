@@ -3,26 +3,25 @@
  */
 package plugins.davhelle.cellgraph.painters;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.geom.Line2D;
-import java.util.HashMap;
-
-import com.vividsolutions.jts.algorithm.Angle;
-import com.vividsolutions.jts.geom.Coordinate;
-
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
-import plugins.davhelle.cellgraph.nodes.Node;
 import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.roi.ROI;
-import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
 import icy.type.point.Point5D;
 import ij.process.EllipseFitter;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.util.HashMap;
+
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
+import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.algorithm.Angle;
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * Overlay to color cells according to the longest axis 
@@ -69,7 +68,6 @@ public class EllipseFitColorOverlay extends Overlay{
 				for(Node n: stGraph.getFrame(time_point).vertexSet()){
 					if(fittedEllipses.containsKey(n)){
 						EllipseFitter ef = fittedEllipses.get(n);
-						double cell_orientation = ef.theta;
 						
 						double cX = n.getGeometry().getCentroid().getX();
 						double cY = n.getGeometry().getCentroid().getY();
@@ -85,6 +83,7 @@ public class EllipseFitColorOverlay extends Overlay{
 				        
 						Coordinate cell_center = n.getGeometry().getCentroid().getCoordinate();
 						
+						//This could be done with one angle since the two are complementary
 						double angle0 = Angle.interiorAngle(roi_coor, cell_center, tip0);
 						double angle1 = Angle.interiorAngle(roi_coor, cell_center, tip1);
 						
@@ -108,14 +107,15 @@ public class EllipseFitColorOverlay extends Overlay{
 						g.setColor(hsbColor);
 						g.fill((n.toShape()));
 						
-						g.setColor(Color.BLACK);
-						g.draw(new Line2D.Double(xp, yp,cell_center.x,cell_center.y));
-						g.drawString(String.format("%.0f, %.0f, %.0f",
-								Angle.toDegrees(angle0),
-								Angle.toDegrees(angle1),
-								Angle.toDegrees(angle_difference)), 
-								(float)cell_center.x - 5  , 
-								(float)cell_center.y + 5);
+						//DebugTools
+//						g.setColor(Color.BLACK);
+//						g.draw(new Line2D.Double(xp, yp,cell_center.x,cell_center.y));
+//						g.drawString(String.format("%.0f, %.0f, %.0f",
+//								Angle.toDegrees(angle0),
+//								Angle.toDegrees(angle1),
+//								Angle.toDegrees(angle_difference)), 
+//								(float)cell_center.x - 5  , 
+//								(float)cell_center.y + 5);
 						
 					}
 				}

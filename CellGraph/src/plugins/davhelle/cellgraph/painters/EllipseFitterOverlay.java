@@ -42,7 +42,6 @@ public class EllipseFitterOverlay extends Overlay {
 		super("Ellipse Fitter");
 		stGraph = spatioTemporalGraph;
 		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
-		
 	}
 	
 	@Override
@@ -66,7 +65,7 @@ public class EllipseFitterOverlay extends Overlay {
 	 * @param time_point
 	 */
 	public void paintFrame(Graphics2D g, int time_point) {
-		Color ellipseColor = Color.yellow;
+		Color ellipseColor = Color.green;
 		g.setColor(ellipseColor);
 		int fontSize = 3;
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));

@@ -19,6 +19,7 @@ public class TissueEvolution implements SpatioTemporalGraph {
 	private ArrayList<FrameGraph> frames;
 	private boolean has_tracking;
 	private boolean has_voronoi;
+	private boolean has_ellipse_fitting;
 	
 	/**
 	 * 
@@ -27,6 +28,7 @@ public class TissueEvolution implements SpatioTemporalGraph {
 		// TODO Auto-generated constructor stub
 		this.has_tracking = false;
 		this.has_voronoi = false;
+		this.has_ellipse_fitting = false;
 		this.frames = new ArrayList<FrameGraph>(time_points);
 	}
 	
@@ -89,6 +91,17 @@ public class TissueEvolution implements SpatioTemporalGraph {
 	@Override
 	public void setVoronoi(boolean new_state){
 		this.has_voronoi = new_state;
+	}
+
+	@Override
+	public boolean hasEllipseFitting() {
+		// TODO Auto-generated method stub
+		return has_ellipse_fitting;
+	}
+
+	@Override
+	public void setEllipseFitting(boolean new_state) {
+		this.has_ellipse_fitting = new_state;  
 	}
 
 }

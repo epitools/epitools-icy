@@ -136,8 +136,8 @@ public class EllipseFitColorOverlay extends Overlay{
 							(float)cell_center.y + 5);
 				}
 				
-				System.out.printf("%.2f\t%.2f\n",Angle.toDegrees(angle_difference),
-						new LineSegment(roi_coor,cell_center).getLength());
+//				System.out.printf("%.2f\t%.2f\n",Angle.toDegrees(angle_difference),
+//						new LineSegment(roi_coor,cell_center).getLength());
 			}
 		}
 	}

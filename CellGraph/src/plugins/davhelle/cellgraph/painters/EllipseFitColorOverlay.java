@@ -23,6 +23,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineSegment;
 
 /**
  * Overlay to color cells according to the longest axis 
@@ -134,6 +135,9 @@ public class EllipseFitColorOverlay extends Overlay{
 							(float)cell_center.x - 5  , 
 							(float)cell_center.y + 5);
 				}
+				
+				System.out.printf("%.2f\t%.2f\n",Angle.toDegrees(angle_difference),
+						new LineSegment(roi_coor,cell_center).getLength());
 			}
 		}
 	}

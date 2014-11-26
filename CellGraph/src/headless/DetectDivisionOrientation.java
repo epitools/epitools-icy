@@ -85,20 +85,29 @@ public class DetectDivisionOrientation {
 						Node mother_before_rounding = frame_prior_rounding.getNode(mother.getTrackID());
 						longest_axis_angle_rad = fittedEllipses.get(mother_before_rounding).theta;
 					
+						double degrees = Angle.toDegrees(longest_axis_angle_rad);
+						
+						if(longest_axis_angle_rad > Angle.PI_OVER_2)
+							longest_axis_angle_rad = - Math.abs(Math.PI - longest_axis_angle_rad);
+						
+						double degrees2 = Angle.toDegrees(longest_axis_angle_rad);
+						if(mother.getTrackID() == 902)
+							System.out.printf("[%d] %.0f %.0f\n",j,degrees,degrees2);
+						
 						x += Math.cos(longest_axis_angle_rad);
 						y += Math.sin(longest_axis_angle_rad);
 					
 						no_of_angles_in_avg++;
 					}
-					else
-						System.out.printf("No time point for mother %d at %d\n",mother.getTrackID(),prior_frames);
+//					else
+//						System.out.printf("No time point for mother %d at %d\n",mother.getTrackID(),prior_frames);
 				}
 					
 				if(no_of_angles_in_avg == 0)
 					continue;
 				
 				//compute avg and convert from [0,2pi] to [0,pi]
-				longest_axis_angle_rad = Math.atan2(y, x);
+				longest_axis_angle_rad = Math.atan2(y/no_of_angles_in_avg, x/no_of_angles_in_avg);
 
 				longest_axis_angle_rad = Math.abs(longest_axis_angle_rad - Math.PI);
 				d.setLongestMotherAxisOrientation(longest_axis_angle_rad);
@@ -140,11 +149,11 @@ public class DetectDivisionOrientation {
 				double new_junction_orientation_wrt_x = findAngleOfLongestAxis(child_intersection);
 				d.setNewJunctionOrientation(Angle.toDegrees(new_junction_orientation_wrt_x));
 				
-				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
-						mother.getTrackID(),i - prior_frames,
-						Angle.toDegrees(longest_axis_angle_rad),
-						Angle.toDegrees(new_junction_orientation_wrt_x),
-						Angle.toDegrees(new_junction_angle));
+//				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
+//						mother.getTrackID(),i - prior_frames,
+//						Angle.toDegrees(longest_axis_angle_rad),
+//						Angle.toDegrees(new_junction_orientation_wrt_x),
+//						Angle.toDegrees(new_junction_angle));
 			}
 		}
 		return division_orientation;

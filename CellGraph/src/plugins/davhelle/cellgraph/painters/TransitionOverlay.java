@@ -161,6 +161,17 @@ public class TransitionOverlay extends Overlay{
 		else
 			cell_ids = t1.getWinnerNodes();
 		
+		Edge first_edge = extractJunctionLength(builder_loser, cell_ids);
+		return first_edge;
+	}
+
+	/**
+	 * @param builder_loser
+	 * @param cell_ids
+	 * @return
+	 */
+	public Edge extractJunctionLength(StringBuilder builder_loser,
+			int[] cell_ids) {
 		Edge first_edge = null;
 			
 		for(int i=0; i<stGraph.size(); i++){

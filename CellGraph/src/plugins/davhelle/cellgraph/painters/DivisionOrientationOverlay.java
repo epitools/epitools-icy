@@ -92,10 +92,20 @@ public class DivisionOrientationOverlay extends Overlay {
 						double x1 = cX - Math.cos(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
 				        double y1 = cY - Math.sin(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
 						
+				        double longestMotherAxisOrientation = n.getDivision().getLongestMotherAxisOrientation();
+				        double mx0 = cX + Math.cos(longestMotherAxisOrientation) * 5;
+				        double my0 = cY + Math.sin(longestMotherAxisOrientation) * 5;
+						double mx1 = cX - Math.cos(longestMotherAxisOrientation) * 5;
+				        double my1 = cY - Math.sin(longestMotherAxisOrientation) * 5;
+				        
+				        
 						g.draw(new Line2D.Double(x0, y0,x1,y1));
+						g.setColor(Color.red);
+						g.draw(new Line2D.Double(mx0, my0,mx1,my1));
+						g.setColor(Color.cyan);
 						g.drawString(String.format(
 								"%.0f,%.0f,%.0f\n",
-								n.getDivision().getLongestMotherAxisOrientation(),
+								Angle.toDegrees(longestMotherAxisOrientation),
 								n.getDivision().getNewJunctionOrientation(),
 								n.getDivision().getDivisionOrientation()), 
 								(float)cX - 5  , 

@@ -72,22 +72,34 @@ public class DetectDivisionOrientation {
 				Node mother = d.getMother();
 				double longest_axis_angle_rad = 0.0;
 				
+				//avg angles:http://stackoverflow.com/questions/491738/how-do-you-calculate-the-average-of-a-set-of-angles
+				double x=0;
+				double y=0;
+				
 				//get mother cell orientation by avg orientations prior to rounding
-				for(int j=0; j < frame_no_to_avg; j++){
-					FrameGraph frame_prior_rounding = stGraph.getFrame(i - prior_frames + j);
+				int no_of_angles_in_avg = 0;
+				
+				for(int j=0; j < i - 5; j++){
+					FrameGraph frame_prior_rounding = stGraph.getFrame(j);
 					if(frame_prior_rounding.hasTrackID(mother.getTrackID())){
 						Node mother_before_rounding = frame_prior_rounding.getNode(mother.getTrackID());
-						longest_axis_angle_rad += fittedEllipses.get(mother_before_rounding).theta;
+						longest_axis_angle_rad = fittedEllipses.get(mother_before_rounding).theta;
+					
+						x += Math.cos(longest_axis_angle_rad);
+						y += Math.sin(longest_axis_angle_rad);
+					
+						no_of_angles_in_avg++;
 					}
 					else
 						System.out.printf("No time point for mother %d at %d\n",mother.getTrackID(),prior_frames);
 				}
-				
-				if(longest_axis_angle_rad == 0.0)
+					
+				if(no_of_angles_in_avg == 0)
 					continue;
 				
 				//compute avg and convert from [0,2pi] to [0,pi]
-				longest_axis_angle_rad /= frame_no_to_avg;
+				longest_axis_angle_rad = Math.atan2(y, x);
+
 				longest_axis_angle_rad = Math.abs(longest_axis_angle_rad - Math.PI);
 				d.setLongestMotherAxisOrientation(longest_axis_angle_rad);
 

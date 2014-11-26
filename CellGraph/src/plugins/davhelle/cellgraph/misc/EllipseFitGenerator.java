@@ -24,6 +24,7 @@ import java.util.HashMap;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -79,6 +80,9 @@ public class EllipseFitGenerator {
 				EllipseFitter ef = new EllipseFitter(); 
 				ef.fit(ip,null);
 				
+				assert ef.theta <= Math.PI: String.format(
+						"Ouput is larger than PI: %.0f\n", Angle.toDegrees(ef.theta));
+					
 				//Visualize if needed
 				//ef.drawEllipse(ip);
 				//TODO transform this back to a shape somehow

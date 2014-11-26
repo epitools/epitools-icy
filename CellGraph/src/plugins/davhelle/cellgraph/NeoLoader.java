@@ -61,7 +61,7 @@ public class NeoLoader extends EzPlug {
 		varSequence = new EzVarSequence("Input sequence");
 		super.addEzComponent(varSequence);
 		
-		varNeo = new EzVarInteger("Neo sample to load",0,1,2);
+		varNeo = new EzVarInteger("Neo sample to load",0,2,1);
 		super.addEzComponent(varNeo);
 		
 	}

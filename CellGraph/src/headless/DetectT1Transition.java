@@ -16,12 +16,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.T1Transition;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.painters.TransitionOverlay;
 import plugins.davhelle.cellgraph.tracking.EdgeTracking;
 
 public class DetectT1Transition {
@@ -48,9 +51,48 @@ public class DetectT1Transition {
 		System.out.println("\nAnalyzing the cell edges..");
 		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
 		
-		System.out.println("\nFinding T1 transitions..");
-		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges,5,5).size();
-		System.out.printf("Found %d stable transition/s\n",transition_no);
+		StringBuilder builder = new StringBuilder();
+		for(long track_code:tracked_edges.keySet()){
+			boolean[] edge_track = tracked_edges.get(track_code);
+			
+			if(hasStableTrack(edge_track)){
+				int[] cell_ids = Edge.getCodePair(track_code);
+				
+				for(int i=0; i<stGraph.size(); i++){
+					FrameGraph frame_i = stGraph.getFrame(i);
+
+					Node[] cell_nodes = new Node[cell_ids.length];
+					
+					for(int j=0; j<cell_ids.length; j++){
+						int loser_id = cell_ids[j];
+						if(frame_i.hasTrackID(loser_id))
+							cell_nodes[j] = frame_i.getNode(loser_id);
+					}
+					
+					if(frame_i.containsEdge(cell_nodes[0], cell_nodes[1])){
+						Edge e = frame_i.getEdge(cell_nodes[0], cell_nodes[1]);
+						builder.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
+						builder.append(',');
+					}
+					else{
+						builder.append(0.0);
+						builder.append(',');
+					}
+					
+					
+				}
+				
+				builder.setLength(builder.length() - 1);
+				builder.append('\n');
+					
+			}
+		}
+		File main_output_file = new File("/Users/davide/tmp/test_full_edge.csv");
+		CsvWriter.writeOutBuilder(builder, main_output_file);
+		
+		//System.out.println("\nFinding T1 transitions..");
+		//int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges,5,5).size();
+		//System.out.printf("Found %d stable transition/s\n",transition_no);
 	
 	}
 

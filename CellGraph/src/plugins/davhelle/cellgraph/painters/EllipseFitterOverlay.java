@@ -53,8 +53,8 @@ public class EllipseFitterOverlay extends Overlay {
 		if(time_point < stGraph.size()){
 			//TODO include 3D information (in case of VTK)!
 			Color old = g.getColor();
-			
-			paintFrame(g, time_point);
+			Color ellipseColor = Color.green;
+			paintFrame(g, time_point, ellipseColor);
 			
 			g.setColor(old);
 		}
@@ -64,9 +64,9 @@ public class EllipseFitterOverlay extends Overlay {
 	 * @param g
 	 * @param time_point
 	 */
-	public void paintFrame(Graphics2D g, int time_point) {
-		Color ellipseColor = Color.green;
-		g.setColor(ellipseColor);
+	public void paintFrame(Graphics2D g, int time_point,Color color) {
+		
+		g.setColor(color);
 		int fontSize = 3;
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 		

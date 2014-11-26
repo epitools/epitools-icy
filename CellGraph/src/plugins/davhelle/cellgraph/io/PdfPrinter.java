@@ -12,7 +12,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 
@@ -41,8 +44,11 @@ public class PdfPrinter {
 			
 			//paint
 			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
-			new EllipseFitterOverlay(stGraph).paintFrame(pdfGraphics, 0);
-			
+			Coordinate roi = new Coordinate(740, 694);
+			new EllipseFitColorOverlay(stGraph).paintFrame(pdfGraphics, 0, roi.x, roi.y, false);
+			pdfGraphics.setColor(Color.BLACK);
+			pdfGraphics.fillOval((int)roi.x, (int)roi.y, 10, 10);
+			new EllipseFitterOverlay(stGraph).paintFrame(pdfGraphics, 0, Color.BLACK);
 			
 			//close
 			pdfGraphics.dispose();

@@ -7,6 +7,7 @@ package plugins.davhelle.cellgraph;
 
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
+import icy.painter.Overlay;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
@@ -35,6 +36,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.CellWorkbook;
 import plugins.davhelle.cellgraph.io.DivisionReader;
+import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
@@ -99,7 +101,8 @@ public class CellPainter extends EzPlug {
 		SAVE_SKELETONS,
 		CORRECTION_HINTS, TRANSITIONS, EDGE_STABILITY, NEIGHBOR_STABILITY, EDGE_INTENSITY, 
 		ELLIPSE_FIT,
-		DIVSION_ORIENTATION
+		DIVSION_ORIENTATION,
+		PDF_SCREENSHOT
 	}
 	
 	EzVarBoolean				varRemovePainterFromSequence;
@@ -496,6 +499,9 @@ public class CellPainter extends EzPlug {
 							break;
 						case NEIGHBOR_STABILITY:
 							sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
+							break;
+						case PDF_SCREENSHOT:
+							new PdfPrinter(wing_disc_movie);
 							break;
 						default:
 							break;

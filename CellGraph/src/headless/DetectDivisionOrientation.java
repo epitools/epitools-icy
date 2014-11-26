@@ -61,7 +61,7 @@ public class DetectDivisionOrientation {
 		HashMap<Node, Double> division_orientation = new HashMap<Node, Double>();
 		
 		//how many frames before division should the mother cell orientation be detected
-		int prior_frames = 10;
+		int prior_frames = 7;
 		int frame_no_to_avg = 5;
 		
 		for(int i=prior_frames; i<stGraph.size(); i++){
@@ -79,20 +79,21 @@ public class DetectDivisionOrientation {
 				//get mother cell orientation by avg orientations prior to rounding
 				int no_of_angles_in_avg = 0;
 				
-				for(int j=0; j < i - 5; j++){
+//				for(int j=0; j < i - 5; j++){
+					int j = i - prior_frames;
 					FrameGraph frame_prior_rounding = stGraph.getFrame(j);
 					if(frame_prior_rounding.hasTrackID(mother.getTrackID())){
 						Node mother_before_rounding = frame_prior_rounding.getNode(mother.getTrackID());
 						longest_axis_angle_rad = fittedEllipses.get(mother_before_rounding).theta;
 					
-						double degrees = Angle.toDegrees(longest_axis_angle_rad);
-						
-						if(longest_axis_angle_rad > Angle.PI_OVER_2)
-							longest_axis_angle_rad = - Math.abs(Math.PI - longest_axis_angle_rad);
-						
-						double degrees2 = Angle.toDegrees(longest_axis_angle_rad);
-						if(mother.getTrackID() == 902)
-							System.out.printf("[%d] %.0f %.0f\n",j,degrees,degrees2);
+//						double degrees = Angle.toDegrees(longest_axis_angle_rad);
+//						
+//						if(longest_axis_angle_rad > Angle.PI_OVER_2)
+//							longest_axis_angle_rad = - Math.abs(Math.PI - longest_axis_angle_rad);
+//						
+//						double degrees2 = Angle.toDegrees(longest_axis_angle_rad);
+//						if(mother.getTrackID() == 902)
+//							System.out.printf("[%d] %.0f %.0f\n",j,degrees,degrees2);
 						
 						x += Math.cos(longest_axis_angle_rad);
 						y += Math.sin(longest_axis_angle_rad);
@@ -101,7 +102,7 @@ public class DetectDivisionOrientation {
 					}
 //					else
 //						System.out.printf("No time point for mother %d at %d\n",mother.getTrackID(),prior_frames);
-				}
+//				}
 					
 				if(no_of_angles_in_avg == 0)
 					continue;

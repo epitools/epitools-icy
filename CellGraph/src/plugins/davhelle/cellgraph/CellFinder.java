@@ -43,8 +43,11 @@ public class CellFinder extends EzPlug {
 			return;
 		}
 		
+		int x = varX.getValue();
+		int y = varY.getValue();
+		
 		IcyCanvas2D canvas2d = (IcyCanvas2D)sequence.getFirstViewer().getCanvas();
-		canvas2d.centerOnImage(varX.getValue(), varY.getValue());
+		canvas2d.centerOnImage(x, y);
 		
 	}
 

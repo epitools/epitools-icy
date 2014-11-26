@@ -44,7 +44,7 @@ public class PdfPrinter {
 			
 			//paint
 			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
-			Coordinate roi = new Coordinate(740, 694);
+			Coordinate roi = new Coordinate(667, 807);
 			new EllipseFitColorOverlay(stGraph).paintFrame(pdfGraphics, 0, roi.x, roi.y, false);
 			pdfGraphics.setColor(Color.BLACK);
 			pdfGraphics.fillOval((int)roi.x, (int)roi.y, 10, 10);

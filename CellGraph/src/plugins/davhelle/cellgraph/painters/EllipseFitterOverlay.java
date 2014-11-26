@@ -55,43 +55,52 @@ public class EllipseFitterOverlay extends Overlay {
 			//TODO include 3D information (in case of VTK)!
 			Color old = g.getColor();
 			
-			g.setColor(Color.black);
-			int fontSize = 3;
-			g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-			
-			for(Node n: stGraph.getFrame(time_point).vertexSet()){
-				if(fittedEllipses.containsKey(n)){
-					EllipseFitter ef = fittedEllipses.get(n);
-					/* 
-					 * http://rsb.info.nih.gov/ij/developer/source/ij/process/EllipseFitter.java.html
-					 * 
-					 * ef.major: major axis 
-					 * ef.minor: minor axis
-					 * ef.theta:, angle of major axis, clockwise with respect to x axis
-					 * 
-					 * for complete ellipse drawing see
-					 * Draws the ellipse on the specified image.
-					 * public void drawEllipse(ImageProcessor ip) 
-					 * 
-					 * */
-					
-					double cX = n.getGeometry().getCentroid().getX();
-					double cY = n.getGeometry().getCentroid().getY();
-					double length = ef.major / 2.0;
-					if(length > 10)
-						length -= 5;
-					
-					double x0 = cX - Math.cos(ef.theta) * length;
-			        double y0 = cY + Math.sin(ef.theta) * length;
-			        double x1 = cX + Math.cos(ef.theta) * length;
-			        double y1 = cY - Math.sin(ef.theta) * length;
-					
-					g.draw(new Line2D.Double(x0, y0, x1, y1));
-				}
-			}
+			paintFrame(g, time_point);
 			
 			g.setColor(old);
 		}
     }
+
+	/**
+	 * @param g
+	 * @param time_point
+	 */
+	public void paintFrame(Graphics2D g, int time_point) {
+		Color ellipseColor = Color.yellow;
+		g.setColor(ellipseColor);
+		int fontSize = 3;
+		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
+		
+		for(Node n: stGraph.getFrame(time_point).vertexSet()){
+			if(fittedEllipses.containsKey(n)){
+				EllipseFitter ef = fittedEllipses.get(n);
+				/* 
+				 * http://rsb.info.nih.gov/ij/developer/source/ij/process/EllipseFitter.java.html
+				 * 
+				 * ef.major: major axis 
+				 * ef.minor: minor axis
+				 * ef.theta:, angle of major axis, clockwise with respect to x axis
+				 * 
+				 * for complete ellipse drawing see
+				 * Draws the ellipse on the specified image.
+				 * public void drawEllipse(ImageProcessor ip) 
+				 * 
+				 * */
+				
+				double cX = n.getGeometry().getCentroid().getX();
+				double cY = n.getGeometry().getCentroid().getY();
+				double length = ef.major / 2.0;
+				if(length > 10)
+					length -= 5;
+				
+				double x0 = cX - Math.cos(ef.theta) * length;
+		        double y0 = cY + Math.sin(ef.theta) * length;
+		        double x1 = cX + Math.cos(ef.theta) * length;
+		        double y1 = cY - Math.sin(ef.theta) * length;
+				
+				g.draw(new Line2D.Double(x0, y0, x1, y1));
+			}
+		}
+	}
 
 }

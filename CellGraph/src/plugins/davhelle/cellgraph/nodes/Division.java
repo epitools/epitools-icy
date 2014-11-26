@@ -30,6 +30,11 @@ public class Division {
 	private Node child2;
 	private int time_point;
 	private FrameGraph division_frame;
+	
+	//Angle between new junction and longest axis of mother cell
+	private double divisionOrientation;
+	private double longestMotherAxisOrientation;
+	private double newJunctionOrientation;
 
 	public Division(Node mother, Node child1, Node child2, int tracking_id) {
 		
@@ -40,6 +45,10 @@ public class Division {
 		this.division_frame = child1.getBelongingFrame();
 		this.time_point = division_frame.getFrameNo();
 		
+		//Initialize Division orientation fields
+		divisionOrientation = 0.0;
+		longestMotherAxisOrientation = 0.0;
+		newJunctionOrientation = 0.0;
 		
 		//sanity check
 		if(division_frame != child2.getBelongingFrame())
@@ -265,6 +274,48 @@ public class Division {
 	public String toString(){
 		//Report division to user
 		return "\tDivision:"+mother.getTrackID()+"->("+child1.getTrackID()+","+child2.getTrackID()+")";
+	}
+
+	/**
+	 * @return the divisionOrientation
+	 */
+	public double getDivisionOrientation() {
+		return divisionOrientation;
+	}
+
+	/**
+	 * @param divisionOrientation the divisionOrientation to set
+	 */
+	public void setDivisionOrientation(double divisionOrientation) {
+		this.divisionOrientation = divisionOrientation;
+	}
+
+	/**
+	 * @return the longestMotherAxisOrientation
+	 */
+	public double getLongestMotherAxisOrientation() {
+		return longestMotherAxisOrientation;
+	}
+
+	/**
+	 * @param longestMotherAxisOrientation the longestMotherAxisOrientation to set
+	 */
+	public void setLongestMotherAxisOrientation(double longestMotherAxisOrientation) {
+		this.longestMotherAxisOrientation = longestMotherAxisOrientation;
+	}
+
+	/**
+	 * @return the newJunctionOrientation
+	 */
+	public double getNewJunctionOrientation() {
+		return newJunctionOrientation;
+	}
+
+	/**
+	 * @param newJunctionOrientation the newJunctionOrientation to set
+	 */
+	public void setNewJunctionOrientation(double newJunctionOrientation) {
+		this.newJunctionOrientation = newJunctionOrientation;
 	}
 
 

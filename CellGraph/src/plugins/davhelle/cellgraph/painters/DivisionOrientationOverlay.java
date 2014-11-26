@@ -79,19 +79,25 @@ public class DivisionOrientationOverlay extends Overlay {
 						g.setColor(hsbColor);
 						g.fill((n.toShape()));
 
-						g.setColor(Color.black);
+						g.setColor(Color.cyan);
 						
 						EllipseFitter ef = fittedEllipses.get(n);
 						
 						//draw the future division axis
 						
-						double x0 = cX - Math.cos(ef.theta - Angle.toRadians(angle)) * 5;
-				        double y0 = cY + Math.sin(ef.theta - Angle.toRadians(angle)) * 5;
-						double x1 = cX + Math.cos(ef.theta - Angle.toRadians(angle)) * 5;
-				        double y1 = cY - Math.sin(ef.theta - Angle.toRadians(angle)) * 5;
+						double future_junction_angle_wrt_x = n.getDivision().getNewJunctionOrientation();
+						
+						double x0 = cX + Math.cos(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
+				        double y0 = cY + Math.sin(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
+						double x1 = cX - Math.cos(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
+				        double y1 = cY - Math.sin(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
 						
 						g.draw(new Line2D.Double(x0, y0,x1,y1));
-						g.drawString(String.format("%.0f", angle), 
+						g.drawString(String.format(
+								"%.0f,%.0f,%.0f\n",
+								n.getDivision().getLongestMotherAxisOrientation(),
+								n.getDivision().getNewJunctionOrientation(),
+								n.getDivision().getDivisionOrientation()), 
 								(float)cX - 5  , 
 								(float)cY + 5);
 					}
@@ -107,7 +113,7 @@ public class DivisionOrientationOverlay extends Overlay {
 					
 					g.setColor(hsbColor);
 					
-					g.fillRect(20*i + 30,30,20,20);
+					//g.fillRect(20*i + 30,30,20,20);
 				
 				}
 				

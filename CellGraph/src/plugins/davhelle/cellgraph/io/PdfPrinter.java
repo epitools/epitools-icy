@@ -32,7 +32,10 @@ public class PdfPrinter {
 			
 			//open
 			FileOutputStream fileOutputStream;
-			fileOutputStream = new FileOutputStream(new File(file_name + ".pdf"));
+			String suffix = "";
+			if(!file_name.endsWith(".pdf"))
+				suffix = ".pdf";
+			fileOutputStream = new FileOutputStream(new File(file_name + suffix));
 			PDFJob job = new PDFJob(fileOutputStream);
 			
 			//apply custom format
@@ -44,7 +47,7 @@ public class PdfPrinter {
 			
 			//paint
 			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
-			Coordinate roi = new Coordinate(667, 807);
+			Coordinate roi = new Coordinate(465, 774);
 			new EllipseFitColorOverlay(stGraph).paintFrame(pdfGraphics, 0, roi.x, roi.y, false);
 			pdfGraphics.setColor(Color.BLACK);
 			pdfGraphics.fillOval((int)roi.x, (int)roi.y, 10, 10);

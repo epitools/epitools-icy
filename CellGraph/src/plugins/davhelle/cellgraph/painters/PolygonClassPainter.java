@@ -49,13 +49,23 @@ public class PolygonClassPainter extends Overlay{
 	{
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
-		if(time_point < stGraph.size()){
+		if(time_point < stGraph.size())
+			paintFrame(g, time_point);
+	}
+
+	/**
+	 * @param g
+	 * @param time_point
+	 */
+	public void paintFrame(Graphics2D g, int time_point) {
+		{
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 8));
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
 			
-			for(Node cell: frame_i.vertexSet()){
+			for(Node cell: frame_i.vertexSet())
+			{
 				
 				if(cell.onBoundary())
 					continue;
@@ -105,6 +115,38 @@ public class PolygonClassPainter extends Overlay{
 							continue;
 					}
 				}
+			}
+			for(int i=0; i<6; i++){
+				
+				switch(i + 4){ 
+				case 4:
+					g.setColor(new Color(223, 0, 8)); //red
+					break;
+				case 5:
+					g.setColor(new Color(84, 176, 26)); //green
+					break;
+				case 6:
+					g.setColor(new Color(190, 190, 190)); //grey
+					break;
+				case 7:
+					g.setColor(new Color(18, 51, 143)); //blue
+					break;
+				case 8:
+					g.setColor(new Color(158, 53, 145)); //violet
+					break;
+				case 9:
+					g.setColor(new Color(128, 45, 20)); //brown
+					break;
+				default:
+					continue;
+				}
+				
+				g.fillRect(20*i + 30,30,20,20);
+				g.setColor(Color.white);
+				g.drawString(Integer.toString(i+4), 
+						(float)20*i + 30 + 5, 
+						(float)30 + 15);
+			
 			}
 		}
 	}

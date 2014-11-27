@@ -76,7 +76,7 @@ public class FollowChildrenPolyClass {
 		}
 		
 		//Fill up end
-		for(;t < 100; t++)
+		for(;t < 99; t++)
 			builder.append(",NA");
 			
 		builder.append('\n');

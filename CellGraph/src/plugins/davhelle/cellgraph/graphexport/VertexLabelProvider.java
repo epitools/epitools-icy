@@ -180,7 +180,7 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		
 		String csv_degree_over_time = String.format("%d,%d",
 				vertex.getTrackID(),vertex.getNeighbors().size());
-		
+		//TODO: This does not support missing time points!
 		Node cell = vertex;
 		while(cell.hasNext()){
 			cell = cell.getNext();

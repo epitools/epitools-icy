@@ -101,6 +101,9 @@ public class TransitionOverlay extends Overlay{
 		StringBuilder builder_winner = new StringBuilder();
 		
 		for(T1Transition t1: transitions){
+			if(!t1.hasWinners())
+				continue;
+			
 			builder_main.append(t1.getDetectionTime());
 			builder_main.append(',');
 			builder_main.append(t1.length());
@@ -154,23 +157,23 @@ public class TransitionOverlay extends Overlay{
 	 * @param t1
 	 * @return
 	 */
-	private Edge extractEdgeLength(StringBuilder builder_loser, T1Transition t1, boolean extract_loser) {
+	private Edge extractEdgeLength(StringBuilder builder, T1Transition t1, boolean extract_loser) {
 		int[] cell_ids = null;
 		if(extract_loser)
 			cell_ids = t1.getLoserNodes();
 		else
 			cell_ids = t1.getWinnerNodes();
 		
-		Edge first_edge = extractJunctionLength(builder_loser, cell_ids);
+		Edge first_edge = extractJunctionLength(builder, cell_ids);
 		return first_edge;
 	}
 
 	/**
-	 * @param builder_loser
+	 * @param builder
 	 * @param cell_ids
 	 * @return
 	 */
-	public Edge extractJunctionLength(StringBuilder builder_loser,
+	public Edge extractJunctionLength(StringBuilder builder,
 			int[] cell_ids) {
 		Edge first_edge = null;
 			
@@ -187,15 +190,15 @@ public class TransitionOverlay extends Overlay{
 			
 			if(frame_i.containsEdge(cell_nodes[0], cell_nodes[1])){
 				Edge e = frame_i.getEdge(cell_nodes[0], cell_nodes[1]);
-				builder_loser.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
-				builder_loser.append(',');
+				builder.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
+				builder.append(',');
 				
 				if(first_edge == null)
 					first_edge = e;
 			}
 			else{
-				builder_loser.append(0.0);
-				builder_loser.append(',');
+				builder.append(0.0);
+				builder.append(',');
 			}				
 		}
 		return first_edge;

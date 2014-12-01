@@ -55,7 +55,8 @@ public class DivisionPainter extends Overlay {
 		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
-		if(time_point < stGraph.size()){
+		if(time_point < stGraph.size())
+		{
 			
 			if(!FILL_CELLS)
 				g.setStroke(new BasicStroke(3));
@@ -86,7 +87,10 @@ public class DivisionPainter extends Overlay {
 								g.draw(cell.toShape());
 						}	
 				}
-			}	
+			}
+			
+			if(!FILL_CELLS)
+				g.setStroke(new BasicStroke(1));
 		}
 	}
 }

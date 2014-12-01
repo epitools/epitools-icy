@@ -128,10 +128,13 @@ public class DetectT1Transition {
 				
 				T1Transition transition = new T1Transition(stGraph, pair, edge_track);
 				
+				boolean has_minimal_durationNew = transition.length() > minimalTransitionLength;
+				boolean has_minimal_durationOld = transition.getOldEdgeSurvivalLength() > minimalOldEdgeSurvivalLength;
+				boolean is_not_onBoundary = !transition.onBoundary();
 				if(
-						transition.length() > minimalTransitionLength && 					//new edge detected at least for X frames consecutively
-						!transition.onBoundary() && 				//transition should not occur on boundary
-						transition.getOldEdgeSurvivalLength() > minimalOldEdgeSurvivalLength 	//old edge visible for at least X frames
+						has_minimal_durationOld && 	//old edge visible for at least X frames
+						has_minimal_durationNew && 	//new edge visible for at least X frames consecutively
+						is_not_onBoundary 			//transition should not occur on boundary
 						){
 					
 

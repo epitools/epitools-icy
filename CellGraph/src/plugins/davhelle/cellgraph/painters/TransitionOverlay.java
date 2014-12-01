@@ -112,15 +112,19 @@ public class TransitionOverlay extends Overlay{
 			Edge first_looser_edge = extractEdgeLength(builder_loser, t1, true);
 			Edge first_winner_edge = extractEdgeLength(builder_winner, t1, false);
 			
-			if(first_looser_edge != null)
-				builder_main.append(String.format("%.2f,%.2f,", 
-						first_looser_edge.getGeometry().getCentroid().getX(),
-						first_looser_edge.getGeometry().getCentroid().getY()));
+			if(first_looser_edge != null){
+				int[] cell_ids = t1.getLoserNodes();
+				builder_main.append(String.format("%d,%d,", 
+						cell_ids[0],
+						cell_ids[1]));
+			}
 			
-			if(first_winner_edge != null)
-				builder_main.append(String.format("%.2f,%.2f,", 
-						first_winner_edge.getGeometry().getCentroid().getX(),
-						first_winner_edge.getGeometry().getCentroid().getY()));
+			if(first_winner_edge != null){
+				int[] cell_ids = t1.getWinnerNodes();
+				builder_main.append(String.format("%d,%d,", 
+						cell_ids[0],
+						cell_ids[1]));
+			}
 			
 			//trim last comma position
 			builder_main.setLength(builder_main.length() - 1);

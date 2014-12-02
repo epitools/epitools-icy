@@ -51,6 +51,20 @@ public class DetectT1Transition {
 		System.out.println("\nAnalyzing the cell edges..");
 		HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
 		
+		//saveStableEdgesToCSV(stGraph, tracked_edges);
+		
+		System.out.println("\nFinding T1 transitions..");
+		int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges,5,5).size();
+		System.out.printf("Found %d stable transition/s\n",transition_no);
+	
+	}
+
+	/**
+	 * @param stGraph
+	 * @param tracked_edges
+	 */
+	public static void saveStableEdgesToCSV(SpatioTemporalGraph stGraph,
+			HashMap<Long, boolean[]> tracked_edges) {
 		StringBuilder builder = new StringBuilder();
 		for(long track_code:tracked_edges.keySet()){
 			boolean[] edge_track = tracked_edges.get(track_code);
@@ -89,11 +103,6 @@ public class DetectT1Transition {
 		}
 		File main_output_file = new File("/Users/davide/tmp/test_full_edge.csv");
 		CsvWriter.writeOutBuilder(builder, main_output_file);
-		
-		//System.out.println("\nFinding T1 transitions..");
-		//int transition_no = findTransitions(stGraph, cell_tiles, tracked_edges,5,5).size();
-		//System.out.printf("Found %d stable transition/s\n",transition_no);
-	
 	}
 
 	public static boolean hasStableTrack(boolean[] edge_track){

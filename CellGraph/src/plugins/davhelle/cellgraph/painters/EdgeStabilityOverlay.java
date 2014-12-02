@@ -124,7 +124,8 @@ public class EdgeStabilityOverlay extends Overlay {
 			for(Edge e: frame_i.edgeSet()){
 				if(e.isTracked(frame_i)){ //both source and target nodes are tracked in this frame
 					
-					e.computeGeometry(frame_i); //TODO: put into initial loading / i.e. graph creation
+					if(!e.hasGeometry())
+						e.computeGeometry(frame_i); //TODO: put into initial loading / i.e. graph creation
 					
 					long edge_track_code = e.getPairCode(frame_i);
 				
@@ -171,8 +172,8 @@ public class EdgeStabilityOverlay extends Overlay {
 								
 								if(tracked_edges.containsKey(division_code)){
 									updateTrackEntry(tracked_edges,division_code);
-									System.out.println("Successfully updated edge "+
-											Arrays.toString(Edge.getCodePair(division_code)));
+//									System.out.println("Successfully updated edge "+
+//											Arrays.toString(Edge.getCodePair(division_code)));
 								}
 							
 							}

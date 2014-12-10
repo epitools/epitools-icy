@@ -45,7 +45,7 @@ public class GraphExporter {
 		//with finally statement like in 
 		//http://stackoverflow.com/questions/2885173/java-how-to-create-and-write-to-a-file		
 		
-		System.out.println("Successfully exported frame0 to: "+file_name);
+		System.out.printf("Successfully exported frame %d to: %s\n",frame.getFrameNo(),file_name);
 	}
 	
 }

@@ -3,8 +3,6 @@ package headless;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.testng.Assert;
-
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -136,10 +134,10 @@ public class LoadNeoWtkFiles {
 			long startTime = System.currentTimeMillis();
 
 			String expected_wkt_file = String.format("%s/border_%03d.wkt",export_folder,i);
-			Assert.assertTrue(new File(expected_wkt_file).exists(),String.format("%s does not exist",expected_wkt_file));
+			assert new File(expected_wkt_file).exists(): System.out.printf("%s does not exist",expected_wkt_file);
 			
 			ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
-			Assert.assertEquals(boundaries.size(), 1);
+			assert boundaries.size() == 1: System.out.printf("%s contains more than one boundary geometry",expected_wkt_file);
 			
 			FrameGraph frame = stGraph.getFrame(i);
 			border.markBorderCells(frame, boundaries.get(0));

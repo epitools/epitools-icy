@@ -79,7 +79,7 @@ public class DivisionOrientationOverlay extends Overlay {
 					double angle = division_orientation.get(n.getFirst());
 
 					double normalized_angle = Math.abs(1 - angle/90);
-					normalized_angle = normalized_angle * 0.3;
+					normalized_angle = normalized_angle * 0.2;
 
 					Color hsbColor = Color.getHSBColor(
 							(float)(normalized_angle),

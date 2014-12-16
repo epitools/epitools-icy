@@ -42,7 +42,9 @@ public class DetectDivisionOrientation {
 		StringBuilder elongationAngle = new StringBuilder();
 		StringBuilder elongationRatio = new StringBuilder();
 		StringBuilder elongationArea = new StringBuilder();
-		for(Node cell: stGraph.getFrame(0).vertexSet()){
+		StringBuilder divisionAngle = new StringBuilder();
+		
+		frame0_loop:for(Node cell: stGraph.getFrame(0).vertexSet()){
 			if(cell.hasObservedDivision()){
 				
 				Node n = cell;
@@ -51,15 +53,13 @@ public class DetectDivisionOrientation {
 						!n.hasNext() || n.onBoundary())
 					continue;
 				
-				elongationCellId.append(
-						String.format("%d,%.0f,%.0f\n",
-								n.getTrackID(),
-								n.getGeometry().getCentroid().getX(),
-								n.getGeometry().getCentroid().getY()));
 
 				while(n.hasNext()){
 
 					EllipseFitter ef = fittedEllipses.get(n);
+					double division_angle = computeDivisionAngle(cell.getDivision(),ef);
+					if(Double.compare(division_angle,Double.MIN_VALUE) == 0)
+						continue frame0_loop;
 
 					//write out observation of
 					//1. angle of elongation
@@ -68,7 +68,10 @@ public class DetectDivisionOrientation {
 					elongationRatio.append(String.format("%.2f,",ef.major/ef.minor));
 					//3. the area of the cell
 					elongationArea.append(String.format("%.2f,",n.getGeometry().getArea()));
-
+					
+					//4. the angle between the elongation at i and the junction angle
+					divisionAngle.append(String.format("%.2f,",division_angle));
+					
 					//then, after the division happened
 					//1. the angle of the new junction
 					//2. elongation of the two daughter cells
@@ -77,9 +80,18 @@ public class DetectDivisionOrientation {
 					n = n.getNext();
 				}
 				
+				
 				trimCommaAndReturn(elongationAngle);
 				trimCommaAndReturn(elongationArea);
 				trimCommaAndReturn(elongationRatio);
+				trimCommaAndReturn(divisionAngle);
+
+				//save the details of the mother cell to maintain correspondence
+				elongationCellId.append(
+						String.format("%d,%.0f,%.0f\n",
+								n.getTrackID(),
+								n.getGeometry().getCentroid().getX(),
+								n.getGeometry().getCentroid().getY()));
 			}
 		}
 
@@ -92,12 +104,15 @@ public class DetectDivisionOrientation {
 		CsvWriter.writeOutBuilder(elongationArea, output_file3);
 		File output_file4 = new File("/Users/davide/tmp/elongationCellIdNeo0.csv");
 		CsvWriter.writeOutBuilder(elongationCellId, output_file4);
+		File output_file5 = new File("/Users/davide/tmp/divisionAngleNeo0.csv");
+		CsvWriter.writeOutBuilder(divisionAngle, output_file5);
 		
 		System.out.printf("Successfully wrote:\n\t%s\n\t%s\n\t%s\n\t%s\n", 
 				output_file1.getAbsolutePath(),
 				output_file2.getAbsolutePath(),
 				output_file3.getAbsolutePath(),
-				output_file4.getAbsolutePath());
+				output_file4.getAbsolutePath(),
+				output_file5.getAbsolutePath());
 		
 //		HashMap<Node, Double> division_orientation = computeDivisionOrientation(
 //				stGraph, fittedEllipses);
@@ -108,6 +123,55 @@ public class DetectDivisionOrientation {
 //					division_orientation.get(cell));
 	}
 	
+	private static double computeDivisionAngle(Division d,
+			EllipseFitter ef) {
+		
+		//Get children axis
+		Node child1 = d.getChild1();
+		Node child2 = d.getChild2();
+
+		Geometry child_intersection = null;
+		if(d.hasPlaneGeometry())
+			child_intersection = d.getPlaneGeometry();
+		else{
+			child_intersection = child1.getGeometry().intersection(child2.getGeometry());
+			d.setPlaneGeometry(child_intersection);
+		}
+			
+		//Compute the angle of the using the bounding circle
+		MinimumBoundingCircle mbc = new MinimumBoundingCircle(child_intersection);
+		Coordinate[] new_junction_ends = mbc.getExtremalPoints();
+		if(new_junction_ends.length != 2){ 
+			System.out.printf("Children intersection has more than two endings: %d [%d,%.0f,%.0f]\n",
+					new_junction_ends.length,
+					d.getTimePoint(),
+					child_intersection.getCentroid().getX(),
+					child_intersection.getCentroid().getY());
+			return Double.MIN_VALUE;
+		}
+
+		//Form the angle to measure
+		Coordinate tail = new_junction_ends[1];
+		Coordinate tip1 = new_junction_ends[0];
+		
+		double longest_axis_angle = Math.abs(ef.theta - Math.PI);
+		Coordinate tip2 = new Coordinate(
+				tail.x - Math.cos(longest_axis_angle),
+				tail.y - Math.sin(longest_axis_angle));
+
+		double new_junction_angle = Angle.interiorAngle(tip1, tail, tip2);
+
+		//find the smallest angle within [0,pi/2]
+		if(new_junction_angle > Math.PI)
+			new_junction_angle = Angle.PI_TIMES_2 - new_junction_angle;
+		if(new_junction_angle > Angle.PI_OVER_2)
+			new_junction_angle = Math.PI - new_junction_angle;
+
+		double angle_diff_in_degrees = Angle.toDegrees(new_junction_angle);
+		
+		return angle_diff_in_degrees;
+	}
+
 	private static void trimCommaAndReturn(StringBuilder builder){
 		builder.setLength(builder.length() - 1);
 		builder.append('\n');

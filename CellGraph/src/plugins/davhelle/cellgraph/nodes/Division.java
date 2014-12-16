@@ -5,6 +5,8 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.nodes;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 
 /**
@@ -32,6 +34,7 @@ public class Division {
 	private FrameGraph division_frame;
 	
 	//Angle between new junction and longest axis of mother cell
+	private Geometry planeGeometry;
 	private double divisionOrientation;
 	private double longestMotherAxisOrientation;
 	private double newJunctionOrientation;
@@ -49,6 +52,7 @@ public class Division {
 		divisionOrientation = 0.0;
 		longestMotherAxisOrientation = 0.0;
 		newJunctionOrientation = 0.0;
+		planeGeometry = null;
 		
 		//sanity check
 		if(division_frame != child2.getBelongingFrame())
@@ -132,6 +136,12 @@ public class Division {
 			future2.setDivision(this);
 			future2 = future2.getNext();
 		}
+		
+		//Initialize Division orientation fields
+		divisionOrientation = 0.0;
+		longestMotherAxisOrientation = 0.0;
+		newJunctionOrientation = 0.0;
+		planeGeometry = null;
 		
 	}
 
@@ -317,6 +327,26 @@ public class Division {
 	public void setNewJunctionOrientation(double newJunctionOrientation) {
 		this.newJunctionOrientation = newJunctionOrientation;
 	}
+
+	/**
+	 * @return the planeGeometry
+	 */
+	public Geometry getPlaneGeometry() {
+		return planeGeometry;
+	}
+
+	/**
+	 * @param planeGeometry the planeGeometry to set
+	 */
+	public void setPlaneGeometry(Geometry planeGeometry) {
+		this.planeGeometry = planeGeometry;
+	}
+	
+	public boolean hasPlaneGeometry(){
+		return this.planeGeometry != null;
+	}
+
+
 
 
 }

@@ -5,6 +5,7 @@ package headless;
 
 import ij.process.EllipseFitter;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -15,6 +16,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -34,14 +36,81 @@ public class DetectDivisionOrientation {
 		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(0);
 		HashMap<Node, EllipseFitter> fittedEllipses = 
 				new EllipseFitGenerator(stGraph).getFittedEllipses();
-
-		HashMap<Node, Double> division_orientation = computeDivisionOrientation(
-				stGraph, fittedEllipses);
 		
-		for(Node cell: division_orientation.keySet())
-			System.out.printf(
-					"%.2f\n",
-					division_orientation.get(cell));
+		//output file
+		StringBuilder elongationCellId = new StringBuilder();
+		StringBuilder elongationAngle = new StringBuilder();
+		StringBuilder elongationRatio = new StringBuilder();
+		StringBuilder elongationArea = new StringBuilder();
+		for(Node cell: stGraph.getFrame(0).vertexSet()){
+			if(cell.hasObservedDivision()){
+				
+				Node n = cell;
+				
+				if(!fittedEllipses.containsKey(n) ||
+						!n.hasNext() || n.onBoundary())
+					continue;
+				
+				elongationCellId.append(
+						String.format("%d,%.0f,%.0f\n",
+								n.getTrackID(),
+								n.getGeometry().getCentroid().getX(),
+								n.getGeometry().getCentroid().getY()));
+
+				while(n.hasNext()){
+
+					EllipseFitter ef = fittedEllipses.get(n);
+
+					//write out observation of
+					//1. angle of elongation
+					elongationAngle.append(String.format("%.2f,",ef.angle));
+					//2. ratio of elongation
+					elongationRatio.append(String.format("%.2f,",ef.major/ef.minor));
+					//3. the area of the cell
+					elongationArea.append(String.format("%.2f,",n.getGeometry().getArea()));
+
+					//then, after the division happened
+					//1. the angle of the new junction
+					//2. elongation of the two daughter cells
+
+					//update cell to next reference
+					n = n.getNext();
+				}
+				
+				trimCommaAndReturn(elongationAngle);
+				trimCommaAndReturn(elongationArea);
+				trimCommaAndReturn(elongationRatio);
+			}
+		}
+
+		
+		File output_file1 = new File("/Users/davide/tmp/elongationAngleNeo0.csv");
+		CsvWriter.writeOutBuilder(elongationAngle, output_file1);
+		File output_file2 = new File("/Users/davide/tmp/elongationRatioNeo0.csv");
+		CsvWriter.writeOutBuilder(elongationRatio, output_file2);
+		File output_file3 = new File("/Users/davide/tmp/elongationAreaNeo0.csv");
+		CsvWriter.writeOutBuilder(elongationArea, output_file3);
+		File output_file4 = new File("/Users/davide/tmp/elongationCellIdNeo0.csv");
+		CsvWriter.writeOutBuilder(elongationCellId, output_file4);
+		
+		System.out.printf("Successfully wrote:\n\t%s\n\t%s\n\t%s\n\t%s\n", 
+				output_file1.getAbsolutePath(),
+				output_file2.getAbsolutePath(),
+				output_file3.getAbsolutePath(),
+				output_file4.getAbsolutePath());
+		
+//		HashMap<Node, Double> division_orientation = computeDivisionOrientation(
+//				stGraph, fittedEllipses);
+//		
+//		for(Node cell: division_orientation.keySet())
+//			System.out.printf(
+//					"%.2f\n",
+//					division_orientation.get(cell));
+	}
+	
+	private static void trimCommaAndReturn(StringBuilder builder){
+		builder.setLength(builder.length() - 1);
+		builder.append('\n');
 	}
 
 	/**

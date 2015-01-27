@@ -86,7 +86,11 @@ public class PolygonClassPainter extends Overlay{
 						(float)centroid.y + 2);
 				}
 				else{
-					switch(cell_degree){ 
+					switch(cell_degree){
+						case 3:
+							g.setColor(new Color(232, 233, 41)); //yellow
+							g.fill(cell.toShape());
+						break;
 						case 4:
 							g.setColor(new Color(223, 0, 8)); //red
 							g.fill(cell.toShape());
@@ -116,9 +120,12 @@ public class PolygonClassPainter extends Overlay{
 					}
 				}
 			}
-			for(int i=0; i<6; i++){
+			for(int i=0; i<7; i++){
 				
-				switch(i + 4){ 
+				switch(i + 3){ 
+				case 3:
+					g.setColor(new Color(232, 233, 41)); //yellow
+					break;
 				case 4:
 					g.setColor(new Color(223, 0, 8)); //red
 					break;
@@ -143,7 +150,7 @@ public class PolygonClassPainter extends Overlay{
 				
 				g.fillRect(20*i + 30,30,20,20);
 				g.setColor(Color.white);
-				g.drawString(Integer.toString(i+4), 
+				g.drawString(Integer.toString(i+3), 
 						(float)20*i + 30 + 5, 
 						(float)30 + 15);
 			

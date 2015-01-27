@@ -16,6 +16,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
+import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
@@ -48,7 +49,9 @@ public class PdfPrinter {
 			Graphics2D pdfGraphics = (Graphics2D) job.getGraphics(format);
 			
 			//paint
-			new PolygonClassPainter(stGraph,false,0).paintFrame(pdfGraphics, 0);
+			//new PolygonClassPainter(stGraph,false,0).paintFrame(pdfGraphics, 0);
+			
+			new DivisionPainter(stGraph, false,true,false).paintFrame(pdfGraphics, 0);
 			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
 			
 			//close

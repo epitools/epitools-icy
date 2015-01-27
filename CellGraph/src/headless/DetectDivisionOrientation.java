@@ -33,7 +33,9 @@ public class DetectDivisionOrientation {
 	 */
 	public static void main(String[] args) {
 		
-		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(0);
+		int neo_no = 2;
+		
+		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(neo_no);
 		HashMap<Node, EllipseFitter> fittedEllipses = 
 				new EllipseFitGenerator(stGraph).getFittedEllipses();
 		
@@ -95,16 +97,17 @@ public class DetectDivisionOrientation {
 			}
 		}
 
+		String output_pattern = "/Users/davide/tmp/%sNeo%d.csv";
 		
-		File output_file1 = new File("/Users/davide/tmp/elongationAngleNeo0.csv");
+		File output_file1 = new File(String.format(output_pattern,"elongationAngle",neo_no));
 		CsvWriter.writeOutBuilder(elongationAngle, output_file1);
-		File output_file2 = new File("/Users/davide/tmp/elongationRatioNeo0.csv");
+		File output_file2 = new File(String.format(output_pattern,"elongationRatio",neo_no));
 		CsvWriter.writeOutBuilder(elongationRatio, output_file2);
-		File output_file3 = new File("/Users/davide/tmp/elongationAreaNeo0.csv");
+		File output_file3 = new File(String.format(output_pattern,"elongationArea",neo_no));
 		CsvWriter.writeOutBuilder(elongationArea, output_file3);
-		File output_file4 = new File("/Users/davide/tmp/elongationCellIdNeo0.csv");
+		File output_file4 = new File(String.format(output_pattern,"elongationCellId",neo_no));
 		CsvWriter.writeOutBuilder(elongationCellId, output_file4);
-		File output_file5 = new File("/Users/davide/tmp/divisionAngleNeo0.csv");
+		File output_file5 = new File(String.format(output_pattern,"divisionAngle",neo_no));
 		CsvWriter.writeOutBuilder(divisionAngle, output_file5);
 		
 		System.out.printf("Successfully wrote:\n\t%s\n\t%s\n\t%s\n\t%s\n", 

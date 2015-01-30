@@ -55,6 +55,7 @@ import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.ColorTagPainter;
 import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
+import plugins.davhelle.cellgraph.painters.ElongationRatioOverlay;
 import plugins.davhelle.cellgraph.painters.GraphPainter;
 import plugins.davhelle.cellgraph.painters.IntesityGraphOverlay;
 import plugins.davhelle.cellgraph.painters.NeighborChangeFrequencyOverlay;
@@ -353,7 +354,8 @@ public class CellPainter extends EzPlug {
 						switch (USER_CHOICE){
 						case TEST:
 							sequence.addOverlay(
-									new EllipseFitColorOverlay(wing_disc_movie));
+									new ElongationRatioOverlay(wing_disc_movie));
+									//new EllipseFitColorOverlay(wing_disc_movie));
 							break;
 						case ELLIPSE_FIT:
 							sequence.addOverlay(

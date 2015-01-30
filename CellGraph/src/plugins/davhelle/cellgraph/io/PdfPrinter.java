@@ -51,7 +51,7 @@ public class PdfPrinter {
 			//paint
 			//new PolygonClassPainter(stGraph,false,0).paintFrame(pdfGraphics, 0);
 			
-			new DivisionPainter(stGraph, false,true,false).paintFrame(pdfGraphics, 0);
+			new DivisionOrientationOverlay(stGraph).paintFrame(pdfGraphics, 0);
 			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
 			
 			//close

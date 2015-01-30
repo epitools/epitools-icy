@@ -64,7 +64,7 @@ public class DivisionOrientationOverlay extends Overlay {
 		Color old = g.getColor();
 		double[] heat_map = {0.0,0.25,0.5,0.75,1.0};
 		
-		Color newJunctionAngleColor = Color.cyan;
+		Color newJunctionAngleColor = Color.BLACK;
 		Color longestAxisOrientationColor = Color.darkGray;
 
 		int fontSize = 3;
@@ -78,8 +78,12 @@ public class DivisionOrientationOverlay extends Overlay {
 					double cY = n.getGeometry().getCentroid().getY();
 					double angle = division_orientation.get(n.getFirst());
 
+					//TODO: set limit if desired
+					//if(angle > 30)
+					//	continue;
+					
 					double normalized_angle = Math.abs(1 - angle/90);
-					normalized_angle = normalized_angle * 0.2;
+					normalized_angle = normalized_angle * 0.3;
 
 					Color hsbColor = Color.getHSBColor(
 							(float)(normalized_angle),
@@ -89,7 +93,6 @@ public class DivisionOrientationOverlay extends Overlay {
 					g.setColor(hsbColor);
 					g.fill((n.toShape()));
 
-					g.setColor(newJunctionAngleColor);
 					
 					//draw the future division axis
 					
@@ -106,19 +109,24 @@ public class DivisionOrientationOverlay extends Overlay {
 					double mx1 = cX - Math.cos(longestMotherAxisOrientation) * 5;
 			        double my1 = cY - Math.sin(longestMotherAxisOrientation) * 5;
 			        
-			        
+			        //Draw new Junction
+			        g.setColor(newJunctionAngleColor);
 					g.draw(new Line2D.Double(x0, y0,x1,y1));
-					g.setColor(longestAxisOrientationColor);
-					g.draw(new Line2D.Double(mx0, my0,mx1,my1));
-					g.setColor(newJunctionAngleColor);
-					g.drawString(String.format(
-							"%.0f,%.0f,%.0f\n",
-							Angle.toDegrees(longestMotherAxisOrientation),
-							n.getDivision().getNewJunctionOrientation(),
-							n.getDivision().getDivisionOrientation()), 
-							(float)cX - 5  , 
-							(float)cY + 5);
 					
+					//Draw chosen Mother orientation
+//					g.setColor(longestAxisOrientationColor);
+//					g.draw(new Line2D.Double(mx0, my0,mx1,my1));
+					
+					//Give text information about angles
+//					g.setColor(newJunctionAngleColor);
+//					g.drawString(String.format(
+//							"%.0f,%.0f,%.0f\n",
+//							Angle.toDegrees(longestMotherAxisOrientation),
+//							n.getDivision().getNewJunctionOrientation(),
+//							n.getDivision().getDivisionOrientation()), 
+//							(float)cX - 5  , 
+//							(float)cY + 5);
+//					
 					//System.out.printf("%.2f\n",n.getDivision().getDivisionOrientation());
 				}
 			}

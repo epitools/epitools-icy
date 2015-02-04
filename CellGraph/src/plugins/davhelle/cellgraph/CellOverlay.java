@@ -23,6 +23,7 @@ import java.util.Random;
 
 import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
+import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
@@ -30,6 +31,7 @@ import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.adufour.ezplug.EzVarText;
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -83,25 +85,37 @@ public class CellOverlay extends EzPlug {
 	
 	//plotting modes
 	private enum PlotEnum{
+		
 		TEST,
-		CELLS,
-		BORDER, 
-		VORONOI, 
+		CELL_CENTROIDS,
+		CELL_AREA,
+		TISSUE_BORDER, 
+		
+		VORONOI_DIAGRAM, 
 		POLYGON_CLASS,
 		POLYGON_TILE,
-		AREA_THRESHOLD,
-		TRACKING,
-		GRAPH_PAINTER,
-		ALWAYS_TRACKED,
-		WRITE_OUT,
-		DIVISIONS,
-		GRAPH_EXPORT,
-		COLOR_TAG,
-		SAVE_TAG,
-		SAVE_TAG_XLS,
+		GRAPH_VIEW,
+		
+		CELL_TRACKING,
+		ALWAYS_TRACKED_CELLS,
+		DIVISIONS_AND_ELIMINATIONS,
+		CORRECTION_HINTS,
+		
+		GRAPHML_EXPORT,
+		WRITE_OUT_DDN,
+		CELL_COLOR_TAG,
+		SAVE_COLOR_TAG,
+		SAVE_COLOR_TAG_XLS,
 		SAVE_SKELETONS,
-		CORRECTION_HINTS, TRANSITIONS, EDGE_STABILITY, NEIGHBOR_STABILITY, EDGE_INTENSITY, 
+		
+		T1_TRANSITIONS, 
+		EDGE_STABILITY,
+		EDGE_INTENSITY,
+		NEIGHBOR_STABILITY,  
+		
 		ELLIPSE_FIT,
+		ELLIPSE_FIT_WRT_POINT_ROI,
+		ELONGATION_RATIO,
 		DIVSION_ORIENTATION,
 		PDF_SCREENSHOT
 	}
@@ -134,8 +148,9 @@ public class CellOverlay extends EzPlug {
 	EzVarInteger				varFrameNo;
 	
 	//CellMarker
-	EzVarEnum<CellColor>		varCellColor;		
-
+	EzVarEnum<CellColor>		varCellColor;
+	
+	EzLabel varDescriptionLabel;
 	//sequence to paint on 
 	EzVarSequence				varSequence;
 	Sequence sequence;
@@ -157,14 +172,7 @@ public class CellOverlay extends EzPlug {
 	@Override
 	protected void initialize() {
 		
-		//Default options
-		
-		varSequence = new EzVarSequence("Input sequence");
-		super.addEzComponent(varSequence);
-		
-		varRemovePainterFromSequence = new EzVarBoolean("Remove all painters", false);
-		super.addEzComponent(varRemovePainterFromSequence);
-		
+		//Deprecated
 		varUpdatePainterMode = new EzVarBoolean("Update painter", false);
 
 		//Cells view
@@ -206,7 +214,7 @@ public class CellOverlay extends EzPlug {
 				varAreaThreshold);
 		
 		//Which painter should be shown by default
-		varPlotting = new EzVarEnum<PlotEnum>("Overlay type",
+		varPlotting = new EzVarEnum<PlotEnum>("Overlay",
 				PlotEnum.values(),PlotEnum.TEST);
 		
 
@@ -265,11 +273,17 @@ public class CellOverlay extends EzPlug {
 				varMinimalOldSurvival,
 				varSaveTransitions,
 				varSaveToPdf);
+
+		//Description label
+		varDescriptionLabel = new EzLabel("overlay description will appear here");
+		EzGroup groupDescription = new EzGroup("summary",
+				varDescriptionLabel);
 		
 		//Painter
-		EzGroup groupPainters = new EzGroup("Overlays",
-				varUpdatePainterMode,
+		EzGroup groupPainters = new EzGroup("1. SELECT OVERLAY TO ADD",
+				//varUpdatePainterMode,
 				varPlotting,
+				groupDescription,
 				groupCellMap,
 				groupPolygonClass,
 				groupVoronoiMap,
@@ -280,23 +294,32 @@ public class CellOverlay extends EzPlug {
 				groupMarker,
 				groupSaveSkeleton,
 				groupTransitions
+				
 		);
 		
-		varRemovePainterFromSequence.addVisibilityTriggerTo(groupPainters, false);
-		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELLS);
+		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELL_CENTROIDS);
 		varPlotting.addVisibilityTriggerTo(groupPolygonClass, PlotEnum.POLYGON_CLASS);
-		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI);
-		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, PlotEnum.AREA_THRESHOLD);
+		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI_DIAGRAM);
+		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, PlotEnum.CELL_AREA);
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
-		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.TRACKING);
-		varPlotting.addVisibilityTriggerTo(groupDivisions, PlotEnum.DIVISIONS);
-		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPH_EXPORT);
-		varPlotting.addVisibilityTriggerTo(groupMarker, PlotEnum.COLOR_TAG);
+		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.CELL_TRACKING);
+		varPlotting.addVisibilityTriggerTo(groupDivisions, PlotEnum.DIVISIONS_AND_ELIMINATIONS);
+		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPHML_EXPORT);
+		varPlotting.addVisibilityTriggerTo(groupMarker, PlotEnum.CELL_COLOR_TAG);
 		varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, PlotEnum.SAVE_SKELETONS);
-		varPlotting.addVisibilityTriggerTo(groupTransitions, PlotEnum.TRANSITIONS);
+		varPlotting.addVisibilityTriggerTo(groupTransitions, PlotEnum.T1_TRANSITIONS);
 		super.addEzComponent(groupPainters);
 		
 		
+		//VISUALIZATION GROUP
+		varSequence = new EzVarSequence("Image to add overlay to");
+		varRemovePainterFromSequence = new EzVarBoolean("Remove previous overlays", false);
+		
+		EzGroup groupVisualization = new EzGroup("2. SELECT DESTINATION",
+				varSequence,
+				varRemovePainterFromSequence);
+		
+		super.addEzComponent(groupVisualization);
 	}
 
 	@Override
@@ -316,209 +339,210 @@ public class CellOverlay extends EzPlug {
 				sequence.painterChanged(painter);    				
 			}
 		}
-		else{
+		
+		// watch if objects are already in the swimming pool:
+		//TODO time_stamp collection?
 
-			// watch if objects are already in the swimming pool:
-			//TODO time_stamp collection?
+		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
 
-			if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
+			for ( SwimmingObject swimmingObject : 
+				Icy.getMainInterface().getSwimmingPool().getObjects(
+						"stGraph", true) ){
 
-				for ( SwimmingObject swimmingObject : 
-					Icy.getMainInterface().getSwimmingPool().getObjects(
-							"stGraph", true) ){
+				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
 
-					if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
+					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
 
-						SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+					//Data statistics
 
-						//Data statistics
-						
-						//System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
-						//System.out.println("CellVisualizer:	"+wing_disc_movie.getFrame(0).size()+" cells in first frame");
-						
-						//Eliminates the previous painter and runs the 
-						//the program (update mode)
-						
-						if(varUpdatePainterMode.getValue()){
-							List<Painter> painters = sequence.getPainters();
-							for (Painter painter : painters) {
-								sequence.removePainter(painter);
-								sequence.painterChanged(painter);    				
-							}
+					//System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
+					//System.out.println("CellVisualizer:	"+wing_disc_movie.getFrame(0).size()+" cells in first frame");
+
+					//Eliminates the previous painter and runs the 
+					//the program (update mode)
+
+					if(varUpdatePainterMode.getValue()){
+						List<Painter> painters = sequence.getPainters();
+						for (Painter painter : painters) {
+							sequence.removePainter(painter);
+							sequence.painterChanged(painter);    				
 						}
-						
-						//Overlay type
+					}
 
-						PlotEnum USER_CHOICE = varPlotting.getValue();
+					//Overlay type
 
-						switch (USER_CHOICE){
-						case TEST:
-							sequence.addOverlay(
-									new ElongationRatioOverlay(wing_disc_movie));
-									//new EllipseFitColorOverlay(wing_disc_movie));
-							break;
-						case ELLIPSE_FIT:
-							sequence.addOverlay(
-									new EllipseFitterOverlay(wing_disc_movie));
-							break;
-						case DIVSION_ORIENTATION:
-							sequence.addOverlay(
-									new DivisionOrientationOverlay(wing_disc_movie));
-							break;
-						case BORDER: 
-							sequence.addOverlay(
-									new BorderPainter(wing_disc_movie));
-							break;
+					PlotEnum USER_CHOICE = varPlotting.getValue();
 
-						case CELLS: 
-							cellMode(wing_disc_movie);
-							break;
-
-						case POLYGON_CLASS: 
-							boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
-							int highlight_polygonal_class = varHighlightClass.getValue();
-							
-							
-							PolygonClassPainter pc_painter =  new PolygonClassPainter(
-									wing_disc_movie,
-									draw_polygonal_numbers,
-									highlight_polygonal_class);
-							
-							if(varSavePolyClass.getValue() && varSavePolyClass.isVisible()){
-								pc_painter.saveToCsv();
-							}
-							
-							sequence.addOverlay(
-									pc_painter);
-							break;
-						
-						case POLYGON_TILE:
-							sequence.addOverlay(
-									new PolygonConverterPainter(wing_disc_movie));
-							break;
-							
-						case DIVISIONS: 
-							divisionMode(
-									wing_disc_movie, 
-									varBooleanReadDivisions.getValue());
-							break;
-
-						case VORONOI: 
-							voronoiMode(wing_disc_movie);
-							break;
-
-						case AREA_THRESHOLD: 
-							sequence.addOverlay(
-									new AreaThresholdPainter(
-											wing_disc_movie, 
-											varAreaThreshold));
-							break;
-
-						case ALWAYS_TRACKED: 
-							sequence.addOverlay(
-									new AlwaysTrackedCellsOverlay(
-											wing_disc_movie));
-							break;
-
-						case WRITE_OUT: 
-							
-							//CsvWriter.custom_write_out(wing_disc_movie);
-							writeOutMode(wing_disc_movie);
-							break;
-							
-						case TRACKING:
-							
-							trackingMode(
-									wing_disc_movie,
-									varBooleanCellIDs.getValue(),
-									varBooleanHighlightMistakesBoolean.getValue(),
-									varBooleanDrawDisplacement.getValue());
-							
+					switch (USER_CHOICE){
+					case TEST:
+						sequence.addOverlay(
+								new ElongationRatioOverlay(wing_disc_movie));
+						//new EllipseFitColorOverlay(wing_disc_movie));
 						break;
-						case EDGE_INTENSITY:
-							
-							sequence.addOverlay(
-									new IntesityGraphOverlay(
-											wing_disc_movie, sequence, this.getUI()));
-							
-							break;
-							
-						case GRAPH_PAINTER:	
-							sequence.addOverlay(
-									new GraphPainter(
-											wing_disc_movie));
-							
-							break;
+					case ELLIPSE_FIT:
+						sequence.addOverlay(
+								new EllipseFitterOverlay(wing_disc_movie));
+						break;
+					case DIVSION_ORIENTATION:
+						sequence.addOverlay(
+								new DivisionOrientationOverlay(wing_disc_movie));
+						break;
+					case TISSUE_BORDER: 
+						sequence.addOverlay(
+								new BorderPainter(wing_disc_movie));
+						break;
+
+					case CELL_CENTROIDS: 
+						cellMode(wing_disc_movie);
+						break;
+
+					case POLYGON_CLASS: 
+						boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
+						int highlight_polygonal_class = varHighlightClass.getValue();
+
+
+						PolygonClassPainter pc_painter =  new PolygonClassPainter(
+								wing_disc_movie,
+								draw_polygonal_numbers,
+								highlight_polygonal_class);
+
+						if(varSavePolyClass.getValue() && varSavePolyClass.isVisible()){
+							pc_painter.saveToCsv();
+						}
+
+						sequence.addOverlay(
+								pc_painter);
+						break;
+
+					case POLYGON_TILE:
+						sequence.addOverlay(
+								new PolygonConverterPainter(wing_disc_movie));
+						break;
+
+					case DIVISIONS_AND_ELIMINATIONS: 
+						divisionMode(
+								wing_disc_movie, 
+								varBooleanReadDivisions.getValue());
+						break;
+
+					case VORONOI_DIAGRAM: 
+						voronoiMode(wing_disc_movie);
+						break;
+
+					case CELL_AREA: 
+						sequence.addOverlay(
+								new AreaThresholdPainter(
+										wing_disc_movie, 
+										varAreaThreshold));
+						break;
+
+					case ALWAYS_TRACKED_CELLS: 
+						sequence.addOverlay(
+								new AlwaysTrackedCellsOverlay(
+										wing_disc_movie));
+						break;
+
+					case WRITE_OUT_DDN: 
+
+						//CsvWriter.custom_write_out(wing_disc_movie);
+						writeOutMode(wing_disc_movie);
+						break;
+
+					case CELL_TRACKING:
+
+						trackingMode(
+								wing_disc_movie,
+								varBooleanCellIDs.getValue(),
+								varBooleanHighlightMistakesBoolean.getValue(),
+								varBooleanDrawDisplacement.getValue());
+
+						break;
+					case EDGE_INTENSITY:
+
+						sequence.addOverlay(
+								new IntesityGraphOverlay(
+										wing_disc_movie, sequence, this.getUI()));
+
+						break;
+
+					case GRAPH_VIEW:	
+						sequence.addOverlay(
+								new GraphPainter(
+										wing_disc_movie));
+
+						break;
 
 						//Tagging
-						
-						case COLOR_TAG:
-							sequence.addOverlay(
-									new CellMarker(wing_disc_movie,varCellColor));
-							sequence.addOverlay(
-									new ColorTagPainter(wing_disc_movie));
-							break;
-						case SAVE_TAG:
-							new TagSaver(wing_disc_movie);
-							break;
-						case SAVE_TAG_XLS:
-							new CellWorkbook(wing_disc_movie);
-							break;
-							
+
+					case CELL_COLOR_TAG:
+						sequence.addOverlay(
+								new CellMarker(wing_disc_movie,varCellColor));
+						sequence.addOverlay(
+								new ColorTagPainter(wing_disc_movie));
+						break;
+					case SAVE_COLOR_TAG:
+						new TagSaver(wing_disc_movie);
+						break;
+					case SAVE_COLOR_TAG_XLS:
+						new CellWorkbook(wing_disc_movie);
+						break;
+
 						//Export and Corrections
-							
-						case GRAPH_EXPORT:
-							graphExportMode(
-									wing_disc_movie,
-									varExportType.getValue(),
-									varOutputFile.getValue(false),
-									varFrameNo.getValue());
-							break;	
-						case SAVE_SKELETONS:
-							new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
-							break;
-						case CORRECTION_HINTS:
-							sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
-							break;
-							
-							
+
+					case GRAPHML_EXPORT:
+						graphExportMode(
+								wing_disc_movie,
+								varExportType.getValue(),
+								varOutputFile.getValue(false),
+								varFrameNo.getValue());
+						break;	
+					case SAVE_SKELETONS:
+						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
+						break;
+					case CORRECTION_HINTS:
+						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+						break;
+
+
 						// Edge Dynamics	
-							
-						case TRANSITIONS:
-							
-							TransitionOverlay t1 = new TransitionOverlay(wing_disc_movie, this);
-							if(varSaveTransitions.getValue())
-								t1.saveToCsv();
-							
-							if(varSaveToPdf.getValue())
-								t1.saveToPdf();
-							
-							sequence.addOverlay(t1);
-							break;
-							
-						case EDGE_STABILITY:
-							sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
-							break;
-						case NEIGHBOR_STABILITY:
-							sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
-							break;
-						case PDF_SCREENSHOT:
-							new PdfPrinter(wing_disc_movie);
-							break;
-						default:
-							break;
-									
-						}
-						//future statistical output statistics
-						//			CsvWriter.trackedArea(wing_disc_movie);
-						//			CsvWriter.frameAndArea(wing_disc_movie);
-						//CsvWriter.custom_write_out(wing_disc_movie);
-						
+
+					case T1_TRANSITIONS:
+
+						TransitionOverlay t1 = new TransitionOverlay(wing_disc_movie, this);
+
+						if(varSaveTransitions.getValue())
+							t1.saveToCsv();
+
+						if(varSaveToPdf.getValue())
+							t1.saveToPdf();
+
+						sequence.addOverlay(t1);
+						break;
+
+					case EDGE_STABILITY:
+						sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
+						break;
+					case NEIGHBOR_STABILITY:
+						sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
+						break;
+					case PDF_SCREENSHOT:
+						new PdfPrinter(wing_disc_movie);
+						break;
+
+					default:
+						break;
+
 					}
+					//future statistical output statistics
+					//			CsvWriter.trackedArea(wing_disc_movie);
+					//			CsvWriter.frameAndArea(wing_disc_movie);
+					//CsvWriter.custom_write_out(wing_disc_movie);
+
 				}
-			else
-				new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
-		}
+			}
+		else
+			new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
+		
 	}
 
 	private void graphExportMode(

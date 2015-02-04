@@ -7,13 +7,10 @@ package plugins.davhelle.cellgraph;
 
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
-import icy.painter.Overlay;
 import icy.painter.Painter;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
-import icy.canvas.IcyCanvas2D;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,8 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import plugins.adufour.ezplug.EzComponent;
-import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
@@ -34,7 +29,6 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
-import plugins.adufour.ezplug.EzVarText;
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -45,13 +39,8 @@ import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
-import plugins.davhelle.cellgraph.misc.EzEnumDescription;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
-import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
-import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
-import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
@@ -60,12 +49,16 @@ import plugins.davhelle.cellgraph.painters.CellMarker;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
 import plugins.davhelle.cellgraph.painters.ColorTagPainter;
 import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
+import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
+import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
+import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
+import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.ElongationRatioOverlay;
 import plugins.davhelle.cellgraph.painters.GraphPainter;
 import plugins.davhelle.cellgraph.painters.IntesityGraphOverlay;
 import plugins.davhelle.cellgraph.painters.NeighborChangeFrequencyOverlay;
-import plugins.davhelle.cellgraph.painters.PlotEnum;
+import plugins.davhelle.cellgraph.painters.OverlayEnum;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
@@ -86,12 +79,12 @@ import plugins.davhelle.cellgraph.painters.VoronoiPainter;
  * @author Davide Heller
  *
  */
-public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
+public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	
 	EzVarBoolean				varRemovePainterFromSequence;
 	EzVarBoolean				varUpdatePainterMode;
 	
-	EzVarEnum<PlotEnum> 		varPlotting;
+	EzVarEnum<OverlayEnum> 		varPlotting;
 
 	EzVarBoolean				varBooleanPolygon;
 	EzVarBoolean				varBooleanDerivedPolygons;
@@ -182,8 +175,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 				varAreaThreshold);
 		
 		//Which painter should be shown by default
-		varPlotting = new EzVarEnum<PlotEnum>("Overlay",
-				PlotEnum.values(),PlotEnum.TEST);
+		varPlotting = new EzVarEnum<OverlayEnum>("Overlay",
+				OverlayEnum.values(),OverlayEnum.TEST);
 		
 
 		//Division mode
@@ -266,17 +259,17 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 				
 		);
 		
-		varPlotting.addVisibilityTriggerTo(groupCellMap, PlotEnum.CELL_CENTROIDS);
-		varPlotting.addVisibilityTriggerTo(groupPolygonClass, PlotEnum.POLYGON_CLASS);
-		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, PlotEnum.VORONOI_DIAGRAM);
-		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, PlotEnum.CELL_AREA);
+		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OVERLAY);
+		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.POLYGON_CLASS);
+		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.VORONOI_DIAGRAM);
+		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
-		varPlotting.addVisibilityTriggerTo(groupTracking, PlotEnum.CELL_TRACKING);
-		varPlotting.addVisibilityTriggerTo(groupDivisions, PlotEnum.DIVISIONS_AND_ELIMINATIONS);
-		varPlotting.addVisibilityTriggerTo(groupExport, PlotEnum.GRAPHML_EXPORT);
-		varPlotting.addVisibilityTriggerTo(groupMarker, PlotEnum.CELL_COLOR_TAG);
-		varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, PlotEnum.SAVE_SKELETONS);
-		varPlotting.addVisibilityTriggerTo(groupTransitions, PlotEnum.T1_TRANSITIONS);
+		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.CELL_TRACKING);
+		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
+		varPlotting.addVisibilityTriggerTo(groupExport, OverlayEnum.GRAPHML_EXPORT);
+		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
+		varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, OverlayEnum.SAVE_SKELETONS);
+		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -340,7 +333,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 
 					//Overlay type
 
-					PlotEnum USER_CHOICE = varPlotting.getValue();
+					OverlayEnum USER_CHOICE = varPlotting.getValue();
 
 					switch (USER_CHOICE){
 					case TEST:
@@ -353,12 +346,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 						sequence.addOverlay(
 								new DivisionOrientationOverlay(wing_disc_movie));
 						break;
-					case TISSUE_BORDER: 
+					case SEGMENTATION_BORDER: 
 						sequence.addOverlay(
 								new BorderPainter(wing_disc_movie));
 						break;
 
-					case CELL_CENTROIDS: 
+					case CELL_OVERLAY: 
 						cellMode(wing_disc_movie);
 						break;
 
@@ -762,7 +755,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 	}
 
 	@Override
-	public void variableChanged(EzVar<PlotEnum> source, PlotEnum newValue) {
+	public void variableChanged(EzVar<OverlayEnum> source, OverlayEnum newValue) {
 		varDescriptionLabel.setText(newValue.getDescription());		
 	}
 }

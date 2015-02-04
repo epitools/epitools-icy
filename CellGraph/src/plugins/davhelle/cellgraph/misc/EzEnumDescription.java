@@ -16,13 +16,13 @@ import plugins.adufour.ezplug.EzComponent;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarListener;
-import plugins.davhelle.cellgraph.painters.PlotEnum;
+import plugins.davhelle.cellgraph.painters.OverlayEnum;
 
 public class EzEnumDescription extends EzComponent
 {
 
 	private JTextArea jTextArea;
-	private EzVarEnum<PlotEnum> overlay;
+	private EzVarEnum<OverlayEnum> overlay;
 
 	/**
 	 * Creates a new EzButton with given title and action listener (i.e. the method which will be
@@ -33,7 +33,7 @@ public class EzEnumDescription extends EzComponent
 	 * @param textColor
 	 *            the default text color
 	 */
-	public EzEnumDescription(final EzVarEnum<PlotEnum> overlay_choice)
+	public EzEnumDescription(final EzVarEnum<OverlayEnum> overlay_choice)
 	{
 		
 		super("label");

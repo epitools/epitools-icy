@@ -222,11 +222,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<SegmentationProgram>(
-				"> Segmentation tool",SegmentationProgram.values(), SegmentationProgram.SeedWater);
+				"\tSegmentation tool",SegmentationProgram.values(), SegmentationProgram.SeedWater);
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"Input files", "/Users/davide/data/");
+				"First time point", "/Users/davide/data/");
 	
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
@@ -235,8 +235,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varCutBorder = new EzVarBoolean("Cut one border line",true);
 		
 		//small cell elimination
-		varRemoveSmallCells = new EzVarBoolean("Remove too small cells", true);
-		varAreaThreshold = new EzVarDouble("> Min. cell area", 10, 0, Double.MAX_VALUE, 0.1);
+		varRemoveSmallCells = new EzVarBoolean("Remove very small cells", true);
+		varAreaThreshold = new EzVarDouble("\tThreshold area [px]", 10, 0, Double.MAX_VALUE, 0.1);
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
 		EzGroup inputTypeGroup = new EzGroup("Input parameters",

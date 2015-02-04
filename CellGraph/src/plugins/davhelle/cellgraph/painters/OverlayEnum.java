@@ -1,11 +1,17 @@
 package plugins.davhelle.cellgraph.painters;
 
-public enum PlotEnum{
+/**
+ * Enumeration of available overlays in the CellOverlay-Plugin
+ * 
+ * @author Davide Heller
+ *
+ */
+public enum OverlayEnum{
 	
 	TEST("Test Overlay"),
-	CELL_CENTROIDS("Simple Overlay to show cells and their outlines in a color of choice"),
+	CELL_OVERLAY("Simple Overlay to show cells and their outlines in a color of choice"),
 	CELL_AREA("Overlay to color cells according to their area size in a gradient fashion"),
-	TISSUE_BORDER("Overlay to show where the border of the segmentation was identified"), 
+	SEGMENTATION_BORDER("Overlay to show where the border of the segmentation was identified"), 
 	
 	VORONOI_DIAGRAM("Overlay displays the voronoi diagram computed from the cell centroids"), 
 	POLYGON_CLASS("Displays the number of neighbors each cell has with color code or number"),
@@ -36,6 +42,6 @@ public enum PlotEnum{
 	PDF_SCREENSHOT("Generates a screenshot in PDF format");
 	
 	private String description;
-	private PlotEnum(String description){this.description = description;}
+	private OverlayEnum(String description){this.description = description;}
 	public String getDescription(){return description;}
 }

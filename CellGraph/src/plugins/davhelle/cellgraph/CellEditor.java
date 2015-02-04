@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import loci.formats.FormatException;
+import plugins.adufour.ezplug.EzGroup;
+import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
@@ -89,11 +91,23 @@ public class CellEditor extends EzPlug{
 		varSaveChanges = new EzVarBoolean("Save changes", false );
 		varRegenerateGraph = new EzVarBoolean("Regenerate graph (default only!)", false);
 		
+		EzLabel description = new EzLabel("Cell Editor allows to edit skeletons in tiff format:\n\n"+
+		"1. Backup your original skeletons or convert them into 8-bit binary TIFF format\n"+
+		"2. Open the image on which you want to draw [raw] and set the sequence as [Input]\n" +
+		"3. Open the skeletons which you want to edit and set the sequence as [Output]\n"+
+		"4. Set the painter to white/black to add or remove edges\n"+
+		"5. Apply changes only to a single frame. Multi-timepoint modifications are not supported!\n\n" +
+		"* Before selecting [Save changes] do a test run without permanent changes\n"+
+		"* A useful addition is the CorrectionOverlay to hint to segmentation errors");
+		
+		EzGroup descriptionGroup = new EzGroup("Plugin Description",description);
+		
+		super.addEzComponent(descriptionGroup);
 		super.addEzComponent(varInputSeq);
 		super.addEzComponent(varOutputSeq);
-		super.addEzComponent(varTool);
+		//super.addEzComponent(varTool);
 		super.addEzComponent(varSaveChanges);
-		super.addEzComponent(varRegenerateGraph);
+		//super.addEzComponent(varRegenerateGraph);
 	}
 
 	@Override

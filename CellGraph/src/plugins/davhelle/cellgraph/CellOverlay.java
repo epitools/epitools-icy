@@ -458,9 +458,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 //					case SAVE_SKELETONS:
 //						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
 //						break;
-//					case CORRECTION_HINTS:
-//						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
-//						break;
+					case CORRECTION_HINTS:
+						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+						break;
 
 
 						// Edge Dynamics	

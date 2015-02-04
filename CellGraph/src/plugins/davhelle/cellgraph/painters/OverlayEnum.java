@@ -24,7 +24,7 @@ public enum OverlayEnum{
 	CELL_TRACKING("Overlay to review the tracking in case it has been eliminated or to highlight different aspects"),
 	//ALWAYS_TRACKED_CELLS("Highlights only the cells that have been continuously tracked throughout the time lapse"),
 	DIVISIONS_AND_ELIMINATIONS("Highlights the cells that underwent division or elimination"),
-	//CORRECTION_HINTS("Overlay to help identifying cells which have been segmented wrongly, best used in combination with CellEditor plugin"),
+	CORRECTION_HINTS("Overlay to help identifying cells which have been segmented wrongly, best used in combination with CellEditor plugin"),
 	
 	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
 	//WRITE_OUT_DDN("Statistics output"),

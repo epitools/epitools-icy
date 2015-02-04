@@ -5,6 +5,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
+import icy.gui.dialog.SaveDialog;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
@@ -35,7 +36,12 @@ public class CellWorkbook {
 	public CellWorkbook(SpatioTemporalGraph stGraph){
 		this.stGraph = stGraph;
 		
-		file_name = "/Users/davide/tmp/workbook";
+		file_name = SaveDialog.chooseFile(
+				"Please choose where to save the excel sheet", 
+				"/Users/davide/analysis/",
+				"marked_cells",
+				"");
+
 		file_name += XLSUtil.FILE_DOT_EXTENSION;
 		
 		//create Workbook (2007 compatible)

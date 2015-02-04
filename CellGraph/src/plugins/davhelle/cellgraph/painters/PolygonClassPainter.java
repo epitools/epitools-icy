@@ -162,7 +162,7 @@ public class PolygonClassPainter extends Overlay{
 		String file_name = SaveDialog.chooseFile(
 				"Please choose where to save the CSV PolygonClass statistics", 
 				"/Users/davide/tmp/",
-				"t1_transitions",
+				"polygon_class",
 				"");
 		
 		StringBuilder builder_main = new StringBuilder();

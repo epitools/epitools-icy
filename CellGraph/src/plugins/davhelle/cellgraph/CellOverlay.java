@@ -176,7 +176,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//Which painter should be shown by default
 		varPlotting = new EzVarEnum<OverlayEnum>("Overlay",
-				OverlayEnum.values(),OverlayEnum.TEST);
+				OverlayEnum.values(),OverlayEnum.CELL_OVERLAY);
 		
 
 		//Division mode
@@ -336,8 +336,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					OverlayEnum USER_CHOICE = varPlotting.getValue();
 
 					switch (USER_CHOICE){
-					case TEST:
-						break;
+//					case TEST:
+//						break;
 					case ELLIPSE_FIT:
 						sequence.addOverlay(
 								new EllipseFitterOverlay(wing_disc_movie));
@@ -373,10 +373,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								pc_painter);
 						break;
 
-					case POLYGON_TILE:
-						sequence.addOverlay(
-								new PolygonConverterPainter(wing_disc_movie));
-						break;
+//					case POLYGON_TILE:
+//						sequence.addOverlay(
+//								new PolygonConverterPainter(wing_disc_movie));
+//						break;
 
 					case DIVISIONS_AND_ELIMINATIONS: 
 						divisionMode(
@@ -395,17 +395,17 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 										varAreaThreshold));
 						break;
 
-					case ALWAYS_TRACKED_CELLS: 
-						sequence.addOverlay(
-								new AlwaysTrackedCellsOverlay(
-										wing_disc_movie));
-						break;
+//					case ALWAYS_TRACKED_CELLS: 
+//						sequence.addOverlay(
+//								new AlwaysTrackedCellsOverlay(
+//										wing_disc_movie));
+//						break;
 
-					case WRITE_OUT_DDN: 
-
-						//CsvWriter.custom_write_out(wing_disc_movie);
-						writeOutMode(wing_disc_movie);
-						break;
+//					case WRITE_OUT_DDN: 
+//
+//						//CsvWriter.custom_write_out(wing_disc_movie);
+//						writeOutMode(wing_disc_movie);
+//						break;
 
 					case CELL_TRACKING:
 
@@ -439,9 +439,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						sequence.addOverlay(
 								new ColorTagPainter(wing_disc_movie));
 						break;
-					case SAVE_COLOR_TAG:
-						new TagSaver(wing_disc_movie);
-						break;
+//					case SAVE_COLOR_TAG:
+//						new TagSaver(wing_disc_movie);
+//						break;
 					case SAVE_COLOR_TAG_XLS:
 						new CellWorkbook(wing_disc_movie);
 						break;
@@ -458,9 +458,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					case SAVE_SKELETONS:
 						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
 						break;
-					case CORRECTION_HINTS:
-						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
-						break;
+//					case CORRECTION_HINTS:
+//						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+//						break;
 
 
 						// Edge Dynamics	
@@ -481,12 +481,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					case EDGE_STABILITY:
 						sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
 						break;
-					case NEIGHBOR_STABILITY:
-						sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
-						break;
-					case PDF_SCREENSHOT:
-						new PdfPrinter(wing_disc_movie);
-						break;
+//					case NEIGHBOR_STABILITY:
+//						sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
+//						break;
+//					case PDF_SCREENSHOT:
+//						new PdfPrinter(wing_disc_movie);
+//						break;
 					case ELLIPSE_FIT_WRT_POINT_ROI:
 						sequence.addOverlay(
 								new EllipseFitColorOverlay(wing_disc_movie));

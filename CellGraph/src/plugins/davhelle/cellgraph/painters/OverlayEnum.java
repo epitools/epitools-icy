@@ -31,7 +31,7 @@ public enum OverlayEnum{
 	CELL_COLOR_TAG("Overlay to interactively mark cells with a color of choice (after excecution the color can be still changed), export with SAVE_COLOR TAG"),
 	//SAVE_COLOR_TAG("Saves the area of each cell in CSV that has been marked with the CELL_COLOR_TAG overlay"),
 	SAVE_COLOR_TAG_XLS("Saves the area of each cell in XLS that has been marked with the CELL_COLOR_TAG overlay"),
-	SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
+	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
 	
 	T1_TRANSITIONS("Computes and displays the T1 transitions present in the time lapse [time consuming!]"), 
 	EDGE_STABILITY("Displays a color code for how stable edges are (green=stable, red=not stable)[time consuming!]"),
@@ -41,7 +41,8 @@ public enum OverlayEnum{
 	ELLIPSE_FIT("Fits an ellipse to each cell geometry and displays the longest axis"),
 	ELLIPSE_FIT_WRT_POINT_ROI("To enable this plugin a Point ROI must be present on the image. "+
 	"The overlay computes the angle towards the ELLIPSE_FIT and displays it as a color code. "),
-	ELONGATION_RATIO("Color codes the cell according to their elongation ratio"),
+	ELONGATION_RATIO("Color codes the cell according to their elongation ratio and "+
+	"writes the elongation factor within every cell"), // could add csv option here
 	//PDF_SCREENSHOT("Generates a screenshot in PDF format"),
 	DIVSION_ORIENTATION("Color codes the dividing cells according to their new junction orientation (Longest axis of mother cell vs New junction");
 	

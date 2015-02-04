@@ -46,7 +46,7 @@ public class ElongationRatioOverlay extends Overlay{
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 		
 		int fontSize = 3;
-		boolean show_only_divsion=true;
+		boolean show_only_divsion=false;
 		
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 		if(time_point < stGraph.size()){
@@ -77,8 +77,8 @@ public class ElongationRatioOverlay extends Overlay{
 				g.setColor(Color.black);
 				g.drawString(String.format("%.1f",
 						elongation_ratio), 
-						(float)n.getCentroid().getX() - 10  , 
-						(float)n.getCentroid().getY() + 5);
+						(float)n.getCentroid().getX(), 
+						(float)n.getCentroid().getY());
 			}
 
 		}

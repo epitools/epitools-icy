@@ -254,7 +254,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupTracking,
 				groupExport,
 				groupMarker,
-				groupSaveSkeleton,
+				//groupSaveSkeleton,
 				groupTransitions
 				
 		);
@@ -268,7 +268,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
 		varPlotting.addVisibilityTriggerTo(groupExport, OverlayEnum.GRAPHML_EXPORT);
 		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
-		varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, OverlayEnum.SAVE_SKELETONS);
+		//varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, OverlayEnum.SAVE_SKELETONS);
 		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
 		super.addEzComponent(groupPainters);
 		
@@ -455,9 +455,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								varOutputFile.getValue(false),
 								varFrameNo.getValue());
 						break;	
-					case SAVE_SKELETONS:
-						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
-						break;
+//					case SAVE_SKELETONS:
+//						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
+//						break;
 //					case CORRECTION_HINTS:
 //						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 //						break;

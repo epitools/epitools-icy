@@ -52,6 +52,11 @@ public interface SpatioTemporalGraph {
 	 */
 	public boolean hasVoronoi();
 	
+	/**
+	 * @return true if stGraph nodes were fit with an ellipse
+	 */
+	public boolean hasEllipseFitting();
+	
 	/** 
 	 * @return changes tracking state
 	 */
@@ -62,4 +67,10 @@ public interface SpatioTemporalGraph {
 	 * @return change voronoi state
 	 */
 	public void setVoronoi(boolean new_state);
+	
+	/**
+	 * set whether or not an ellipse fitting is present
+	 * @param new_state
+	 */
+	public void setEllipseFitting(boolean new_state);
 }

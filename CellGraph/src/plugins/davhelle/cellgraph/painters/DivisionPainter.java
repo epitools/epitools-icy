@@ -55,38 +55,52 @@ public class DivisionPainter extends Overlay {
 		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
-		if(time_point < stGraph.size()){
-			
-			if(!FILL_CELLS)
-				g.setStroke(new BasicStroke(3));
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			
-			for(Node cell: frame_i.vertexSet()){
-				if(cell.getFirst() != null){
-					
-					if(PLOT_DIVISIONS)
-						if(cell.getFirst().hasObservedDivision()){
+		if(time_point < stGraph.size())
+			paintFrame(g, time_point);
+		
+	}
+
+	/**
+	 * @param g
+	 * @param time_point
+	 */
+	public void paintFrame(Graphics2D g, int time_point) {
+		if(!FILL_CELLS)
+			g.setStroke(new BasicStroke(3));
+		
+		FrameGraph frame_i = stGraph.getFrame(time_point);
+		
+		for(Node cell: frame_i.vertexSet()){
+			if(cell.getFirst() != null){
+				
+				if(PLOT_DIVISIONS)
+					if(cell.getFirst().hasObservedDivision()){
+						if(cell.getDivision().isMother(cell))
 							g.setColor(Color.blue);
-							if(FILL_CELLS)
-								g.fill(cell.toShape());
-							else
-								g.draw(cell.toShape());	
-						}					
-					if(PLOT_ELIMINATIONS)
-						if(cell.getFirst().hasObservedElimination()){
-							if(PLOT_DIVISIONS && cell.getFirst().hasObservedDivision())
-								g.setColor(Color.yellow);
-							else
-								g.setColor(Color.red);
-							
-							if(FILL_CELLS)
-								g.fill(cell.toShape());
-							else
-								g.draw(cell.toShape());
-						}	
-				}
-			}	
+						else
+							g.setColor(Color.cyan);
+						
+						if(FILL_CELLS)
+							g.fill(cell.toShape());
+						else
+							g.draw(cell.toShape());	
+					}					
+				if(PLOT_ELIMINATIONS)
+					if(cell.getFirst().hasObservedElimination()){
+						if(PLOT_DIVISIONS && cell.getFirst().hasObservedDivision())
+							g.setColor(Color.yellow);
+						else
+							g.setColor(Color.red);
+						
+						if(FILL_CELLS)
+							g.fill(cell.toShape());
+						else
+							g.draw(cell.toShape());
+					}	
+			}
 		}
+		
+		if(!FILL_CELLS)
+			g.setStroke(new BasicStroke(1));
 	}
 }

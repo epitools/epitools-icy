@@ -6,6 +6,7 @@
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
+import icy.gui.dialog.SaveDialog;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
@@ -13,9 +14,11 @@ import icy.sequence.Sequence;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.io.File;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -46,13 +49,23 @@ public class PolygonClassPainter extends Overlay{
 	{
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
-		if(time_point < stGraph.size()){
+		if(time_point < stGraph.size())
+			paintFrame(g, time_point);
+	}
+
+	/**
+	 * @param g
+	 * @param time_point
+	 */
+	public void paintFrame(Graphics2D g, int time_point) {
+		{
 			
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 8));
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
 			
-			for(Node cell: frame_i.vertexSet()){
+			for(Node cell: frame_i.vertexSet())
+			{
 				
 				if(cell.onBoundary())
 					continue;
@@ -73,7 +86,11 @@ public class PolygonClassPainter extends Overlay{
 						(float)centroid.y + 2);
 				}
 				else{
-					switch(cell_degree){ 
+					switch(cell_degree){
+						case 3:
+							g.setColor(new Color(232, 233, 41)); //yellow
+							g.fill(cell.toShape());
+						break;
 						case 4:
 							g.setColor(new Color(223, 0, 8)); //red
 							g.fill(cell.toShape());
@@ -103,7 +120,80 @@ public class PolygonClassPainter extends Overlay{
 					}
 				}
 			}
+			for(int i=0; i<7; i++){
+				
+				switch(i + 3){ 
+				case 3:
+					g.setColor(new Color(232, 233, 41)); //yellow
+					break;
+				case 4:
+					g.setColor(new Color(223, 0, 8)); //red
+					break;
+				case 5:
+					g.setColor(new Color(84, 176, 26)); //green
+					break;
+				case 6:
+					g.setColor(new Color(190, 190, 190)); //grey
+					break;
+				case 7:
+					g.setColor(new Color(18, 51, 143)); //blue
+					break;
+				case 8:
+					g.setColor(new Color(158, 53, 145)); //violet
+					break;
+				case 9:
+					g.setColor(new Color(128, 45, 20)); //brown
+					break;
+				default:
+					continue;
+				}
+				
+				g.fillRect(20*i + 30,30,20,20);
+				g.setColor(Color.white);
+				g.drawString(Integer.toString(i+3), 
+						(float)20*i + 30 + 5, 
+						(float)30 + 15);
+			
+			}
 		}
+	}
+
+	public void saveToCsv() {
+		String file_name = SaveDialog.chooseFile(
+				"Please choose where to save the CSV PolygonClass statistics", 
+				"/Users/davide/tmp/",
+				"t1_transitions",
+				"");
+		
+		StringBuilder builder_main = new StringBuilder();
+		
+		for(int time_point=0; time_point < stGraph.size(); time_point++){
+			
+			FrameGraph frame_i = stGraph.getFrame(time_point);
+			
+			String prefix = "";
+			
+			for(Node cell: frame_i.vertexSet()){
+				
+				if(cell.onBoundary())
+					continue;
+
+				int cell_degree = frame_i.degreeOf(cell);
+
+				builder_main.append(prefix);
+				builder_main.append(cell_degree);
+				
+				//update after first time
+				prefix = ",";
+				
+			}
+			
+			builder_main.append('\n');
+		}
+		
+		File main_output_file = new File(file_name+".csv");
+		CsvWriter.writeOutBuilder(builder_main, main_output_file);
+			
 	}
 	
 }

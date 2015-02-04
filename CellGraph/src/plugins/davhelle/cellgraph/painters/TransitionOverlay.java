@@ -10,6 +10,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import gnu.jpdf.PDFJob;
 import headless.DetectT1Transition;
 import headless.StGraphUtils;
 import icy.main.Icy;
@@ -21,17 +22,24 @@ import icy.gui.dialog.SaveDialog;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.vividsolutions.jts.awt.ShapeWriter;
+
 import plugins.adufour.ezplug.EzPlug;
-import plugins.davhelle.cellgraph.CellPainter;
+import plugins.davhelle.cellgraph.CellOverlay;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.T1Transition;
@@ -55,8 +63,8 @@ public class TransitionOverlay extends Overlay{
 	final Color loser_color = Color.cyan;
 	final Color winner_color = Color.magenta;
 	
-	public TransitionOverlay(SpatioTemporalGraph stGraph, CellPainter plugin) {
-		super("Transition Painter");
+	public TransitionOverlay(SpatioTemporalGraph stGraph, CellOverlay plugin) {
+		super(String.format("Transition Painter (min=%d)",plugin.varMinimalTransitionLength.getValue()));
 		this.stGraph = stGraph;
 		
 		//TODO move createPolygonalTiles to PolygonalCellTile class
@@ -70,6 +78,8 @@ public class TransitionOverlay extends Overlay{
 				tracked_edges,
 				plugin.varMinimalTransitionLength.getValue(),
 				plugin.varMinimalOldSurvival.getValue());
+		
+		System.out.println("Transitions found: "+transitions.size());
 	
 	}
 	
@@ -82,7 +92,7 @@ public class TransitionOverlay extends Overlay{
 		
 		String file_name = SaveDialog.chooseFile(
 				"Please choose where to save the CSV transitions statistics", 
-				"/Users/davide/tmp/",
+				"/Users/davide/analysis/",
 				"t1_transitions",
 				"");
 		
@@ -91,6 +101,9 @@ public class TransitionOverlay extends Overlay{
 		StringBuilder builder_winner = new StringBuilder();
 		
 		for(T1Transition t1: transitions){
+			if(!t1.hasWinners())
+				continue;
+			
 			builder_main.append(t1.getDetectionTime());
 			builder_main.append(',');
 			builder_main.append(t1.length());
@@ -99,15 +112,19 @@ public class TransitionOverlay extends Overlay{
 			Edge first_looser_edge = extractEdgeLength(builder_loser, t1, true);
 			Edge first_winner_edge = extractEdgeLength(builder_winner, t1, false);
 			
-			if(first_looser_edge != null)
-				builder_main.append(String.format("%.2f,%.2f,", 
-						first_looser_edge.getGeometry().getCentroid().getX(),
-						first_looser_edge.getGeometry().getCentroid().getY()));
+			if(first_looser_edge != null){
+				int[] cell_ids = t1.getLoserNodes();
+				builder_main.append(String.format("%d,%d,", 
+						cell_ids[0],
+						cell_ids[1]));
+			}
 			
-			if(first_winner_edge != null)
-				builder_main.append(String.format("%.2f,%.2f,", 
-						first_winner_edge.getGeometry().getCentroid().getX(),
-						first_winner_edge.getGeometry().getCentroid().getY()));
+			if(first_winner_edge != null){
+				int[] cell_ids = t1.getWinnerNodes();
+				builder_main.append(String.format("%d,%d,", 
+						cell_ids[0],
+						cell_ids[1]));
+			}
 			
 			//trim last comma position
 			builder_main.setLength(builder_main.length() - 1);
@@ -121,13 +138,13 @@ public class TransitionOverlay extends Overlay{
 		}
 		
 		File main_output_file = new File(file_name+"_main.csv");
-		writeOutBuilder(builder_main, main_output_file);
+		CsvWriter.writeOutBuilder(builder_main, main_output_file);
 		
 		File loser_output_file = new File(file_name+"_loser.csv");
-		writeOutBuilder(builder_loser, loser_output_file);
+		CsvWriter.writeOutBuilder(builder_loser, loser_output_file);
 		
 		File winner_output_file = new File(file_name+"_winner.csv");
-		writeOutBuilder(builder_winner, winner_output_file);
+		CsvWriter.writeOutBuilder(builder_winner, winner_output_file);
 		
 		System.out.printf("Successfully wrote to:\n\t%s\n\t%s\n\t%s\n",
 				main_output_file.getName(),
@@ -144,13 +161,24 @@ public class TransitionOverlay extends Overlay{
 	 * @param t1
 	 * @return
 	 */
-	private Edge extractEdgeLength(StringBuilder builder_loser, T1Transition t1, boolean extract_loser) {
+	private Edge extractEdgeLength(StringBuilder builder, T1Transition t1, boolean extract_loser) {
 		int[] cell_ids = null;
 		if(extract_loser)
 			cell_ids = t1.getLoserNodes();
 		else
 			cell_ids = t1.getWinnerNodes();
 		
+		Edge first_edge = extractJunctionLength(builder, cell_ids);
+		return first_edge;
+	}
+
+	/**
+	 * @param builder
+	 * @param cell_ids
+	 * @return
+	 */
+	public Edge extractJunctionLength(StringBuilder builder,
+			int[] cell_ids) {
 		Edge first_edge = null;
 			
 		for(int i=0; i<stGraph.size(); i++){
@@ -166,34 +194,18 @@ public class TransitionOverlay extends Overlay{
 			
 			if(frame_i.containsEdge(cell_nodes[0], cell_nodes[1])){
 				Edge e = frame_i.getEdge(cell_nodes[0], cell_nodes[1]);
-				builder_loser.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
-				builder_loser.append(',');
+				builder.append(String.format("%.2f", frame_i.getEdgeWeight(e)));
+				builder.append(',');
 				
 				if(first_edge == null)
 					first_edge = e;
 			}
 			else{
-				builder_loser.append(0.0);
-				builder_loser.append(',');
+				builder.append(0.0);
+				builder.append(',');
 			}				
 		}
 		return first_edge;
-	}
-
-	/**
-	 * @param builder_main
-	 * @param output_file
-	 */
-	public void writeOutBuilder(StringBuilder builder_main, File output_file) {
-		FileWriter fstream;
-		try {
-			fstream = new FileWriter(output_file);
-			BufferedWriter writer = new BufferedWriter(fstream);
-			writer.append(builder_main);
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	@Override
@@ -201,45 +213,96 @@ public class TransitionOverlay extends Overlay{
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			
-			//try to color the cells that loose the bond
-			for(T1Transition t1: transitions){
-				int[] losers = t1.getLoserNodes();
-				
-				for(int loser_id: losers){
-					if(frame_i.hasTrackID(loser_id)){
-						Node loser = frame_i.getNode(loser_id);
-						g.setColor(loser_color);
-						g.fill(loser.toShape());
-					}
-				}
-			}
-			
-			for(T1Transition t1: transitions){
-				if(t1.hasWinners()){
-					int[] winner_ids = t1.getWinnerNodes();
-					Node[] winners = new Node[winner_ids.length];
-					g.setColor(winner_color);
-					
-					for(int i=0; i<winner_ids.length; i++){
-						int winner_id = winner_ids[i];
-						if(frame_i.hasTrackID(winner_id)){
-							winners[i] = frame_i.getNode(winner_id);
-							g.draw(winners[i].toShape());
-						}
-					}
-					
-					if(winners[0] != null && winners[1] != null)
-						g.drawLine(
-							(int)winners[0].getCentroid().getX(), 
-							(int)winners[0].getCentroid().getY(),
-							(int)winners[1].getCentroid().getX(), 
-							(int)winners[1].getCentroid().getY());
-				}
-			}
+			paintFrame(g, time_point);
 		}		
 		
+	}
+	
+	public void saveToPdf(){
+		
+		String file_name = SaveDialog.chooseFile(
+				"Please choose where to save the PDF transitions image", 
+				"/Users/davide/analysis/",
+				"t1_transitions.pdf",
+				"");
+		
+		//PDF generation	
+		try {
+			
+			//open
+			FileOutputStream fileOutputStream;
+			fileOutputStream = new FileOutputStream(new File(file_name));
+			PDFJob job = new PDFJob(fileOutputStream);
+			
+			//apply custom format
+			PageFormat format = new PageFormat();
+			Paper paper=format.getPaper();
+			paper.setSize(1392,1040);
+			format.setPaper(paper);
+			Graphics2D pdfGraphics = (Graphics2D) job.getGraphics(format);
+			
+			//paint
+			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
+			this.paintFrame(pdfGraphics,0);
+			
+			//close
+			pdfGraphics.dispose();
+			job.end();
+			fileOutputStream.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+
+	/**
+	 * @param g
+	 * @param time_point
+	 */
+	private void paintFrame(Graphics2D g, int time_point) {
+		FrameGraph frame_i = stGraph.getFrame(time_point);
+		
+		//try to color the cells that loose the bond
+		for(T1Transition t1: transitions){
+			int[] losers = t1.getLoserNodes();
+			
+			for(int loser_id: losers){
+				if(frame_i.hasTrackID(loser_id)){
+					Node loser = frame_i.getNode(loser_id);
+					g.setColor(loser_color);
+					g.fill(loser.toShape());
+				}
+			}
+		}
+		
+		for(T1Transition t1: transitions){
+			if(t1.hasWinners()){
+				int[] winner_ids = t1.getWinnerNodes();
+				Node[] winners = new Node[winner_ids.length];
+				g.setColor(winner_color);
+				
+				for(int i=0; i<winner_ids.length; i++){
+					int winner_id = winner_ids[i];
+					if(frame_i.hasTrackID(winner_id)){
+						winners[i] = frame_i.getNode(winner_id);
+						g.draw(winners[i].toShape());
+					}
+				}
+				
+				if(winners[0] != null && winners[1] != null)
+					g.drawLine(
+						(int)winners[0].getCentroid().getX(), 
+						(int)winners[0].getCentroid().getY(),
+						(int)winners[1].getCentroid().getX(), 
+						(int)winners[1].getCentroid().getY());
+			}
+		}
 	};
 	
 	

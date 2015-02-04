@@ -41,15 +41,25 @@ public class PolygonPainter extends Overlay{
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
-			//TODO include 3D information!
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(painter_color);
-	
-			for(Node cell: frame_i.vertexSet())
-				g.draw((cell.toShape()));
-
+			//TODO include 3D information (in case of VTK)!
+			paintFrame(g, time_point);
 			
 		}
     }
+
+
+	/**
+	 * @param g
+	 * @param time_point
+	 */
+	public void paintFrame(Graphics2D g, int time_point) {
+		FrameGraph frame_i = stGraph.getFrame(time_point);
+		Color old = g.getColor();
+		g.setColor(painter_color);
+
+		for(Node cell: frame_i.vertexSet())
+			g.draw((cell.toShape()));
+
+		g.setColor(old);
+	}
 }

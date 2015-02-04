@@ -61,6 +61,7 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		readTrackingIds();
 		readDivisions();
 		readEliminations();
+		stGraph.setTracking(true);
 		System.out.println("Successfully read tracking form: "+input_directory);
 	}
 	

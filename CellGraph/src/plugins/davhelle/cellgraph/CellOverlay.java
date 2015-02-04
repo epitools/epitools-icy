@@ -21,15 +21,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import plugins.adufour.ezplug.EzComponent;
 import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
+import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.adufour.ezplug.EzVarText;
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
@@ -42,6 +45,7 @@ import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.TagSaver;
 import plugins.davhelle.cellgraph.misc.CellColor;
+import plugins.davhelle.cellgraph.misc.EzEnumDescription;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
@@ -61,6 +65,7 @@ import plugins.davhelle.cellgraph.painters.ElongationRatioOverlay;
 import plugins.davhelle.cellgraph.painters.GraphPainter;
 import plugins.davhelle.cellgraph.painters.IntesityGraphOverlay;
 import plugins.davhelle.cellgraph.painters.NeighborChangeFrequencyOverlay;
+import plugins.davhelle.cellgraph.painters.PlotEnum;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
@@ -81,44 +86,7 @@ import plugins.davhelle.cellgraph.painters.VoronoiPainter;
  * @author Davide Heller
  *
  */
-public class CellOverlay extends EzPlug {
-	
-	//plotting modes
-	private enum PlotEnum{
-		
-		TEST,
-		CELL_CENTROIDS,
-		CELL_AREA,
-		TISSUE_BORDER, 
-		
-		VORONOI_DIAGRAM, 
-		POLYGON_CLASS,
-		POLYGON_TILE,
-		GRAPH_VIEW,
-		
-		CELL_TRACKING,
-		ALWAYS_TRACKED_CELLS,
-		DIVISIONS_AND_ELIMINATIONS,
-		CORRECTION_HINTS,
-		
-		GRAPHML_EXPORT,
-		WRITE_OUT_DDN,
-		CELL_COLOR_TAG,
-		SAVE_COLOR_TAG,
-		SAVE_COLOR_TAG_XLS,
-		SAVE_SKELETONS,
-		
-		T1_TRANSITIONS, 
-		EDGE_STABILITY,
-		EDGE_INTENSITY,
-		NEIGHBOR_STABILITY,  
-		
-		ELLIPSE_FIT,
-		ELLIPSE_FIT_WRT_POINT_ROI,
-		ELONGATION_RATIO,
-		DIVSION_ORIENTATION,
-		PDF_SCREENSHOT
-	}
+public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 	
 	EzVarBoolean				varRemovePainterFromSequence;
 	EzVarBoolean				varUpdatePainterMode;
@@ -275,8 +243,9 @@ public class CellOverlay extends EzPlug {
 				varSaveToPdf);
 
 		//Description label
-		varDescriptionLabel = new EzLabel("overlay description will appear here");
-		EzGroup groupDescription = new EzGroup("summary",
+		varPlotting.addVarChangeListener(this);
+		varDescriptionLabel = new EzLabel(varPlotting.getValue().getDescription());
+		EzGroup groupDescription = new EzGroup("Overlay summary",
 				varDescriptionLabel);
 		
 		//Painter
@@ -375,9 +344,6 @@ public class CellOverlay extends EzPlug {
 
 					switch (USER_CHOICE){
 					case TEST:
-						sequence.addOverlay(
-								new ElongationRatioOverlay(wing_disc_movie));
-						//new EllipseFitColorOverlay(wing_disc_movie));
 						break;
 					case ELLIPSE_FIT:
 						sequence.addOverlay(
@@ -528,7 +494,14 @@ public class CellOverlay extends EzPlug {
 					case PDF_SCREENSHOT:
 						new PdfPrinter(wing_disc_movie);
 						break;
-
+					case ELLIPSE_FIT_WRT_POINT_ROI:
+						sequence.addOverlay(
+								new EllipseFitColorOverlay(wing_disc_movie));
+						break;
+					case ELONGATION_RATIO:
+						sequence.addOverlay(
+								new ElongationRatioOverlay(wing_disc_movie));
+						break;
 					default:
 						break;
 
@@ -786,5 +759,10 @@ public class CellOverlay extends EzPlug {
 				varBooleanFillCells.getValue());
 		sequence.addPainter(dividing_cells);
 		
+	}
+
+	@Override
+	public void variableChanged(EzVar<PlotEnum> source, PlotEnum newValue) {
+		varDescriptionLabel.setText(newValue.getDescription());		
 	}
 }

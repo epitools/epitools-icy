@@ -215,14 +215,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 	private EzGroup initializeInputGUI() {
 		//What input is given
 		varInput = new EzVarEnum<InputType>(
-				"File type",InputType.values(), InputType.WKT);
+				"File type",InputType.values(), InputType.SKELETON);
 			
 		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Known source", true);
 		
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<SegmentationProgram>(
-				"\tSegmentation tool",SegmentationProgram.values(), SegmentationProgram.SeedWater);
+				"\tSegmentation tool",SegmentationProgram.values(), SegmentationProgram.MatlabLabelOutlines);
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
@@ -489,7 +489,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		try{
 			//Set true to suppress default mechanism
-			input_file = varFile.getValue(false);
+			input_file = varFile.getValue(true);
 		}
 		catch(EzException e){
 			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");

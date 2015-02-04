@@ -1,4 +1,4 @@
-/**
+ 	/**
  * 
  */
 package plugins.davhelle.cellgraph.painters;
@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -55,15 +56,17 @@ public class EllipseFitColorOverlay extends Overlay{
 		if(time_point < stGraph.size()){
 			
 			if(sequence.hasROI()){
-				ROI point_roi = sequence.getSelectedROI();
-				
-				Point5D position = point_roi.getPosition5D();
-				
-				double xp = position.getX();
-				double yp = position.getY();
-				boolean show_guides = true;
-				
-				paintFrame(g, time_point, xp, yp, show_guides);
+				if(sequence.getROIs().size() == 1 ){
+					ROI point_roi = sequence.getROIs().get(0);
+
+					Point5D position = point_roi.getPosition5D();
+
+					double xp = position.getX();
+					double yp = position.getY();
+					boolean show_guides = false;
+
+					paintFrame(g, time_point, xp, yp, show_guides);
+				}
 			}
 		}
     }

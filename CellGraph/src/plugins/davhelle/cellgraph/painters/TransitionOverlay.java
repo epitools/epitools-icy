@@ -36,7 +36,7 @@ import java.util.HashMap;
 import com.vividsolutions.jts.awt.ShapeWriter;
 
 import plugins.adufour.ezplug.EzPlug;
-import plugins.davhelle.cellgraph.CellPainter;
+import plugins.davhelle.cellgraph.CellOverlay;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.CsvWriter;
@@ -63,7 +63,7 @@ public class TransitionOverlay extends Overlay{
 	final Color loser_color = Color.cyan;
 	final Color winner_color = Color.magenta;
 	
-	public TransitionOverlay(SpatioTemporalGraph stGraph, CellPainter plugin) {
+	public TransitionOverlay(SpatioTemporalGraph stGraph, CellOverlay plugin) {
 		super(String.format("Transition Painter (min=%d)",plugin.varMinimalTransitionLength.getValue()));
 		this.stGraph = stGraph;
 		

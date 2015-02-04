@@ -79,7 +79,7 @@ import plugins.davhelle.cellgraph.painters.VoronoiPainter;
  * @author Davide Heller
  *
  */
-public class CellPainter extends EzPlug {
+public class CellOverlay extends EzPlug {
 	
 	//plotting modes
 	private enum PlotEnum{

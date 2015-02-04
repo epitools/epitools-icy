@@ -4,6 +4,9 @@
 package plugins.davhelle.cellgraph;
 
 import icy.file.Loader;
+import icy.gui.dialog.LoadDialog;
+import icy.gui.dialog.OpenDialog;
+import icy.gui.dialog.SaveDialog;
 import icy.main.Icy;
 import icy.plugin.abstract_.PluginActionable;
 import icy.sequence.Sequence;
@@ -11,11 +14,19 @@ import icy.swimmingPool.SwimmingObject;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.ArrayList;
 
+import javax.swing.JFileChooser;
+
+import com.vividsolutions.jts.geom.Geometry;
+
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
+import plugins.davhelle.cellgraph.io.WktPolygonImporter;
+import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 
 /**
@@ -28,12 +39,23 @@ public class TestLoader extends PluginActionable {
 
 	@Override
 	public void run() {
+
+		//Choose location of test folder
+		JFileChooser dialog = new JFileChooser();
+		dialog.setDialogTitle("Please choose [test folder] location");
+		dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		dialog.showOpenDialog(null);
+		final File f = dialog.getSelectedFile();
+	
+		System.out.println(f.getAbsolutePath());
+		String test_folder = f.getAbsolutePath();
 		
-		String test_file_name = "/Users/davide/data/neo/1/crop/skeletons_crop_t28-68_t0000.tif";
+		String test_file_name = test_folder+"/skeletons.tif";
 		File test_file = new File(test_file_name);
-		File test_file_wkt = new File("/Users/davide/data/neo/1/crop_wkt/skeleton_000.wkt");
+		File test_file_wkt = new File(test_folder+"/skeleton_000.wkt");
+		
 		if(!test_file.exists()){
-			System.out.println("Test file not available on this machine");
+			System.out.printf("Test file not available on this folder:\n%s\n",test_file.getAbsolutePath());
 			return;
 		}
 		
@@ -44,9 +66,19 @@ public class TestLoader extends PluginActionable {
 				new SpatioTemporalGraphGenerator(
 						GraphType.TISSUE_EVOLUTION,
 						test_file_wkt, 
-						1, InputType.WKT).getStGraph();
+						2, InputType.WKT).getStGraph();
 	
 		sequence.addOverlay(new PolygonPainter(test_stGraph, Color.red));
+		
+		
+		//load border
+		WktPolygonImporter wkt_importer = new WktPolygonImporter();
+		BorderCells border = new BorderCells(test_stGraph);
+		for(int i=0; i<test_stGraph.size();i++){
+			String border_file_name = String.format("%s/border_%03d.wkt",test_folder,i);
+			ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(border_file_name);
+			border.markBorderCells(test_stGraph.getFrame(i), boundaries.get(0));
+		}
 		
 		//Push to swimming pool TODO: ONLY REMOVE stGraphs
 		Icy.getMainInterface().getSwimmingPool().removeAll();

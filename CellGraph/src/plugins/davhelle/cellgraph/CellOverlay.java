@@ -149,7 +149,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		varBooleanWriteCenters = new EzVarBoolean("Write cell centers to disk",false);
 		varBooleanDerivedPolygons = new EzVarBoolean("Derived Polygons", false);
 		varPolygonColor = new EzVarEnum<CellColor>("Polygon color", CellColor.values(),CellColor.RED);
-		EzGroup groupCellMap = new EzGroup("CELLS elements",
+		EzGroup groupCellMap = new EzGroup("Overlay elements",
 				varBooleanPolygon,
 				varPolygonColor,
 				varBooleanDerivedPolygons,
@@ -161,7 +161,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		varBooleanVoronoiDiagram = new EzVarBoolean("Voronoi Diagram", true);
 		varBooleanAreaDifference = new EzVarBoolean("Area difference", false);
 		
-		EzGroup groupVoronoiMap = new EzGroup("VORONOI elements",
+		EzGroup groupVoronoiMap = new EzGroup("Overlay elements",
 				varBooleanAreaDifference,
 				varBooleanVoronoiDiagram);	
 		
@@ -170,7 +170,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		varBooleanColorClass = new EzVarBoolean("Draw Numbers", false);
 		varHighlightClass = new EzVarInteger("Highlight class (0=none)",0,0,10,1);
 		varSavePolyClass = new EzVarBoolean("Save polygon class statistics", false);
-		EzGroup groupPolygonClass = new EzGroup("POLYGON_CLASS elements",
+		EzGroup groupPolygonClass = new EzGroup("Overlay elements",
 				varBooleanColorClass,
 				varHighlightClass,
 				varSavePolyClass);
@@ -178,7 +178,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		//Area Threshold View
 		varAreaThreshold = new EzVarDouble("Area threshold", 0.9, 0, 10, 0.1);
 		
-		EzGroup groupAreaThreshold = new EzGroup("AREA_THRESHOLD elements",
+		EzGroup groupAreaThreshold = new EzGroup("Overlay elements",
 				varAreaThreshold);
 		
 		//Which painter should be shown by default
@@ -191,7 +191,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions (green)",true);
 		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations (red)",false);
 		varBooleanFillCells = new EzVarBoolean("Fill cells with color",true);
-		EzGroup groupDivisions = new EzGroup("DIVISIONS elements", 
+		EzGroup groupDivisions = new EzGroup("Overlay elements", 
 				//varBooleanReadDivisions, TODO
 				varBooleanPlotDivisions,
 				varBooleanPlotEliminations,
@@ -205,7 +205,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		
-		EzGroup groupTracking = new EzGroup("TRACKING elements",
+		EzGroup groupTracking = new EzGroup("Overlay elements",
 				varBooleanCellIDs,
 				varBooleanDrawDisplacement,
 				varBooleanHighlightMistakesBoolean);
@@ -217,14 +217,14 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		varOutputFile = new EzVarFile("Output File", "/Users/davide/analysis");
 		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
 		
-		EzGroup groupExport = new EzGroup("GRAPH_EXPORT elements",
+		EzGroup groupExport = new EzGroup("Overlay elements",
 				varExportType,
 				varOutputFile,
 				varFrameNo);
 		
 		//CellMarker mode
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
-		EzGroup groupMarker = new EzGroup("COLOR_TAG elements",
+		EzGroup groupMarker = new EzGroup("Overlay elements",
 				varCellColor);
 		
 		//SAVE_SKELETON mode
@@ -236,7 +236,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<PlotEnum>{
 		varMinimalOldSurvival = new EzVarInteger("Minimal old edge persistence [frames]",5,1,100,1);
 		varSaveTransitions = new EzVarBoolean("Save transition statistics to CSV", false);
 		varSaveToPdf = new EzVarBoolean("Save transition picture to PDF", false);
-		EzGroup groupTransitions = new EzGroup("TRANSITIONS elements",
+		EzGroup groupTransitions = new EzGroup("Overlay elements",
 				varMinimalTransitionLength,
 				varMinimalOldSurvival,
 				varSaveTransitions,

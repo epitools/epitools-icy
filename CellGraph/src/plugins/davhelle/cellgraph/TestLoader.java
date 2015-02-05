@@ -24,10 +24,13 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
+import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.TrackIdPainter;
+import plugins.davhelle.cellgraph.painters.TrackPainter;
 
 /**
  * Test class to automatically load a test image and the connected graph
@@ -66,9 +69,8 @@ public class TestLoader extends PluginActionable {
 				new SpatioTemporalGraphGenerator(
 						GraphType.TISSUE_EVOLUTION,
 						test_file_wkt, 
-						2, InputType.WKT).getStGraph();
+						10, InputType.WKT).getStGraph();
 	
-		sequence.addOverlay(new PolygonPainter(test_stGraph, Color.red));
 		
 		
 		//load border
@@ -79,6 +81,12 @@ public class TestLoader extends PluginActionable {
 			ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(border_file_name);
 			border.markBorderCells(test_stGraph.getFrame(i), boundaries.get(0));
 		}
+		
+		//track cells
+		new CsvTrackReader(test_stGraph, test_folder).track();
+		
+		sequence.addOverlay(new TrackIdPainter(test_stGraph));
+		sequence.addOverlay(new TrackPainter(test_stGraph, true));
 		
 		//Push to swimming pool TODO: ONLY REMOVE stGraphs
 		Icy.getMainInterface().getSwimmingPool().removeAll();

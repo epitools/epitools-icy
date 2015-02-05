@@ -4,6 +4,7 @@ import icy.canvas.IcyCanvas;
 import icy.canvas.Layer;
 import icy.file.Saver;
 import icy.gui.frame.IcyFrame;
+import icy.gui.frame.progress.AnnounceFrame;
 import icy.gui.viewer.Viewer;
 import icy.image.IcyBufferedImage;
 import icy.image.IcyBufferedImageUtil;
@@ -69,6 +70,7 @@ public class CellEditor extends EzPlug{
 	private EzVarBoolean				varRegenerateGraph;
 	private Plugin 						painting_plugin;
 	private FrameGenerator				frame_generator;
+	private EzVarBoolean				varSync;
 	
 	@Override
 	protected void initialize() {
@@ -88,17 +90,19 @@ public class CellEditor extends EzPlug{
 		varTool = new EzVarEnum<SegmentationProgram>(
 				"Seg.Tool used",SegmentationProgram.values(), 
 				SegmentationProgram.MatlabLabelOutlines);
-		varSaveChanges = new EzVarBoolean("Save changes", false );
+		varSaveChanges = new EzVarBoolean("Save changes permanently to Output", false );
 		varRegenerateGraph = new EzVarBoolean("Regenerate graph (default only!)", false);
+		varSync = new EzVarBoolean("Sync [Input] and [Output] viewers",false);
 		
 		EzLabel description = new EzLabel("Cell Editor allows to edit skeletons in tiff format:\n\n"+
-		"1. Backup your original skeletons or convert them into 8-bit binary TIFF format\n"+
-		"2. Open the image on which you want to draw [raw] and set the sequence as [Input]\n" +
+		"1. Backup your original skeletons and/or convert them into 8-bit binary TIFF format\n"+
+		"2. Open the image on which you want to draw and set the sequence as [Input]\n" +
 		"3. Open the skeletons which you want to edit and set the sequence as [Output]\n"+
-		"4. Set the painter to white/black to add or remove edges\n"+
-		"5. Apply changes only to a single frame. Multi-timepoint modifications are not supported!\n\n" +
-		"* Before selecting [Save changes] do a test run without permanent changes\n"+
-		"* A useful addition is the CorrectionOverlay to hint to segmentation errors");
+		"4. Modify edges by drawing on the [Input] with the painter set to white/black to add/remove edges\n"+
+		"5. Apply the changes to the current frame by run [>]. Multi-timepoint modifications are not supported!\n\n" +
+		"* Before selecting [Save changes] do a test run\n"+
+		"* Use CorrectionOverlay to find segmentation errors\n"+
+		"* Use [Sync] to syncronize viewers of [input]&[output](empty run)");
 		
 		EzGroup descriptionGroup = new EzGroup("Plugin Description",description);
 		
@@ -107,16 +111,24 @@ public class CellEditor extends EzPlug{
 		super.addEzComponent(varOutputSeq);
 		//super.addEzComponent(varTool);
 		super.addEzComponent(varSaveChanges);
+		super.addEzComponent(varSync);
 		//super.addEzComponent(varRegenerateGraph);
 	}
 
 	@Override
 	protected void execute() {
 		
-		if(varInputSeq.getValue().equals(varOutputSeq.getValue())){
-			System.out.println("Input and Output sequence should be different!");
+		if(varInputSeq.getValue() == null || varOutputSeq.getValue() == null){
+			new AnnounceFrame("Input and Output must be specified!",5);
 			return;
 		}
+		
+		
+		if(varInputSeq.getValue().equals(varOutputSeq.getValue())){
+			new AnnounceFrame("Input and Output sequence must be different!",5);
+			return;
+		}
+		
 		
 		ArrayList<Viewer> input_viewers = Icy.getMainInterface().getViewers(varInputSeq.getValue());
 		ArrayList<Viewer> output_viewers = Icy.getMainInterface().getViewers(varOutputSeq.getValue());
@@ -125,9 +137,14 @@ public class CellEditor extends EzPlug{
 			System.out.println("No viewers attached to input/output sequence, abort");
 			return;
 		}
-
 		Viewer input_viewer = input_viewers.get(0);
 		Viewer output_viewer = output_viewers.get(0);
+
+		if(varSync.getValue()){
+			input_viewer.getCanvas().setSyncId(1);
+			output_viewer.getCanvas().setSyncId(1);
+			return;
+		}
 		
 		Painter modifications = extractPaintingOverlay(input_viewer);
 		if(modifications == null){

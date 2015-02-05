@@ -47,7 +47,11 @@ public class TestLoader extends PluginActionable {
 		JFileChooser dialog = new JFileChooser();
 		dialog.setDialogTitle("Please choose [test folder] location");
 		dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		dialog.showOpenDialog(null);
+		
+		//Only proceed if the user put in a valid directory
+		if(dialog.showOpenDialog(null) != dialog.APPROVE_OPTION)
+			return;
+		
 		final File f = dialog.getSelectedFile();
 	
 		System.out.println(f.getAbsolutePath());

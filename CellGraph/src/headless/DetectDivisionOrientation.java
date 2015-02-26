@@ -341,7 +341,15 @@ public class DetectDivisionOrientation {
 
 				//Inspection
 				double new_junction_orientation_wrt_x = findAngleOfLongestAxis(child_intersection);
-				d.setNewJunctionOrientation(Angle.toDegrees(new_junction_orientation_wrt_x));
+				double new_junction_angle_degrees = Angle.toDegrees(new_junction_orientation_wrt_x);
+				
+				if(USE_INTERSECTION_METHOD)
+					d.setNewJunctionOrientation(new_junction_angle_degrees);
+				else{
+					//in case of centroid method take orthogonal
+					new_junction_angle_degrees += 90;
+					d.setNewJunctionOrientation(new_junction_angle_degrees);
+				}
 				
 //				System.out.printf("Mother %d at %d:\t%.0f\t%.0f\t= %.0f\n",
 //						mother.getTrackID(),i - prior_frames,

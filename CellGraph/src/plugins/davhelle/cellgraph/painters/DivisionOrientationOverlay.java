@@ -19,6 +19,7 @@ import java.util.HashMap;
 import com.vividsolutions.jts.algorithm.Angle;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.misc.DivisionOrientationFinder;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 
@@ -34,6 +35,8 @@ public class DivisionOrientationOverlay extends Overlay {
 	private SpatioTemporalGraph stGraph;
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 	private HashMap<Node, Double> division_orientation;
+	private HashMap<Node, Double> division_orientation2;
+
 	
 	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph) {
 		super("Division Orientation");
@@ -42,6 +45,9 @@ public class DivisionOrientationOverlay extends Overlay {
 		
 		division_orientation = DetectDivisionOrientation.computeDivisionOrientation(
 				stGraph, fittedEllipses);
+		
+		division_orientation2 = 
+				new DivisionOrientationFinder(stGraph, fittedEllipses, 12, 5).run();
 		
 	}
 
@@ -98,10 +104,11 @@ public class DivisionOrientationOverlay extends Overlay {
 					
 					double future_junction_angle_wrt_x = n.getDivision().getNewJunctionOrientation();
 					
-					double x0 = cX + Math.cos(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
-			        double y0 = cY + Math.sin(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
-					double x1 = cX - Math.cos(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
-			        double y1 = cY - Math.sin(Angle.toRadians(future_junction_angle_wrt_x)) * 5;
+					double future_junction_angle_radians = Angle.toRadians(future_junction_angle_wrt_x);
+					double x0 = cX + Math.cos(future_junction_angle_radians) * 5;
+			        double y0 = cY + Math.sin(future_junction_angle_radians) * 5;
+					double x1 = cX - Math.cos(future_junction_angle_radians) * 5;
+			        double y1 = cY - Math.sin(future_junction_angle_radians) * 5;
 					
 			        double longestMotherAxisOrientation = n.getDivision().getLongestMotherAxisOrientation();
 			        double mx0 = cX + Math.cos(longestMotherAxisOrientation) * 5;
@@ -118,14 +125,29 @@ public class DivisionOrientationOverlay extends Overlay {
 //					g.draw(new Line2D.Double(mx0, my0,mx1,my1));
 					
 					//Give text information about angles
-//					g.setColor(newJunctionAngleColor);
-//					g.drawString(String.format(
-//							"%.0f,%.0f,%.0f\n",
-//							Angle.toDegrees(longestMotherAxisOrientation),
-//							n.getDivision().getNewJunctionOrientation(),
-//							n.getDivision().getDivisionOrientation()), 
-//							(float)cX - 5  , 
-//							(float)cY + 5);
+					if(division_orientation2.containsKey(n.getFirst())){
+
+						double angle2 = Angle.toDegrees(
+								division_orientation2.get(n.getFirst()));
+
+						
+						EllipseFitter ef = fittedEllipses.get(n);
+						double longest_axis_angle = Math.abs(ef.theta - Math.PI);
+						double min_diff = Angle.diff(longest_axis_angle, future_junction_angle_radians);
+						min_diff = Angle.toDegrees(min_diff);
+						
+						if(min_diff > 90)
+							min_diff = Math.abs(min_diff - 180);
+						
+						int time_to_division = n.getDivision().getTimePoint() - time_point;
+						
+						g.setColor(newJunctionAngleColor);
+						g.drawString(String.format(
+								"-%d :%.0f,%.0f,%.0f\n",
+								time_to_division,angle,angle2,min_diff), 
+								(float)cX - 5  , 
+								(float)cY + 5);
+					}
 //					
 					//System.out.printf("%.2f\n",n.getDivision().getDivisionOrientation());
 				}

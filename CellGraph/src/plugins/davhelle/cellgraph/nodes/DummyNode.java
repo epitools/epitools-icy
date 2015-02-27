@@ -219,4 +219,10 @@ public class DummyNode implements Node {
 		return false;
 	}
 
+	@Override
+	public int getFrameNo() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

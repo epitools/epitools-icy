@@ -297,4 +297,12 @@ public class Cell implements Node {
 		return this.color_tag != null;
 	}
 
+	@Override
+	public int getFrameNo() {
+		if(parent != null)
+			return parent.getFrameNo();
+		else
+			return 0;
+	}
+
 }

@@ -280,5 +280,12 @@ public interface Node{
 	 * @param color_tag the color tag to set
 	 */
 	public void setColorTag(Color color_tag);
+
+	/**
+	 * Returns the time point of the frame if there is one associated
+	 * otherwise 0
+	 * @return
+	 */
+	public int getFrameNo();
 	
 }

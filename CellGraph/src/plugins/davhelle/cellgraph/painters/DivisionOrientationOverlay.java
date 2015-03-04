@@ -16,6 +16,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 
+
+
 import com.vividsolutions.jts.algorithm.Angle;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -47,9 +49,15 @@ public class DivisionOrientationOverlay extends Overlay {
 				stGraph, fittedEllipses);
 		
 		division_orientation2 = 
-				new DivisionOrientationFinder(stGraph, fittedEllipses, 12, 5).run();
+				new DivisionOrientationFinder(stGraph, fittedEllipses, 11, 5).run();
 		
 	}
+	
+//	import javax.swing.JPanel;
+//	@Override
+//	public JPanel getOptionsPanel(){
+//		return new JPanel().
+//	}
 
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
@@ -78,11 +86,11 @@ public class DivisionOrientationOverlay extends Overlay {
 		
 		for(Node n: stGraph.getFrame(time_point).vertexSet()){
 			if(fittedEllipses.containsKey(n)){
-				if(division_orientation.containsKey(n.getFirst())){
+				if(division_orientation2.containsKey(n.getFirst())){
 
 					double cX = n.getGeometry().getCentroid().getX();
 					double cY = n.getGeometry().getCentroid().getY();
-					double angle = division_orientation.get(n.getFirst());
+					double angle = Angle.toDegrees(division_orientation2.get(n.getFirst()));
 
 					//TODO: set limit if desired
 					//if(angle > 30)
@@ -133,18 +141,22 @@ public class DivisionOrientationOverlay extends Overlay {
 						
 						EllipseFitter ef = fittedEllipses.get(n);
 						double longest_axis_angle = Math.abs(ef.theta - Math.PI);
-						double min_diff = Angle.diff(longest_axis_angle, future_junction_angle_radians);
-						min_diff = Angle.toDegrees(min_diff);
+						double current_min_diff = Angle.diff(longest_axis_angle, future_junction_angle_radians);
+						current_min_diff = Angle.toDegrees(current_min_diff);
 						
-						if(min_diff > 90)
-							min_diff = Math.abs(min_diff - 180);
+						if(current_min_diff > 90)
+							current_min_diff = Math.abs(current_min_diff - 180);
 						
 						int time_to_division = n.getDivision().getTimePoint() - time_point;
+						
+						double previous_value = -1;
+						if(division_orientation.containsKey(n.getFirst()))
+							previous_value = division_orientation.get(n.getFirst());
 						
 						g.setColor(newJunctionAngleColor);
 						g.drawString(String.format(
 								"-%d :%.0f,%.0f,%.0f\n",
-								time_to_division,angle,angle2,min_diff), 
+								time_to_division,angle,previous_value,current_min_diff), 
 								(float)cX - 5  , 
 								(float)cY + 5);
 					}

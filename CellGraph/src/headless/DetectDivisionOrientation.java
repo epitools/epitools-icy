@@ -18,6 +18,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.io.CsvWriter;
+import plugins.davhelle.cellgraph.misc.DivisionOrientationFinder;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -47,21 +48,27 @@ public class DetectDivisionOrientation {
 			StringBuilder elongationRatio = new StringBuilder();
 			StringBuilder elongationArea = new StringBuilder();
 			StringBuilder divisionAngle = new StringBuilder();
+			
+			DivisionOrientationFinder doFinder = new DivisionOrientationFinder(stGraph, fittedEllipses, 11, 5);
 
 			frame0_loop:for(Node cell: stGraph.getFrame(0).vertexSet()){
 				if(cell.hasObservedDivision()){
 
 					Node n = cell;
 
-					if(!fittedEllipses.containsKey(n) ||
-							!n.hasNext() || n.onBoundary())
-						continue;
+						if(!fittedEllipses.containsKey(n) ||
+								!n.hasNext() || n.onBoundary())
+							continue;
 
 
 					while(n.hasNext()){
 
 						EllipseFitter ef = fittedEllipses.get(n);
-						double division_angle = computeDivisionAngle(cell.getDivision(),ef);
+						double longest_axis_angle = ef.theta;
+						longest_axis_angle = Math.abs(longest_axis_angle - Math.PI);
+						
+						double division_angle = doFinder.computeDivisionOrientation(
+								longest_axis_angle,cell.getDivision());
 						if(Double.compare(division_angle,Double.MIN_VALUE) == 0)
 							continue frame0_loop;
 
@@ -74,7 +81,7 @@ public class DetectDivisionOrientation {
 						elongationArea.append(String.format("%.2f,",n.getGeometry().getArea()));
 
 						//4. the angle between the elongation at i and the junction angle
-						divisionAngle.append(String.format("%.2f,",division_angle));
+						divisionAngle.append(String.format("%.2f,",Angle.toDegrees(division_angle)));
 
 						//then, after the division happened
 						//1. the angle of the new junction
@@ -99,7 +106,7 @@ public class DetectDivisionOrientation {
 				}
 			}
 
-			String output_pattern = "/Users/davide/tmp/%sNeo%d.csv";
+			String output_pattern = "/Users/davide/tmp/avgDivisionOrientation/%sNeo%d.csv";
 
 			File output_file1 = new File(String.format(output_pattern,"elongationAngle",neo_no));
 			CsvWriter.writeOutBuilder(elongationAngle, output_file1);

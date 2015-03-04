@@ -19,6 +19,9 @@ import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
+ * Class to detect the division angles, i.e. the angle formed by the longest
+ * axis of the mother cell and the connecting axis of the the daughter cells. 
+ * 
  * @author Davide Heller
  *
  */
@@ -46,6 +49,11 @@ public class DivisionOrientationFinder {
 
 	}
 	
+	/**
+	 * Identify all division orientations and return a map with one angle per division
+	 * 
+	 * @return map with the division angle for every dividing node
+	 */
 	public HashMap<Node,Double> run(){
 
 		HashMap<Node, Double> division_orientations = new HashMap<Node, Double>();
@@ -83,32 +91,74 @@ public class DivisionOrientationFinder {
 					n = n.getNext();
 				}
 				
-				double division_angle_avg = division_angle_sum / no_angles_detected;
-				division_orientations.put(n.getFirst(), division_angle_avg);
+				if(no_angles_detected != 0){
+					double division_angle_avg = division_angle_sum / no_angles_detected;
+					division_orientations.put(n.getFirst(), division_angle_avg);
+				}
 			}
 		}
 		return division_orientations;
 		
 	}
 
-	private double computeDivisionOrientation(double longest_axis_angle_rad,
+	/**
+	 * Computes the angle difference between the longest axis angle of input 
+	 * and the children intersection at several time points from the moment 
+	 * of division. (The number is defined by the detection_distance field)
+	 * 
+	 * @param longest_axis_angle_rad
+	 * @param d
+	 * @return
+	 */
+	public double computeDivisionOrientation(double longest_axis_angle_rad,
 			Division d) {
-
+		
 		//Get children axis
 		Node child1 = d.getChild1();
 		Node child2 = d.getChild2();
+		
+		int no_segments_detected = 0;
+		double angle_diff_sum = 0;
+		
+		for(int i=0; i<detection_length; i++){
 
+			int detection_time = d.getTimePoint() + i;
+			
+			if(i > 0 && child1.hasNext())
+				child1 = child1.getNext();
+			
+			if(i > 0 && child2.hasNext())
+				child2 = child2.getNext();
+			
+			if(child1.getFrameNo() != detection_time || child2.getFrameNo() != detection_time)
+				continue;
+
+			Coordinate[] new_junction_ends = computeChildrenIntersection(child1,
+				child2);
+
+			angle_diff_sum += findSmallestInteriorAngle(
+				longest_axis_angle_rad, new_junction_ends);
+			
+			no_segments_detected++;
+		}
+		
+		return angle_diff_sum / no_segments_detected;
+	}
+
+	/**
+	 * Given two children cells this function computes 
+	 * 
+	 * @param child1
+	 * @param child2
+	 * @return
+	 */
+	private Coordinate[] computeChildrenIntersection(Node child1, Node child2) {
 		Coordinate[] new_junction_ends = null;
 		Geometry child_intersection = null;
 
 		if(USE_INTERSECTION_METHOD){
-			
-			if(d.hasPlaneGeometry())
-				child_intersection = d.getPlaneGeometry();
-			else{
-				child_intersection = child1.getGeometry().intersection(child2.getGeometry());
-				d.setPlaneGeometry(child_intersection);
-			}
+
+			child_intersection = child1.getGeometry().intersection(child2.getGeometry());
 
 			MinimumBoundingCircle mbc = new MinimumBoundingCircle(child_intersection);
 			new_junction_ends = mbc.getExtremalPoints();
@@ -121,7 +171,20 @@ public class DivisionOrientationFinder {
 			new_junction_ends[1] = child2.getCentroid().getCoordinate();
 			child_intersection = factory.createLineString(new_junction_ends);
 		}
+		return new_junction_ends;
+	}
 
+	/**
+	 * Given the children intersection segment and the angle of the longest axis
+	 * of the mother cell, this function computes the minimal angle between them.
+	 * 
+	 * @param longest_axis_angle_rad
+	 * @param new_junction_ends
+	 * @return
+	 */
+	private double findSmallestInteriorAngle(double longest_axis_angle_rad,
+			Coordinate[] new_junction_ends) {
+		
 		//Form the angle to measure
 		Coordinate tail = new_junction_ends[1];
 		Coordinate tip1 = new_junction_ends[0];
@@ -141,7 +204,6 @@ public class DivisionOrientationFinder {
 		if(!USE_INTERSECTION_METHOD)
 			//because an alignment means that it divides perpendicularly
 			angle_diff_in_rad = Angle.PI_OVER_2 - angle_diff_in_rad;
-		
 		return angle_diff_in_rad;
 	}
 

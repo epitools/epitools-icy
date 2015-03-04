@@ -8,7 +8,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 
-public class ColorTagPainter extends AbstractGraphPainter {
+public class ColorTagPainter extends StGraphOverlay {
 
 	
 	private ShapeWriter writer;

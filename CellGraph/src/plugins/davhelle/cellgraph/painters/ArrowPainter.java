@@ -21,7 +21,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.Point;
 
-public class ArrowPainter extends AbstractGraphPainter {
+public class ArrowPainter extends StGraphOverlay {
 
 	GeometryFactory factory;
 	ShapeWriter writer;
@@ -101,4 +101,5 @@ public class ArrowPainter extends AbstractGraphPainter {
 		g.fill(tip.createPoint(tipCoordinate));
 		g.setTransform(defaultTransform);
 	}
+
 }

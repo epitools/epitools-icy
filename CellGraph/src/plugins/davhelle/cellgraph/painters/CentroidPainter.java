@@ -14,7 +14,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Point;
 
-public class CentroidPainter extends AbstractGraphPainter{
+public class CentroidPainter extends StGraphOverlay{
 	
 	public CentroidPainter(SpatioTemporalGraph spatioTemporalGraph){
 		super("Cell centroids", spatioTemporalGraph);
@@ -31,4 +31,5 @@ public class CentroidPainter extends AbstractGraphPainter{
 			g.fillOval((int)centroid.getX(), (int)centroid.getY(), 2, 2);
 		}		
 	}
+
 }

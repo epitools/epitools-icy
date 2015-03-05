@@ -11,6 +11,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
+import jxl.write.WritableSheet;
+
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -100,6 +102,13 @@ public class ArrowPainter extends StGraphOverlay {
 		g.rotate(segment_angle,tipCoordinate.getX(),tipCoordinate.getY());
 		g.fill(tip.createPoint(tipCoordinate));
 		g.setTransform(defaultTransform);
+	}
+
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

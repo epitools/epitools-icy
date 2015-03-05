@@ -5,9 +5,12 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import icy.util.XLSUtil;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -30,6 +33,24 @@ public class CentroidPainter extends StGraphOverlay{
 			Point centroid = cell.getCentroid();
 			g.fillOval((int)centroid.getX(), (int)centroid.getY(), 2, 2);
 		}		
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		//what this module should print in every frame
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Centroid x");
+		XLSUtil.setCellString(sheet, 2, 0, "Centroid y");
+
+		int row_no = 1;
+		for(Node node: frame.vertexSet()){
+			XLSUtil.setCellNumber(sheet, 0, row_no, node.getTrackID());
+			XLSUtil.setCellNumber(sheet, 1, row_no, node.getCentroid().getX());
+			XLSUtil.setCellNumber(sheet, 2, row_no, node.getCentroid().getY());
+			row_no++;
+		}
 	}
 
 }

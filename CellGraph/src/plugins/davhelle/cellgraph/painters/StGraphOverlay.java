@@ -1,10 +1,13 @@
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
+import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
+import icy.system.IcyExceptionHandler;
+import icy.util.XLSUtil;
 
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -12,11 +15,16 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
 
 import plugins.adufour.ezplug.EzGroup;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -84,8 +92,36 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		new AnnounceFrame("I will save your World",5);
+		try {
+			String file_name = SaveDialog.chooseFile(
+					"Please choose where to save the excel Sheet",
+					"/Users/davide/",
+					"test_file", XLSUtil.FILE_DOT_EXTENSION);
+			
+			if(file_name == null)
+				return;
+				
+			WritableWorkbook wb = XLSUtil.createWorkbook(file_name);
+			
+			for(int i=0; i<stGraph.size(); i++){
+				String sheetName = String.format("Frame %d",i);
+				WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
+				writeFrameSheet(sheet,stGraph.getFrame(i));
+			}
+			
+			XLSUtil.saveAndClose(wb);
+			
+		} catch (WriteException writeException) {
+			IcyExceptionHandler.showErrorMessage(writeException, true, true);
+		} catch (IOException ioException) {
+			IcyExceptionHandler.showErrorMessage(ioException, true, true);
+		}
+		
+		
 	}
+	
+	abstract void writeFrameSheet(WritableSheet sheet, FrameGraph frame);
+
 	
 	@Override
 	public JPanel getOptionsPanel() {
@@ -95,9 +131,9 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.BOTH;
-        optionPanel.add(new JLabel("Hello World!"), gbc);
+        optionPanel.add(new JLabel("Save to Excel format: "), gbc);
         
-        JButton OKButton = new JButton("Save Data Button");
+        JButton OKButton = new JButton("Export Overlay");
         OKButton.addActionListener(this);
         optionPanel.add(OKButton,gbc);
         

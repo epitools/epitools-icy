@@ -2,6 +2,8 @@ package plugins.davhelle.cellgraph.painters;
 
 import java.awt.Graphics2D;
 
+import jxl.write.WritableSheet;
+
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -26,6 +28,12 @@ public class ColorTagPainter extends StGraphOverlay {
 				g.fill(writer.toShape(cell.getGeometry()));
 			}
 
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

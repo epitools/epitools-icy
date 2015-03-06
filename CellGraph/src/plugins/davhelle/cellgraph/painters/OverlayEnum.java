@@ -43,7 +43,7 @@ public enum OverlayEnum{
 	"The overlay computes the angle towards the ELLIPSE_FIT and displays it as a color code. "),
 	ELONGATION_RATIO("Color codes the cell according to their elongation ratio and "+
 	"writes the elongation factor within every cell"), // could add csv option here
-	//PDF_SCREENSHOT("Generates a screenshot in PDF format"),
+	PDF_SCREENSHOT("Generates a screenshot in PDF format"),
 	DIVSION_ORIENTATION("Color codes the dividing cells according to their new junction orientation (Longest axis of mother cell vs New junction");
 	
 	private String description;

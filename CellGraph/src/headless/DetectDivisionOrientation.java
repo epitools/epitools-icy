@@ -106,7 +106,7 @@ public class DetectDivisionOrientation {
 				}
 			}
 
-			String output_pattern = "/Users/davide/tmp/avgDivisionOrientation/%sNeo%d.csv";
+			String output_pattern = "/Users/davide/tmp/%sNeo%d.csv";
 
 			File output_file1 = new File(String.format(output_pattern,"elongationAngle",neo_no));
 			CsvWriter.writeOutBuilder(elongationAngle, output_file1);

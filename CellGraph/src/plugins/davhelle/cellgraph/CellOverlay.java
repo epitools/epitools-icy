@@ -42,7 +42,7 @@ import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
-import plugins.davhelle.cellgraph.painters.AreaThresholdPainter;
+import plugins.davhelle.cellgraph.painters.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.painters.ArrowPainter;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CellMarker;
@@ -390,7 +390,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					case CELL_AREA: 
 						sequence.addOverlay(
-								new AreaThresholdPainter(
+								new AreaGradientOverlay(
 										wing_disc_movie, 
 										varAreaThreshold));
 						break;
@@ -484,9 +484,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 //					case NEIGHBOR_STABILITY:
 //						sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
 //						break;
-//					case PDF_SCREENSHOT:
-//						new PdfPrinter(wing_disc_movie);
-//						break;
+					case PDF_SCREENSHOT:
+						new PdfPrinter(wing_disc_movie);
+						break;
 					case ELLIPSE_FIT_WRT_POINT_ROI:
 						sequence.addOverlay(
 								new EllipseFitColorOverlay(wing_disc_movie));

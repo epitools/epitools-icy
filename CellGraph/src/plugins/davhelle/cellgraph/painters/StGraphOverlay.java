@@ -77,7 +77,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	 * @param g
 	 * @param frame_i
 	 */
-	public abstract void paintFrame(Graphics2D g, FrameGraph i );
+	public abstract void paintFrame(Graphics2D g, FrameGraph frame_i );
 	
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
@@ -131,9 +131,9 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.BOTH;
-        optionPanel.add(new JLabel("Save to Excel format: "), gbc);
+        optionPanel.add(new JLabel("Save Overlay as Excel Sheet: "), gbc);
         
-        JButton OKButton = new JButton("Export Overlay");
+        JButton OKButton = new JButton("Choose Destination");
         OKButton.addActionListener(this);
         optionPanel.add(OKButton,gbc);
         

@@ -131,9 +131,9 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.BOTH;
-        optionPanel.add(new JLabel("Save Overlay as Excel Sheet: "), gbc);
+        optionPanel.add(new JLabel("Export Data in Excel: "), gbc);
         
-        JButton OKButton = new JButton("Choose Destination");
+        JButton OKButton = new JButton("Choose File");
         OKButton.addActionListener(this);
         optionPanel.add(OKButton,gbc);
         

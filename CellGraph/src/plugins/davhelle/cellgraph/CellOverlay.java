@@ -63,7 +63,7 @@ import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
-import plugins.davhelle.cellgraph.painters.TrackPainter;
+import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 import plugins.davhelle.cellgraph.painters.TransitionOverlay;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferencePainter;
 import plugins.davhelle.cellgraph.painters.VoronoiPainter;
@@ -597,7 +597,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			sequence.addPainter(displacementSegments);
 		}
 		
-		TrackPainter correspondence = new TrackPainter(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
+		TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
 		sequence.addPainter(correspondence);
 		
 	}

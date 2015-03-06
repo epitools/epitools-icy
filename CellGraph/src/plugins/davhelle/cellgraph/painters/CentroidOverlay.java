@@ -17,9 +17,17 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Point;
 
-public class CentroidPainter extends StGraphOverlay{
+/**
+ * Overlay to display the centroid of each cell.
+ * Exports the location of the centroid
+ * 
+ * 
+ * @author Davide Heller
+ *
+ */
+public class CentroidOverlay extends StGraphOverlay{
 	
-	public CentroidPainter(SpatioTemporalGraph spatioTemporalGraph){
+	public CentroidOverlay(SpatioTemporalGraph spatioTemporalGraph){
 		super("Cell centroids", spatioTemporalGraph);
 	}
 

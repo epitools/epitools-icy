@@ -46,7 +46,7 @@ import plugins.davhelle.cellgraph.painters.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CellMarker;
-import plugins.davhelle.cellgraph.painters.CentroidPainter;
+import plugins.davhelle.cellgraph.painters.CentroidOverlay;
 import plugins.davhelle.cellgraph.painters.ColorTagPainter;
 import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
@@ -714,7 +714,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	private void cellMode(SpatioTemporalGraph wing_disc_movie){
 		
 		if(varBooleanCCenter.getValue()){
-			Painter centroids = new CentroidPainter(wing_disc_movie);
+			Painter centroids = new CentroidOverlay(wing_disc_movie);
 			sequence.addPainter(centroids);
 		}
 		

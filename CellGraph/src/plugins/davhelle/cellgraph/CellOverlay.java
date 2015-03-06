@@ -43,7 +43,7 @@ import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaGradientOverlay;
-import plugins.davhelle.cellgraph.painters.ArrowPainter;
+import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
 import plugins.davhelle.cellgraph.painters.BorderPainter;
 import plugins.davhelle.cellgraph.painters.CellMarker;
 import plugins.davhelle.cellgraph.painters.CentroidPainter;
@@ -593,7 +593,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		if(paint_displacement){
 			float maximum_displacement = 2;
-			Painter displacementSegments = new ArrowPainter(wing_disc_movie, maximum_displacement);
+			Painter displacementSegments = new DisplacementOverlay(wing_disc_movie, maximum_displacement);
 			sequence.addPainter(displacementSegments);
 		}
 		

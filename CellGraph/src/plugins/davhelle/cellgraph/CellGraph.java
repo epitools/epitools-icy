@@ -48,7 +48,7 @@ import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
-import plugins.davhelle.cellgraph.painters.ArrowPainter;
+import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionPainter;
 import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
@@ -659,7 +659,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		}
 		
 		if(varBooleanDrawDisplacement.getValue()){
-			Painter displacementSegments = new ArrowPainter(wing_disc_movie, varDisplacement.getValue());
+			Painter displacementSegments = new DisplacementOverlay(wing_disc_movie, varDisplacement.getValue());
 			sequence.addPainter(displacementSegments);
 		}
 		

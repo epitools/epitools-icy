@@ -5,6 +5,8 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import icy.util.XLSUtil;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -23,13 +25,27 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.Point;
 
-public class ArrowPainter extends StGraphOverlay {
+/**
+ * Overlay to display the displacement of the cells in the sample over time.
+ * An arrow image is displayed over each cell visualizing the position shift
+ * to the next frame. The arrows are colored differently according to the
+ * magnitude of the shift. The displacement variable sets this threshold.
+ * 
+ * 
+ * @author Davide Heller
+ *
+ */
+public class DisplacementOverlay extends StGraphOverlay {
 
 	GeometryFactory factory;
 	ShapeWriter writer;
 	float displacement;
 	
-	public ArrowPainter(SpatioTemporalGraph stGraph, float displacement){
+	/**
+	 * @param stGraph
+	 * @param displacement the threshold of movement to color the cell differently
+	 */
+	public DisplacementOverlay(SpatioTemporalGraph stGraph, float displacement){
 		super("Displacement arrows", stGraph);
 		this.factory = new GeometryFactory();
 		this.writer = new ShapeWriter();
@@ -107,8 +123,31 @@ public class ArrowPainter extends StGraphOverlay {
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		// TODO Auto-generated method stub
 		
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Distance to cell in next frame");
+		
+		int row_no = 1;
+		for(Node cell: frame.vertexSet()){
+					
+			//skipping cells which haven't been tracked
+			if(!cell.hasNext())
+				continue;	
+
+			//create segment line to next
+			Point next_cell_center = cell.getNext().getCentroid();
+			LineSegment segment_to_successive_cell = 
+					new LineSegment(
+							cell.getCentroid().getCoordinate(),
+							next_cell_center.getCoordinate()
+							);
+
+			//write out the distance to the successive cell position for every frame
+			XLSUtil.setCellNumber(sheet, 0, row_no, cell.getTrackID());
+			XLSUtil.setCellNumber(sheet, 1, row_no, segment_to_successive_cell.getLength());
+			row_no++;
+		}
+			
 	}
 
 }

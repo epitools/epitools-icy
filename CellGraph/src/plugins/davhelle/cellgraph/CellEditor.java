@@ -95,13 +95,13 @@ public class CellEditor extends EzPlug{
 		varSync = new EzVarBoolean("Sync [Input] and [Output] viewers",false);
 		
 		EzLabel description = new EzLabel("Cell Editor allows to edit skeletons in tiff format:\n\n"+
-		"1. Backup your original skeletons and/or convert them into 8-bit binary TIFF format\n"+
+		"1. Backup your original skeletons and convert them into 8-bit binary TIFF format (if different)\n"+
 		"2. Open the image on which you want to draw and set the sequence as [Input]\n" +
 		"3. Open the skeletons which you want to edit and set the sequence as [Output]\n"+
 		"4. Modify edges by drawing on the [Input] with the painter set to white/black to add/remove edges\n"+
 		"5. Apply the changes to the current frame by run [>]. Multi-timepoint modifications are not supported!\n\n" +
 		"* Before selecting [Save changes] do a test run\n"+
-		"* Use CorrectionOverlay to find segmentation errors\n"+
+		"* Use the CorrectionHints Overlay from CellOverlay to find segmentation errors\n"+
 		"* Use [Sync] to syncronize viewers of [input]&[output](empty run)");
 		
 		EzGroup descriptionGroup = new EzGroup("Plugin Description",description);

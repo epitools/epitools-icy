@@ -216,6 +216,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//What input is given
 		varInput = new EzVarEnum<InputType>(
 				"File type",InputType.values(), InputType.SKELETON);
+		
+		//Constraints on file, time and space
+		varFile = new EzVarFile(
+				"First time point", "/Users/davide/data/");
+		
+		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
+		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
 			
 		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Known source", true);
@@ -223,13 +230,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<SegmentationProgram>(
 				"\tSegmentation tool",SegmentationProgram.values(), SegmentationProgram.MatlabLabelOutlines);
-		
-		//Constraints on file, time and space
-		varFile = new EzVarFile(
-				"First time point", "/Users/davide/data/");
-	
-		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
-		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
 		
 		//Border cut
 		varCutBorder = new EzVarBoolean("Cut one border line",true);
@@ -242,13 +242,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 		EzGroup inputTypeGroup = new EzGroup("Input parameters",
 				varDirectInput,
 				varTool,
-				varFile, 
-				varMaxT,
 				varCutBorder,
 				varRemoveSmallCells,
 				varAreaThreshold
 				);
-		
 		
 		//Save skeletons using the well-known-text format (jts)
 		varSaveWkt = new EzVarBoolean("Save files in WKT format",false);
@@ -257,6 +254,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		EzGroup groupInputPrameters = new EzGroup("1. SELECT INPUT FILES FOR GRAPH CREATION",
 				varInput,
+				varFile, 
+				varMaxT,
 				inputTypeGroup,
 				varSaveWkt,
 				varWktFolder
@@ -555,11 +554,20 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 			System.out.println("reading frame "+i+": "+ abs_path);
 			
+			FrameGraph frame_from_generator = null;
+			
 			long startTime = System.currentTimeMillis();
-			FrameGraph frame_from_generator = frame_generator.generateFrame(i, abs_path);
+			try{
+				frame_from_generator = frame_generator.generateFrame(i, abs_path);
+			}catch(RuntimeException macro_failure){
+				System.out.println(macro_failure.getMessage());
+				new AnnounceFrame("Re-Skeletonization failed. Please review the SegmentationTool Option!");
+				return;
+			}
 			long endTime = System.currentTimeMillis();
 			
-			System.out.println("\t Found " + frame_from_generator.size() + " cells in " + (endTime - startTime) + " milliseconds");
+			System.out.printf("\t Found %d cells in %d ms\n",
+					frame_from_generator.size(), endTime - startTime);
 
 			//wing_disc_movie.setFrame(current_frame, current_file_no);
 			wing_disc_movie.addFrame(frame_from_generator);

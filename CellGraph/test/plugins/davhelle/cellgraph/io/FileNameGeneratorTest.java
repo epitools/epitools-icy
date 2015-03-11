@@ -29,8 +29,8 @@ public class FileNameGeneratorTest {
   @Test
   public void testSeedWaterOuput(){
 	  
-	  String default_file = "Outline_0_000.tif";
-	  String default_dir = "/Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/";
+	  String default_file = "neo0_skeleton_000.tif";
+	  String default_dir = "/Users/davide/data/neo/0/skeletons/";
 
 	  File testFile = new File(default_dir+default_file);
 	  boolean is_direct_input = true;

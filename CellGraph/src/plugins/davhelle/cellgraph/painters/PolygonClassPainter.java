@@ -36,6 +36,7 @@ public class PolygonClassPainter extends Overlay{
 	private SpatioTemporalGraph stGraph;
 	private boolean use_numbers;
 	private int highlight_no;
+	private boolean draw_color_legend = true;
 	
 	
 	public PolygonClassPainter(SpatioTemporalGraph stGraph, boolean use_numbers, int hightlight_no) {
@@ -120,40 +121,43 @@ public class PolygonClassPainter extends Overlay{
 					}
 				}
 			}
-			for(int i=0; i<7; i++){
-				
-				switch(i + 3){ 
-				case 3:
-					g.setColor(new Color(232, 233, 41)); //yellow
-					break;
-				case 4:
-					g.setColor(new Color(223, 0, 8)); //red
-					break;
-				case 5:
-					g.setColor(new Color(84, 176, 26)); //green
-					break;
-				case 6:
-					g.setColor(new Color(190, 190, 190)); //grey
-					break;
-				case 7:
-					g.setColor(new Color(18, 51, 143)); //blue
-					break;
-				case 8:
-					g.setColor(new Color(158, 53, 145)); //violet
-					break;
-				case 9:
-					g.setColor(new Color(128, 45, 20)); //brown
-					break;
-				default:
-					continue;
-				}
-				
-				g.fillRect(20*i + 30,30,20,20);
-				g.setColor(Color.white);
-				g.drawString(Integer.toString(i+3), 
-						(float)20*i + 30 + 5, 
-						(float)30 + 15);
 			
+			if(draw_color_legend){
+				for(int i=0; i<7; i++){
+
+					switch(i + 3){ 
+					case 3:
+						g.setColor(new Color(232, 233, 41)); //yellow
+						break;
+					case 4:
+						g.setColor(new Color(223, 0, 8)); //red
+						break;
+					case 5:
+						g.setColor(new Color(84, 176, 26)); //green
+						break;
+					case 6:
+						g.setColor(new Color(190, 190, 190)); //grey
+						break;
+					case 7:
+						g.setColor(new Color(18, 51, 143)); //blue
+						break;
+					case 8:
+						g.setColor(new Color(158, 53, 145)); //violet
+						break;
+					case 9:
+						g.setColor(new Color(128, 45, 20)); //brown
+						break;
+					default:
+						continue;
+					}
+
+					g.fillRect(20*i + 30,30,20,20);
+					g.setColor(Color.white);
+					g.drawString(Integer.toString(i+3), 
+							(float)20*i + 30 + 5, 
+							(float)30 + 15);
+
+				}
 			}
 		}
 	}

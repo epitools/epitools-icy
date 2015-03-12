@@ -436,15 +436,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					case CELL_COLOR_TAG:
 						sequence.addOverlay(
 								new CellMarker(wing_disc_movie,varCellColor));
-						sequence.addOverlay(
-								new ColorTagPainter(wing_disc_movie));
+						//sequence.addOverlay(
+						//		new ColorTagPainter(wing_disc_movie));
 						break;
 //					case SAVE_COLOR_TAG:
 //						new TagSaver(wing_disc_movie);
 //						break;
-					case SAVE_COLOR_TAG_XLS:
-						new CellWorkbook(wing_disc_movie);
-						break;
+//					case SAVE_COLOR_TAG_XLS:
+//						new CellWorkbook(wing_disc_movie);
+//						break;
 
 						//Export and Corrections
 

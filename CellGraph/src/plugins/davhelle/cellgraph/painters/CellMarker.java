@@ -2,10 +2,16 @@ package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
 import icy.painter.Overlay;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+
+import jxl.write.WritableSheet;
 
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -13,6 +19,7 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
@@ -29,17 +36,18 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class CellMarker extends Overlay {
+public class CellMarker extends StGraphOverlay {
 	
-	private SpatioTemporalGraph stGraph;
 	private GeometryFactory factory;
 	private EzVarEnum<CellColor> tag_color;
+	private ShapeWriter writer;
 	
 	public CellMarker(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor) {
-		super("Cell Marker");
-		this.stGraph = stGraph;
+		super("Cell Color Tag",stGraph);
 		this.factory = new GeometryFactory();
 		this.tag_color = varCellColor;
+		this.writer = new ShapeWriter();
+
 	}
 	
 	@Override
@@ -67,6 +75,65 @@ public class CellMarker extends Overlay {
 			
 		}
 
+	}
+	
+	@Override
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
+		for(Node cell: frame_i.vertexSet())
+			if(cell.hasColorTag()){
+				g.setColor(cell.getColorTag());
+				g.fill(writer.toShape(cell.getGeometry()));
+			}
+
+	}
+	
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		int color_no = 0;
+		HashMap<Color, Integer> row_no = new HashMap<Color, Integer>();
+		HashMap<Color, Integer> col_no = new HashMap<Color, Integer>();
+
+		for(Node node: frame.vertexSet()){
+
+			if(node.hasColorTag()){
+				Color cell_color = node.getColorTag();
+				if(!row_no.containsKey(cell_color)){
+					row_no.put(cell_color, 1);
+					col_no.put(cell_color, color_no);
+					XLSUtil.setCellString(sheet, color_no++, 0, getColorName(cell_color));
+				}
+
+				int x = col_no.get(cell_color).intValue();
+				int y = row_no.get(cell_color).intValue();
+
+				XLSUtil.setCellNumber(sheet, x, y, node.getGeometry().getArea());
+
+				row_no.put(cell_color, y+1);
+			}
+		}
+		
+	}
+	
+	/**
+	 * source: http://stackoverflow.com/a/12828811
+	 * 
+	 * convert the color into a string if possible
+	 * 
+	 * @param c
+	 * @return
+	 */
+	public static String getColorName(Color c) {
+	    for (Field f : Color.class.getFields()) {
+	        try {
+	            if (f.getType() == Color.class && f.get(null).equals(c)) {
+	                return f.getName();
+	            }
+	        } catch (java.lang.IllegalAccessException e) {
+	            // it should never get to here
+	        } 
+	    }
+	    return "unknown";
 	}
 	
 	//simpler: interface launch marker with certain color

@@ -112,7 +112,7 @@ public class T1Transition {
 			else
 				oldEdgeSurvivalLength++;
 		
-		//find the first transition that is higher than set detection threshold
+		//Identify the longest consecutive transition
 		int max_length = 0;
 		for(int i=0; i<transition_vector.length; i++) {
 			if(transition_vector[i] > max_length){

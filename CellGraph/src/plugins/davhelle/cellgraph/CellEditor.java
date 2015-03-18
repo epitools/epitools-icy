@@ -13,7 +13,9 @@ import icy.painter.Painter;
 import icy.plugin.PluginLauncher;
 import icy.plugin.abstract_.Plugin;
 import icy.sequence.Sequence;
+import icy.sequence.SequenceUtil;
 import icy.swimmingPool.SwimmingObject;
+import icy.type.DataType;
 import ij.ImagePlus;
 
 import java.awt.Graphics2D;
@@ -39,6 +41,7 @@ import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
+import plugins.davhelle.cellgraph.painters.SkeletonModifier;
 import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
@@ -63,6 +66,8 @@ import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
  */
 public class CellEditor extends EzPlug{
 	
+	private Sequence inputSequence;
+	
 	private EzVarSequence				varInputSeq;
 	private EzVarSequence				varOutputSeq;
 	private EzVarEnum<SegmentationProgram>  varTool;
@@ -72,24 +77,29 @@ public class CellEditor extends EzPlug{
 	private FrameGenerator				frame_generator;
 	private EzVarBoolean				varSync;
 	
+	private SkeletonModifier			modificationOverlay;
+	
 	@Override
 	protected void initialize() {
+		
+		modificationOverlay = null;
+		inputSequence = null;
 		
 		this.frame_generator = new FrameGenerator(
 				InputType.SKELETON,
 				true,
 				SegmentationProgram.SeedWater);
 		
-		//Open Painting plugin
-		//TODO check that it is available
-		String class_name = "plugins.tprovoost.painting.Painting";
-		painting_plugin = PluginLauncher.start(class_name);
-		
 		varInputSeq = new EzVarSequence("Input sequence");
 		varOutputSeq = new EzVarSequence("Output sequence");
+		
+		
+		
 		varTool = new EzVarEnum<SegmentationProgram>(
 				"Seg.Tool used",SegmentationProgram.values(), 
 				SegmentationProgram.MatlabLabelOutlines);
+		
+		
 		varSaveChanges = new EzVarBoolean("Save changes permanently to Output", false );
 		varRegenerateGraph = new EzVarBoolean("Regenerate graph (default only!)", false);
 		varSync = new EzVarBoolean("Sync [Input] and [Output] viewers",false);
@@ -98,10 +108,15 @@ public class CellEditor extends EzPlug{
 		"1. Backup your original skeletons and convert them into 8-bit binary TIFF format (if different)\n"+
 		"2. Open the image on which you want to draw and set the sequence as [Input]\n" +
 		"3. Open the skeletons which you want to edit and set the sequence as [Output]\n"+
-		"4. Modify edges by drawing on the [Input] with the painter set to white/black to add/remove edges\n"+
-		"5. Apply the changes to the current frame by run [>]. Multi-timepoint modifications are not supported!\n\n" +
+		"4. Run [>] to start the modification Overlay on [Input]\n\n"+
+		"   a. Click on [Input] to paint (add/remove junctions)\n" +
+		"   b. Press [Space-Bar] to toggle between w/b\n"+
+		"   c. Press [CTRL]+[Z] to undo changes\n"+
+		"   d. Always modify just one frame at a time\n"+
+		"   e. Press [Enter] to apply changes on [Output]\n\n" +
+		"5. Close this plugin [x] to remove the painter\n\n"+
 		"* Before selecting [Save changes] do a test run\n"+
-		"* Use the CorrectionHints Overlay from CellOverlay to find segmentation errors\n"+
+		"* Use CorrectionOverlay from CellOverlay to find segmentation errors\n"+
 		"* Use [Sync] to syncronize viewers of [input]&[output](empty run)");
 		
 		EzGroup descriptionGroup = new EzGroup("Plugin Description",description);
@@ -117,6 +132,13 @@ public class CellEditor extends EzPlug{
 
 	@Override
 	protected void execute() {
+		
+		if(inputSequence != null){
+			new AnnounceFrame(
+					String.format("CellEditor is already running on %s. To rerun please close this plugin first",
+							inputSequence.getName()),5);
+			return;
+		}
 		
 		if(varInputSeq.getValue() == null || varOutputSeq.getValue() == null){
 			new AnnounceFrame("Input and Output must be specified!",5);
@@ -143,21 +165,26 @@ public class CellEditor extends EzPlug{
 		if(varSync.getValue()){
 			input_viewer.getCanvas().setSyncId(1);
 			output_viewer.getCanvas().setSyncId(1);
-			return;
+			//return;
 		}
 		
-		Painter modifications = extractPaintingOverlay(input_viewer);
-		if(modifications == null){
-			System.out.println("No Painting overlay found");
-			return;
-		}
-
-		IcyBufferedImage img = applyModifications(modifications, output_viewer);
-		if(varSaveChanges.getValue()){
-			String file_name = saveModifications(output_viewer, img);
-		}
+		inputSequence = varInputSeq.getValue();
+		Sequence outputSequence = varOutputSeq.getValue();
+		modificationOverlay = new SkeletonModifier(outputSequence,varSaveChanges.getValue());
+		inputSequence.addOverlay(modificationOverlay);
 		
-		removeModifications(modifications, input_viewer);
+//		Painter modifications = extractPaintingOverlay(input_viewer);
+//		if(modifications == null){
+//			System.out.println("No Painting overlay found");
+//			return;
+//		}
+//
+//		IcyBufferedImage img = applyModifications(modifications, output_viewer);
+//		if(varSaveChanges.getValue()){
+//			String file_name = saveModifications(output_viewer, img);
+//		}
+//		
+//		removeModifications(modifications, input_viewer);
 		
 		//restartPainterPlugin();
 		
@@ -260,6 +287,17 @@ public class CellEditor extends EzPlug{
 		//System.out.println(g2d.getRenderingHint(hintKey)
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 		//possibly set stroke to 2 g2d.setStroke(new BasicStr)
+		
+//		FUTURE feature: Save the modifications alone for reproducibility		
+//		IcyBufferedImage modifications_img = new IcyBufferedImage(img.getWidth(),
+//				img.getHeight(), 1, DataType.BYTE);
+//		
+//		Sequence modifications_seq = new Sequence(modifications_img);
+//		modifications.paint(g2d, sequence, canvas);
+//		Canvvas
+//		
+//		modifications.paint(g2d, sequence, canvas)
+//		Saver.saveImage(img, current_file, true);
 		
 		//Apply painting to real canvas
 		modifications.paint(g2d, varOutputSeq.getValue(), output_canvas);
@@ -403,7 +441,16 @@ public class CellEditor extends EzPlug{
 	
 	@Override
 	public void clean() {
-		// TODO Auto-generated method stub
+		//System.out.println(System.currentTimeMillis());
+		
+		if(modificationOverlay != null){
+			if(varInputSeq.getValue() != null){
+				Sequence input = varInputSeq.getValue();
+				
+				if(input.hasOverlay(SkeletonModifier.class))
+					input.removeOverlay(modificationOverlay);
+			}
+		}
 		
 	}
 

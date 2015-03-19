@@ -37,8 +37,9 @@ import plugins.davhelle.cellgraph.io.SegmentationProgram;
  * package plugins.tprovoost.painting;
  * 
  * Supports
- * Color switch with SPACE bar (White<>Black)
- * Undo/Redo (CTRL + Z) /+ SHIFT
+ * * Mode/Color switch with [SPACE] bar (White<>Black)
+ * * Undo/Redo (CTRL + Z) /+ SHIFT
+ * * Apply changes with [ENTER] key
  * 
  * @author Davide Heller
  *
@@ -270,7 +271,25 @@ public class SkeletonModifier extends Overlay {
 		
 	}
 
-	private IcyBufferedImage applyModifications() {
+	/**
+	 * Method to permanently apply the painting overlay of the input sequence
+	 * to the output sequence.
+	 * 
+	 * Based on the Painting plugin by
+	 * Thomas Provoost, http://icy.bioimageanalysis.org/plugin/Painting
+	 * 
+	 * specifically the PaintingPainter.onMouseRelease() method
+	 * 
+	 * The implementing idea is to apply the paint method
+	 * of the input overlay directly to the raw data of 
+	 * the output data by extracting the needed data objects.
+	 * I.e. Graphics device, Sequence and IcyCanvas 
+	 * <-> paint(g, sequence, canvas)
+	 * 
+	 * @param modifications Painter/Overlay of the input sequence to be permanently applied
+	 * @param output_viewer Viewer associated with the output sequence (by default the 1st viewer is chosen)
+	 * @return 
+	 */private IcyBufferedImage applyModifications() {
 		
 		IcyCanvas output_canvas = output_viewer.getCanvas();
 		IcyBufferedImage img = output_canvas.getCurrentImage();
@@ -278,6 +297,24 @@ public class SkeletonModifier extends Overlay {
 		
 		BufferedImage imgBuff = IcyBufferedImageUtil.toBufferedImage(img, new BufferedImage(img.getWidth(),
 				img.getHeight(), skleton_image_type));
+		
+		
+		/* Future mechanism for image backup - reproducibility
+		 * 
+		 * 1. make a new buffered image with the same dimensions
+		 * 2. fill it with a neutral (e.g. gray) color to discern the modifications
+		 * 3. paint over it by using a custom function paintModifications(graphics) i.e. no canvas needed
+		 * 4. save the image in the a sub-folder in the original skeleton location. 
+		 * 		
+		 * 5. add a time stamp to the file name such that the sequence of application is remembered
+		 * 
+		 * Think of a future update to re-apply these modifications
+		 * alternatively store the shapes somehow.
+		 * 
+		 */
+//		BufferedImage backupImgBuff = new BufferedImage(imgBuff.getWidth(),
+//				imgBuff.getHeight(), skleton_image_type);
+//		Saver.saveImage(img, current_file, true);
 		
 		//paint on top of sequence
 		Graphics2D g2d = imgBuff.createGraphics();

@@ -101,9 +101,9 @@ public class SideDynamics {
 	 */
 	public static void main(String[] args) {
 		StringBuilder builder_main = new StringBuilder();
-		builder_main.append("sample,division_frame_no,donor_id," +
-				"acceptor_id1,has_division1,division_time1," +
-				"acceptor_id2,has_division2,division_time2\n");
+		builder_main.append(
+				"sample,division_frame_no,donor_id," +
+				"acceptor_id,division_distance\n");
 		
 //		int neo_no = 0;
 		for(int neo_no=0;neo_no<3;neo_no++){
@@ -138,36 +138,36 @@ public class SideDynamics {
 					if(c1N.size() != 2)
 						continue;
 					
-					builder_main.append(neo_no);
-					builder_main.append(',');
-					builder_main.append(d.getTimePoint());
-					builder_main.append(',');
-					builder_main.append(n.getTrackID());
-					builder_main.append(',');
-
 					for(Node acceptor: c1N){
-						builder_main.append(acceptor.getTrackID());
-						builder_main.append(',');
 						
 						if(acceptor.hasObservedDivision()){
-							builder_main.append("TRUE");
-							builder_main.append(',');
-						
-							//compute time difference to acceptor's division
-							Division aD = acceptor.getDivision();
 							
-							//negative = earlier division, positive = later division
+							//sample
+							builder_main.append(neo_no);
+							builder_main.append(',');
+							
+							//division time point
+							builder_main.append(d.getTimePoint());
+							builder_main.append(',');
+							
+							//dividing cell id
+							builder_main.append(n.getTrackID());
+							builder_main.append(',');
+							
+							//accepting cell id
+							builder_main.append(acceptor.getTrackID());
+							builder_main.append(',');
+							
+							//compute time difference to acceptor's division
+							//> negative = earlier division
+							//> positive = later division
+							Division aD = acceptor.getDivision();
 							int divisionDistance =  aD.getTimePoint() - d.getTimePoint();
 							builder_main.append(divisionDistance);
-							builder_main.append(',');
-						}
-						else{
-							builder_main.append("FALSE,NA,");
+							builder_main.append('\n');
+							
 						}
 					}
-					
-					builder_main.setLength(builder_main.length() - 1);
-					builder_main.append('\n');
 				}
 			}
 		}

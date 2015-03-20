@@ -3,12 +3,17 @@ package headless;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.CsvWriter;
+import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -102,8 +107,8 @@ public class SideDynamics {
 	public static void main(String[] args) {
 		StringBuilder builder_main = new StringBuilder();
 		builder_main.append(
-				"sample,division_frame_no,donor_id," +
-				"acceptor_id,division_distance\n");
+				"sample,donor_id," +
+				"acceptor_id,largest,longest,dividing\n");
 		
 //		int neo_no = 0;
 		for(int neo_no=0;neo_no<3;neo_no++){
@@ -111,7 +116,7 @@ public class SideDynamics {
 			SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(neo_no);
 
 			//load edges
-			//HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph);
+			//PolygonalCellTileGenerator.createPolygonalTiles(stGraph);
 			//HashMap<Long, boolean[]> tracked_edges = EdgeTracking.trackEdges(stGraph);
 
 			//go through divisions in first frame and register side gain
@@ -123,50 +128,53 @@ public class SideDynamics {
 					//builder_main.append(sd.toString());
 
 					Division d = n.getDivision();
+					int divisionTime = n.getFrameNo();
 					Node m = d.getMother();
-					HashSet<Node> mN = new HashSet<Node>(m.getNeighbors());
 
-					Node c1 = d.getChild1();
-					Node c2 = d.getChild2();
-
-					//find overlap
-					HashSet<Node> c1N = new HashSet<Node>(c1.getNeighbors());
-					HashSet<Node> c2N = new HashSet<Node>(c2.getNeighbors());
-
-					c1N.retainAll(c2N);
+					//Find the largest neighbors immediately before rounding (avg. over 5 tp)
+					HashSet<Node> largestNeighbors = new HashSet<Node>();
+					HashSet<Node> longestNeighbors = new HashSet<Node>();
+					HashSet<Node> dividingNeighbors = new HashSet<Node>();
 					
-					if(c1N.size() != 2)
+					//while(m.hasPrevious()){
+						//m = m.getPrevious();
+						
+						//if(m.getFrameNo() == divisionTime - 6 ){
+
+							largestNeighbors.add(findLargestAreaNeighbor(m));
+							
+							longestNeighbors.add(findLongestSideNeighbor(m));
+							
+							dividingNeighbors.addAll(findDividingNeighbors(m));
+							
+							//break;
+						//}
+						
+						//if(m.getFrameNo() < divisionTime - 10)
+							//break;
+					//}
+
+					//Find side gaining nodes
+					HashSet<Node> sideGainingNeighbors = findAcceptors(d);
+					
+					if(sideGainingNeighbors.size() != 2)
 						continue;
 					
-					for(Node acceptor: c1N){
-						
-						if(acceptor.hasObservedDivision()){
-							
-							//sample
-							builder_main.append(neo_no);
-							builder_main.append(',');
-							
-							//division time point
-							builder_main.append(d.getTimePoint());
-							builder_main.append(',');
-							
-							//dividing cell id
-							builder_main.append(n.getTrackID());
-							builder_main.append(',');
-							
-							//accepting cell id
-							builder_main.append(acceptor.getTrackID());
-							builder_main.append(',');
-							
-							//compute time difference to acceptor's division
-							//> negative = earlier division
-							//> positive = later division
-							Division aD = acceptor.getDivision();
-							int divisionDistance =  aD.getTimePoint() - d.getTimePoint();
-							builder_main.append(divisionDistance);
-							builder_main.append('\n');
-							
-						}
+					//compute overlaps
+					for(Node acceptor: sideGainingNeighbors){
+						Node first = acceptor.getFirst();
+						builder_main.append(neo_no);
+						builder_main.append(',');
+						builder_main.append(n.getTrackID());
+						builder_main.append(',');
+						builder_main.append(acceptor.getTrackID());
+						builder_main.append(',');
+						builder_main.append(String.valueOf(largestNeighbors.contains(first)).toUpperCase());
+						builder_main.append(',');
+						builder_main.append(String.valueOf(longestNeighbors.contains(first)).toUpperCase());
+						builder_main.append(',');
+						builder_main.append(String.valueOf(dividingNeighbors.contains(first)).toUpperCase());
+						builder_main.append('\n');
 					}
 				}
 			}
@@ -181,6 +189,72 @@ public class SideDynamics {
 			CsvWriter.writeOutBuilder(builder_main, output_file);
 			System.out.println("Successfully wrote to "+file_name);
 		}
+	}
+
+	private static HashSet<Node> findDividingNeighbors(Node m) {
+		HashSet<Node> ddns = new HashSet<Node>();
+		for(Node n: m.getNeighbors()){
+			if(n.hasObservedDivision()){
+				Division d = n.getDivision();
+				if(d.getTimePoint() > m.getDivision().getTimePoint())
+					ddns.add(n.getFirst());
+			}
+		}
+		return ddns;
+	}
+
+	private static Node findLongestSideNeighbor(Node m) {
+		double maxLength = -1;
+		Node maxLengthNode = null;
+		
+		Geometry source_geo = m.getGeometry();
+		
+		for(Node n: m.getNeighbors()){
+
+			Geometry neighbor_geo = n.getGeometry();
+			Geometry intersection = source_geo.intersection(neighbor_geo);
+			
+			//updated weighted graph with edge length
+			double edgeLength = intersection.getLength();
+			
+			if(edgeLength > maxLength){
+				maxLength = edgeLength;
+				maxLengthNode = n.getFirst();
+			}
+		}
+
+		return maxLengthNode;
+	}
+
+	private static Node findLargestAreaNeighbor(Node m) {
+		double maxArea = -1;
+		Node maxAreaNode = null;
+		
+		for(Node n: m.getNeighbors()){
+			double nArea = n.getGeometry().getArea();
+			if(nArea > maxArea){
+				maxArea = nArea;
+				maxAreaNode = n.getFirst();
+			}
+		}
+
+		return maxAreaNode;
+	}
+
+	/**
+	 * @param d
+	 * @return
+	 */
+	private static HashSet<Node> findAcceptors(Division d) {
+		Node c1 = d.getChild1();
+		Node c2 = d.getChild2();
+
+		//find overlap
+		HashSet<Node> c1N = new HashSet<Node>(c1.getNeighbors());
+		HashSet<Node> c2N = new HashSet<Node>(c2.getNeighbors());
+
+		c1N.retainAll(c2N);
+		return c1N;
 	}
 
 }

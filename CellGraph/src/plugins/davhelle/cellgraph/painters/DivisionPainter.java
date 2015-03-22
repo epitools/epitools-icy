@@ -5,17 +5,18 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.Iterator;
 
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Elimination;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -32,43 +33,30 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class DivisionPainter extends Overlay {
+public class DivisionPainter extends StGraphOverlay {
 
-	SpatioTemporalGraph stGraph;
 	private boolean PLOT_DIVISIONS;
 	private boolean PLOT_ELIMINATIONS;
 	private boolean FILL_CELLS;
+	
+	public static final String DESCRIPTION = 
+			"Highlights the cells that underwent division or elimination during the time lapse";
 	
 	public DivisionPainter(
 			SpatioTemporalGraph stGraph,
 			boolean PLOT_DIVSIONS,
 			boolean PLOT_ELIMINATIONS,
 			boolean FILL_CELLS){
-		super("Divisions (green) and Eliminations (red)");
-		this.stGraph = stGraph;
+		super("Divisions (green) and Eliminations (red)",stGraph);
 		this.PLOT_DIVISIONS = PLOT_DIVSIONS;
 		this.PLOT_ELIMINATIONS = PLOT_ELIMINATIONS;
 		this.FILL_CELLS = FILL_CELLS;
 	}
 	
-	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas){
-		
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		if(time_point < stGraph.size())
-			paintFrame(g, time_point);
-		
-	}
-
-	/**
-	 * @param g
-	 * @param time_point
-	 */
-	public void paintFrame(Graphics2D g, int time_point) {
+	@Override
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		if(!FILL_CELLS)
 			g.setStroke(new BasicStroke(3));
-		
-		FrameGraph frame_i = stGraph.getFrame(time_point);
 		
 		for(Node cell: frame_i.vertexSet()){
 			if(cell.getFirst() != null){
@@ -102,5 +90,45 @@ public class DivisionPainter extends Overlay {
 		
 		if(!FILL_CELLS)
 			g.setStroke(new BasicStroke(1));
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Centroid x");
+		XLSUtil.setCellString(sheet, 1, 0, "Centroid y");
+		XLSUtil.setCellString(sheet, 2, 0, "EVENT Type");
+
+		int row_no = 1;
+		
+		if(PLOT_DIVISIONS){
+			Iterator<Division> divisions = frame.divisionIterator();
+			while(divisions.hasNext()){
+				Division d = divisions.next();
+
+				Node mother = d.getMother();
+				XLSUtil.setCellNumber(sheet, 0, row_no, mother.getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 1, row_no, mother.getCentroid().getY());
+				XLSUtil.setCellString(sheet, 2, row_no, "DIVISION");
+
+				row_no++;
+
+			}
+		}
+		
+		if(PLOT_ELIMINATIONS){
+			Iterator<Elimination> eliminations = frame.eliminationIterator();
+			while(eliminations.hasNext()){
+				Elimination e = eliminations.next();
+
+				Node eliminatedCell = e.getCell();
+				XLSUtil.setCellNumber(sheet, 0, row_no, eliminatedCell.getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 1, row_no, eliminatedCell.getCentroid().getY());
+				XLSUtil.setCellString(sheet, 2, row_no, "ELIMINATION");
+
+				row_no++;
+
+			}
+		}
 	}
 }

@@ -21,9 +21,9 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class BorderPainter extends StGraphOverlay{
+public class BorderOverlay extends StGraphOverlay{
 
-		public BorderPainter(SpatioTemporalGraph spatioTemporalGraph){
+		public BorderOverlay(SpatioTemporalGraph spatioTemporalGraph){
 			super("Border cells",spatioTemporalGraph);
 		}
 

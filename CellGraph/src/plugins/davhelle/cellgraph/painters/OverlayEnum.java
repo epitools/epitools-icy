@@ -37,8 +37,7 @@ public enum OverlayEnum{
 	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
 	
 	ELLIPSE_FIT("Fits an ellipse to each cell geometry and displays the longest axis"),
-	ELLIPSE_FIT_WRT_POINT_ROI("To enable this plugin a Point ROI must be present on the image. "+
-	"The overlay computes the angle towards the ELLIPSE_FIT and displays it as a color code. "),
+	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),
 	ELONGATION_RATIO("Color codes the cell according to their elongation ratio and "+
 	"writes the elongation factor within every cell"), // could add csv option here
 	PDF_SCREENSHOT("Generates a screenshot in PDF format"),

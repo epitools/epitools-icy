@@ -11,27 +11,19 @@
 
 package plugins.davhelle.cellgraph.painters;
 
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Edge Painter
@@ -41,9 +33,11 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Davide Heller
  *
  */
-public class EdgeStabilityOverlay extends Overlay {
+public class EdgeStabilityOverlay extends StGraphOverlay {
 	
-	private SpatioTemporalGraph stGraph;
+	public static final String DESCRIPTION = 
+			"Displays a color code for how stable edges are (green=stable, red=not stable)[time consuming!]";
+	
 	private ShapeWriter writer;
 	private HashSet<Long> stable_set;
 	private HashSet<Long> unstable_set;
@@ -53,9 +47,8 @@ public class EdgeStabilityOverlay extends Overlay {
 	 * @param name
 	 */
 	public EdgeStabilityOverlay(SpatioTemporalGraph stGraph) {
-		super("Edge Survival");
+		super("Edge Survival",stGraph);
 		
-		this.stGraph = stGraph;
 		this.stable_set = new HashSet<Long>();
 		this.unstable_set = new HashSet<Long>();
 		this.novel_set = new HashSet<Long>();
@@ -82,30 +75,6 @@ public class EdgeStabilityOverlay extends Overlay {
 		//final divide edge according to length to measure stability
 		
 	}
-	
-	@Override
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-    {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		if(time_point < stGraph.size()){
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			for(Edge e: frame_i.edgeSet()){
-				long track_code = e.getPairCode(frame_i);
-				
-				if(e.hasDivision())
-					track_code = e.getAlternativeTrackID();
-				
-				if(stable_set.contains(track_code))
-					drawEdge(g,e,Color.green);
-				else if(unstable_set.contains(track_code))
-					drawEdge(g,e,Color.red);
-				else if(novel_set.contains(track_code))
-					drawEdge(g,e,Color.yellow);
-					
-			}
-		}
-    }
 	
 	public void drawEdge(Graphics2D g, Edge e, Color color){
 		g.setColor(color);
@@ -238,5 +207,30 @@ public class EdgeStabilityOverlay extends Overlay {
 			long edge_track_code) {
 		int old = tracked_edges.get(edge_track_code);
 		tracked_edges.put(edge_track_code, old + 1);
+	}
+
+	@Override
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
+		
+		for(Edge e: frame_i.edgeSet()){
+			long track_code = e.getPairCode(frame_i);
+			
+			if(e.hasDivision())
+				track_code = e.getAlternativeTrackID();
+			
+			if(stable_set.contains(track_code))
+				drawEdge(g,e,Color.green);
+			else if(unstable_set.contains(track_code))
+				drawEdge(g,e,Color.red);
+			else if(novel_set.contains(track_code))
+				drawEdge(g,e,Color.yellow);
+		}
+		
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		// TODO Auto-generated method stub
+		
 	}
 }

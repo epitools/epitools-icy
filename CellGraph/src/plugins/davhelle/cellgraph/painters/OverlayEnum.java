@@ -32,7 +32,7 @@ public enum OverlayEnum{
 	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
 	
 	T1_TRANSITIONS("Computes and displays the T1 transitions present in the time lapse [time consuming!]"), 
-	EDGE_STABILITY("Displays a color code for how stable edges are (green=stable, red=not stable)[time consuming!]"),
+	EDGE_STABILITY(EdgeStabilityOverlay.DESCRIPTION),
 	EDGE_INTENSITY("Transforms the edge geometries into ROIs and displays the underlying intensity of the image [time consuming!]"),
 	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
 	

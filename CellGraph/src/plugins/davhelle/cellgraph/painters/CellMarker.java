@@ -1,7 +1,6 @@
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
-import icy.painter.Overlay;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
@@ -12,7 +11,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 
 import jxl.write.WritableSheet;
-
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;

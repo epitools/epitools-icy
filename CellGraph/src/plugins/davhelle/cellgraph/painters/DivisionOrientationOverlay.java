@@ -4,10 +4,7 @@
 package plugins.davhelle.cellgraph.painters;
 
 import headless.DetectDivisionOrientation;
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
 
 import java.awt.Color;
@@ -15,15 +12,17 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
+import java.util.Iterator;
 
-
-
-import com.vividsolutions.jts.algorithm.Angle;
-
+import jxl.write.WritableSheet;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.DivisionOrientationFinder;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.algorithm.Angle;
 
 /**
  * Overaly to visualize the orientation of a dividing cell
@@ -32,17 +31,19 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class DivisionOrientationOverlay extends Overlay {
+public class DivisionOrientationOverlay extends StGraphOverlay {
 
-	private SpatioTemporalGraph stGraph;
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 	private HashMap<Node, Double> division_orientation;
 	private HashMap<Node, Double> division_orientation2;
 
+	public static final String DESCRIPTION = "Color codes the dividing cells according to their new junction orientation" +
+			" (Longest axis of mother cell vs New junction). The more red the cells are the more the new junstion is " +
+			"perpendicular to the longest axis of the mother cell, the more green the cell the more parallel the new" +
+			"junction is.";
 	
 	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph) {
-		super("Division Orientation");
-		stGraph = spatioTemporalGraph;
+		super("Division Orientation",spatioTemporalGraph);
 		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
 		
 		division_orientation = DetectDivisionOrientation.computeDivisionOrientation(
@@ -53,28 +54,8 @@ public class DivisionOrientationOverlay extends Overlay {
 		
 	}
 	
-//	import javax.swing.JPanel;
-//	@Override
-//	public JPanel getOptionsPanel(){
-//		return new JPanel().
-//	}
-
 	@Override
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-    {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		if(time_point < stGraph.size()){
-
-			paintFrame(g, time_point);
-		}
-    }
-
-	/**
-	 * @param g
-	 * @param time_point
-	 */
-	public void paintFrame(Graphics2D g, int time_point) {
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		Color old = g.getColor();
 		double[] heat_map = {0.0,0.25,0.5,0.75,1.0};
 		
@@ -84,7 +65,9 @@ public class DivisionOrientationOverlay extends Overlay {
 		int fontSize = 3;
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 		
-		for(Node n: stGraph.getFrame(time_point).vertexSet()){
+		int time_point = frame_i.getFrameNo();
+		
+		for(Node n: frame_i.vertexSet()){
 			if(fittedEllipses.containsKey(n)){
 				if(division_orientation2.containsKey(n.getFirst())){
 
@@ -160,7 +143,6 @@ public class DivisionOrientationOverlay extends Overlay {
 								(float)cX - 5  , 
 								(float)cY + 5);
 					}
-//					
 					//System.out.printf("%.2f\n",n.getDivision().getDivisionOrientation());
 				}
 			}
@@ -176,14 +158,37 @@ public class DivisionOrientationOverlay extends Overlay {
 				g.setColor(hsbColor);
 				
 				//g.fillRect(20*i + 30,30,20,20);
-			
 			}
-			
-			
-		}
-		
-		
+		}		
 		g.setColor(old);
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Centroid x");
+		XLSUtil.setCellString(sheet, 1, 0, "Centroid y");
+		XLSUtil.setCellString(sheet, 2, 0, "Division Orientation");
+
+		int row_no = 1;
+		
+		Iterator<Division> divisions = frame.divisionIterator();
+		while(divisions.hasNext()){
+			Division d = divisions.next();
+			Node mother = d.getMother();
+			
+			if(division_orientation2.containsKey(mother.getFirst())){
+				
+				double angle = Angle.toDegrees(
+						division_orientation2.get(mother.getFirst()));
+			
+				XLSUtil.setCellNumber(sheet, 0, row_no, mother.getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 1, row_no, mother.getCentroid().getY());
+				XLSUtil.setCellNumber(sheet, 2, row_no, angle);
+
+				row_no++;
+			}
+		}
 	}
 	
 }

@@ -23,8 +23,8 @@ public enum OverlayEnum{
 	
 	CELL_TRACKING("Overlay to review the tracking in case it has been eliminated or to highlight different aspects"),
 	//ALWAYS_TRACKED_CELLS("Highlights only the cells that have been continuously tracked throughout the time lapse"),
-	DIVISIONS_AND_ELIMINATIONS("Highlights the cells that underwent division or elimination during the time lapse"),
-	CORRECTION_HINTS("Overlay to help identifying cells which have been segmented wrongly, best used in combination with CellEditor plugin"),
+	DIVISIONS_AND_ELIMINATIONS(DivisionOverlay.DESCRIPTION),
+	CORRECTION_HINTS(CorrectionOverlay.DESCRIPTION),
 	
 	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
 	//WRITE_OUT_DDN("Statistics output"),
@@ -42,7 +42,7 @@ public enum OverlayEnum{
 	ELONGATION_RATIO("Color codes the cell according to their elongation ratio and "+
 	"writes the elongation factor within every cell"), // could add csv option here
 	PDF_SCREENSHOT("Generates a screenshot in PDF format"),
-	DIVSION_ORIENTATION("Color codes the dividing cells according to their new junction orientation (Longest axis of mother cell vs New junction");
+	DIVSION_ORIENTATION(DivisionOrientationOverlay.DESCRIPTION);
 	
 	private String description;
 	private OverlayEnum(String description){this.description = description;}

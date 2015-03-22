@@ -11,6 +11,9 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import jxl.write.WritableSheet;
+
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -18,22 +21,21 @@ import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 /**
  * Painter to visualize all cells that have contiguously tracked
- * for all tracked time points or at least untill they divided.  
+ * for all tracked time points or at least until they divided.  
  * 
  * @author Davide Heller
  * 
  */
-public class AlwaysTrackedCellsOverlay extends Overlay {
+public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 	
-	private SpatioTemporalGraph stGraph;
 	private ArrayList<Node> nodesToBeHighlighted;
 
 	public AlwaysTrackedCellsOverlay(SpatioTemporalGraph stGraph) {
-		super("Always tracked cells");
-		this.stGraph = stGraph;
+		super("Always tracked cells", stGraph);
 		nodesToBeHighlighted = new ArrayList<Node>();
 		
 		if(stGraph.hasTracking()){
@@ -130,17 +132,31 @@ public class AlwaysTrackedCellsOverlay extends Overlay {
 			
 	}
 	
-	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
+	public void paintFrame(Graphics2D g, FrameGraph frame)
 	{
-		
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 		g.setColor(Color.orange);
+
+		for(Node cell: frame.vertexSet())
+			if(nodesToBeHighlighted.contains(cell.getFirst()))
+				g.fill(cell.toShape());
 		
-		if(time_point < stGraph.size())
-			for(Node cell: stGraph.getFrame(time_point).vertexSet())
-				if(nodesToBeHighlighted.contains(cell.getFirst()))
-					g.fill(cell.toShape());
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Cell area");
+
+		int row_no = 1;
+		for(Node node: frame.vertexSet()){
+			if(nodesToBeHighlighted.contains(node.getFirst())){
+				XLSUtil.setCellNumber(sheet, 0, row_no, node.getTrackID());
+				XLSUtil.setCellNumber(sheet, 1, row_no, node.getGeometry().getArea());
+				row_no++;
+			}
+		}
+
 	}
 	
 }

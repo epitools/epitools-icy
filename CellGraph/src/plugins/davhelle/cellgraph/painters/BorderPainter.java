@@ -5,15 +5,12 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.AbstractPainter;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -24,39 +21,43 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class BorderPainter extends Overlay{
+public class BorderPainter extends StGraphOverlay{
 
-		private SpatioTemporalGraph stGraph;
-		//TODO maybe speedup with private ShapeWriter writer;
-		
 		public BorderPainter(SpatioTemporalGraph spatioTemporalGraph){
-			super("Border cells");
-			this.stGraph = spatioTemporalGraph;
-			
-
+			super("Border cells",spatioTemporalGraph);
 		}
 
-		public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas){
-			int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
+		@Override
+		public void paintFrame(Graphics2D g, FrameGraph frame_i) {
+			
+			for(Node cell: frame_i.vertexSet()){
 
-			if(time_point < stGraph.size()){
-
-				FrameGraph frame_i = stGraph.getFrame(time_point);
-				
-				for(Node cell: frame_i.vertexSet()){
-
-					if(cell.onBoundary()){
-						g.setColor(Color.white);
-						g.fill(cell.toShape());
-					}
-//					else
-//						g.setColor(Color.green);
-
-					//Fill cell shape
-					//if(!cell.onBoundary())
-					
-
+				if(cell.onBoundary()){
+					g.setColor(Color.white);
+					g.fill(cell.toShape());
 				}
+//				else
+//					g.setColor(Color.green);
+
+				//Fill cell shape
+				//if(!cell.onBoundary())
+			}			
+		}
+
+		@Override
+		void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+			
+			XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+			XLSUtil.setCellString(sheet, 1, 0, "On Border");
+
+			int row_no = 1;
+			for(Node node: frame.vertexSet()){
+				XLSUtil.setCellNumber(sheet, 0, row_no, node.getTrackID());
+				
+				String booleanString = String.valueOf(node.onBoundary()).toUpperCase();
+				XLSUtil.setCellString(sheet, 1, row_no, booleanString);
+
+				row_no++;
 			}
 		}
 }

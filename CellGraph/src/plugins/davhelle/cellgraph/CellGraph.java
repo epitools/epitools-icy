@@ -49,7 +49,7 @@ import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
-import plugins.davhelle.cellgraph.painters.DivisionPainter;
+import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
@@ -680,7 +680,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			try{
 				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
 				division_reader.assignDivisions();
-				sequence.addPainter(new DivisionPainter(wing_disc_movie, true,false,true));
+				sequence.addPainter(new DivisionOverlay(wing_disc_movie, true,false,true));
 			}
 			catch(IOException e){
 				System.out.println("Something went wrong in division reading");

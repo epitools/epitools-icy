@@ -719,7 +719,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		}
 		
 		
-		DivisionPainter dividing_cells = new DivisionPainter(
+		DivisionOverlay dividing_cells = new DivisionOverlay(
 				wing_disc_movie,
 				varBooleanPlotDivisions.getValue(),
 				varBooleanPlotEliminations.getValue(),

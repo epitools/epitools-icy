@@ -33,7 +33,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class DivisionPainter extends StGraphOverlay {
+public class DivisionOverlay extends StGraphOverlay {
 
 	private boolean PLOT_DIVISIONS;
 	private boolean PLOT_ELIMINATIONS;
@@ -42,7 +42,7 @@ public class DivisionPainter extends StGraphOverlay {
 	public static final String DESCRIPTION = 
 			"Highlights the cells that underwent division or elimination during the time lapse";
 	
-	public DivisionPainter(
+	public DivisionOverlay(
 			SpatioTemporalGraph stGraph,
 			boolean PLOT_DIVSIONS,
 			boolean PLOT_ELIMINATIONS,

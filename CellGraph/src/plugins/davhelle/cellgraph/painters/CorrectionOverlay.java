@@ -14,12 +14,15 @@ import icy.canvas.IcyCanvas;
 import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.Iterator;
+
+import jxl.write.WritableSheet;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -43,14 +46,19 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class CorrectionOverlay extends Overlay {
+public class CorrectionOverlay extends StGraphOverlay {
 	
-	private SpatioTemporalGraph stGraph;
 	private GeometryFactory factory;
 	
+	public static final String DESCRIPTION = "Overlay to evidence potential False positives (FP) and False Negatives (FN)\n\n" +
+			"* [RED] FP, i.e. over-segmentation\n" + 
+			"* [YELLOW] FN, i.e. under-segmentation\n" +
+			"* Click on any mark to cancel the evidence\n\n"+
+			"Useful in combination with CellEditor. Please not that it must be run on a different sequence than latters [INPUT]" +
+			" (i.e. to avoid event conflict between the clicking events)";
+	
 	public CorrectionOverlay(SpatioTemporalGraph stGraph) {
-		super("Tracking Corrections");
-		this.stGraph = stGraph;
+		super("Tracking Corrections",stGraph);
 		this.factory = new GeometryFactory();
 		
 		System.out.println("Looking for potential False positives (FP) and negatives (FN)");
@@ -141,30 +149,51 @@ public class CorrectionOverlay extends Overlay {
 	}
 	
 	@Override
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-    {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		if(time_point < stGraph.size()){
-			
-			//Help the user see a cell which potentially doesn't exist
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			for(Node cell: frame_i.vertexSet())
-			 	 if(cell.getErrorTag() == TrackingFeedback.FALSE_POSITIVE.numeric_code){
-			 		g.setColor(Color.red);
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
+		
+		for(Node cell: frame_i.vertexSet())
+		 	 if(cell.getErrorTag() == TrackingFeedback.FALSE_POSITIVE.numeric_code){
+		 		g.setColor(Color.red);
+		 		g.fill(cell.toShape());
+		 	}
+		
+		int time_point = frame_i.getFrameNo();
+		
+		if(time_point > 0){
+			//Help the user see a cell that went missing from the previous frame
+			FrameGraph previous_frame = stGraph.getFrame(time_point - 1);
+			for(Node cell: previous_frame.vertexSet())
+				if(cell.getErrorTag() == TrackingFeedback.FALSE_NEGATIVE.numeric_code){
+			 		g.setColor(Color.yellow);
 			 		g.fill(cell.toShape());
 			 	}
-			
-			if(time_point > 0){
-				//Help the user see a cell that went missing from the previous frame
-				FrameGraph previous_frame = stGraph.getFrame(time_point - 1);
-				for(Node cell: previous_frame.vertexSet())
-					if(cell.getErrorTag() == TrackingFeedback.FALSE_NEGATIVE.numeric_code){
-				 		g.setColor(Color.yellow);
-				 		g.fill(cell.toShape());
-				 	}
+		}
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		//TODO currently errors are not synced with their frame. Should be +1
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Centroid x");
+		XLSUtil.setCellString(sheet, 1, 0, "Centroid y");
+		XLSUtil.setCellString(sheet, 2, 0, "Error Type");
+
+		int row_no = 1;
+		for(Node node: frame.vertexSet()){
+			if(node.getErrorTag() == TrackingFeedback.FALSE_NEGATIVE.numeric_code){
+				XLSUtil.setCellNumber(sheet, 0, row_no, node.getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 1, row_no, node.getCentroid().getY());
+				XLSUtil.setCellString(sheet, 2, row_no, "FN");
+				row_no++;
+			} else if(node.getErrorTag() == TrackingFeedback.FALSE_POSITIVE.numeric_code){
+				XLSUtil.setCellNumber(sheet, 0, row_no, node.getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 1, row_no, node.getCentroid().getY());
+				XLSUtil.setCellString(sheet, 2, row_no, "FP");
+				row_no++;
 			}
 		}
-    }
+		
+	}
 
 }

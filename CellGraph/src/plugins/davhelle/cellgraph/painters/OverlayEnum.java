@@ -8,7 +8,7 @@ package plugins.davhelle.cellgraph.painters;
  */
 public enum OverlayEnum{
 	
-	//TEST("Test Overlay"),
+	TEST("Test Overlay"),
 	CELL_OVERLAY("Simple Overlay to show cells and their outlines in a color of choice"),
 	CELL_AREA("Overlay to color cells according to their area size in a gradient fashion"),
 	SEGMENTATION_BORDER("Overlay to show where the border of the segmentation was identified"), 
@@ -28,9 +28,7 @@ public enum OverlayEnum{
 	
 	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
 	//WRITE_OUT_DDN("Statistics output"),
-	CELL_COLOR_TAG("Overlay to interactively mark cells with a color of choice (after excecution the color can be still changed), export with SAVE_COLOR TAG"),
-	//SAVE_COLOR_TAG("Saves the area of each cell in CSV that has been marked with the CELL_COLOR_TAG overlay"),
-	//SAVE_COLOR_TAG_XLS("Saves the area of each cell in XLS that has been marked with the CELL_COLOR_TAG overlay"),
+	CELL_COLOR_TAG(CellMarker.DESCRIPTION),
 	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
 	
 	T1_TRANSITIONS("Computes and displays the T1 transitions present in the time lapse [time consuming!]"), 

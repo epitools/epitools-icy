@@ -42,6 +42,16 @@ public class CellMarker extends StGraphOverlay {
 	private EzVarEnum<CellColor> tag_color;
 	private ShapeWriter writer;
 	
+	public static final String DESCRIPTION = 
+			"Overlay to interactively mark cells with a color of choice and export the selection.\n\n" +
+			"1. Run [>] to activate the marker\n" +
+			"2. Select the color to begin to mark with\n" + 
+			"3. Click on any cell to mark it\n" +
+			"4. Click again to remove or change color\n" +
+			"5. The XLS export in the layer menu will build\n" +
+			"   a spreadsheet with the marked cells.\n" +
+			"6. Remove the overlay (Layer > [x]) to stop";
+	
 	public CellMarker(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor) {
 		super("Cell Color Tag",stGraph);
 		this.factory = new GeometryFactory();
@@ -63,13 +73,15 @@ public class CellMarker extends StGraphOverlay {
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet())
 			 	if(cell.getGeometry().contains(point_geometry)){
-			 		Color current_tag = cell.getColorTag();
 			 		Color new_tag = tag_color.getValue().getColor();
-			 		if(current_tag == Color.black)
-			 			cell.setColorTag(new_tag);
-			 		else if(current_tag == new_tag)
-			 			cell.setColorTag(Color.black);
-			 		else
+
+			 		if(cell.hasColorTag()){
+			 			Color current_tag = cell.getColorTag();
+			 			if(current_tag == new_tag)
+			 				cell.setColorTag(null);
+			 			else
+			 				cell.setColorTag(new_tag);
+			 		} else 
 			 			cell.setColorTag(new_tag);
 			 	}
 			

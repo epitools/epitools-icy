@@ -36,7 +36,7 @@ public enum OverlayEnum{
 	EDGE_INTENSITY("Transforms the edge geometries into ROIs and displays the underlying intensity of the image [time consuming!]"),
 	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
 	
-	ELLIPSE_FIT("Fits an ellipse to each cell geometry and displays the longest axis"),
+	ELLIPSE_FIT(EllipseFitterOverlay.DESCRIPTION),
 	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),
 	ELONGATION_RATIO("Color codes the cell according to their elongation ratio and "+
 	"writes the elongation factor within every cell"), // could add csv option here

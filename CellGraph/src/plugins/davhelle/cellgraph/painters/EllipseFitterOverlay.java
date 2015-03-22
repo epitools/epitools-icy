@@ -10,10 +10,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
 
 import java.awt.Color;
@@ -22,6 +19,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 
+import jxl.write.WritableSheet;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -33,44 +32,29 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @date 21.11.2014
  *
  */
-public class EllipseFitterOverlay extends Overlay {
+public class EllipseFitterOverlay extends StGraphOverlay {
 
-	private SpatioTemporalGraph stGraph;
+	public static final String DESCRIPTION = "Fits an ellipse to each cell geometry and displays the longest axis" +
+			"using the ImageJ(R) EllipseFitter Macro.";
+	
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 	
 	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph) {
-		super("Ellipse Fitter");
-		stGraph = spatioTemporalGraph;
+		super("Ellipse Fitter",spatioTemporalGraph);
 		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
 	}
-	
+
 	@Override
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-    {
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		if(time_point < stGraph.size()){
-			//TODO include 3D information (in case of VTK)!
-			Color old = g.getColor();
-			Color ellipseColor = Color.green;
-			paintFrame(g, time_point, ellipseColor);
-			
-			g.setColor(old);
-		}
-    }
-
-	/**
-	 * @param g
-	 * @param time_point
-	 */
-	public void paintFrame(Graphics2D g, int time_point,Color color) {
+		Color old = g.getColor();
 		
-		g.setColor(color);
+		Color ellipseColor = Color.green;
+		g.setColor(ellipseColor);
 		int fontSize = 3;
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 		
-		for(Node n: stGraph.getFrame(time_point).vertexSet()){
+		for(Node n: frame_i.vertexSet()){
 			if(fittedEllipses.containsKey(n)){
 				EllipseFitter ef = fittedEllipses.get(n);
 				/* 
@@ -100,6 +84,43 @@ public class EllipseFitterOverlay extends Overlay {
 				g.draw(new Line2D.Double(x0, y0, x1, y1));
 			}
 		}
+		
+		g.setColor(old);
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Centroid x");
+		XLSUtil.setCellString(sheet, 2, 0, "Centroid y");
+		XLSUtil.setCellString(sheet, 3, 0, "Ellipse center x");
+		XLSUtil.setCellString(sheet, 4, 0, "Ellipse center y");
+		XLSUtil.setCellString(sheet, 5, 0, "Ellipse major axis length");
+		XLSUtil.setCellString(sheet, 6, 0, "Ellipse minor axis length");
+		XLSUtil.setCellString(sheet, 7, 0, "Ellipse major axis angle");
+
+		int row_no = 1;
+
+		for(Node n: frame.vertexSet()){
+			if(fittedEllipses.containsKey(n)){
+			
+				EllipseFitter ef = fittedEllipses.get(n);
+				
+				XLSUtil.setCellNumber(sheet, 0, row_no, n.getTrackID());
+				XLSUtil.setCellNumber(sheet, 1, row_no, n.getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 2, row_no, n.getCentroid().getY());
+				XLSUtil.setCellNumber(sheet, 3, row_no, ef.xCenter);
+				XLSUtil.setCellNumber(sheet, 4, row_no, ef.yCenter);
+				XLSUtil.setCellNumber(sheet, 5, row_no, ef.major);
+				XLSUtil.setCellNumber(sheet, 6, row_no, ef.minor);
+				XLSUtil.setCellNumber(sheet, 7, row_no, ef.angle);
+				
+				row_no++;
+
+			}
+		}
+		
 	}
 
 }

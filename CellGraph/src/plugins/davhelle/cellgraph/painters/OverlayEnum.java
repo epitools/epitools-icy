@@ -28,7 +28,7 @@ public enum OverlayEnum{
 	
 	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
 	//WRITE_OUT_DDN("Statistics output"),
-	CELL_COLOR_TAG(CellMarker.DESCRIPTION),
+	CELL_COLOR_TAG(CellMarkerOverlay.DESCRIPTION),
 	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
 	
 	T1_TRANSITIONS("Computes and displays the T1 transitions present in the time lapse [time consuming!]"), 

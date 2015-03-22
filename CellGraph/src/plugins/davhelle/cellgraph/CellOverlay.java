@@ -44,8 +44,8 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
-import plugins.davhelle.cellgraph.painters.BorderPainter;
-import plugins.davhelle.cellgraph.painters.CellMarker;
+import plugins.davhelle.cellgraph.painters.BorderOverlay;
+import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
 import plugins.davhelle.cellgraph.painters.CentroidOverlay;
 import plugins.davhelle.cellgraph.painters.ColorTagPainter;
 import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
@@ -62,6 +62,7 @@ import plugins.davhelle.cellgraph.painters.OverlayEnum;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.SkeletonModifier;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 import plugins.davhelle.cellgraph.painters.TransitionOverlay;
@@ -336,8 +337,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					OverlayEnum USER_CHOICE = varPlotting.getValue();
 
 					switch (USER_CHOICE){
-//					case TEST:
-//						break;
+					case TEST:
+						sequence.addOverlay(
+								new AlwaysTrackedCellsOverlay(wing_disc_movie));
+						break;
 					case ELLIPSE_FIT:
 						sequence.addOverlay(
 								new EllipseFitterOverlay(wing_disc_movie));
@@ -348,7 +351,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						break;
 					case SEGMENTATION_BORDER: 
 						sequence.addOverlay(
-								new BorderPainter(wing_disc_movie));
+								new BorderOverlay(wing_disc_movie));
 						break;
 
 					case CELL_OVERLAY: 
@@ -435,7 +438,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					case CELL_COLOR_TAG:
 						sequence.addOverlay(
-								new CellMarker(wing_disc_movie,varCellColor));
+								new CellMarkerOverlay(wing_disc_movie,varCellColor));
 						//sequence.addOverlay(
 						//		new ColorTagPainter(wing_disc_movie));
 						break;

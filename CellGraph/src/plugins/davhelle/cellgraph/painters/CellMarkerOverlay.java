@@ -34,7 +34,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class CellMarker extends StGraphOverlay {
+public class CellMarkerOverlay extends StGraphOverlay {
 	
 	private GeometryFactory factory;
 	private EzVarEnum<CellColor> tag_color;
@@ -50,7 +50,7 @@ public class CellMarker extends StGraphOverlay {
 			"   a spreadsheet with the marked cells.\n" +
 			"6. Remove the overlay (Layer > [x]) to stop";
 	
-	public CellMarker(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor) {
+	public CellMarkerOverlay(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor) {
 		super("Cell Color Tag",stGraph);
 		this.factory = new GeometryFactory();
 		this.tag_color = varCellColor;

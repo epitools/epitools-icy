@@ -19,7 +19,7 @@ public enum OverlayEnum{
 	
 	TEST("Test Overlay"),
 	CELL_OVERLAY(PolygonOverlay.DESCRIPTION),
-	CELL_AREA("Overlay to color cells according to their area size in a gradient fashion"),
+	CELL_AREA(AreaGradientOverlay.DESCRIPTION),
 	SEGMENTATION_BORDER("Overlay to show where the border of the segmentation was identified"), 
 	
 	VORONOI_DIAGRAM("Overlay displays the voronoi diagram computed from the cell centroids"), 

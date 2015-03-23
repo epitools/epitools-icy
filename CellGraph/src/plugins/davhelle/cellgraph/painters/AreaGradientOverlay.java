@@ -24,6 +24,8 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class AreaGradientOverlay extends StGraphOverlay{
 	
+	public static final String DESCRIPTION = 
+			"Overlay to color cells according to their area size in a gradient fashion";
 	/**
 	 * minimum and maximum area values to fix the gradient extremes
 	 */

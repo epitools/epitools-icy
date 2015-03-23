@@ -42,7 +42,7 @@ public enum OverlayEnum{
 	
 	T1_TRANSITIONS("Computes and displays the T1 transitions present in the time lapse [time consuming!]"), 
 	EDGE_STABILITY(EdgeStabilityOverlay.DESCRIPTION),
-	EDGE_INTENSITY("Transforms the edge geometries into ROIs and displays the underlying intensity of the image [time consuming!]"),
+	EDGE_INTENSITY(IntesityGraphOverlay.DESCRIPTION),
 	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
 	
 	ELLIPSE_FIT(EllipseFitterOverlay.DESCRIPTION),

@@ -11,6 +11,7 @@ import icy.painter.Overlay;
 import icy.roi.ROI;
 import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
@@ -19,6 +20,8 @@ import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import jxl.write.WritableSheet;
 
 import plugins.adufour.ezplug.EzGUI;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -39,17 +42,24 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class IntesityGraphOverlay extends Overlay{
+public class IntesityGraphOverlay extends StGraphOverlay{
+	
+	public static final String DESCRIPTION = 
+			"Transforms the edge geometries into ROIs and displays " +
+			"the underlying intensity of the image [time consuming!].\n\n" +
+			"The mean intensity is computed over a 5px wide buffer area " +
+			"around the edge geometry. The intensity is normalized" +
+			"by correcting for the avg. cell background and the" +
+			"avg. intensity of the neighbors";
 
-	private SpatioTemporalGraph stGraph;
 	private GeometryFactory factory;
 	private ShapeWriter writer;
 	private Sequence sequence;
-	
+	private EzGUI gui;
 	
 	private HashMap<Edge,ROI> buffer_roi;
 	private HashMap<Edge,Shape> buffer_shape;
-	private HashMap<Edge,Double> edge_color;
+	private HashMap<Edge,Double> normalizedEdgeIntensity;
 	private HashMap<Node,Double> cell_background;
 	private HashMap<Node,Double> cell_edges;
 	private double min;
@@ -57,88 +67,102 @@ public class IntesityGraphOverlay extends Overlay{
 	private double[] heat_map;
 	
 	public IntesityGraphOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzGUI gui) {
-		super("Graph edges");
-		this.stGraph = stGraph;
+		super("Edge Intensities",stGraph);
+		
+		this.gui = gui;
 		this.factory = new GeometryFactory();
 		this.writer = new ShapeWriter();
 		this.buffer_shape = new	HashMap<Edge, Shape>();
 		this.buffer_roi = new HashMap<Edge, ROI>();
-		this.edge_color = new HashMap<Edge, Double>();
+		this.normalizedEdgeIntensity = new HashMap<Edge, Double>();
 		this.cell_background = new HashMap<Node, Double>();
 		this.cell_edges = new HashMap<Node, Double>();
 		this.sequence = sequence;
 		
-		gui.setProgressBarMessage("Computing Edge Intensities");
-		for(int i = 0; i < stGraph.size(); i++){
 		
-		//Todo loop over all frames
-		FrameGraph frame_i = stGraph.getFrame(i);
+		for(int i = 0; i < 1; i++){
+			FrameGraph frame_i = stGraph.getFrame(i);
+			computeFrameIntensities(frame_i);
+		}
+	}
+
+	/**
+	 * Computes the edge intensities for all edges in the graph
+	 * 
+	 * @param frame_i
+	 */
+	private void computeFrameIntensities(FrameGraph frame_i) {
 		
 		double sum_mean_cell_background = 0;
+		int gui_counter = 0;
 		
+		//Compute individual edge intensities
+		gui.setProgressBarMessage("Computing Edge Intensities...");
 		for(Edge e: frame_i.edgeSet()){
 			e.computeGeometry(frame_i);
-			double cell_background = computeEdgeIntensity(e,i);
+			double cell_background = computeEdgeIntensity(e,frame_i);
 			sum_mean_cell_background += cell_background;
+			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
 		}
-		double overall_mean_cell_background = sum_mean_cell_background / frame_i.edgeSet().size();
-		
-		for(Node n: frame_i.vertexSet())
-			//reduce geometry of the cell areas to an exclusion with
-			//the expanded edges
-			reduce(n,i);
-		
+
+		gui.setProgressBarValue(0);
+		gui_counter = 0;
+		gui.setProgressBarMessage("Computing Cell Intensities...");
+		for(Node n: frame_i.vertexSet()){
+			computeCellIntensity(n);
+			gui.setProgressBarValue(gui_counter++/(double)frame_i.vertexSet().size());
+		}
+
 		//normalization should be done through
 		//cell intensity (see zallen paper)
-		int counter = 0;
-		gui.setProgressBarMessage("Computing Vertex Intensities");
-		
+
 		this.min = Double.MAX_VALUE;
 		this.max = Double.MIN_VALUE;
-		
+
 		int edge_no = frame_i.edgeSet().size();
 		double[] intensity_values = new double[edge_no];
 		int e_i = 0;
+
+		gui.setProgressBarValue(0);
+		gui_counter = 0;
+		gui.setProgressBarMessage("Normalizing Intensities...");
 		
 		for(Edge e: frame_i.edgeSet()){
-			
-			double org_value = e.getValue();
-			double rel_value = normalize_edge(e,i);;
-			
-			System.out.printf("%d:\t%.2f\t%.2f\n",
-					counter++,org_value,rel_value);
-			
+
+			double rel_value = normalizeEdgeIntensity(e,frame_i);
+
 			if(rel_value > max)
 				max = rel_value;
 			else if(rel_value < min)
 				min = rel_value;
 
 			intensity_values[e_i++] = rel_value;
+			
+			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
+
 		}
-		
+
 		//Find out the color map
 		Arrays.sort(intensity_values);
 		int step_no = 10; 
 		int step = edge_no / step_no;
 		this.heat_map = new double[step_no];
-		
-		for(e_i = 0; e_i < 10; e_i ++){
+
+		for(e_i = 0; e_i < 10; e_i++){
 			int index = e_i * step;
 
 			if(index >= edge_no)
 				index = edge_no - 1;
-			
+
 			heat_map[e_i] = intensity_values[index];
 		}
 		
-		gui.setProgressBarValue(i/(double)(stGraph.size()));
-		
-		System.out.printf("Overall background correction is: %.2f\n",overall_mean_cell_background);
-		System.out.printf("Min/max relative value is: %.2f\t%.2f\n",min,max);
-		}
+		double overall_mean_cell_background = sum_mean_cell_background / frame_i.edgeSet().size();
+//		System.out.printf("Overall background correction is: %.2f\n",overall_mean_cell_background);
+//		System.out.printf("Min/max relative value is: %.2f\t%.2f\n",min,max);
 	}
 	
-	private double computeEdgeIntensity(Edge e, int frame_no){
+	private double computeEdgeIntensity(Edge e, FrameGraph frame_i){
 		
 		Geometry edge_geo = e.getGeometry();
 		
@@ -162,7 +186,7 @@ public class IntesityGraphOverlay extends Overlay{
 		buffer_roi.put(e, edge_roi);
 		
 		int z=0;
-		int t=0;
+		int t=frame_i.getFrameNo();
 		int c=0;
 		
 		//TODO possibly use getIntensityInfo here
@@ -178,10 +202,18 @@ public class IntesityGraphOverlay extends Overlay{
 		return mean_intensity;
 	}
 	
-	private void reduce(Node s,int frame_no){
+	/**
+	 * Split the cell geometry in two between edges and inside
+	 * and compute the separate intensity. 
+	 * 
+	 * Populate cell_background and cell_edges fields
+	 * 
+	 * @param s cell to be computed
+	 */
+	private void computeCellIntensity(Node s){
 		
 		//who are the flanking cells?
-		FrameGraph frame = stGraph.getFrame(frame_no);
+		FrameGraph frame = s.getBelongingFrame();
 		
 		if(s.getNeighbors().isEmpty())
 			return;
@@ -203,7 +235,7 @@ public class IntesityGraphOverlay extends Overlay{
 		
 		//Compute intensities
 		int z=0;
-		int t=0;
+		int t=frame.getFrameNo();
 		int c=0;
 		double s_mean = ROIUtil.getMeanIntensity(sequence, s_minimal, z, t, c);
 		double mean_edge_intensity = ROIUtil.getMeanIntensity(sequence, edge_union, z, t, c);
@@ -213,9 +245,7 @@ public class IntesityGraphOverlay extends Overlay{
 		cell_edges.put(s, mean_edge_intensity);
 	}
 	
-	private double normalize_edge(Edge e, int frame_no){
-		
-		FrameGraph frame = stGraph.getFrame(frame_no);
+	private double normalizeEdgeIntensity(Edge e, FrameGraph frame){
 		
 		Node source = frame.getEdgeSource(e);
 		Node target = frame.getEdgeTarget(e);
@@ -227,6 +257,9 @@ public class IntesityGraphOverlay extends Overlay{
 		double target_edges = cell_edges.get(target);
 
 		//dubious definition
+		//what about including 1 order of neigborhood?
+		//i.e. nInt = (eInt - 1stOrderCellBg)/(1stOrderEdgeInt - 1stOrderCellBg)
+		
 		double mean_cell_background = (source_mean + target_mean)/2;
 		double mean_cell_edges = (source_edges + target_edges)/2;
 		
@@ -234,55 +267,81 @@ public class IntesityGraphOverlay extends Overlay{
 		
 		double final_edge_value = abs_edge_value / mean_cell_edges;
 		
-		edge_color.put(e, final_edge_value);	
+		normalizedEdgeIntensity.put(e, final_edge_value);	
 		
 		return final_edge_value;
 	}
 
 	@Override
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas){
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-		Graphics2D g2d = (Graphics2D)g;
+    public void paintFrame(Graphics2D g, FrameGraph frame_i){
 		
-		if(time_point < stGraph.size()){
-		
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			g.setColor(Color.blue);
-			
-			//paint all the edges of the graph
-			for(Edge edge: frame_i.edgeSet()){
-				
-				assert(buffer_shape.containsKey(edge));
-				
-				Shape egde_shape = buffer_shape.get(edge);
-				
-				
-				Color hsbColor = Color.getHSBColor(
-						(float)(edge_color.get(edge) * 0.8 + 0.5),
-						1f,
-						1f);
-				
-				g.setColor(hsbColor);
-				//add switch here to use either fill or draw via ezPlug
-				g.draw(egde_shape);
-				
-			}
-			
-			//draw scale bar
-			for(int i=0; i<heat_map.length; i++){
-				
-				Color hsbColor = Color.getHSBColor(
-						(float)(heat_map[i] * 0.8 + 0.5),
-						1f,
-						1f);
-				
-				g2d.setColor(hsbColor);
-				
-				g2d.fillRect(20*i + 30,30,20, 20);
-			
-			}
-			
+		g.setColor(Color.blue);
+
+		//paint all the edges of the graph
+		for(Edge edge: frame_i.edgeSet()){
+
+			assert(buffer_shape.containsKey(edge));
+
+			Shape egde_shape = buffer_shape.get(edge);
+
+
+			Color hsbColor = Color.getHSBColor(
+					(float)(normalizedEdgeIntensity.get(edge) * 0.8 + 0.5),
+					1f,
+					1f);
+
+			g.setColor(hsbColor);
+			//add switch here to use either fill or draw via ezPlug
+			g.draw(egde_shape);
+
 		}
+
+		//draw scale bar
+		for(int i=0; i<heat_map.length; i++){
+
+			Color hsbColor = Color.getHSBColor(
+					(float)(heat_map[i] * 0.8 + 0.5),
+					1f,
+					1f);
+
+			g.setColor(hsbColor);
+
+			g.fillRect(20*i + 30,30,20, 20);
+
+		}
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		if(frame.getFrameNo() == 0){
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Edge id");
+		XLSUtil.setCellString(sheet, 1, 0, "Edge x");
+		XLSUtil.setCellString(sheet, 2, 0, "Edge y");
+		XLSUtil.setCellString(sheet, 3, 0, "Mean Edge intensity");
+		XLSUtil.setCellString(sheet, 4, 0, "Relative Edge intensity");
+
+		int row_no = 1;
+
+		for(Edge e: frame.edgeSet()){
+			
+			Point centroid = e.getGeometry().getCentroid();
+			long edge_id = e.getPairCode(frame);
+			
+			double normalized_value = normalizedEdgeIntensity.get(e);
+
+			XLSUtil.setCellNumber(sheet, 0, row_no, edge_id);
+			XLSUtil.setCellNumber(sheet, 1, row_no, centroid.getX());
+			XLSUtil.setCellNumber(sheet, 2, row_no, centroid.getY());
+			XLSUtil.setCellNumber(sheet, 3, row_no, e.getValue());
+			XLSUtil.setCellNumber(sheet, 4, row_no, normalized_value);
+
+			row_no++;
+		}
+
+		}
+		
 	}
 	
 	

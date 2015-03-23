@@ -14,6 +14,7 @@ import icy.swimmingPool.SwimmingObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -29,6 +30,7 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
+import plugins.adufour.vars.gui.model.RangeModel.RangeEditorType;
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -75,6 +77,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarBoolean 				varBooleanDrawDisplacement;
 	
 	EzVarDouble					varAreaThreshold;
+	EzVarDouble					varIntensitySlider;
 	
 	//Graph Export
 	EzVarEnum<ExportFieldType>  varExportType;
@@ -101,6 +104,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	public EzVarInteger varMinimalOldSurvival;
 	private EzVarBoolean varSavePolyClass;
 	private EzVarBoolean varSaveToPdf;
+	private EzVarBoolean varFillingCheckbox;
 
 	@Override
 	protected void initialize() {
@@ -206,7 +210,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varMinimalOldSurvival,
 				varSaveTransitions,
 				varSaveToPdf);
-
+		
+		//IntensitySlider
+		varIntensitySlider = new EzVarDouble("Color Scaling", 
+				0.5, 0.1, 1.0, 0.05);//, RangeEditorType.SLIDER,new HashMap<Double,String>());
+		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
+		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
+				varIntensitySlider,
+				varFillingCheckbox);
+		
 		//Description label
 		varPlotting.addVarChangeListener(this);
 		varDescriptionLabel = new EzLabel(varPlotting.getValue().getDescription());
@@ -227,7 +239,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupExport,
 				groupMarker,
 				//groupSaveSkeleton,
-				groupTransitions
+				groupTransitions,
+				groupEdgeIntensity
 				
 		);
 		
@@ -242,6 +255,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
 		//varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, OverlayEnum.SAVE_SKELETONS);
 		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
+		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -394,7 +408,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 						sequence.addOverlay(
 								new EdgeIntensityOverlay(
-										wing_disc_movie, sequence, this.getUI()));
+										wing_disc_movie, sequence, this.getUI(),
+										varIntensitySlider,
+										varFillingCheckbox));
 
 						break;
 

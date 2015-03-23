@@ -40,9 +40,7 @@ import ij.process.EllipseFitter;
 public class GraphOverlay extends StGraphOverlay{
 
 	public static final String DESCRIPTION = "Shows the connectivity (neighbors) of each cell; " +
-			"The XLS export containt the number " +
-			"of neighbors for every inner cell " +
-			"(i.e. not on the border of the segmentation)";
+			"The XLS export contains the vertex ids for every tracked edge in the graph.";
 	
 	private GeometryFactory factory;
 	private ShapeWriter writer;
@@ -80,22 +78,25 @@ public class GraphOverlay extends StGraphOverlay{
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
-		XLSUtil.setCellString(sheet, 1, 0, "Centroid x");
-		XLSUtil.setCellString(sheet, 2, 0, "Centroid y");
-		XLSUtil.setCellString(sheet, 3, 0, "Number of Neighbors");
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Target id");
+		XLSUtil.setCellString(sheet, 1, 0, "Source id");
+		XLSUtil.setCellString(sheet, 2, 0, "Edge id (Cantor pairing)");
 
 		int row_no = 1;
 
-		for(Node n: frame.vertexSet()){
-			if(!n.onBoundary()){
+		for(Edge e: frame.edgeSet()){
+			
+			Node a = frame.getEdgeSource(e);
+			Node b = frame.getEdgeTarget(e);
+			
+			if(a.getTrackID() != -1 && b.getTrackID() != -1){
 				
-				int numberOfNeighbors = frame.degreeOf(n);
+				long edge_id = e.getPairCode(frame);
 				
-				XLSUtil.setCellNumber(sheet, 0, row_no, n.getTrackID());
-				XLSUtil.setCellNumber(sheet, 1, row_no, n.getCentroid().getX());
-				XLSUtil.setCellNumber(sheet, 2, row_no, n.getCentroid().getY());
-				XLSUtil.setCellNumber(sheet, 3, row_no, numberOfNeighbors);
+				XLSUtil.setCellNumber(sheet, 0, row_no, a.getTrackID());
+				XLSUtil.setCellNumber(sheet, 1, row_no, b.getTrackID());
+				XLSUtil.setCellNumber(sheet, 2, row_no, edge_id);
 				
 				row_no++;
 

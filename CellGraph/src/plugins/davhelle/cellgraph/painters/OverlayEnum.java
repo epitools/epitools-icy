@@ -23,10 +23,7 @@ public enum OverlayEnum{
 	SEGMENTATION_BORDER("Overlay to show where the border of the segmentation was identified"), 
 	
 	VORONOI_DIAGRAM("Overlay displays the voronoi diagram computed from the cell centroids"), 
-	POLYGON_CLASS(
-			"Displays the number of neighbors each cell has with color code or number; "+
-	"The [save] option stores a csv file with 1 line of pc-counts for each frame"
-	),
+	POLYGON_CLASS(PolygonClassPainter.DESCRIPTION),
 	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
 	GRAPH_VIEW(GraphOverlay.DESCRIPTION),
 	

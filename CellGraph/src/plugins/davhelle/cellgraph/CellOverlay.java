@@ -102,7 +102,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	private EzVarBoolean varSaveTransitions;
 	public EzVarInteger varMinimalTransitionLength;
 	public EzVarInteger varMinimalOldSurvival;
-	private EzVarBoolean varSavePolyClass;
 	private EzVarBoolean varSaveToPdf;
 	private EzVarBoolean varFillingCheckbox;
 
@@ -138,11 +137,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		//TODO add color code!
 		varBooleanColorClass = new EzVarBoolean("Draw Numbers", false);
 		varHighlightClass = new EzVarInteger("Highlight class (0=none)",0,0,10,1);
-		varSavePolyClass = new EzVarBoolean("Save polygon class statistics", false);
 		EzGroup groupPolygonClass = new EzGroup("Overlay elements",
 				varBooleanColorClass,
-				varHighlightClass,
-				varSavePolyClass);
+				varHighlightClass);
 		
 		//Area Threshold View
 		varAreaThreshold = new EzVarDouble("Area threshold", 0.9, 0, 10, 0.1);
@@ -347,15 +344,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
 						int highlight_polygonal_class = varHighlightClass.getValue();
 
-
 						PolygonClassPainter pc_painter =  new PolygonClassPainter(
 								wing_disc_movie,
 								draw_polygonal_numbers,
 								highlight_polygonal_class);
-
-						if(varSavePolyClass.getValue() && varSavePolyClass.isVisible()){
-							pc_painter.saveToCsv();
-						}
 
 						sequence.addOverlay(
 								pc_painter);

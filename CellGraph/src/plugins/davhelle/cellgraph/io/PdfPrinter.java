@@ -14,9 +14,10 @@ import java.io.IOException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
-import plugins.davhelle.cellgraph.painters.DivisionPainter;
+import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
@@ -48,10 +49,12 @@ public class PdfPrinter {
 			format.setPaper(paper);
 			Graphics2D pdfGraphics = (Graphics2D) job.getGraphics(format);
 			
-			//paint
-			//new PolygonClassPainter(stGraph,false,0).paintFrame(pdfGraphics, 0);
+			FrameGraph frame0 = stGraph.getFrame(0);
 			
-			new DivisionOrientationOverlay(stGraph).paintFrame(pdfGraphics, 0);
+			//paint
+			new PolygonClassPainter(stGraph,false,0).paintFrame(pdfGraphics,frame0);
+			
+			//new DivisionOrientationOverlay(stGraph).paintFrame(pdfGraphics, 0);
 			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
 			
 			//close

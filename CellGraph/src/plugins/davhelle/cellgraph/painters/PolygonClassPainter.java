@@ -5,20 +5,15 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import icy.canvas.IcyCanvas;
-import icy.gui.dialog.SaveDialog;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.io.File;
 
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.io.CsvWriter;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -31,173 +26,144 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Davide Heller
  *
  */
-public class PolygonClassPainter extends Overlay{
+public class PolygonClassPainter extends StGraphOverlay{
 	
-	private SpatioTemporalGraph stGraph;
+	public static final String DESCRIPTION = "Displays the number of neighbors each cell has with color code or number";
+	
 	private boolean use_numbers;
 	private int highlight_no;
 	private boolean draw_color_legend = true;
 	
 	
 	public PolygonClassPainter(SpatioTemporalGraph stGraph, boolean use_numbers, int hightlight_no) {
-		super("Polygon class");
-		this.stGraph = stGraph;
+		super("Polygon class",stGraph);
 		this.use_numbers = use_numbers;
 		this.highlight_no = hightlight_no;
 	}
+	
+	@Override
+	public void paintFrame(Graphics2D g, FrameGraph frame_i ) {
 
-	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
-	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
+		g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
 
-		if(time_point < stGraph.size())
-			paintFrame(g, time_point);
-	}
-
-	/**
-	 * @param g
-	 * @param time_point
-	 */
-	public void paintFrame(Graphics2D g, int time_point) {
+		for(Node cell: frame_i.vertexSet())
 		{
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			
-			g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
-			
-			for(Node cell: frame_i.vertexSet())
-			{
-				
-				if(cell.onBoundary())
+
+			if(cell.onBoundary())
+				continue;
+
+			Coordinate centroid = 
+					cell.getCentroid().getCoordinate();
+
+			int cell_degree = frame_i.degreeOf(cell);
+
+			if(highlight_no != 0)
+				if(cell_degree != highlight_no)
 					continue;
 
-				Coordinate centroid = 
-						cell.getCentroid().getCoordinate();
-				
-				int cell_degree = frame_i.degreeOf(cell);
-				
-				if(highlight_no != 0)
-					if(cell_degree != highlight_no)
-						continue;
-				
-				if(use_numbers){
+			if(use_numbers){
 				g.setColor(Color.white);
 				g.drawString(Integer.toString(cell_degree), 
 						(float)centroid.x - 2  , 
 						(float)centroid.y + 2);
-				}
-				else{
-					switch(cell_degree){
-						case 3:
-							g.setColor(new Color(232, 233, 41)); //yellow
-							g.fill(cell.toShape());
-						break;
-						case 4:
-							g.setColor(new Color(223, 0, 8)); //red
-							g.fill(cell.toShape());
-							break;
-						case 5:
-							g.setColor(new Color(84, 176, 26)); //green
-							g.fill(cell.toShape());
-							break;
-						case 6:
-							g.setColor(new Color(190, 190, 190)); //grey
-							g.fill(cell.toShape());
-							break;
-						case 7:
-							g.setColor(new Color(18, 51, 143)); //blue
-							g.fill(cell.toShape());
-							break;
-						case 8:
-							g.setColor(new Color(158, 53, 145)); //violet
-							g.fill(cell.toShape());
-							break;
-						case 9:
-							g.setColor(new Color(128, 45, 20)); //brown
-							g.fill(cell.toShape());
-							break;
-						default:
-							continue;
-					}
+			}
+			else{
+				switch(cell_degree){
+				case 3:
+					g.setColor(new Color(232, 233, 41)); //yellow
+					g.fill(cell.toShape());
+					break;
+				case 4:
+					g.setColor(new Color(223, 0, 8)); //red
+					g.fill(cell.toShape());
+					break;
+				case 5:
+					g.setColor(new Color(84, 176, 26)); //green
+					g.fill(cell.toShape());
+					break;
+				case 6:
+					g.setColor(new Color(190, 190, 190)); //grey
+					g.fill(cell.toShape());
+					break;
+				case 7:
+					g.setColor(new Color(18, 51, 143)); //blue
+					g.fill(cell.toShape());
+					break;
+				case 8:
+					g.setColor(new Color(158, 53, 145)); //violet
+					g.fill(cell.toShape());
+					break;
+				case 9:
+					g.setColor(new Color(128, 45, 20)); //brown
+					g.fill(cell.toShape());
+					break;
+				default:
+					continue;
 				}
 			}
-			
-			if(draw_color_legend){
-				for(int i=0; i<7; i++){
+		}
 
-					switch(i + 3){ 
-					case 3:
-						g.setColor(new Color(232, 233, 41)); //yellow
-						break;
-					case 4:
-						g.setColor(new Color(223, 0, 8)); //red
-						break;
-					case 5:
-						g.setColor(new Color(84, 176, 26)); //green
-						break;
-					case 6:
-						g.setColor(new Color(190, 190, 190)); //grey
-						break;
-					case 7:
-						g.setColor(new Color(18, 51, 143)); //blue
-						break;
-					case 8:
-						g.setColor(new Color(158, 53, 145)); //violet
-						break;
-					case 9:
-						g.setColor(new Color(128, 45, 20)); //brown
-						break;
-					default:
-						continue;
-					}
+		if(draw_color_legend){
+			for(int i=0; i<7; i++){
 
-					g.fillRect(20*i + 30,30,20,20);
-					g.setColor(Color.white);
-					g.drawString(Integer.toString(i+3), 
-							(float)20*i + 30 + 5, 
-							(float)30 + 15);
-
+				switch(i + 3){ 
+				case 3:
+					g.setColor(new Color(232, 233, 41)); //yellow
+					break;
+				case 4:
+					g.setColor(new Color(223, 0, 8)); //red
+					break;
+				case 5:
+					g.setColor(new Color(84, 176, 26)); //green
+					break;
+				case 6:
+					g.setColor(new Color(190, 190, 190)); //grey
+					break;
+				case 7:
+					g.setColor(new Color(18, 51, 143)); //blue
+					break;
+				case 8:
+					g.setColor(new Color(158, 53, 145)); //violet
+					break;
+				case 9:
+					g.setColor(new Color(128, 45, 20)); //brown
+					break;
+				default:
+					continue;
 				}
+
+				g.fillRect(20*i + 30,30,20,20);
+				g.setColor(Color.white);
+				g.drawString(Integer.toString(i+3), 
+						(float)20*i + 30 + 5, 
+						(float)30 + 15);
+
 			}
 		}
 	}
 
-	public void saveToCsv() {
-		String file_name = SaveDialog.chooseFile(
-				"Please choose where to save the CSV PolygonClass statistics", 
-				"/Users/davide/tmp/",
-				"polygon_class",
-				"");
-		
-		StringBuilder builder_main = new StringBuilder();
-		
-		for(int time_point=0; time_point < stGraph.size(); time_point++){
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			
-			String prefix = "";
-			
-			for(Node cell: frame_i.vertexSet()){
-				
-				if(cell.onBoundary())
-					continue;
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 
-				int cell_degree = frame_i.degreeOf(cell);
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Centroid x");
+		XLSUtil.setCellString(sheet, 2, 0, "Centroid y");
+		XLSUtil.setCellString(sheet, 3, 0, "Polygon no");
 
-				builder_main.append(prefix);
-				builder_main.append(cell_degree);
-				
-				//update after first time
-				prefix = ",";
-				
+		int row_no = 1;
+
+		for(Node n: frame.vertexSet()){
+			if(!n.onBoundary()){
+				int neighbor_no = frame.degreeOf(n);
+
+				XLSUtil.setCellNumber(sheet, 0, row_no, n.getTrackID());
+				XLSUtil.setCellNumber(sheet, 1, row_no, n.getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 2, row_no, n.getCentroid().getY());
+				XLSUtil.setCellNumber(sheet, 3, row_no, neighbor_no);
+
+				row_no++;
 			}
-			
-			builder_main.append('\n');
 		}
-		
-		File main_output_file = new File(file_name+".csv");
-		CsvWriter.writeOutBuilder(builder_main, main_output_file);
-			
 	}
 	
 }

@@ -133,7 +133,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.BOTH;
-        optionPanel.add(new JLabel("Export Data in Excel: "), gbc);
+        optionPanel.add(new JLabel("Export data to Excel: "), gbc);
         
         JButton OKButton = new JButton("Choose File");
         OKButton.addActionListener(this);

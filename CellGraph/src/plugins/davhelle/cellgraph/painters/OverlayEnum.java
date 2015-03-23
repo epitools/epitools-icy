@@ -16,6 +16,18 @@ package plugins.davhelle.cellgraph.painters;
  *
  */
 public enum OverlayEnum{
+	//on hold
+	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
+	//ALWAYS_TRACKED_CELLS("Highlights only the cells that have been continuously tracked throughout the time lapse"),
+	//WRITE_OUT_DDN("Statistics output"),
+	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
+	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
+	
+	//To be transfered to CellEditor
+	PDF_SCREENSHOT("Generates a screenshot in PDF format"),
+	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
+	
+	
 	
 	TEST("Test Overlay"),
 	CELL_OVERLAY(PolygonOverlay.DESCRIPTION),
@@ -24,28 +36,21 @@ public enum OverlayEnum{
 	
 	VORONOI_DIAGRAM(VoronoiOverlay.DESCRIPTION), 
 	POLYGON_CLASS(PolygonClassOverlay.DESCRIPTION),
-	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
 	GRAPH_VIEW(GraphOverlay.DESCRIPTION),
 	
-	CELL_TRACKING("Overlay to review the tracking in case it has been eliminated or to highlight different aspects"),
-	//ALWAYS_TRACKED_CELLS("Highlights only the cells that have been continuously tracked throughout the time lapse"),
+	CELL_TRACKING(TrackingOverlay.DESCRIPTION),
 	DIVISIONS_AND_ELIMINATIONS(DivisionOverlay.DESCRIPTION),
 	CORRECTION_HINTS(CorrectionOverlay.DESCRIPTION),
-	
-	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
-	//WRITE_OUT_DDN("Statistics output"),
 	CELL_COLOR_TAG(CellMarkerOverlay.DESCRIPTION),
-	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
+	
 	
 	T1_TRANSITIONS("Computes and displays the T1 transitions present in the time lapse [time consuming!]"), 
 	EDGE_STABILITY(EdgeStabilityOverlay.DESCRIPTION),
 	EDGE_INTENSITY(EdgeIntensityOverlay.DESCRIPTION),
-	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
 	
 	ELLIPSE_FIT(EllipseFitterOverlay.DESCRIPTION),
 	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),
 	ELONGATION_RATIO(ElongationRatioOverlay.DESCRIPTION), // could add csv option here
-	PDF_SCREENSHOT("Generates a screenshot in PDF format"),
 	DIVSION_ORIENTATION(DivisionOrientationOverlay.DESCRIPTION);
 	
 	private String description;

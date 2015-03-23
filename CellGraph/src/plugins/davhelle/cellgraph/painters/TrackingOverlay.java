@@ -28,6 +28,8 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class TrackingOverlay extends StGraphOverlay{
 	
+	public static final String DESCRIPTION = "Overlay to review the tracking in case it has been eliminated or to highlight different aspects";
+	
 	private SpatioTemporalGraph stGraph;
 	private HashMap<Node,Color> correspondence_color;
 	private Map<Integer, Color> errorMap;

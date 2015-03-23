@@ -111,6 +111,8 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 			
 			XLSUtil.saveAndClose(wb);
 			
+			new AnnounceFrame("XLS file exported successfully to: "+file_name,10);
+			
 		} catch (WriteException writeException) {
 			IcyExceptionHandler.showErrorMessage(writeException, true, true);
 		} catch (IOException ioException) {

@@ -5,19 +5,14 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import icy.canvas.IcyCanvas;
-import icy.canvas.Layer;
-import icy.main.Icy;
-import icy.painter.AbstractPainter;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -35,7 +30,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class VoronoiAreaDifferenceOverlay extends Overlay{
+public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 	
 	private final int DIFFERENCE_THRESHOLD = 10;
 	
@@ -44,21 +39,13 @@ public class VoronoiAreaDifferenceOverlay extends Overlay{
 
 	private double color_amplification;
 	private int color_scheme;
-	private double alpha_level;
-	
-	private ShapeWriter writer;
-	private SpatioTemporalGraph stGraph;
-	
 	
 	public VoronoiAreaDifferenceOverlay(SpatioTemporalGraph stGraph, Map<Node,Double> area_difference_map) {
-		super("Voronoi Area Difference");
-		this.stGraph = stGraph;
-		this.writer = new ShapeWriter();
+		super("Voronoi Area Difference",stGraph);
 		this.area_difference_map = area_difference_map;
 
 		this.color_scheme = 2;
 		this.color_amplification = 5;
-		this.alpha_level = 0.35;
 		
 		this.color_map = new HashMap<Node, Color>();
 		defineColorMap();
@@ -103,27 +90,44 @@ public class VoronoiAreaDifferenceOverlay extends Overlay{
 	}
 	
 	@Override
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
+    public void paintFrame(Graphics2D g, FrameGraph frame_i)
     {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		//Set layer to 0.3 opacity
-		Layer current_layer = canvas.getLayer(this);
-		current_layer.setOpacity((float)alpha_level);		
-		
-		if(time_point < stGraph.size()){
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-			
-			for(Node cell: frame_i.vertexSet()){
-				if(!cell.onBoundary()){
-					if(color_map.containsKey(cell)){
-						g.setColor(color_map.get(cell));
-						g.fill(cell.toShape());
-					}
+		for(Node cell: frame_i.vertexSet()){
+			if(!cell.onBoundary()){
+				if(color_map.containsKey(cell)){
+					g.setColor(color_map.get(cell));
+					g.fill(cell.toShape());
 				}
 			}
 		}
     }
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Cell x");
+		XLSUtil.setCellString(sheet, 2, 0, "Cell y");
+		XLSUtil.setCellString(sheet, 3, 0, "Cell area");
+		XLSUtil.setCellString(sheet, 4, 0, "Voronoi area difference");
+
+		int row_no = 1;
+
+		for(Node n: frame.vertexSet()){
+			
+			if(!n.onBoundary() && area_difference_map.containsKey(n)){
+			
+				Double voronoiAreaDifference = area_difference_map.get(n);
+				
+				XLSUtil.setCellNumber(sheet, 0, row_no, n.getTrackID());
+				XLSUtil.setCellNumber(sheet, 1, row_no, n.getGeometry().getCentroid().getX());
+				XLSUtil.setCellNumber(sheet, 2, row_no, n.getGeometry().getCentroid().getY());
+				XLSUtil.setCellNumber(sheet, 3, row_no, n.getGeometry().getArea());
+				XLSUtil.setCellNumber(sheet, 4, row_no, voronoiAreaDifference);
+				row_no++;
+			}
+		}
+		
+	}
 }
 

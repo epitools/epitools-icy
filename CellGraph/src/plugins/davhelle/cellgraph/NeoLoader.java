@@ -13,7 +13,7 @@ import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.painters.TrackIdPainter;
+import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 
 /**
@@ -44,7 +44,7 @@ public class NeoLoader extends EzPlug {
 		SpatioTemporalGraph wing_disc_movie = LoadNeoWtkFiles.loadNeo(varNeo.getValue());
 		
 		//Overlay tracking view
-		Overlay trackID = new TrackIdPainter(wing_disc_movie);
+		Overlay trackID = new TrackIdOverlay(wing_disc_movie);
 		sequence.addOverlay(trackID);
 		Overlay correspondence = new TrackingOverlay(wing_disc_movie,true);
 		sequence.addOverlay(correspondence);

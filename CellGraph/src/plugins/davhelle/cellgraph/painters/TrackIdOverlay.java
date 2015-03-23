@@ -25,11 +25,11 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Davide Heller
  *
  */
-public class TrackIdPainter extends StGraphOverlay{
+public class TrackIdOverlay extends StGraphOverlay{
 	
 	public static final String DESCRIPTION = "Overlay to paint the track id of each cell";
 	
-	public TrackIdPainter(SpatioTemporalGraph spatioTemporalGraph){
+	public TrackIdOverlay(SpatioTemporalGraph spatioTemporalGraph){
 		super("Tracking IDs",spatioTemporalGraph);
 		
 	}

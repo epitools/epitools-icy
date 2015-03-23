@@ -53,7 +53,7 @@ import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonOverlay;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
-import plugins.davhelle.cellgraph.painters.TrackIdPainter;
+import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 import plugins.davhelle.cellgraph.tracking.HungarianTracking;
 import plugins.davhelle.cellgraph.tracking.MosaicTracking;
@@ -662,7 +662,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 	private void paintTrackingResult(SpatioTemporalGraph wing_disc_movie) {
 		if(varBooleanCellIDs.getValue()){
-			Painter trackID = new TrackIdPainter(wing_disc_movie);
+			Painter trackID = new TrackIdOverlay(wing_disc_movie);
 			sequence.addPainter(trackID);
 		}
 		

@@ -29,7 +29,7 @@ import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.painters.PolygonOverlay;
-import plugins.davhelle.cellgraph.painters.TrackIdPainter;
+import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 
 /**
@@ -89,7 +89,7 @@ public class TestLoader extends PluginActionable {
 		//track cells
 		new CsvTrackReader(test_stGraph, test_folder).track();
 		
-		sequence.addOverlay(new TrackIdPainter(test_stGraph));
+		sequence.addOverlay(new TrackIdOverlay(test_stGraph));
 		sequence.addOverlay(new TrackingOverlay(test_stGraph, true));
 		
 		//Push to swimming pool TODO: ONLY REMOVE stGraphs

@@ -569,7 +569,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		}
 		
 		if(paint_cellID){
-			Painter trackID = new TrackIdPainter(wing_disc_movie);
+			Painter trackID = new TrackIdOverlay(wing_disc_movie);
 			sequence.addPainter(trackID);
 		}
 		

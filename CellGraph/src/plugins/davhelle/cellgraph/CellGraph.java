@@ -51,7 +51,7 @@ import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
-import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.PolygonOverlay;
 import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
@@ -352,7 +352,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		if(varDoTracking.getValue())
 			applyTracking(wing_disc_movie);
 		else
-			sequence.addPainter(new PolygonPainter(wing_disc_movie,Color.red));
+			sequence.addPainter(new PolygonOverlay(wing_disc_movie,Color.red));
 
 		if(varSaveTracking.getValue())
 			saveTracking(wing_disc_movie);

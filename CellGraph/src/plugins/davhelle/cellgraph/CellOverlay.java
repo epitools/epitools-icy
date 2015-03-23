@@ -701,7 +701,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		}
 		
 		if(varBooleanPolygon.getValue()){
-			Painter polygons = new PolygonPainter(wing_disc_movie,varPolygonColor.getValue().getColor());
+			Painter polygons = new PolygonOverlay(wing_disc_movie,varPolygonColor.getValue().getColor());
 			sequence.addPainter(polygons);
 		}
 		

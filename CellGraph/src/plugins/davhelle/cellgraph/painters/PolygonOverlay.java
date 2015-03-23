@@ -29,14 +29,14 @@ import ij.process.EllipseFitter;
  * @author Davide Heller
  *
  */
-public class PolygonPainter extends StGraphOverlay{
+public class PolygonOverlay extends StGraphOverlay{
 	
 	public static final String DESCRIPTION = 
 			"Simple Overlay to show cells and their outlines in a color of choice";
 	
 	private Color painter_color;
 	
-	public PolygonPainter(SpatioTemporalGraph spatioTemporalGraph,Color painter_color){
+	public PolygonOverlay(SpatioTemporalGraph spatioTemporalGraph,Color painter_color){
 		super("Polygons",spatioTemporalGraph);
 		this.painter_color = painter_color;
 	}

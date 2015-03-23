@@ -18,7 +18,7 @@ package plugins.davhelle.cellgraph.painters;
 public enum OverlayEnum{
 	
 	TEST("Test Overlay"),
-	CELL_OVERLAY("Simple Overlay to show cells and their outlines in a color of choice"),
+	CELL_OVERLAY(PolygonOverlay.DESCRIPTION),
 	CELL_AREA("Overlay to color cells according to their area size in a gradient fashion"),
 	SEGMENTATION_BORDER("Overlay to show where the border of the segmentation was identified"), 
 	

@@ -21,7 +21,7 @@ import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonClassOverlay;
-import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.PolygonOverlay;
 
 public class PdfPrinter {
 	public PdfPrinter(SpatioTemporalGraph stGraph){
@@ -55,7 +55,7 @@ public class PdfPrinter {
 			new PolygonClassOverlay(stGraph,false,0).paintFrame(pdfGraphics,frame0);
 			
 			//new DivisionOrientationOverlay(stGraph).paintFrame(pdfGraphics, 0);
-			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);
+			new PolygonOverlay(stGraph, Color.BLACK).paintFrame(pdfGraphics,frame0);
 			
 			//close
 			pdfGraphics.dispose();

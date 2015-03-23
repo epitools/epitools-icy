@@ -28,7 +28,7 @@ import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.painters.PolygonPainter;
+import plugins.davhelle.cellgraph.painters.PolygonOverlay;
 import plugins.davhelle.cellgraph.painters.TrackIdPainter;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 

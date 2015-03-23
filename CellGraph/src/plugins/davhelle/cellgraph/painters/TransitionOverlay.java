@@ -12,30 +12,20 @@ package plugins.davhelle.cellgraph.painters;
 
 import gnu.jpdf.PDFJob;
 import headless.DetectT1Transition;
-import headless.StGraphUtils;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
-import icy.canvas.IcyCanvas;
 import icy.gui.dialog.SaveDialog;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Stroke;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
-
-import plugins.adufour.ezplug.EzPlug;
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.CellOverlay;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -56,16 +46,18 @@ import plugins.davhelle.cellgraph.tracking.EdgeTracking;
  * @author Davide Heller
  *
  */
-public class TransitionOverlay extends Overlay{
+public class TransitionOverlay extends StGraphOverlay{
 
+	public static final String DESCRIPTION = 
+			"Computes and displays the T1 transitions present in the time lapse [time consuming!]";
+	
 	ArrayList<T1Transition> transitions;
-	SpatioTemporalGraph stGraph;
 	final Color loser_color = Color.cyan;
 	final Color winner_color = Color.magenta;
 	
 	public TransitionOverlay(SpatioTemporalGraph stGraph, CellOverlay plugin) {
-		super(String.format("Transition Painter (min=%d)",plugin.varMinimalTransitionLength.getValue()));
-		this.stGraph = stGraph;
+		super(String.format("Transition Painter (min=%d)",plugin.varMinimalTransitionLength.getValue()),
+				stGraph);
 		
 		//TODO move createPolygonalTiles to PolygonalCellTile class
 		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
@@ -208,16 +200,6 @@ public class TransitionOverlay extends Overlay{
 		return first_edge;
 	}
 	
-	@Override
-	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas) {
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-
-		if(time_point < stGraph.size()){
-			paintFrame(g, time_point);
-		}		
-		
-	}
-	
 	public void saveToPdf(){
 		
 		String file_name = SaveDialog.chooseFile(
@@ -244,7 +226,7 @@ public class TransitionOverlay extends Overlay{
 			//paint
 			FrameGraph frame0 = stGraph.getFrame(0);
 			new PolygonOverlay(stGraph, Color.BLACK).paintFrame(pdfGraphics, frame0);
-			this.paintFrame(pdfGraphics,0);
+			this.paintFrame(pdfGraphics,frame0);
 			
 			//close
 			pdfGraphics.dispose();
@@ -264,10 +246,9 @@ public class TransitionOverlay extends Overlay{
 
 	/**
 	 * @param g
-	 * @param time_point
+	 * @param frame_i
 	 */
-	private void paintFrame(Graphics2D g, int time_point) {
-		FrameGraph frame_i = stGraph.getFrame(time_point);
+	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		
 		//try to color the cells that loose the bond
 		for(T1Transition t1: transitions){
@@ -304,7 +285,11 @@ public class TransitionOverlay extends Overlay{
 						(int)winners[1].getCentroid().getY());
 			}
 		}
-	};
-	
+	}
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		// TODO Auto-generated method stub
+	}
 	
 }

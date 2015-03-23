@@ -28,7 +28,6 @@ public enum OverlayEnum{
 	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
 	
 	
-	
 	TEST("Test Overlay"),
 	CELL_OVERLAY(PolygonOverlay.DESCRIPTION),
 	CELL_AREA(AreaGradientOverlay.DESCRIPTION),
@@ -43,8 +42,7 @@ public enum OverlayEnum{
 	CORRECTION_HINTS(CorrectionOverlay.DESCRIPTION),
 	CELL_COLOR_TAG(CellMarkerOverlay.DESCRIPTION),
 	
-	
-	T1_TRANSITIONS("Computes and displays the T1 transitions present in the time lapse [time consuming!]"), 
+	T1_TRANSITIONS(TransitionOverlay.DESCRIPTION), 
 	EDGE_STABILITY(EdgeStabilityOverlay.DESCRIPTION),
 	EDGE_INTENSITY(EdgeIntensityOverlay.DESCRIPTION),
 	

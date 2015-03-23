@@ -5,24 +5,18 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import icy.util.XLSUtil;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.util.ArrayList;
 
+import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
-
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.AbstractPainter;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
 
 /**
  * CellIdPainter depicts the cell ID or String supplied at
@@ -31,43 +25,50 @@ import icy.sequence.Sequence;
  * @author Davide Heller
  *
  */
-public class TrackIdPainter extends Overlay{
+public class TrackIdPainter extends StGraphOverlay{
 	
-	private SpatioTemporalGraph stGraph;
+	public static final String DESCRIPTION = "Overlay to paint the track id of each cell";
 	
 	public TrackIdPainter(SpatioTemporalGraph spatioTemporalGraph){
-		super("Tracking IDs");
-		this.stGraph = spatioTemporalGraph;
+		super("Tracking IDs",spatioTemporalGraph);
 		
 	}
 	
-	
-    public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
+	@Override
+    public void paintFrame(Graphics2D g, FrameGraph frame_i)
     {
-		
-    	int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
+			
+    	int fontSize = 3;
+    	g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
+    	g.setColor(Color.CYAN);
 
-		if(time_point < stGraph.size()){
-			//print index int the center of the cell
-			
-			int fontSize = 3;
-			g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-			g.setColor(Color.CYAN);
-			
-			FrameGraph frame_i = stGraph.getFrame(time_point);
-	
-			for(Node cell: frame_i.vertexSet()){
-			
-				Coordinate centroid = cell.getCentroid().getCoordinate();
+    	for(Node cell: frame_i.vertexSet()){
 
-				g.drawString(Integer.toString(cell.getTrackID()), 
-						(float)centroid.x - 2  , 
-						(float)centroid.y + 2);
-				
-			}		
-			
-		}
+    		Coordinate centroid = cell.getCentroid().getCoordinate();
+
+    		g.drawString(Integer.toString(cell.getTrackID()), 
+    				(float)centroid.x - 2  , 
+    				(float)centroid.y + 2);
+
+    	}		
     }
+
+
+	@Override
+	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Cell x");
+		XLSUtil.setCellString(sheet, 2, 0, "Cell y");
+		
+		int row_no = 1;
+
+		for(Node n: frame.vertexSet()){
+			XLSUtil.setCellNumber(sheet, 0, row_no, n.getTrackID());
+			XLSUtil.setCellNumber(sheet, 1, row_no, n.getGeometry().getCentroid().getX());
+			XLSUtil.setCellNumber(sheet, 2, row_no, n.getGeometry().getCentroid().getY());
+		}
+	}
 	
 
 }

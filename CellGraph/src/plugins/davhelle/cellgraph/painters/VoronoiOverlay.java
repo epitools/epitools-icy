@@ -56,7 +56,7 @@ public class VoronoiOverlay extends StGraphOverlay {
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		WKTWriter writer = new WKTWriter(2);
+		//WKTWriter writer = new WKTWriter(2);
 		
 		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
 		XLSUtil.setCellString(sheet, 1, 0, "Cell x");
@@ -65,7 +65,7 @@ public class VoronoiOverlay extends StGraphOverlay {
 		XLSUtil.setCellString(sheet, 4, 0, "Voronoi x");
 		XLSUtil.setCellString(sheet, 5, 0, "Voronoi y");
 		XLSUtil.setCellString(sheet, 6, 0, "Voronoi cell area");
-		XLSUtil.setCellString(sheet, 7, 0, "WKT Voronoi Polygon");
+		//XLSUtil.setCellString(sheet, 7, 0, "WKT Voronoi Polygon");
 
 		int row_no = 1;
 
@@ -82,7 +82,7 @@ public class VoronoiOverlay extends StGraphOverlay {
 				XLSUtil.setCellNumber(sheet, 4, row_no, voronoiGeo.getCentroid().getX());
 				XLSUtil.setCellNumber(sheet, 5, row_no, voronoiGeo.getCentroid().getY());
 				XLSUtil.setCellNumber(sheet, 6, row_no, voronoiGeo.getArea());
-				XLSUtil.setCellString(sheet, 7, row_no, writer.write(voronoiGeo));
+				//XLSUtil.setCellString(sheet, 7, row_no, writer.write(voronoiGeo));
 				row_no++;
 			}
 		}

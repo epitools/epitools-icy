@@ -42,7 +42,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class IntesityGraphOverlay extends StGraphOverlay{
+public class EdgeIntensityOverlay extends StGraphOverlay{
 	
 	public static final String DESCRIPTION = 
 			"Transforms the edge geometries into ROIs and displays " +
@@ -66,7 +66,7 @@ public class IntesityGraphOverlay extends StGraphOverlay{
 	private double max;
 	private double[] heat_map;
 	
-	public IntesityGraphOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzGUI gui) {
+	public EdgeIntensityOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzGUI gui) {
 		super("Edge Intensities",stGraph);
 		
 		this.gui = gui;

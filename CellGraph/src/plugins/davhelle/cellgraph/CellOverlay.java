@@ -393,7 +393,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					case EDGE_INTENSITY:
 
 						sequence.addOverlay(
-								new IntesityGraphOverlay(
+								new EdgeIntensityOverlay(
 										wing_disc_movie, sequence, this.getUI()));
 
 						break;

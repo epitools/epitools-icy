@@ -679,7 +679,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie);
 	
 		if(varBooleanVoronoiDiagram.getValue()){
-			Painter voronoiCells = new VoronoiPainter(
+			Painter voronoiCells = new VoronoiOverlay(
 					wing_disc_movie, 
 					voronoiDiagram.getNodeVoroniMapping());
 			sequence.addPainter(voronoiCells);

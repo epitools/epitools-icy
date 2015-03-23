@@ -22,7 +22,7 @@ public enum OverlayEnum{
 	CELL_AREA(AreaGradientOverlay.DESCRIPTION),
 	SEGMENTATION_BORDER(BorderOverlay.DESCRIPTION), 
 	
-	VORONOI_DIAGRAM(VoronoiPainter.DESCRIPTION), 
+	VORONOI_DIAGRAM(VoronoiOverlay.DESCRIPTION), 
 	POLYGON_CLASS(PolygonClassOverlay.DESCRIPTION),
 	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
 	GRAPH_VIEW(GraphOverlay.DESCRIPTION),

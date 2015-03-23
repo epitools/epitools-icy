@@ -26,7 +26,7 @@ import com.vividsolutions.jts.io.WKTWriter;
  * @author Davide Heller
  *
  */
-public class VoronoiPainter extends StGraphOverlay {
+public class VoronoiOverlay extends StGraphOverlay {
 
 	public static final String DESCRIPTION = 
 			"Overlay displays the voronoi diagram computed from the cell centroids";
@@ -34,7 +34,7 @@ public class VoronoiPainter extends StGraphOverlay {
 	private ShapeWriter writer;
 	
 	
-	public VoronoiPainter(SpatioTemporalGraph stGraph, Map<Node,Geometry> nodeVoronoiMap) {
+	public VoronoiOverlay(SpatioTemporalGraph stGraph, Map<Node,Geometry> nodeVoronoiMap) {
 		super("Voronoi Diagram",stGraph);
 		this.nodeVoronoiMap = nodeVoronoiMap;
 		this.writer = new ShapeWriter();

@@ -1,3 +1,12 @@
+/*=========================================================================
+ *
+ *  (C) Copyright (2012-2015) Basler Group, IMLS, UZH
+ *  
+ *  author:	Davide Heller
+ *  email:	davide.heller@imls.uzh.ch
+ *  
+ *=========================================================================*/
+
 package plugins.davhelle.cellgraph.painters;
 
 /**
@@ -38,8 +47,7 @@ public enum OverlayEnum{
 	
 	ELLIPSE_FIT(EllipseFitterOverlay.DESCRIPTION),
 	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),
-	ELONGATION_RATIO("Color codes the cell according to their elongation ratio and "+
-	"writes the elongation factor within every cell"), // could add csv option here
+	ELONGATION_RATIO(ElongationRatioOverlay.DESCRIPTION), // could add csv option here
 	PDF_SCREENSHOT("Generates a screenshot in PDF format"),
 	DIVSION_ORIENTATION(DivisionOrientationOverlay.DESCRIPTION);
 	

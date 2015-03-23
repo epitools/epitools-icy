@@ -35,7 +35,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class VoronoiAreaDifferencePainter extends Overlay{
+public class VoronoiAreaDifferenceOverlay extends Overlay{
 	
 	private final int DIFFERENCE_THRESHOLD = 10;
 	
@@ -50,7 +50,7 @@ public class VoronoiAreaDifferencePainter extends Overlay{
 	private SpatioTemporalGraph stGraph;
 	
 	
-	public VoronoiAreaDifferencePainter(SpatioTemporalGraph stGraph, Map<Node,Double> area_difference_map) {
+	public VoronoiAreaDifferenceOverlay(SpatioTemporalGraph stGraph, Map<Node,Double> area_difference_map) {
 		super("Voronoi Area Difference");
 		this.stGraph = stGraph;
 		this.writer = new ShapeWriter();
@@ -109,7 +109,7 @@ public class VoronoiAreaDifferencePainter extends Overlay{
 
 		//Set layer to 0.3 opacity
 		Layer current_layer = canvas.getLayer(this);
-		current_layer.setAlpha((float)alpha_level);		
+		current_layer.setOpacity((float)alpha_level);		
 		
 		if(time_point < stGraph.size()){
 			

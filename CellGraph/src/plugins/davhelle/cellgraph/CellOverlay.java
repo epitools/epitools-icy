@@ -686,7 +686,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		}
 	
 		if(varBooleanAreaDifference.getValue()){
-			Painter voronoiDifference = new VoronoiAreaDifferencePainter(
+			Painter voronoiDifference = new VoronoiAreaDifferenceOverlay(
 					wing_disc_movie, 
 					voronoiDiagram.getAreaDifference());
 			sequence.addPainter(voronoiDifference);	

@@ -23,7 +23,7 @@ public enum OverlayEnum{
 	SEGMENTATION_BORDER("Overlay to show where the border of the segmentation was identified"), 
 	
 	VORONOI_DIAGRAM("Overlay displays the voronoi diagram computed from the cell centroids"), 
-	POLYGON_CLASS(PolygonClassPainter.DESCRIPTION),
+	POLYGON_CLASS(PolygonClassOverlay.DESCRIPTION),
 	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
 	GRAPH_VIEW(GraphOverlay.DESCRIPTION),
 	

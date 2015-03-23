@@ -20,7 +20,7 @@ import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
-import plugins.davhelle.cellgraph.painters.PolygonClassPainter;
+import plugins.davhelle.cellgraph.painters.PolygonClassOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonPainter;
 
 public class PdfPrinter {
@@ -52,7 +52,7 @@ public class PdfPrinter {
 			FrameGraph frame0 = stGraph.getFrame(0);
 			
 			//paint
-			new PolygonClassPainter(stGraph,false,0).paintFrame(pdfGraphics,frame0);
+			new PolygonClassOverlay(stGraph,false,0).paintFrame(pdfGraphics,frame0);
 			
 			//new DivisionOrientationOverlay(stGraph).paintFrame(pdfGraphics, 0);
 			new PolygonPainter(stGraph, Color.BLACK).paintFrame(pdfGraphics, 0);

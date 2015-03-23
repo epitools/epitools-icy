@@ -344,7 +344,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
 						int highlight_polygonal_class = varHighlightClass.getValue();
 
-						PolygonClassPainter pc_painter =  new PolygonClassPainter(
+						PolygonClassOverlay pc_painter =  new PolygonClassOverlay(
 								wing_disc_movie,
 								draw_polygonal_numbers,
 								highlight_polygonal_class);

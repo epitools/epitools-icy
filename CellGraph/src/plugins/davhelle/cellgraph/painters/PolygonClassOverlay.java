@@ -26,7 +26,7 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Davide Heller
  *
  */
-public class PolygonClassPainter extends StGraphOverlay{
+public class PolygonClassOverlay extends StGraphOverlay{
 	
 	public static final String DESCRIPTION = "Displays the number of neighbors each cell has with color code or number";
 	
@@ -35,7 +35,7 @@ public class PolygonClassPainter extends StGraphOverlay{
 	private boolean draw_color_legend = true;
 	
 	
-	public PolygonClassPainter(SpatioTemporalGraph stGraph, boolean use_numbers, int hightlight_no) {
+	public PolygonClassOverlay(SpatioTemporalGraph stGraph, boolean use_numbers, int hightlight_no) {
 		super("Polygon class",stGraph);
 		this.use_numbers = use_numbers;
 		this.highlight_no = hightlight_no;

@@ -28,7 +28,7 @@ public enum OverlayEnum{
 	"The [save] option stores a csv file with 1 line of pc-counts for each frame"
 	),
 	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
-	GRAPH_VIEW("Shows the connectivity (neighbors) of each cell"),
+	GRAPH_VIEW(GraphOverlay.DESCRIPTION),
 	
 	CELL_TRACKING("Overlay to review the tracking in case it has been eliminated or to highlight different aspects"),
 	//ALWAYS_TRACKED_CELLS("Highlights only the cells that have been continuously tracked throughout the time lapse"),

@@ -32,13 +32,15 @@ import icy.sequence.Sequence;
  * @author Davide Heller
  *
  */
-public class GraphPainter extends Overlay{
+public class GraphOverlay extends Overlay{
 
+	public static final String DESCRIPTION = "Shows the connectivity (neighbors) of each cell";
+	
 	private SpatioTemporalGraph stGraph;
 	private GeometryFactory factory;
 	private ShapeWriter writer;
 	
-	public GraphPainter(SpatioTemporalGraph stGraph) {
+	public GraphOverlay(SpatioTemporalGraph stGraph) {
 		super("Graph edges");
 		this.stGraph = stGraph;
 		this.factory = new GeometryFactory();

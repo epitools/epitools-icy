@@ -400,7 +400,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					case GRAPH_VIEW:	
 						sequence.addOverlay(
-								new GraphPainter(
+								new GraphOverlay(
 										wing_disc_movie));
 
 						break;

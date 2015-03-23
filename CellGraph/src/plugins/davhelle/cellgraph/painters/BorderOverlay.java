@@ -23,6 +23,8 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class BorderOverlay extends StGraphOverlay{
 
+		public static final String DESCRIPTION = "Overlay to show where the border of the segmentation was identified";
+
 		public BorderOverlay(SpatioTemporalGraph spatioTemporalGraph){
 			super("Border cells",spatioTemporalGraph);
 		}

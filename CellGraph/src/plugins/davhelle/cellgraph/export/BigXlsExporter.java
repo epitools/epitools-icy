@@ -55,6 +55,8 @@ public class BigXlsExporter {
 
 	public BigXlsExporter(SpatioTemporalGraph stGraph, EzGUI gui){
 		
+		this.stGraph = stGraph;
+		
 		gui.setProgressBarMessage("Computing voronoi tesselation..");
 		voronoiTesselation = new VoronoiGenerator(stGraph).getNodeVoroniMapping();
 		

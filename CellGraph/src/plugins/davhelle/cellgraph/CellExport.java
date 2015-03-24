@@ -35,13 +35,25 @@ public class CellExport extends EzPlug {
 	protected void initialize()
 	{
 		
+		String welcomeMessage = 
+				"This plugin can export a spatio-temporal graph loaded" +
+				" in memory in several formats. To use it select the preferred" +
+				" export format and run [>] the plugin. A Dialog will ask for the" +
+				" saving destination. ";
+		
+		EzGroup groupPluginDescription = new EzGroup("Description",
+				new EzLabel(welcomeMessage));
+		addEzComponent(groupPluginDescription);
+		
+		//addComponent(new JSeparator(JSeparator.VERTICAL));
+		
 		varExport = new EzVarEnum<ExportEnum>(
-				"Export", ExportEnum.values());
+				"Export Format", ExportEnum.values());
 		
 		addEzComponent(varExport);
 		
 //		//Graph Export Mode
-		varExportType = new EzVarEnum<ExportFieldType>("Export field", 
+		varExportType = new EzVarEnum<ExportFieldType>("Export", 
 				ExportFieldType.values(), ExportFieldType.STANDARD);
 		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
 		
@@ -62,10 +74,9 @@ public class CellExport extends EzPlug {
 //		JList myList = new JList(data);
 //		addComponent(myList);
 //		addEzComponent(new EzVarFloat("A number", 5.6f, 0, 10, 0.1f));
-		addComponent(new JSeparator(JSeparator.VERTICAL));
 		
 		final EzLabel varExportDescription = new EzLabel(varExport.getValue().getDescription());
-		EzGroup groupDescription = new EzGroup("Export description",
+		EzGroup groupDescription = new EzGroup("Format description",
 				varExportDescription);
 		addEzComponent(groupDescription);
 		

@@ -9,17 +9,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.swing.JList;
 import javax.swing.JSeparator;
 
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
-import plugins.adufour.ezplug.EzVarBoolean;
+import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarFile;
-import plugins.adufour.ezplug.EzVarFloat;
 import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.export.ExportEnum;
 import plugins.davhelle.cellgraph.export.ExportFieldType;
 import plugins.davhelle.cellgraph.export.GraphExporter;
@@ -65,14 +64,25 @@ public class CellExport extends EzPlug {
 
 		
 		//save one complete excel file
-		getUI().setActionPanelVisible(true);
-		String[] data = {"one", "two", "three", "four","Five","Six","Seven","eight"};
-		JList myList = new JList(data);
-		addComponent(myList);
-		addEzComponent(new EzVarFloat("A number", 5.6f, 0, 10, 0.1f));
+//		getUI().setActionPanelVisible(true);
+//		String[] data = {"one", "two", "three", "four","Five","Six","Seven","eight"};
+//		JList myList = new JList(data);
+//		addComponent(myList);
+//		addEzComponent(new EzVarFloat("A number", 5.6f, 0, 10, 0.1f));
 		addComponent(new JSeparator(JSeparator.VERTICAL));
-		addEzComponent(new EzLabel("Oh look, a new column!"));
-		addEzComponent(new EzGroup("Groups are still cool", new EzLabel("you get the idea..."), new EzVarBoolean("do you?", false)));
+		
+		final EzLabel varExportDescription = new EzLabel(varExport.getValue().getDescription());
+		EzGroup groupDescription = new EzGroup("Export description",
+				varExportDescription);
+		addEzComponent(groupDescription);
+		
+		varExport.addVarChangeListener(new EzVarListener<ExportEnum>(){
+			public void variableChanged(EzVar<ExportEnum> source, ExportEnum newValue) {
+				varExportDescription.setText(newValue.getDescription());		
+			}
+		});
+		
+		
 		
 		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
 		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);

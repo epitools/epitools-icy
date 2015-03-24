@@ -118,6 +118,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	@Override
 	protected void initialize() {
 		
+		this.getUI().setRunButtonText("Add Overlay");
+		this.getUI().setParametersIOVisible(false);
+		
 		//Deprecated
 		varUpdatePainterMode = new EzVarBoolean("Update painter", false);
 

@@ -47,6 +47,9 @@ public class CellEditor extends EzPlug{
 	@Override
 	protected void initialize() {
 		
+		this.getUI().setRunButtonText("Start Editing");
+		this.getUI().setParametersIOVisible(false);
+		
 		modificationOverlay = null;
 		inputSequence = null;
 		

@@ -14,13 +14,11 @@ import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarEnum;
-import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.export.ExportEnum;
 import plugins.davhelle.cellgraph.export.ExportFieldType;
 import plugins.davhelle.cellgraph.export.GraphExporter;
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.PdfPrinter;
 
@@ -28,40 +26,38 @@ public class CellExport extends EzPlug {
 
 //	private EzVarFile varSaveSkeleton;
 	private EzVarEnum<ExportEnum> varExport;
-	private EzVarEnum<ExportFieldType> varExportType;
-	private EzVarInteger varFrameNo;
+//	private EzVarEnum<ExportFieldType> varExportType;
+//	private EzVarInteger varFrameNo;
 	
 	@Override
 	protected void initialize()
 	{
 		
-		String welcomeMessage = 
-				"This plugin can export a spatio-temporal graph loaded" +
-				" in memory in several formats. To use it select the preferred" +
-				" export format and run [>] the plugin. A Dialog will ask for the" +
-				" saving destination. ";
-		
-		EzGroup groupPluginDescription = new EzGroup("Description",
-				new EzLabel(welcomeMessage));
-		addEzComponent(groupPluginDescription);
-		
-		//addComponent(new JSeparator(JSeparator.VERTICAL));
+		this.getUI().setRunButtonText("Export");
+		this.getUI().setParametersIOVisible(false);
 		
 		varExport = new EzVarEnum<ExportEnum>(
 				"Export Format", ExportEnum.values());
+		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
+				varExport);
+		addEzComponent(groupFormatChoice);
 		
-		addEzComponent(varExport);
+		EzGroup groupPluginDescription = new EzGroup("2. RUN THE PLUGIN",
+				new EzLabel("A save dialog will appear"));
+		addEzComponent(groupPluginDescription);
 		
-//		//Graph Export Mode
-		varExportType = new EzVarEnum<ExportFieldType>("Export", 
-				ExportFieldType.values(), ExportFieldType.STANDARD);
-		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
+		addComponent(new JSeparator(JSeparator.VERTICAL));
 		
-		EzGroup groupGraphML = new EzGroup("GraphML export options",
-				varExportType,
-				varFrameNo);
-		
-		addEzComponent(groupGraphML);
+////		//Graph Export Mode
+//		varExportType = new EzVarEnum<ExportFieldType>("Export", 
+//				ExportFieldType.values(), ExportFieldType.STANDARD);
+//		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
+//		
+//		EzGroup groupGraphML = new EzGroup("GraphML export options",
+//				varExportType,
+//				varFrameNo);
+//		
+//		addEzComponent(groupGraphML);
 		
 //		//SAVE_SKELETON mode 
 //		varSaveSkeleton = new EzVarFile("Output File", "");
@@ -86,7 +82,7 @@ public class CellExport extends EzPlug {
 			}
 		});
 		
-		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
+//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
 //		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
 		
 	}    
@@ -122,10 +118,7 @@ public class CellExport extends EzPlug {
 						break;
 
 					case GRAPHML_EXPORT:
-						graphExportMode(
-								wing_disc_movie,
-								varExportType.getValue(),
-								varFrameNo.getValue());
+						graphExportMode(wing_disc_movie);
 						break;
 					
 					case SPREADSHEET_EXPORT:
@@ -140,74 +133,25 @@ public class CellExport extends EzPlug {
 		}
 	}
 	
-	private void graphExportMode(
-			SpatioTemporalGraph wing_disc_movie,
-			ExportFieldType export_type,
-			Integer frame_no) {
-		
-		//safety checks
-		if(frame_no >= wing_disc_movie.size())
-			new AnnounceFrame("Requested frame no is not available! Please check");
-		
+	private void graphExportMode(SpatioTemporalGraph stGraph) {
+
 		String file_name = SaveDialog.chooseFile(
-				"Please choose where to save the graph ml files",
+				"Please enter a folder where to save the graphML xml files",
 				"/Users/davide/",
-				"test_file", ".graphml");
-		
+				"frame000", ".xml");
+
 		if(file_name == null)
 			return;
-		
+
 		File output_file = new File(file_name);
+		String base_dir = output_file.getParent();
 		
-		if(varExportType.getValue() == ExportFieldType.STANDARD){
-			
-			String base_dir = output_file.getParent();
-			
-			//first frame TODO can add property to field like .getName() = '%s/frame%d.xml')
-			GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
-			int i = 0;
+		GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
+
+		for(int i=0; i<stGraph.size(); i++)
 			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/frame%d.xml",base_dir,i));
-		
-			//last frame
-			exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
-			i = wing_disc_movie.size() - 1;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/frame%d.xml",base_dir,i));
-			
-			//seq_area
-			exporter = new GraphExporter(ExportFieldType.SEQ_AREA);
-			i = 0;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/seq_area.xml",base_dir,i));
-			//seq_x
-			exporter = new GraphExporter(ExportFieldType.SEQ_X);
-			i = 0;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/seq_x.xml",base_dir,i));
-			//seq_y
-			exporter = new GraphExporter(ExportFieldType.SEQ_Y);
-			i = 0;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/seq_y.xml",base_dir,i));
-			
-			
-		}
-		else
-		{
-			GraphExporter exporter = new GraphExporter(varExportType.getValue());
-			FrameGraph frame_to_export = wing_disc_movie.getFrame(frame_no);
-			exporter.exportFrame(frame_to_export, output_file.getAbsolutePath());
-		}		
-		
+					stGraph.getFrame(i), 
+					String.format("%s/frame%03d.xml",base_dir,i));
+
 	}
-
-
-	
-
 }

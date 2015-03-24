@@ -131,6 +131,8 @@ public class CellExport extends EzPlug {
 				}
 			}
 		}
+		else
+			new AnnounceFrame("No spatio temporal graph found in ICYsp, please load a CellGraph first!");
 	}
 	
 	private void graphExportMode(SpatioTemporalGraph stGraph) {

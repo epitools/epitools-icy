@@ -16,6 +16,7 @@ import icy.gui.dialog.SaveDialog;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.File;
@@ -73,6 +74,11 @@ public class TransitionOverlay extends StGraphOverlay{
 		
 		System.out.println("Transitions found: "+transitions.size());
 	
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		saveToCsv();
 	}
 	
 	/**
@@ -234,10 +240,8 @@ public class TransitionOverlay extends StGraphOverlay{
 			fileOutputStream.close();
 			
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

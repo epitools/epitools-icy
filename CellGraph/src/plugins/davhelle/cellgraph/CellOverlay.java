@@ -14,7 +14,6 @@ import icy.swimmingPool.SwimmingObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -30,7 +29,6 @@ import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
-import plugins.adufour.vars.gui.model.RangeModel.RangeEditorType;
 import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
 import plugins.davhelle.cellgraph.graphexport.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -40,7 +38,30 @@ import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.davhelle.cellgraph.painters.*;
+import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
+import plugins.davhelle.cellgraph.painters.AreaGradientOverlay;
+import plugins.davhelle.cellgraph.painters.BorderOverlay;
+import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
+import plugins.davhelle.cellgraph.painters.CentroidOverlay;
+import plugins.davhelle.cellgraph.painters.CorrectionOverlay;
+import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
+import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
+import plugins.davhelle.cellgraph.painters.DivisionOverlay;
+import plugins.davhelle.cellgraph.painters.EdgeIntensityOverlay;
+import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
+import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
+import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
+import plugins.davhelle.cellgraph.painters.ElongationRatioOverlay;
+import plugins.davhelle.cellgraph.painters.GraphOverlay;
+import plugins.davhelle.cellgraph.painters.OverlayEnum;
+import plugins.davhelle.cellgraph.painters.PolygonClassOverlay;
+import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
+import plugins.davhelle.cellgraph.painters.PolygonOverlay;
+import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
+import plugins.davhelle.cellgraph.painters.TrackingOverlay;
+import plugins.davhelle.cellgraph.painters.TransitionOverlay;
+import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferenceOverlay;
+import plugins.davhelle.cellgraph.painters.VoronoiOverlay;
 
 /**
  * Plugin containing all the visualizations based
@@ -99,10 +120,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	private EzVarInteger varHighlightClass;
 	private EzVarBoolean varBooleanColorClass;
 	private EzVarEnum<CellColor> varPolygonColor;
-	private EzVarBoolean varSaveTransitions;
 	public EzVarInteger varMinimalTransitionLength;
 	public EzVarInteger varMinimalOldSurvival;
-	private EzVarBoolean varSaveToPdf;
 	private EzVarBoolean varFillingCheckbox;
 
 	@Override
@@ -200,13 +219,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		//Save transitions
 		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
 		varMinimalOldSurvival = new EzVarInteger("Minimal old edge persistence [frames]",5,1,100,1);
-		varSaveTransitions = new EzVarBoolean("Save transition statistics to CSV", false);
-		varSaveToPdf = new EzVarBoolean("Save transition picture to PDF", false);
 		EzGroup groupTransitions = new EzGroup("Overlay elements",
 				varMinimalTransitionLength,
-				varMinimalOldSurvival,
-				varSaveTransitions,
-				varSaveToPdf);
+				varMinimalOldSurvival);
 		
 		//IntensitySlider
 		varIntensitySlider = new EzVarDouble("Color Scaling", 
@@ -446,18 +461,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 
 						// Edge Dynamics	
-
 					case T1_TRANSITIONS:
-
-						TransitionOverlay t1 = new TransitionOverlay(wing_disc_movie, this);
-
-						if(varSaveTransitions.getValue())
-							t1.saveToCsv();
-
-						if(varSaveToPdf.getValue())
-							t1.saveToPdf();
-
-						sequence.addOverlay(t1);
+						sequence.addOverlay(new TransitionOverlay(wing_disc_movie, this));
 						break;
 
 					case EDGE_STABILITY:

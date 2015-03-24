@@ -7,16 +7,11 @@ package plugins.davhelle.cellgraph;
 
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
-import icy.painter.Painter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
@@ -30,14 +25,9 @@ import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.export.ExportFieldType;
-import plugins.davhelle.cellgraph.export.GraphExporter;
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.io.DivisionReader;
-import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
-import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.painters.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.painters.BorderOverlay;
@@ -62,6 +52,7 @@ import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 import plugins.davhelle.cellgraph.painters.TransitionOverlay;
 import plugins.davhelle.cellgraph.painters.VoronoiAreaDifferenceOverlay;
 import plugins.davhelle.cellgraph.painters.VoronoiOverlay;
+
 
 /**
  * Plugin containing all the visualizations based
@@ -90,7 +81,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarBoolean				varBooleanWriteCenters;
 	EzVarBoolean				varBooleanWriteArea;
 	
-	EzVarBoolean				varBooleanReadDivisions;
+	//EzVarBoolean				varBooleanReadDivisions;
 	
 	//Tracking Mode
 	EzVarBoolean				varBooleanCellIDs;
@@ -172,7 +163,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 
 		//Division mode
-		varBooleanReadDivisions = new EzVarBoolean("Read divisions", false);
 		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions (green)",true);
 		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations (red)",false);
 		varBooleanFillCells = new EzVarBoolean("Fill cells with color",true);
@@ -273,10 +263,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//First boolean choice to remove previous painters
 		if(varRemovePainterFromSequence.getValue()){
-			List<Painter> painters = sequence.getPainters();
-			for (Painter painter : painters) {
-				sequence.removePainter(painter);
-				sequence.painterChanged(painter);    				
+			List<Overlay> overlays = sequence.getOverlays();
+			for (Overlay overlay : overlays) {
+				sequence.removeOverlay(overlay);
+				sequence.overlayChanged(overlay);    				
 			}
 		}
 		
@@ -301,11 +291,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					//Eliminates the previous painter and runs the 
 					//the program (update mode)
 
-					if(varUpdatePainterMode.getValue()){
-						List<Painter> painters = sequence.getPainters();
-						for (Painter painter : painters) {
-							sequence.removePainter(painter);
-							sequence.painterChanged(painter);    				
+					if(varRemovePainterFromSequence.getValue()){
+						List<Overlay> overlays = sequence.getOverlays();
+						for (Overlay overlay : overlays) {
+							sequence.removeOverlay(overlay);
+							sequence.overlayChanged(overlay);    				
 						}
 					}
 
@@ -349,9 +339,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						break;
 
 					case DIVISIONS_AND_ELIMINATIONS: 
-						divisionMode(
-								wing_disc_movie, 
-								varBooleanReadDivisions.getValue());
+						divisionMode(wing_disc_movie);
 						break;
 
 					case VORONOI_DIAGRAM: 
@@ -444,175 +432,90 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		}
 		
 		if(paint_cellID){
-			Painter trackID = new TrackIdOverlay(wing_disc_movie);
-			sequence.addPainter(trackID);
+			Overlay trackID = new TrackIdOverlay(wing_disc_movie);
+			sequence.addOverlay(trackID);
 		}
 		
 		if(paint_displacement){
 			float maximum_displacement = 2;
-			Painter displacementSegments = new DisplacementOverlay(wing_disc_movie, maximum_displacement);
-			sequence.addPainter(displacementSegments);
+			Overlay displacementSegments = new DisplacementOverlay(wing_disc_movie, maximum_displacement);
+			sequence.addOverlay(displacementSegments);
 		}
 		
 		TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
-		sequence.addPainter(correspondence);
+		sequence.addOverlay(correspondence);
 		
 	}
 
-	/**
-	 * Write out data to the disc, user specified location
-	 * 
-	 * @param wing_disc_movie the stGraph structure to be analyzed
-	 */
-	private void writeOutMode(SpatioTemporalGraph wing_disc_movie) {		
-		//write out through method possibly/problems with dynamic change
-		//substitute this method with graph write out.
-		//CsvWriter.custom_write_out(wing_disc_movie); 
-		
-		directDividingNeighborSimulation(wing_disc_movie);
-	}
-
-	/**
-	 * @param wing_disc_movie
-	 */
-	private void directDividingNeighborSimulation(
-			SpatioTemporalGraph wing_disc_movie) {
-		final int sim_no = 10000;
-		System.out.println(sim_no + "simulations");
-		FrameGraph frame_i = wing_disc_movie.getFrame(0);
-		Iterator<Node> cell_it = frame_i.iterator();	
-		
-		//no of divisions
-		int division_no = 0;
-		//" with at least one direct dividing neighbor (ddn)
-		int division_no_with_ddn= 0;
-		
-		while(cell_it.hasNext()){
-			Node cell = cell_it.next();
-			
-			//do not count if cell is on boundary
-			if(cell.onBoundary())
-				continue;
-			
-			if(cell.hasObservedDivision()){
-				division_no++;
-
-				for(Node neighbor: cell.getNeighbors())
-					if(neighbor.hasObservedDivision()){
-						division_no_with_ddn++;
-						break;
-					}
-			}
-		}
-		
-		//sample value 
-		double p_dividing_neighbor = division_no_with_ddn / (double)division_no;
-		
-		System.out.println(p_dividing_neighbor);
-		
-		//random sampler (without replacement)
-		Node[] cells = frame_i.vertexSet().toArray(new Node[frame_i.size()]);
-		Random randomGenerator = new Random(System.currentTimeMillis());
-		
-		for(int sim_i=0; sim_i<sim_no; sim_i++){
-			
-			//no of random cells that have at least a dividing neighbor
-			int rnd_division_no_W = 0;
-			ArrayList<Integer> chosen_cell_ids = new ArrayList<Integer>();
-			
-			//choose as many random cells as there were dividing cells
-			for(int i=0; i<division_no; i++){
-				
-				int rnd_cell_id = randomGenerator.nextInt(cells.length);
-				Node rnd_cell = cells[rnd_cell_id];
-				
-				//do not choose a border cell or cell that has already been selected
-				while(rnd_cell.onBoundary() || chosen_cell_ids.contains(rnd_cell_id)){
-					rnd_cell_id = randomGenerator.nextInt(cells.length);
-					rnd_cell = cells[rnd_cell_id];
-				}
-				
-				for(Node neighbor: rnd_cell.getNeighbors())
-					if(neighbor.hasObservedDivision()){
-						rnd_division_no_W++;
-						break;
-					}			
-			}
-			
-			double rnd_p_dividing_neighbor = rnd_division_no_W / (double)division_no;
-			System.out.println(rnd_p_dividing_neighbor);
-			
-		}
-	}
-
-	@Override
-	public void clean() {
-		// TODO Auto-generated by Icy4Eclipse
-	}
 
 	private void voronoiMode(SpatioTemporalGraph wing_disc_movie){
 		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie);
 	
 		if(varBooleanVoronoiDiagram.getValue()){
-			Painter voronoiCells = new VoronoiOverlay(
+			Overlay voronoiCells = new VoronoiOverlay(
 					wing_disc_movie, 
 					voronoiDiagram.getNodeVoroniMapping());
-			sequence.addPainter(voronoiCells);
+			sequence.addOverlay(voronoiCells);
 		}
 	
 		if(varBooleanAreaDifference.getValue()){
-			Painter voronoiDifference = new VoronoiAreaDifferenceOverlay(
+			Overlay voronoiDifference = new VoronoiAreaDifferenceOverlay(
 					wing_disc_movie, 
 					voronoiDiagram.getAreaDifference());
-			sequence.addPainter(voronoiDifference);	
+			sequence.addOverlay(voronoiDifference);	
 		}
 	}
 
 	private void cellMode(SpatioTemporalGraph wing_disc_movie){
 		
 		if(varBooleanCCenter.getValue()){
-			Painter centroids = new CentroidOverlay(wing_disc_movie);
-			sequence.addPainter(centroids);
+			Overlay centroids = new CentroidOverlay(wing_disc_movie);
+			sequence.addOverlay(centroids);
 		}
 		
 		if(varBooleanPolygon.getValue()){
-			Painter polygons = new PolygonOverlay(wing_disc_movie,varPolygonColor.getValue().getColor());
-			sequence.addPainter(polygons);
+			Overlay polygons = new PolygonOverlay(wing_disc_movie,varPolygonColor.getValue().getColor());
+			sequence.addOverlay(polygons);
 		}
 		
 		if(varBooleanDerivedPolygons.getValue()){
-			Painter derived_polygons = new PolygonConverterPainter(wing_disc_movie);
-			sequence.addPainter(derived_polygons);
+			Overlay derived_polygons = new PolygonConverterPainter(wing_disc_movie);
+			sequence.addOverlay(derived_polygons);
 		}
 		
 		
 	}
 
-	private void divisionMode(SpatioTemporalGraph wing_disc_movie, boolean read_divisions){
+	private void divisionMode(SpatioTemporalGraph wing_disc_movie){
 		
-		if(read_divisions){
-			try{
-				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-				division_reader.backtrackDivisions();
-				sequence.addPainter(division_reader);
-			}
-			catch(IOException e){
-				System.out.println("Something went wrong in division reading");
-			}
-		}
-		
+		//TODO review division readin
+//		if(read_divisions){
+//			try{
+//				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
+//				division_reader.backtrackDivisions();
+//				sequence.addOverlay(division_reader);
+//			}
+//			catch(IOException e){
+//				System.out.println("Something went wrong in division reading");
+//			}
+//		}
 		
 		DivisionOverlay dividing_cells = new DivisionOverlay(
 				wing_disc_movie,
 				varBooleanPlotDivisions.getValue(),
 				varBooleanPlotEliminations.getValue(),
 				varBooleanFillCells.getValue());
-		sequence.addPainter(dividing_cells);
+		sequence.addOverlay(dividing_cells);
 		
 	}
 
 	@Override
 	public void variableChanged(EzVar<OverlayEnum> source, OverlayEnum newValue) {
 		varDescriptionLabel.setText(newValue.getDescription());		
+	}
+	
+	@Override
+	public void clean() {
+		// TODO Auto-generated by Icy4Eclipse
 	}
 }

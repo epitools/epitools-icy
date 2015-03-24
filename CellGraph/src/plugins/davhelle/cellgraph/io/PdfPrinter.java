@@ -24,6 +24,12 @@ import plugins.davhelle.cellgraph.painters.PolygonClassOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonOverlay;
 
 public class PdfPrinter {
+	
+	public static final String DESCRIPTION = 
+			"Exports a Vector graphic file of the loaded graph structure." +
+			" Currently the polygon-number representation is generated." +
+			" Future option will make the other overlays available.";
+
 	public PdfPrinter(SpatioTemporalGraph stGraph){
 		String file_name = SaveDialog.chooseFile(
 				"Please choose where to save the PDF transitions image", 

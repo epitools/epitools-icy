@@ -48,6 +48,25 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class BigXlsExporter {
 	
+	public static final String DESCRIPTION = 
+			"Loaded graph is saved as one Excel Spreadsheet (.xls) with one " +
+			"worksheet for every frame." +
+			"Following fields are included:\n\n" +
+			"* Cell tracking ID\n" + 
+			"* Centroid position x\n" +
+			"* Centroid position y\n" +
+			"* Cell apical area\n" +
+			"* Polygon/Neighbor number\n" +
+			"* Voronoi cell area\n" +
+			"* Best fit ellipse major axis length\n" +
+			"* Best fit ellipse minor axis length\n" +
+			"* Best fit ellipse major axis angle\n" +
+			"* Divides during time lapse [T/F]\n" +
+			"* Time of division\n" +
+			"* Is eliminated during time lapse [T/F]\n" +
+			"* Time of elimination\n" +
+			"* Cell on segmentation border[T/F]";
+
 	SpatioTemporalGraph stGraph;
 	
 	Map<Node, Geometry> voronoiTesselation;
@@ -85,8 +104,10 @@ public class BigXlsExporter {
 		XLSUtil.setCellString(sheet, col_no++, row_no, "eliminationTime"); 			//redundant
 		XLSUtil.setCellString(sheet, col_no++, row_no, "onSegmentationBoundary");
 
-		row_no++;
 		for(Node node: frame.vertexSet()){
+			//increase row and reset column
+			row_no++;
+			col_no = 0;
 			
 			//position
 			XLSUtil.setCellNumber(sheet, col_no++, row_no, node.getTrackID());
@@ -130,8 +151,6 @@ public class BigXlsExporter {
 			String booleanString = String.valueOf(node.onBoundary()).toUpperCase();
 			XLSUtil.setCellString(sheet, col_no++, row_no, booleanString);
 			
-			
-			row_no++;
 		}
 	}
 	

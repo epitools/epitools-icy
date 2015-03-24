@@ -1,11 +1,13 @@
 package plugins.davhelle.cellgraph.export;
 
+import plugins.davhelle.cellgraph.io.PdfPrinter;
+
 public enum ExportEnum {
 	
-	SPREADSHEET_EXPORT("Export the currenlty loaded graph as one XLS file"),
-	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
+	SPREADSHEET_EXPORT(BigXlsExporter.DESCRIPTION),
+	GRAPHML_EXPORT(GraphExporter.DESCRIPTION),
 	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
-	PDF_SCREENSHOT("Exports a pdf");
+	PDF_SCREENSHOT(PdfPrinter.DESCRIPTION);
 	
 	//SAVE_WKT_POLYGONS
 	//SAVE_TRACKING

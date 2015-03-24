@@ -7,14 +7,27 @@ import java.io.FileWriter;
 import org.jgrapht.ext.EdgeNameProvider;
 import org.jgrapht.ext.GraphMLExporter;
 import org.jgrapht.ext.IntegerEdgeNameProvider;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 public class GraphExporter {
+	
+	public static final String DESCRIPTION = 
+			"The loaded graph is saved as a GraphML file. This format is a" +
+			" xml based graph format. Bejond the spatial graph structure" +
+			" this format includes the following fields in the <vertex label>" +
+			" attribute in CSV format:\n\n" +
+			"* Cell tracking ID\n" + 
+			"* Centroid position x\n" +
+			"* Centroid position y\n" +
+			"* Cell apical area\n" +
+			"* Boundary cell [T/F]\n" +
+			"* Observed cell division [T/F]\n" +
+			"* Observed cell elimination [T/F]\n" +
+			"* Division time\n" +
+			"* Elimiation time\n";
 	
 	GraphMLExporter<Node, Edge> graphML_exporter;
 	

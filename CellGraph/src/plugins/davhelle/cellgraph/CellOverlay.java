@@ -113,7 +113,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	Sequence sequence;
 	
 	EzVarFile				varOutputFile;
-	private EzVarFile varSaveSkeleton;
+	
 	private EzVarBoolean varBooleanPlotDivisions;
 	private EzVarBoolean varBooleanPlotEliminations;
 	private EzVarBoolean varBooleanFillCells;
@@ -195,26 +195,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varBooleanDrawDisplacement,
 				varBooleanHighlightMistakesBoolean);
 				
-		
-		//Graph Export Mode
-		varExportType = new EzVarEnum<ExportFieldType>("Export field", 
-				ExportFieldType.values(), ExportFieldType.STANDARD);
-		varOutputFile = new EzVarFile("Output File", "/Users/davide/analysis");
-		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
-		
-		EzGroup groupExport = new EzGroup("Overlay elements",
-				varExportType,
-				varOutputFile,
-				varFrameNo);
-		
 		//CellMarker mode
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
 		EzGroup groupMarker = new EzGroup("Overlay elements",
 				varCellColor);
-		
-		//SAVE_SKELETON mode
-		varSaveSkeleton = new EzVarFile("Output File", "");
-		EzGroup groupSaveSkeleton = new EzGroup("SAVE_SKELETON elements",varSaveSkeleton);
 
 		//Save transitions
 		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
@@ -248,9 +232,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupAreaThreshold,
 				groupDivisions,
 				groupTracking,
-				groupExport,
 				groupMarker,
-				//groupSaveSkeleton,
 				groupTransitions,
 				groupEdgeIntensity
 				
@@ -263,9 +245,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
 		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.CELL_TRACKING);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
-		varPlotting.addVisibilityTriggerTo(groupExport, OverlayEnum.GRAPHML_EXPORT);
 		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
-		//varPlotting.addVisibilityTriggerTo(groupSaveSkeleton, OverlayEnum.SAVE_SKELETONS);
 		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
 		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
 		super.addEzComponent(groupPainters);
@@ -368,11 +348,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								pc_painter);
 						break;
 
-//					case POLYGON_TILE:
-//						sequence.addOverlay(
-//								new PolygonConverterPainter(wing_disc_movie));
-//						break;
-
 					case DIVISIONS_AND_ELIMINATIONS: 
 						divisionMode(
 								wing_disc_movie, 
@@ -389,18 +364,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 										wing_disc_movie, 
 										varAreaThreshold));
 						break;
-
-//					case ALWAYS_TRACKED_CELLS: 
-//						sequence.addOverlay(
-//								new AlwaysTrackedCellsOverlay(
-//										wing_disc_movie));
-//						break;
-
-//					case WRITE_OUT_DDN: 
-//
-//						//CsvWriter.custom_write_out(wing_disc_movie);
-//						writeOutMode(wing_disc_movie);
-//						break;
 
 					case CELL_TRACKING:
 
@@ -425,42 +388,17 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						sequence.addOverlay(
 								new GraphOverlay(
 										wing_disc_movie));
-
 						break;
-
-						//Tagging
 
 					case CELL_COLOR_TAG:
 						sequence.addOverlay(
 								new CellMarkerOverlay(wing_disc_movie,varCellColor));
-						//sequence.addOverlay(
-						//		new ColorTagPainter(wing_disc_movie));
 						break;
-//					case SAVE_COLOR_TAG:
-//						new TagSaver(wing_disc_movie);
-//						break;
-//					case SAVE_COLOR_TAG_XLS:
-//						new CellWorkbook(wing_disc_movie);
-//						break;
 
-						//Export and Corrections
-
-					case GRAPHML_EXPORT:
-						graphExportMode(
-								wing_disc_movie,
-								varExportType.getValue(),
-								varOutputFile.getValue(false),
-								varFrameNo.getValue());
-						break;	
-//					case SAVE_SKELETONS:
-//						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
-//						break;
 					case CORRECTION_HINTS:
 						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 						break;
 
-
-						// Edge Dynamics	
 					case T1_TRANSITIONS:
 						sequence.addOverlay(new TransitionOverlay(wing_disc_movie, this));
 						break;
@@ -468,12 +406,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					case EDGE_STABILITY:
 						sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
 						break;
-//					case NEIGHBOR_STABILITY:
-//						sequence.addOverlay(new NeighborChangeFrequencyOverlay(wing_disc_movie));
-//						break;
-					case PDF_SCREENSHOT:
-						new PdfPrinter(wing_disc_movie);
-						break;
+
 					case ELLIPSE_FIT_WRT_POINT_ROI:
 						sequence.addOverlay(
 								new EllipseFitColorOverlay(wing_disc_movie));
@@ -486,74 +419,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						break;
 
 					}
-					//future statistical output statistics
-					//			CsvWriter.trackedArea(wing_disc_movie);
-					//			CsvWriter.frameAndArea(wing_disc_movie);
-					//CsvWriter.custom_write_out(wing_disc_movie);
 
 				}
 			}
 		else
 			new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
-		
-	}
-
-	private void graphExportMode(
-			SpatioTemporalGraph wing_disc_movie,
-			ExportFieldType export_type,
-			File output_file,
-			Integer frame_no) {
-		
-		//safety checks
-		if(output_file == null)
-			new AnnounceFrame("No output file specified! Please select");
-		else if(frame_no >= wing_disc_movie.size())
-			new AnnounceFrame("Requested frame no is not available! Please check");
-		else if(varExportType.getValue() == ExportFieldType.STANDARD){
-			
-			String base_dir = output_file.getParent();
-			
-			//first frame TODO can add property to field like .getName() = '%s/frame%d.xml')
-			GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
-			int i = 0;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/frame%d.xml",base_dir,i));
-		
-			//last frame
-			exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
-			i = wing_disc_movie.size() - 1;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/frame%d.xml",base_dir,i));
-			
-			//seq_area
-			exporter = new GraphExporter(ExportFieldType.SEQ_AREA);
-			i = 0;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/seq_area.xml",base_dir,i));
-			//seq_x
-			exporter = new GraphExporter(ExportFieldType.SEQ_X);
-			i = 0;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/seq_x.xml",base_dir,i));
-			//seq_y
-			exporter = new GraphExporter(ExportFieldType.SEQ_Y);
-			i = 0;
-			exporter.exportFrame(
-					wing_disc_movie.getFrame(i), 
-					String.format("%s/seq_y.xml",base_dir,i));
-			
-			
-		}
-		else
-		{
-			GraphExporter exporter = new GraphExporter(varExportType.getValue());
-			FrameGraph frame_to_export = wing_disc_movie.getFrame(frame_no);
-			exporter.exportFrame(frame_to_export, output_file.getAbsolutePath());
-		}		
 		
 	}
 

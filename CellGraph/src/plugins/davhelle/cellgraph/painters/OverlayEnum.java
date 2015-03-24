@@ -16,18 +16,12 @@ package plugins.davhelle.cellgraph.painters;
  *
  */
 public enum OverlayEnum{
+	
 	//on hold
 	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
 	//ALWAYS_TRACKED_CELLS("Highlights only the cells that have been continuously tracked throughout the time lapse"),
-	//WRITE_OUT_DDN("Statistics output"),
-	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
 	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
-	
-	//To be transfered to CellEditor
-	PDF_SCREENSHOT("Generates a screenshot in PDF format"),
-	GRAPHML_EXPORT("Exports the currently loaded graph into a GraphML file"),
-	
-	
+
 	TEST("Test Overlay"),
 	CELL_OVERLAY(PolygonOverlay.DESCRIPTION),
 	CELL_AREA(AreaGradientOverlay.DESCRIPTION),
@@ -54,4 +48,5 @@ public enum OverlayEnum{
 	private String description;
 	private OverlayEnum(String description){this.description = description;}
 	public String getDescription(){return description;}
+	
 }

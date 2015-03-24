@@ -4,8 +4,8 @@ import icy.gui.frame.progress.AnnounceFrame;
 
 import java.io.FileWriter;
 
-import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
-import plugins.davhelle.cellgraph.graphexport.VertexLabelProvider;
+import plugins.davhelle.cellgraph.export.ExportFieldType;
+import plugins.davhelle.cellgraph.export.VertexLabelProvider;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.nodes.Node;

@@ -1,4 +1,4 @@
-package plugins.davhelle.cellgraph.graphexport;
+package plugins.davhelle.cellgraph.export;
 
 import icy.gui.frame.progress.AnnounceFrame;
 

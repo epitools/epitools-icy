@@ -15,8 +15,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
-import plugins.davhelle.cellgraph.graphexport.VertexLabelProvider;
+import plugins.davhelle.cellgraph.export.ExportFieldType;
+import plugins.davhelle.cellgraph.export.VertexLabelProvider;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;

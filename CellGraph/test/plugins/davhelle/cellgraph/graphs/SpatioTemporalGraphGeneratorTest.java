@@ -5,8 +5,8 @@ import java.io.File;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
-import plugins.davhelle.cellgraph.graphexport.GraphExporter;
+import plugins.davhelle.cellgraph.export.ExportFieldType;
+import plugins.davhelle.cellgraph.export.GraphExporter;
 
 public class SpatioTemporalGraphGeneratorTest {
   @Test

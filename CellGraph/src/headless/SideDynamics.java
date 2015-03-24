@@ -136,8 +136,7 @@ public class SideDynamics {
 					HashSet<Node> longestNeighbors = new HashSet<Node>();
 					HashSet<Node> dividingNeighbors = new HashSet<Node>();
 					
-					//while(m.hasPrevious()){
-						//m = m.getPrevious();
+					while(m.hasPrevious()){
 						
 						//if(m.getFrameNo() == divisionTime - 6 ){
 
@@ -147,12 +146,12 @@ public class SideDynamics {
 							
 							dividingNeighbors.addAll(findDividingNeighbors(m));
 							
-							//break;
-						//}
 						
-						//if(m.getFrameNo() < divisionTime - 10)
-							//break;
-					//}
+						if(m.getFrameNo() < (divisionTime - 10))
+							break;
+						
+						m = m.getPrevious();
+					}
 
 					//Find side gaining nodes
 					HashSet<Node> sideGainingNeighbors = findAcceptors(d);

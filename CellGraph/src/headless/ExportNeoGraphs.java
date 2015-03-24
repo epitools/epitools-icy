@@ -3,8 +3,8 @@
  */
 package headless;
 
-import plugins.davhelle.cellgraph.graphexport.ExportFieldType;
-import plugins.davhelle.cellgraph.graphexport.GraphExporter;
+import plugins.davhelle.cellgraph.export.ExportFieldType;
+import plugins.davhelle.cellgraph.export.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 

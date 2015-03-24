@@ -8,7 +8,7 @@
  *  email:	davide.heller@imls.uzh.ch
  *  
  *=========================================================================*/
-package plugins.davhelle.cellgraph.graphexport;
+package plugins.davhelle.cellgraph.export;
 
 import java.awt.Color;
 

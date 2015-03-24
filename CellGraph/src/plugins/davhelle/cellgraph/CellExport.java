@@ -1,13 +1,11 @@
 package plugins.davhelle.cellgraph;
 
+import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.swimmingPool.SwimmingObject;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Random;
 
 import javax.swing.JSeparator;
 
@@ -16,7 +14,6 @@ import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarEnum;
-import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
@@ -26,14 +23,12 @@ import plugins.davhelle.cellgraph.export.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.PdfPrinter;
-import plugins.davhelle.cellgraph.nodes.Node;
 
 public class CellExport extends EzPlug {
 
-	private EzVarFile varSaveSkeleton;
+//	private EzVarFile varSaveSkeleton;
 	private EzVarEnum<ExportEnum> varExport;
 	private EzVarEnum<ExportFieldType> varExportType;
-	private EzVarFile varOutputFile;
 	private EzVarInteger varFrameNo;
 	
 	@Override
@@ -48,20 +43,18 @@ public class CellExport extends EzPlug {
 //		//Graph Export Mode
 		varExportType = new EzVarEnum<ExportFieldType>("Export field", 
 				ExportFieldType.values(), ExportFieldType.STANDARD);
-		varOutputFile = new EzVarFile("Output File", "/Users/davide/analysis");
 		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
 		
 		EzGroup groupGraphML = new EzGroup("GraphML export options",
 				varExportType,
-				varOutputFile,
 				varFrameNo);
 		
 		addEzComponent(groupGraphML);
 		
 //		//SAVE_SKELETON mode 
-		varSaveSkeleton = new EzVarFile("Output File", "");
-		EzGroup groupSaveSkeleton = new EzGroup(
-				"Skeleton export options",varSaveSkeleton);
+//		varSaveSkeleton = new EzVarFile("Output File", "");
+//		EzGroup groupSaveSkeleton = new EzGroup(
+//				"Skeleton export options",varSaveSkeleton);
 
 		//save one complete excel file
 //		getUI().setActionPanelVisible(true);
@@ -83,13 +76,8 @@ public class CellExport extends EzPlug {
 		});
 		
 		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
-		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
+//		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
 		
-		//future statistical output statistics
-		//			CsvWriter.trackedArea(wing_disc_movie);
-		//			CsvWriter.frameAndArea(wing_disc_movie);
-		//CsvWriter.custom_write_out(wing_disc_movie);
-
 	}    
 	
 
@@ -114,9 +102,9 @@ public class CellExport extends EzPlug {
 
 					switch (USER_CHOICE){
 
-					case SAVE_SKELETONS:
-						//new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
-						break;
+//					case SAVE_SKELETONS:
+//						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
+//						break;
 
 					case PDF_SCREENSHOT:
 						new PdfPrinter(wing_disc_movie);
@@ -126,7 +114,6 @@ public class CellExport extends EzPlug {
 						graphExportMode(
 								wing_disc_movie,
 								varExportType.getValue(),
-								varOutputFile.getValue(false),
 								varFrameNo.getValue());
 						break;
 					
@@ -145,17 +132,23 @@ public class CellExport extends EzPlug {
 	private void graphExportMode(
 			SpatioTemporalGraph wing_disc_movie,
 			ExportFieldType export_type,
-			File output_file,
 			Integer frame_no) {
 		
 		//safety checks
 		if(frame_no >= wing_disc_movie.size())
 			new AnnounceFrame("Requested frame no is not available! Please check");
 		
+		String file_name = SaveDialog.chooseFile(
+				"Please choose where to save the graph ml files",
+				"/Users/davide/",
+				"test_file", ".graphml");
 		
+		if(file_name == null)
+			return;
 		
+		File output_file = new File(file_name);
 		
-		else if(varExportType.getValue() == ExportFieldType.STANDARD){
+		if(varExportType.getValue() == ExportFieldType.STANDARD){
 			
 			String base_dir = output_file.getParent();
 			

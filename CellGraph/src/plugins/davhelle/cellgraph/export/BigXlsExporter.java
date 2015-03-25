@@ -21,6 +21,7 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
 
 /**
  * Generate one big XLS sheet for a spatio-temporal graph
@@ -53,7 +54,8 @@ public class BigXlsExporter {
 			"Loaded graph is saved as one Excel Spreadsheet (.xls) with one " +
 			"worksheet for every frame." +
 			"Following fields are included:\n\n" +
-			"* Cell tracking ID\n" + 
+			"* Color Tag (if selected)\n"+
+			"* Cell tracking ID\n" +
 			"* Centroid position x\n" +
 			"* Centroid position y\n" +
 			"* Cell apical area\n" +
@@ -73,7 +75,9 @@ public class BigXlsExporter {
 	Map<Node, Geometry> voronoiTesselation;
 	HashMap<Node, EllipseFitter> fittedEllipses;
 
-	public BigXlsExporter(SpatioTemporalGraph stGraph, Sequence sequence, EzGUI gui){
+	private boolean exprotTaggedOnly;
+
+	public BigXlsExporter(SpatioTemporalGraph stGraph, boolean exportTaggedOnly, Sequence sequence, EzGUI gui){
 		
 		this.stGraph = stGraph;
 		
@@ -83,13 +87,34 @@ public class BigXlsExporter {
 		gui.setProgressBarMessage("Computing ellipse fitting..");
 		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 		
+		gui.setProgressBarMessage("Ready to write XLS file..");
+		
+		this.exprotTaggedOnly = exportTaggedOnly;
+		
+	}
+	
+	public BigXlsExporter(SpatioTemporalGraph stGraph, boolean exportTaggedOnly, Sequence sequence){
+		
+		this.stGraph = stGraph;
+		
+		new AnnounceFrame("XLS-Export: Computing voronoi tesselation..",5);
+		voronoiTesselation = new VoronoiGenerator(stGraph,sequence).getNodeVoroniMapping();
+		
+		new AnnounceFrame("XLS-Export: Computing ellipse fitting..",5);
+		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
+		
+		this.exprotTaggedOnly = exportTaggedOnly;
+		
 	}
 	
 	private void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		
 		int row_no = 0;
 		int col_no = 0;
-		
+
+		if(exprotTaggedOnly)
+			XLSUtil.setCellString(sheet, col_no++, row_no, "colorTag");
+
 		XLSUtil.setCellString(sheet, col_no++, row_no, "id");
 		XLSUtil.setCellString(sheet, col_no++, row_no, "x");
 		XLSUtil.setCellString(sheet, col_no++, row_no, "y");
@@ -104,14 +129,25 @@ public class BigXlsExporter {
 		XLSUtil.setCellString(sheet, col_no++, row_no, "hasObservedElimination"); 	//redundant
 		XLSUtil.setCellString(sheet, col_no++, row_no, "eliminationTime"); 			//redundant
 		XLSUtil.setCellString(sheet, col_no++, row_no, "onSegmentationBoundary");
-
+		
+		row_no++;
 		for(Node node: frame.vertexSet()){
-			//increase row and reset column
-			row_no++;
+			//reset column
 			col_no = 0;
+
+			if(exprotTaggedOnly){
+				if(node.hasColorTag()){
+					String colorTag = CellMarkerOverlay.getColorName(node.getColorTag());
+					XLSUtil.setCellString(sheet, col_no++, row_no, colorTag);
+				}
+				else
+					continue;
+			}
 			
 			//position
 			XLSUtil.setCellNumber(sheet, col_no++, row_no, node.getTrackID());
+			
+			
 			XLSUtil.setCellNumber(sheet, col_no++, row_no, node.getCentroid().getX());
 			XLSUtil.setCellNumber(sheet, col_no++, row_no, node.getCentroid().getY());
 			
@@ -152,6 +188,8 @@ public class BigXlsExporter {
 			String booleanString = String.valueOf(node.onBoundary()).toUpperCase();
 			XLSUtil.setCellString(sheet, col_no++, row_no, booleanString);
 			
+			//increase row
+			row_no++;
 		}
 	}
 	

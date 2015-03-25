@@ -14,6 +14,7 @@ import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
+import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
@@ -29,6 +30,7 @@ public class CellExport extends EzPlug {
 //	private EzVarFile varSaveSkeleton;
 	private EzVarEnum<ExportEnum> varExport;
 	private EzVarSequence varSequence;
+	private EzVarBoolean varTagExport;
 //	private EzVarEnum<ExportFieldType> varExportType;
 //	private EzVarInteger varFrameNo;
 	
@@ -41,8 +43,10 @@ public class CellExport extends EzPlug {
 		
 		varExport = new EzVarEnum<ExportEnum>(
 				"Export Format", ExportEnum.values());
+		varTagExport = new EzVarBoolean("Only Tagged Cells", false);
 		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
-				varExport);
+				varExport,
+				varTagExport);
 		addEzComponent(groupFormatChoice);
 		
 		varSequence = new EzVarSequence("Sequence");
@@ -90,6 +94,7 @@ public class CellExport extends EzPlug {
 			}
 		});
 		
+		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET_EXPORT);
 //		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
 //		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
 		
@@ -136,7 +141,8 @@ public class CellExport extends EzPlug {
 						break;
 					
 					case SPREADSHEET_EXPORT:
-						BigXlsExporter xlsExporter = new BigXlsExporter(wing_disc_movie, sequence, this.getUI());
+						BigXlsExporter xlsExporter = new BigXlsExporter(wing_disc_movie,
+								varTagExport.getValue(),sequence, this.getUI());
 						xlsExporter.writeXLSFile();
 						break;
 					default:

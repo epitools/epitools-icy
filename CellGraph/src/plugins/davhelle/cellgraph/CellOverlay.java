@@ -383,7 +383,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					case CELL_COLOR_TAG:
 						sequence.addOverlay(
-								new CellMarkerOverlay(wing_disc_movie,varCellColor));
+								new CellMarkerOverlay(wing_disc_movie,varCellColor,sequence));
 						break;
 
 					case CORRECTION_HINTS:

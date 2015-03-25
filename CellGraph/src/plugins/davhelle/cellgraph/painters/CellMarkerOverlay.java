@@ -1,10 +1,12 @@
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
+import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Field;
@@ -12,6 +14,7 @@ import java.util.HashMap;
 
 import jxl.write.WritableSheet;
 import plugins.adufour.ezplug.EzVarEnum;
+import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.CellColor;
@@ -39,6 +42,7 @@ public class CellMarkerOverlay extends StGraphOverlay {
 	private GeometryFactory factory;
 	private EzVarEnum<CellColor> tag_color;
 	private ShapeWriter writer;
+	private Sequence sequence;
 	
 	public static final String DESCRIPTION = 
 			"Overlay to interactively mark cells with a color of choice and export the selection.\n\n" +
@@ -50,11 +54,12 @@ public class CellMarkerOverlay extends StGraphOverlay {
 			"   a spreadsheet with the marked cells.\n" +
 			"6. Remove the overlay (Layer > [x]) to stop";
 	
-	public CellMarkerOverlay(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor) {
+	public CellMarkerOverlay(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor, Sequence sequence) {
 		super("Cell Color Tag",stGraph);
 		this.factory = new GeometryFactory();
 		this.tag_color = varCellColor;
 		this.writer = new ShapeWriter();
+		this.sequence = sequence;
 
 	}
 	
@@ -98,8 +103,14 @@ public class CellMarkerOverlay extends StGraphOverlay {
 	}
 	
 	@Override
+	public void actionPerformed(ActionEvent e) {
+		BigXlsExporter xlsExport = new BigXlsExporter(stGraph, true, sequence);
+		xlsExport.writeXLSFile();
+	}
+	
+	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		
+		//old write out method for simpler file. Keep as reference
 		int color_no = 0;
 		HashMap<Color, Integer> row_no = new HashMap<Color, Integer>();
 		HashMap<Color, Integer> col_no = new HashMap<Color, Integer>();

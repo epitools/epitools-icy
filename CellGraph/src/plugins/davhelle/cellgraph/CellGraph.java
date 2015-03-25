@@ -12,7 +12,7 @@ package plugins.davhelle.cellgraph;
 
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
-import icy.painter.Painter;
+import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
@@ -352,7 +352,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		if(varDoTracking.getValue())
 			applyTracking(wing_disc_movie);
 		else
-			sequence.addPainter(new PolygonOverlay(wing_disc_movie,Color.red));
+			sequence.addOverlay(new PolygonOverlay(wing_disc_movie,Color.red));
 
 		if(varSaveTracking.getValue())
 			saveTracking(wing_disc_movie);
@@ -473,10 +473,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 	}
 
 	private void removeAllPainters() {
-		List<Painter> painters = sequence.getPainters();
-		for (Painter painter : painters) {
-			sequence.removePainter(painter);
-			sequence.painterChanged(painter);    				
+		List<Overlay> overlays = sequence.getOverlays();
+		for (Overlay overlay : overlays) {
+			sequence.removeOverlay(overlay);
+			sequence.overlayChanged(overlay);       				
 		}
 	}
 
@@ -662,17 +662,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 	private void paintTrackingResult(SpatioTemporalGraph wing_disc_movie) {
 		if(varBooleanCellIDs.getValue()){
-			Painter trackID = new TrackIdOverlay(wing_disc_movie);
-			sequence.addPainter(trackID);
+			Overlay trackID = new TrackIdOverlay(wing_disc_movie);
+			sequence.addOverlay(trackID);
 		}
 		
 		if(varBooleanDrawDisplacement.getValue()){
-			Painter displacementSegments = new DisplacementOverlay(wing_disc_movie, varDisplacement.getValue());
-			sequence.addPainter(displacementSegments);
+			Overlay displacementSegments = new DisplacementOverlay(wing_disc_movie, varDisplacement.getValue());
+			sequence.addOverlay(displacementSegments);
 		}
 		
 		if(varBooleanDrawGraphCoherence.getValue()){
-			sequence.addPainter(new GraphCoherenceOverlay(wing_disc_movie));
+			sequence.addOverlay(new GraphCoherenceOverlay(wing_disc_movie));
 		}
 		
 		if(varBooleanLoadDivisions.getValue()){
@@ -680,18 +680,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 			try{
 				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
 				division_reader.assignDivisions();
-				sequence.addPainter(new DivisionOverlay(wing_disc_movie, true,false,true));
+				sequence.addOverlay(new DivisionOverlay(wing_disc_movie, true,false,true));
 			}
 			catch(IOException e){
 				System.out.println("Something went wrong in division reading");
 			}
 			
-			sequence.addPainter(new SiblingPainter(wing_disc_movie));
+			sequence.addOverlay(new SiblingPainter(wing_disc_movie));
 		}
 		else{
 			//Paint corresponding cells in time
 			TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
-			sequence.addPainter(correspondence);
+			sequence.addOverlay(correspondence);
 		}
 	}
 

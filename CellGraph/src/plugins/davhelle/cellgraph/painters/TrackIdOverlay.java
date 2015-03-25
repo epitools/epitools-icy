@@ -67,6 +67,7 @@ public class TrackIdOverlay extends StGraphOverlay{
 			XLSUtil.setCellNumber(sheet, 0, row_no, n.getTrackID());
 			XLSUtil.setCellNumber(sheet, 1, row_no, n.getGeometry().getCentroid().getX());
 			XLSUtil.setCellNumber(sheet, 2, row_no, n.getGeometry().getCentroid().getY());
+			row_no++;
 		}
 	}
 	

@@ -78,7 +78,7 @@ public class BigXlsExporter {
 		this.stGraph = stGraph;
 		
 		gui.setProgressBarMessage("Computing voronoi tesselation..");
-		voronoiTesselation = new VoronoiGenerator(stGraph).getNodeVoroniMapping();
+		voronoiTesselation = new VoronoiGenerator(stGraph,sequence).getNodeVoroniMapping();
 		
 		gui.setProgressBarMessage("Computing ellipse fitting..");
 		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();

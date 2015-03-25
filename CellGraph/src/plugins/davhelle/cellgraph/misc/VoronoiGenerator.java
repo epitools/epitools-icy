@@ -5,6 +5,8 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
+import icy.sequence.Sequence;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,17 +26,20 @@ public class VoronoiGenerator {
 	private Map<Node, Geometry> nodeVoronoiMap;
 	private Map<Node, Double> areaDifferenceMap;
 	
-	public VoronoiGenerator(SpatioTemporalGraph stGraph) {
+	public VoronoiGenerator(SpatioTemporalGraph stGraph, Sequence sequence) {
 		
 		this.nodeVoronoiMap = new HashMap<Node,Geometry>();
 		this.areaDifferenceMap = new HashMap<Node, Double>();
 		
+		System.out.println(sequence.getWidth() + "," + sequence.getHeight());
+		
 		//for every frame
 		for(int i=0; i<stGraph.size(); i++){
 			
+			
 			//Set up JTS Voronoi diagram builder
 			VoronoiDiagramBuilder vdb = new VoronoiDiagramBuilder();
-			vdb.setClipEnvelope(new Envelope(0, 512, 0, 512));
+			vdb.setClipEnvelope(new Envelope(0, sequence.getWidth(), 0, sequence.getHeight()));
 			Collection<Coordinate> coords = new ArrayList<Coordinate>();
 
 			for(Node cell: stGraph.getFrame(i).vertexSet())

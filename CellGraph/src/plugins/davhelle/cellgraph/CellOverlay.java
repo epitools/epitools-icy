@@ -452,7 +452,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 
 	private void voronoiMode(SpatioTemporalGraph wing_disc_movie){
-		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie);
+		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie,sequence);
 	
 		if(varBooleanVoronoiDiagram.getValue()){
 			Overlay voronoiCells = new VoronoiOverlay(

@@ -6,6 +6,7 @@
 
 package plugins.davhelle.cellgraph.painters;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
@@ -31,6 +32,10 @@ import icy.util.XLSUtil;
  * 
  */
 public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
+	
+	public static final String DESCRIPTION = 
+			"Contours in ORANGE only the cells that have been " +
+			"continuously tracked throughout the time lapse";
 	
 	private ArrayList<Node> nodesToBeHighlighted;
 
@@ -135,10 +140,13 @@ public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 	public void paintFrame(Graphics2D g, FrameGraph frame)
 	{
 		g.setColor(Color.orange);
-
+		g.setStroke(new BasicStroke(3));
+		
 		for(Node cell: frame.vertexSet())
 			if(nodesToBeHighlighted.contains(cell.getFirst()))
-				g.fill(cell.toShape());
+				g.draw(cell.toShape());
+		
+		g.setStroke(new BasicStroke(1));
 		
 	}
 
@@ -146,13 +154,16 @@ public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		
 		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
-		XLSUtil.setCellString(sheet, 1, 0, "Cell area");
+		XLSUtil.setCellString(sheet, 1, 0, "Always tracked");
 
 		int row_no = 1;
 		for(Node node: frame.vertexSet()){
 			if(nodesToBeHighlighted.contains(node.getFirst())){
 				XLSUtil.setCellNumber(sheet, 0, row_no, node.getTrackID());
-				XLSUtil.setCellNumber(sheet, 1, row_no, node.getGeometry().getArea());
+				if(nodesToBeHighlighted.contains(node))
+					XLSUtil.setCellString(sheet, 1, row_no, "TRUE");
+				else
+					XLSUtil.setCellString(sheet, 1, row_no, "FALSE");
 				row_no++;
 			}
 		}

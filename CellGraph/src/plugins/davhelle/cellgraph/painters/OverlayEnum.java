@@ -19,7 +19,6 @@ public enum OverlayEnum{
 	
 	//on hold
 	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
-	//ALWAYS_TRACKED_CELLS("Highlights only the cells that have been continuously tracked throughout the time lapse"),
 	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
 
 	TEST("Test Overlay"),
@@ -32,6 +31,7 @@ public enum OverlayEnum{
 	GRAPH_VIEW(GraphOverlay.DESCRIPTION),
 	
 	CELL_TRACKING(TrackingOverlay.DESCRIPTION),
+	ALWAYS_TRACKED_CELLS(AlwaysTrackedCellsOverlay.DESCRIPTION),
 	DIVISIONS_AND_ELIMINATIONS(DivisionOverlay.DESCRIPTION),
 	CORRECTION_HINTS(CorrectionOverlay.DESCRIPTION),
 	CELL_COLOR_TAG(CellMarkerOverlay.DESCRIPTION),

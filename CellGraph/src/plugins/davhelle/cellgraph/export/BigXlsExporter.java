@@ -140,8 +140,19 @@ public class BigXlsExporter {
 					String colorTag = CellMarkerOverlay.getColorName(node.getColorTag());
 					XLSUtil.setCellString(sheet, col_no++, row_no, colorTag);
 				}
-				else
-					continue;
+				else{
+					Node first = node.getFirst();
+					if(first == null)
+						continue;
+					
+					if(first.hasColorTag()){
+						String colorTag = CellMarkerOverlay.getColorName(first.getColorTag());
+						XLSUtil.setCellString(sheet, col_no++, row_no, colorTag);
+					}
+					else{
+						continue;
+					}
+				}
 			}
 			
 			//position

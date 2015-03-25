@@ -406,7 +406,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						sequence.addOverlay(
 								new ElongationRatioOverlay(wing_disc_movie,sequence));
 						break;
-					default:
+					case ALWAYS_TRACKED_CELLS:
+						sequence.addOverlay(
+								new AlwaysTrackedCellsOverlay(wing_disc_movie));
 						break;
 
 					}

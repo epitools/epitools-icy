@@ -2,6 +2,10 @@ package plugins.davhelle.cellgraph.io;
 
 import gnu.jpdf.PDFJob;
 import icy.gui.dialog.SaveDialog;
+import icy.gui.frame.progress.AnnounceFrame;
+import icy.main.Icy;
+import icy.painter.Overlay;
+import icy.sequence.Sequence;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -11,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -22,18 +27,26 @@ import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonClassOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonOverlay;
+import plugins.davhelle.cellgraph.painters.StGraphOverlay;
 
 public class PdfPrinter {
 	
 	public static final String DESCRIPTION = 
-			"Exports a Vector graphic file of the loaded graph structure." +
-			" Currently the polygon-number representation is generated." +
-			" Future option will make the other overlays available.";
+			"Exports a Vector graphic (PDF) file of the loaded graph structure.\n\n" +
+			" Currently the only the selected frame is exported with all" +
+			" overlays which are currently present on it. The underlying" +
+			" bit-map image is not included in the pdf but sets the" +
+			" dimensions of the file.";
 
-	public PdfPrinter(SpatioTemporalGraph stGraph){
+	public PdfPrinter(SpatioTemporalGraph stGraph, Sequence sequence){
+		
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
+		if(time_point < 0 && time_point > stGraph.size())
+			new AnnounceFrame("Time point is not available, please position selected sequence on valid time point",10);
+		
 		String file_name = SaveDialog.chooseFile(
 				"Please choose where to save the PDF transitions image", 
-				"/Users/davide/analysis/",
+				"/Users/davide/",
 				"test_pdf",
 				"");
 		
@@ -51,17 +64,25 @@ public class PdfPrinter {
 			//apply custom format
 			PageFormat format = new PageFormat();
 			Paper paper=format.getPaper();
-			paper.setSize(1392,1040);
+			paper.setSize(sequence.getWidth(),sequence.getHeight());
 			format.setPaper(paper);
 			Graphics2D pdfGraphics = (Graphics2D) job.getGraphics(format);
 			
-			FrameGraph frame0 = stGraph.getFrame(0);
+			FrameGraph frame0 = stGraph.getFrame(time_point);
+			
+			List<Overlay> overlays = sequence.getOverlays();
+			for (Overlay overlay : overlays) {
+				if(overlay instanceof StGraphOverlay){
+					StGraphOverlay stgOverlay = (StGraphOverlay)overlay;
+					stgOverlay.paintFrame(pdfGraphics, frame0);
+				}
+			}
 			
 			//paint
-			new PolygonClassOverlay(stGraph,false,0).paintFrame(pdfGraphics,frame0);
+			//new PolygonClassOverlay(stGraph,false,0).paintFrame(pdfGraphics,frame0);
 			
 			//new DivisionOrientationOverlay(stGraph).paintFrame(pdfGraphics, 0);
-			new PolygonOverlay(stGraph, Color.BLACK).paintFrame(pdfGraphics,frame0);
+			//new PolygonOverlay(stGraph, Color.BLACK).paintFrame(pdfGraphics,frame0);
 			
 			//close
 			pdfGraphics.dispose();

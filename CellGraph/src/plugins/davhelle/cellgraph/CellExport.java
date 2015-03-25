@@ -50,7 +50,7 @@ public class CellExport extends EzPlug {
 				varSequence);
 		addEzComponent(groupSequenceDescription);
 		
-		EzGroup groupPluginDescription = new EzGroup("2. RUN THE PLUGIN",
+		EzGroup groupPluginDescription = new EzGroup("3. RUN THE PLUGIN",
 				new EzLabel("A save dialog will appear"));
 		addEzComponent(groupPluginDescription);
 		
@@ -128,7 +128,7 @@ public class CellExport extends EzPlug {
 //						break;
 
 					case PDF_SCREENSHOT:
-						new PdfPrinter(wing_disc_movie);
+						new PdfPrinter(wing_disc_movie,sequence);
 						break;
 
 					case GRAPHML_EXPORT:

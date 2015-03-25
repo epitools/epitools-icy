@@ -40,7 +40,7 @@ public class DetectDivisionOrientation {
 
 			SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(neo_no);
 			HashMap<Node, EllipseFitter> fittedEllipses = 
-					new EllipseFitGenerator(stGraph).getFittedEllipses();
+					new EllipseFitGenerator(stGraph,1392, 1040).getFittedEllipses();
 
 			//output file
 			StringBuilder elongationCellId = new StringBuilder();

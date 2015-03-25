@@ -313,11 +313,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						break;
 					case ELLIPSE_FIT:
 						sequence.addOverlay(
-								new EllipseFitterOverlay(wing_disc_movie));
+								new EllipseFitterOverlay(wing_disc_movie,sequence));
 						break;
 					case DIVSION_ORIENTATION:
 						sequence.addOverlay(
-								new DivisionOrientationOverlay(wing_disc_movie));
+								new DivisionOrientationOverlay(wing_disc_movie,sequence));
 						break;
 					case SEGMENTATION_BORDER: 
 						sequence.addOverlay(
@@ -400,11 +400,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					case ELLIPSE_FIT_WRT_POINT_ROI:
 						sequence.addOverlay(
-								new EllipseFitColorOverlay(wing_disc_movie));
+								new EllipseFitColorOverlay(wing_disc_movie,sequence));
 						break;
 					case ELONGATION_RATIO:
 						sequence.addOverlay(
-								new ElongationRatioOverlay(wing_disc_movie));
+								new ElongationRatioOverlay(wing_disc_movie,sequence));
 						break;
 					default:
 						break;

@@ -8,6 +8,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
+import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
@@ -72,7 +73,7 @@ public class BigXlsExporter {
 	Map<Node, Geometry> voronoiTesselation;
 	HashMap<Node, EllipseFitter> fittedEllipses;
 
-	public BigXlsExporter(SpatioTemporalGraph stGraph, EzGUI gui){
+	public BigXlsExporter(SpatioTemporalGraph stGraph, Sequence sequence, EzGUI gui){
 		
 		this.stGraph = stGraph;
 		
@@ -80,7 +81,7 @@ public class BigXlsExporter {
 		voronoiTesselation = new VoronoiGenerator(stGraph).getNodeVoroniMapping();
 		
 		gui.setProgressBarMessage("Computing ellipse fitting..");
-		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
+		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 		
 	}
 	

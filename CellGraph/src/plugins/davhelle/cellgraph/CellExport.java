@@ -3,6 +3,7 @@ package plugins.davhelle.cellgraph;
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
+import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarListener;
+import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.export.ExportEnum;
 import plugins.davhelle.cellgraph.export.ExportFieldType;
@@ -26,6 +28,7 @@ public class CellExport extends EzPlug {
 
 //	private EzVarFile varSaveSkeleton;
 	private EzVarEnum<ExportEnum> varExport;
+	private EzVarSequence varSequence;
 //	private EzVarEnum<ExportFieldType> varExportType;
 //	private EzVarInteger varFrameNo;
 	
@@ -41,6 +44,11 @@ public class CellExport extends EzPlug {
 		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
 				varExport);
 		addEzComponent(groupFormatChoice);
+		
+		varSequence = new EzVarSequence("Sequence");
+		EzGroup groupSequenceDescription = new EzGroup("2. SELECT THE CONNECTED SEQUENCE",
+				varSequence);
+		addEzComponent(groupSequenceDescription);
 		
 		EzGroup groupPluginDescription = new EzGroup("2. RUN THE PLUGIN",
 				new EzLabel("A save dialog will appear"));
@@ -95,7 +103,13 @@ public class CellExport extends EzPlug {
 
 	@Override
 	protected void execute() { 
-		//TODO Missing alert for missing stGraph
+		Sequence sequence = varSequence.getValue();
+		
+		if(sequence == null){
+			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
+			return;
+		}
+		
 		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true)){
 			for ( SwimmingObject swimmingObject : 
 				Icy.getMainInterface().getSwimmingPool().getObjects(
@@ -122,7 +136,7 @@ public class CellExport extends EzPlug {
 						break;
 					
 					case SPREADSHEET_EXPORT:
-						BigXlsExporter xlsExporter = new BigXlsExporter(wing_disc_movie, this.getUI());
+						BigXlsExporter xlsExporter = new BigXlsExporter(wing_disc_movie, sequence, this.getUI());
 						xlsExporter.writeXLSFile();
 						break;
 					default:

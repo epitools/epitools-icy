@@ -4,6 +4,7 @@
 package plugins.davhelle.cellgraph.painters;
 
 import headless.DetectDivisionOrientation;
+import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
 
@@ -42,9 +43,9 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 			"perpendicular to the longest axis of the mother cell, the more green the cell the more parallel the new" +
 			"junction is.";
 	
-	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph) {
+	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("Division Orientation",spatioTemporalGraph);
-		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
+		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 		
 		division_orientation = DetectDivisionOrientation.computeDivisionOrientation(
 				stGraph, fittedEllipses);

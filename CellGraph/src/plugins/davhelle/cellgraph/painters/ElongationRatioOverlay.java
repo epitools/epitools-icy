@@ -8,6 +8,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
 
@@ -35,10 +36,10 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 
 	
-	public ElongationRatioOverlay(SpatioTemporalGraph spatioTemporalGraph) {
+	public ElongationRatioOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("EllipseRatio Coloring",spatioTemporalGraph);
 
-		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
+		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 	
 	}
 

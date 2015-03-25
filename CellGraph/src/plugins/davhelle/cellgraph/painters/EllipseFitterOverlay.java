@@ -10,6 +10,7 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
+import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
 
@@ -39,9 +40,9 @@ public class EllipseFitterOverlay extends StGraphOverlay {
 	
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 	
-	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph) {
+	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("Ellipse Fitter",spatioTemporalGraph);
-		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
+		fittedEllipses = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight()).getFittedEllipses();
 	}
 
 	@Override

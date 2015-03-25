@@ -45,10 +45,10 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 	private Coordinate roi_coor;
 	
-	public EllipseFitColorOverlay(SpatioTemporalGraph spatioTemporalGraph) {
+	public EllipseFitColorOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("Ellipse Orientation wrt PointROI",spatioTemporalGraph);
 
-		fittedEllipses = new EllipseFitGenerator(stGraph).getFittedEllipses();
+		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 		
 		//initialize empty
 		roi_coor = null;

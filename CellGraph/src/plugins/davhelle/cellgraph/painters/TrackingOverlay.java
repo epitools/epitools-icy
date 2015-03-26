@@ -31,7 +31,10 @@ public class TrackingOverlay extends StGraphOverlay{
 	public static final String DESCRIPTION = 
 			"Overlay to review the tracking in case the default " +
 			"Overlay has been eliminated or to highlight different aspects\n\n" +
-			"Standard color code:\n" +
+			"The TrackColor that defines uniquely every cell can be used to" +
+			" either outline or fill the cell polygon." +
+			" The additional information is added complementarily.\n\n" +
+			"Additional color codes:\n" +
 			"* [red] cell missing in previous frame\n" +
 			"* [yellow] cell missing in next frame\n" +
 			"* [green] cell missing in previous&next\n" +

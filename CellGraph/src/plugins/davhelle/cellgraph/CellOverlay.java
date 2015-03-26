@@ -427,6 +427,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						sequence.addOverlay(
 								new AlwaysTrackedCellsOverlay(wing_disc_movie));
 						break;
+					default:
+						break;
 
 					}
 

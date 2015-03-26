@@ -222,7 +222,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				"First time point", "/Users/davide/data/");
 		
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
-		varMaxT = new EzVarInteger("Time points to load:",2,1,100,1);
+		varMaxT = new EzVarInteger("Time points to load:",1,1,100,1);
+		varMaxT.setToolTipText("For t > 1 file name pattern [base]001.[ext] is currently required");
 			
 		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Known source", true);
@@ -514,13 +515,19 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 		}
 		
-		FileNameGenerator file_name_generator = new FileNameGenerator(
-				input_file,
-				varInput.getValue(), 
-				varDirectInput.getValue(), 
-				varTool.getValue());
+		//Generate a FrameGraph for each time point/input file
+		int time_points_no = varMaxT.getValue();
 		
-		varFile.setButtonText(file_name_generator.getShortName());
+		//Hack for single files not adopting FileNameGenerator rules
+		FileNameGenerator file_name_generator = null;
+		if(time_points_no != 1 && varTool.getValue() != SegmentationProgram.PackingAnalyzer)
+			file_name_generator = new FileNameGenerator(
+					input_file,
+					varInput.getValue(), 
+					varDirectInput.getValue(), 
+					varTool.getValue());
+			
+		varFile.setButtonText(input_file.getName());
 		
 		//Create FrameGenerator
 		FrameGenerator frame_generator = new FrameGenerator(
@@ -530,13 +537,16 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		this.getUI().setProgressBarMessage("Creating Spatial Graphs...");
 
-		//Generate a FrameGraph for each time point/input file
-		int time_points_no = varMaxT.getValue();
 		for(int i = 0; i< time_points_no; i++){
 			
-			//check existance
-			String abs_path = file_name_generator.getFileName(i);
+			//Hack for single files not adopting FileNameGenerator rules
+			String abs_path = "no_file_selected";
+			if(time_points_no == 1 && varTool.getValue() != SegmentationProgram.PackingAnalyzer)
+				abs_path = input_file.getAbsolutePath();
+			else
+				abs_path = file_name_generator.getFileName(i);
 
+			//check existance
 			try{
 				File current_file = new File(abs_path);
 				if(!current_file.exists())

@@ -18,6 +18,7 @@ import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.CellColor;
+import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -81,15 +82,33 @@ public class CellMarkerOverlay extends StGraphOverlay {
 			 		if(cell.hasColorTag()){
 			 			Color current_tag = cell.getColorTag();
 			 			if(current_tag == new_tag)
-			 				cell.setColorTag(null);
+			 				propagateTag(cell,null);
 			 			else
-			 				cell.setColorTag(new_tag);
+			 				propagateTag(cell,new_tag);
 			 		} else 
-			 			cell.setColorTag(new_tag);
+			 			propagateTag(cell,new_tag);
 			 	}
 			
 		}
 
+	}
+	
+	public void propagateTag(Node n, Color tag){
+		
+		n.setColorTag(tag);
+		
+		while(n.hasNext()){
+			n = n.getNext();
+			n.setColorTag(tag);
+		}
+		
+		if(n.hasObservedDivision()){
+			Division d = n.getDivision();
+			if(d.isMother(n)){
+				propagateTag(d.getChild1(), tag);
+				propagateTag(d.getChild2(), tag);
+			}
+		}
 	}
 	
 	@Override

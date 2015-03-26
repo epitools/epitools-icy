@@ -95,6 +95,9 @@ public class CellMarkerOverlay extends StGraphOverlay {
 	
 	public void propagateTag(Node n, Color tag){
 		
+		if(n.getFirst() != null)
+			n = n.getFirst();
+		
 		n.setColorTag(tag);
 		
 		while(n.hasNext()){

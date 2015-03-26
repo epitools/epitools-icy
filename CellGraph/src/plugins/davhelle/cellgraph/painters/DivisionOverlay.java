@@ -40,7 +40,12 @@ public class DivisionOverlay extends StGraphOverlay {
 	private boolean FILL_CELLS;
 	
 	public static final String DESCRIPTION = 
-			"Highlights the cells that underwent division or elimination during the time lapse";
+			"Highlights the cells that underwent division or elimination during the time lapse.\n\n" +
+			"Color code:\n" +
+			"* [blue] dividing cell\n" +
+			"* [cyan] daughter cell\n" +
+			"* [red] eliminated cell\n" +
+			"* [yellow] dividing cell of which at least one daughter cell is eliminated";
 	
 	public DivisionOverlay(
 			SpatioTemporalGraph stGraph,

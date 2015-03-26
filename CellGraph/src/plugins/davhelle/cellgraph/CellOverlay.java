@@ -166,8 +166,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 
 		//Division mode
-		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions (green)",true);
-		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations (red)",false);
+		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions",true);
+		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations",false);
 		varBooleanFillCells = new EzVarBoolean("Fill cells with color",true);
 		EzGroup groupDivisions = new EzGroup("Overlay elements", 
 				//varBooleanReadDivisions, TODO

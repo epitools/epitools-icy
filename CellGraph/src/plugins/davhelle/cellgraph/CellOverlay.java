@@ -385,6 +385,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						break;
 
 					case CELL_COLOR_TAG:
+						if(sequence.hasOverlay(CellMarkerOverlay.class)){
+							new AnnounceFrame("Only one marker overlay is allowed per sequence");
+							return;
+						}
 						sequence.addOverlay(
 								new CellMarkerOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
 						break;

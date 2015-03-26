@@ -86,7 +86,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//Tracking Mode
 	EzVarBoolean				varBooleanCellIDs;
 	EzVarBoolean				varBooleanHighlightMistakesBoolean;
-	EzVarBoolean 				varBooleanDrawDisplacement;
+	EzVarInteger 				varDisplacementThreshold;
 	
 	EzVarDouble					varAreaThreshold;
 	EzVarDouble					varIntensitySlider;
@@ -181,13 +181,16 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//TrackingMode
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
-		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
-		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
+		varBooleanHighlightMistakesBoolean = new EzVarBoolean("TrackColor [outline/fill]", true);
 		
 		EzGroup groupTracking = new EzGroup("Overlay elements",
 				varBooleanCellIDs,
-				varBooleanDrawDisplacement,
-				varBooleanHighlightMistakesBoolean);
+				varBooleanHighlightMistakesBoolean,
+				varDisplacementThreshold);
+		
+		varDisplacementThreshold = new EzVarInteger("Displacement threshold [x]", 1, 100, 1);
+		EzGroup groupDisplacement = new EzGroup("Overlay elements",
+				varDisplacementThreshold);
 				
 		//CellMarker mode
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
@@ -228,6 +231,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupAreaThreshold,
 				groupDivisions,
 				groupTracking,
+				groupDisplacement,
 				groupMarker,
 				groupTransitions,
 				groupEdgeIntensity
@@ -240,6 +244,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
 		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.CELL_TRACKING);
+		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.CELL_DISPLACEMENT);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
 		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
 		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
@@ -365,8 +370,14 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								wing_disc_movie,
 								varBooleanCellIDs.getValue(),
 								varBooleanHighlightMistakesBoolean.getValue(),
-								varBooleanDrawDisplacement.getValue());
-
+								false);
+						break;
+					case CELL_DISPLACEMENT:
+						trackingMode(
+								wing_disc_movie,
+								varBooleanCellIDs.getValue(),
+								varBooleanHighlightMistakesBoolean.getValue(),
+								true);
 						break;
 					case EDGE_INTENSITY:
 
@@ -433,10 +444,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	 * @param wing_disc_movie
 	 * @param paint_cellID
 	 * @param paint_mistakes
-	 * @param paint_displacement
 	 */
 	private void trackingMode(SpatioTemporalGraph wing_disc_movie,
-			boolean paint_cellID, boolean paint_mistakes, boolean paint_displacement) {
+			boolean paint_cellID, boolean paint_mistakes,boolean paint_displacement) {
 		
 		if(!wing_disc_movie.hasTracking()){
 			new AnnounceFrame("Loaded Graph has not been tracked, cannot paint tracking!");
@@ -449,13 +459,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		}
 		
 		if(paint_displacement){
-			float maximum_displacement = 2;
-			Overlay displacementSegments = new DisplacementOverlay(wing_disc_movie, maximum_displacement);
+			Overlay displacementSegments = new DisplacementOverlay(wing_disc_movie, varDisplacementThreshold.getValue());
 			sequence.addOverlay(displacementSegments);
+		}else{
+			TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
+			sequence.addOverlay(correspondence);
 		}
-		
-		TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
-		sequence.addOverlay(correspondence);
 		
 	}
 

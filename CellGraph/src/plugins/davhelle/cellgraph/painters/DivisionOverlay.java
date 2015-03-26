@@ -24,11 +24,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * over the length of the movie. To solve the ambiguity of cells
  * undergoing both events (i.e. a cell divides and then loses
  * one of the siblings by elimination) a different color scheme
- * is used (see below)
- * 
- * dividing cell - green
- * eliminated cell - red
- * both events - yellow
+ * is used (see final static fields below)
  * 
  * @author Davide Heller
  *
@@ -39,13 +35,18 @@ public class DivisionOverlay extends StGraphOverlay {
 	private boolean PLOT_ELIMINATIONS;
 	private boolean FILL_CELLS;
 	
+	private static final Color DIVIDING_CELL = Color.blue;
+	private static final Color DAUGHTER_CELL = Color.cyan;
+	private static final Color ELIMINATED_CELL = Color.red;
+	private static final Color DIVIDING_AND_ELIMINATED_CELL = Color.magenta;
+	
 	public static final String DESCRIPTION = 
 			"Highlights the cells that underwent division or elimination during the time lapse.\n\n" +
 			"Color code:\n" +
 			"* [blue] dividing cell\n" +
 			"* [cyan] daughter cell\n" +
 			"* [red] eliminated cell\n" +
-			"* [yellow] dividing cell of which at least one daughter cell is eliminated";
+			"* [magenta] dividing & eliminated daughter cell";
 	
 	public DivisionOverlay(
 			SpatioTemporalGraph stGraph,
@@ -69,9 +70,9 @@ public class DivisionOverlay extends StGraphOverlay {
 				if(PLOT_DIVISIONS){
 					if(cell.hasObservedDivision()){
 						if(cell.getDivision().isMother(cell))
-							g.setColor(Color.blue);
+							g.setColor(DIVIDING_CELL);
 						else
-							g.setColor(Color.cyan);
+							g.setColor(DAUGHTER_CELL);
 						
 						if(FILL_CELLS)
 							g.fill(cell.toShape());
@@ -86,7 +87,7 @@ public class DivisionOverlay extends StGraphOverlay {
 						if(cell.getDivision().isMother(cell))
 							if( cell.getDivision().getChild1().hasObservedElimination() ||
 								cell.getDivision().getChild2().hasObservedElimination()){
-								g.setColor(Color.yellow);
+								g.setColor(DIVIDING_AND_ELIMINATED_CELL);
 								
 								if(FILL_CELLS)
 									g.fill(cell.toShape());
@@ -97,9 +98,9 @@ public class DivisionOverlay extends StGraphOverlay {
 					
 					if(cell.hasObservedElimination()){
 						if(PLOT_DIVISIONS && cell.hasObservedDivision())
-							g.setColor(Color.yellow);
+							g.setColor(DIVIDING_AND_ELIMINATED_CELL);
 						else
-							g.setColor(Color.red);
+							g.setColor(ELIMINATED_CELL);
 						
 						if(FILL_CELLS)
 							g.fill(cell.toShape());

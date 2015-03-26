@@ -135,25 +135,13 @@ public class BigXlsExporter {
 			//reset column
 			col_no = 0;
 
-			if(exprotTaggedOnly){
+			if(exprotTaggedOnly)
 				if(node.hasColorTag()){
 					String colorTag = CellMarkerOverlay.getColorName(node.getColorTag());
 					XLSUtil.setCellString(sheet, col_no++, row_no, colorTag);
 				}
-				else{
-					Node first = node.getFirst();
-					if(first == null)
-						continue;
-					
-					if(first.hasColorTag()){
-						String colorTag = CellMarkerOverlay.getColorName(first.getColorTag());
-						XLSUtil.setCellString(sheet, col_no++, row_no, colorTag);
-					}
-					else{
-						continue;
-					}
-				}
-			}
+				else
+					continue;
 			
 			//position
 			XLSUtil.setCellNumber(sheet, col_no++, row_no, node.getTrackID());

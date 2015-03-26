@@ -66,8 +66,8 @@ public class DivisionOverlay extends StGraphOverlay {
 		for(Node cell: frame_i.vertexSet()){
 			if(cell.getFirst() != null){
 				
-				if(PLOT_DIVISIONS)
-					if(cell.getFirst().hasObservedDivision()){
+				if(PLOT_DIVISIONS){
+					if(cell.hasObservedDivision()){
 						if(cell.getDivision().isMother(cell))
 							g.setColor(Color.blue);
 						else
@@ -77,10 +77,26 @@ public class DivisionOverlay extends StGraphOverlay {
 							g.fill(cell.toShape());
 						else
 							g.draw(cell.toShape());	
-					}					
-				if(PLOT_ELIMINATIONS)
-					if(cell.getFirst().hasObservedElimination()){
-						if(PLOT_DIVISIONS && cell.getFirst().hasObservedDivision())
+					}
+				}
+				
+				if(PLOT_ELIMINATIONS){
+					
+					if(PLOT_DIVISIONS && cell.hasObservedDivision()){
+						if(cell.getDivision().isMother(cell))
+							if( cell.getDivision().getChild1().hasObservedElimination() ||
+								cell.getDivision().getChild2().hasObservedElimination()){
+								g.setColor(Color.yellow);
+								
+								if(FILL_CELLS)
+									g.fill(cell.toShape());
+								else
+									g.draw(cell.toShape());
+							}
+					}
+					
+					if(cell.hasObservedElimination()){
+						if(PLOT_DIVISIONS && cell.hasObservedDivision())
 							g.setColor(Color.yellow);
 						else
 							g.setColor(Color.red);
@@ -90,6 +106,7 @@ public class DivisionOverlay extends StGraphOverlay {
 						else
 							g.draw(cell.toShape());
 					}	
+				}
 			}
 		}
 		

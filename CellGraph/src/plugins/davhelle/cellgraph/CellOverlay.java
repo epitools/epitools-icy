@@ -185,8 +185,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		EzGroup groupTracking = new EzGroup("Overlay elements",
 				varBooleanCellIDs,
-				varBooleanHighlightMistakesBoolean,
-				varDisplacementThreshold);
+				varBooleanHighlightMistakesBoolean);
 		
 		varDisplacementThreshold = new EzVarInteger("Displacement threshold [x]", 1, 100, 1);
 		EzGroup groupDisplacement = new EzGroup("Overlay elements",

@@ -39,9 +39,9 @@ public class DisplacementOverlay extends StGraphOverlay {
 
 	public static final String DESCRIPTION = "Overlay to highlight the spatial displacement from one frame to the next.\n\n" +
 			"Displacement Color code:\n" +
-			"* [white] > [x]px displacement from last frame\n" +
-			"* [green] < [x]px displacement from last frame\n" +
-			"* [none] previous frame not available\n";
+			"* [white] cell centroid moves > [x] px\n" +
+			"* [green] cell centroid moves < [x] px\n" +
+			"* [none] next frame info not available\n";
 	
 	GeometryFactory factory;
 	ShapeWriter writer;

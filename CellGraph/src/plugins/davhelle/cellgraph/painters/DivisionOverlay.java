@@ -53,7 +53,7 @@ public class DivisionOverlay extends StGraphOverlay {
 			boolean PLOT_DIVSIONS,
 			boolean PLOT_ELIMINATIONS,
 			boolean FILL_CELLS){
-		super("Divisions (green) and Eliminations (red)",stGraph);
+		super("Divisions and/or Eliminations",stGraph);
 		this.PLOT_DIVISIONS = PLOT_DIVSIONS;
 		this.PLOT_ELIMINATIONS = PLOT_ELIMINATIONS;
 		this.FILL_CELLS = FILL_CELLS;

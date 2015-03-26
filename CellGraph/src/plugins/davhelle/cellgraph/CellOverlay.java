@@ -114,6 +114,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	public EzVarInteger varMinimalTransitionLength;
 	public EzVarInteger varMinimalOldSurvival;
 	private EzVarBoolean varFillingCheckbox;
+	private EzVarBoolean varDrawColorTag;
 
 	@Override
 	protected void initialize() {
@@ -190,8 +191,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				
 		//CellMarker mode
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
+		varDrawColorTag = new EzVarBoolean("Only outline cells", false);
 		EzGroup groupMarker = new EzGroup("Overlay elements",
-				varCellColor);
+				varCellColor,
+				varDrawColorTag);
 
 		//Save transitions
 		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
@@ -383,7 +386,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					case CELL_COLOR_TAG:
 						sequence.addOverlay(
-								new CellMarkerOverlay(wing_disc_movie,varCellColor,sequence));
+								new CellMarkerOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
 						break;
 
 					case CORRECTION_HINTS:

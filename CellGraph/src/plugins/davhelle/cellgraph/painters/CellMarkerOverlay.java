@@ -4,6 +4,7 @@ import icy.canvas.IcyCanvas;
 import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -13,6 +14,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 
 import jxl.write.WritableSheet;
+import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -44,6 +46,7 @@ public class CellMarkerOverlay extends StGraphOverlay {
 	private EzVarEnum<CellColor> tag_color;
 	private ShapeWriter writer;
 	private Sequence sequence;
+	private EzVarBoolean drawColorTag;
 	
 	public static final String DESCRIPTION = 
 			"Overlay to interactively mark cells with a color of choice and export the selection.\n\n" +
@@ -55,12 +58,15 @@ public class CellMarkerOverlay extends StGraphOverlay {
 			"   a spreadsheet with the marked cells.\n" +
 			"6. Remove the overlay (Layer > [x]) to stop";
 	
-	public CellMarkerOverlay(SpatioTemporalGraph stGraph, EzVarEnum<CellColor> varCellColor, Sequence sequence) {
+	public CellMarkerOverlay(SpatioTemporalGraph stGraph, 
+			EzVarEnum<CellColor> varCellColor,
+			EzVarBoolean drawColorTag, Sequence sequence) {
 		super("Cell Color Tag",stGraph);
 		this.factory = new GeometryFactory();
 		this.tag_color = varCellColor;
 		this.writer = new ShapeWriter();
 		this.sequence = sequence;
+		this.drawColorTag = drawColorTag;
 
 	}
 	
@@ -119,7 +125,13 @@ public class CellMarkerOverlay extends StGraphOverlay {
 		for(Node cell: frame_i.vertexSet())
 			if(cell.hasColorTag()){
 				g.setColor(cell.getColorTag());
-				g.fill(writer.toShape(cell.getGeometry()));
+				if(drawColorTag.getValue()){
+					g.setStroke(new BasicStroke(3));
+					g.draw(writer.toShape(cell.getGeometry()));
+					g.setStroke(new BasicStroke(1));
+				} else {
+					g.fill(writer.toShape(cell.getGeometry()));
+				}
 			}
 
 	}

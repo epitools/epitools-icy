@@ -44,7 +44,7 @@ public enum OverlayEnum{
 	ELLIPSE_FIT(EllipseFitterOverlay.DESCRIPTION),
 	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),
 	ELONGATION_RATIO(ElongationRatioOverlay.DESCRIPTION),
-	DIVSION_ORIENTATION(DivisionOrientationOverlay.DESCRIPTION);
+	DIVISION_ORIENTATION(DivisionOrientationOverlay.DESCRIPTION);
 	
 	private String description;
 	private OverlayEnum(String description){this.description = description;}

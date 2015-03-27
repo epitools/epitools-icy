@@ -41,9 +41,12 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 	public static final String DESCRIPTION = "Color codes the dividing cells according to their new junction orientation" +
 			" (Longest axis of mother cell vs New junction). The more red the cells are the more the new junstion is " +
 			"perpendicular to the longest axis of the mother cell, the more green the cell the more parallel the new" +
-			"junction is.";
+			"junction is.\n\n" +
+			"[Detection start] = how many frames before the division should the longest axis be taken\n\n" +
+			"[Detection length]= how many frames should be averaged for the longest axis and the new junction\n";
 	
-	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
+	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence,
+			int detection_distance, int detection_length) {
 		super("Division Orientation",spatioTemporalGraph);
 		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 		
@@ -51,7 +54,7 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 				stGraph, fittedEllipses);
 		
 		division_orientation2 = 
-				new DivisionOrientationFinder(stGraph, fittedEllipses, 11, 5).run();
+				new DivisionOrientationFinder(stGraph, fittedEllipses, detection_distance, detection_length).run();
 		
 	}
 	
@@ -137,12 +140,12 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 						if(division_orientation.containsKey(n.getFirst()))
 							previous_value = division_orientation.get(n.getFirst());
 						
-						g.setColor(newJunctionAngleColor);
-						g.drawString(String.format(
-								"-%d :%.0f,%.0f,%.0f\n",
-								time_to_division,angle,previous_value,current_min_diff), 
-								(float)cX - 5  , 
-								(float)cY + 5);
+//						g.setColor(newJunctionAngleColor);
+//						g.drawString(String.format(
+//								"-%d :%.0f,%.0f,%.0f\n",
+//								time_to_division,angle,previous_value,current_min_diff), 
+//								(float)cX - 5  , 
+//								(float)cY + 5);
 					}
 					//System.out.printf("%.2f\n",n.getDivision().getDivisionOrientation());
 				}

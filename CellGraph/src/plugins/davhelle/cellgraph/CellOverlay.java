@@ -115,6 +115,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	public EzVarInteger varMinimalOldSurvival;
 	private EzVarBoolean varFillingCheckbox;
 	private EzVarBoolean varDrawColorTag;
+	private EzVarInteger varDoDetectionDistance;
+	private EzVarInteger varDoDetectionLength;
 
 	@Override
 	protected void initialize() {
@@ -213,6 +215,13 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varIntensitySlider,
 				varFillingCheckbox);
 		
+		//Division orientation variable
+		varDoDetectionDistance = new EzVarInteger("Detection start",11,1,100,1);
+		varDoDetectionLength = new EzVarInteger("Detection length",5,1,100,1);
+		EzGroup groupDivisionOrientation = new EzGroup("Overlay elements",
+				varDoDetectionDistance,	
+				varDoDetectionLength);
+		
 		//Description label
 		varPlotting.addVarChangeListener(this);
 		varDescriptionLabel = new EzLabel(varPlotting.getValue().getDescription());
@@ -233,7 +242,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupDisplacement,
 				groupMarker,
 				groupTransitions,
-				groupEdgeIntensity
+				groupEdgeIntensity,
+				groupDivisionOrientation
 				
 		);
 		
@@ -248,6 +258,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
 		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
 		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
+		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
 		super.addEzComponent(groupPainters);
 		
 		
@@ -322,9 +333,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						sequence.addOverlay(
 								new EllipseFitterOverlay(wing_disc_movie,sequence));
 						break;
-					case DIVSION_ORIENTATION:
+					case DIVISION_ORIENTATION:
 						sequence.addOverlay(
-								new DivisionOrientationOverlay(wing_disc_movie,sequence));
+								new DivisionOrientationOverlay(wing_disc_movie,sequence,
+										varDoDetectionDistance.getValue(),
+										varDoDetectionLength.getValue()));
 						break;
 					case SEGMENTATION_BORDER: 
 						sequence.addOverlay(

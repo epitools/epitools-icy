@@ -50,7 +50,7 @@ public class TrackingOverlay extends StGraphOverlay{
 	private boolean SHOW_STATISTICS = false;
 
 	public TrackingOverlay(SpatioTemporalGraph stGraph, Boolean highlightMistakes) {
-		super("Cell Tracking",stGraph);
+		super("Cell Tracking Color",stGraph);
 		
 		//Color for each lineage
 		this.correspondence_color = new HashMap<Node,Color>();

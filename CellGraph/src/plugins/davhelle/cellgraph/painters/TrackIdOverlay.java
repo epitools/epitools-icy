@@ -30,7 +30,7 @@ public class TrackIdOverlay extends StGraphOverlay{
 	public static final String DESCRIPTION = "Overlay to paint the track id of each cell";
 	
 	public TrackIdOverlay(SpatioTemporalGraph spatioTemporalGraph){
-		super("Tracking IDs",spatioTemporalGraph);
+		super("Cell Tracking IDs",spatioTemporalGraph);
 		
 	}
 	

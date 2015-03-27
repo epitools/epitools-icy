@@ -54,7 +54,7 @@ public class EllipseFitGenerator {
 		//initialize data structure for using imageJs roi functions
 		//TODO missing flexibility for different image formats
 		ImagePlus imp = NewImage.createByteImage(
-				"New image", 1392, 1040, 1, NewImage.FILL_BLACK);
+				"New image", imgWidth, imgHeight, 1, NewImage.FILL_BLACK);
 		ImageProcessor ip = imp.getProcessor();
 		
 		//Compute fitted ellipses for all cells in stGraph

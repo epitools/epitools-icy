@@ -10,19 +10,13 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
-import gnu.jpdf.PDFJob;
 import headless.DetectT1Transition;
 import icy.gui.dialog.SaveDialog;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
-import java.awt.print.PageFormat;
-import java.awt.print.Paper;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -204,47 +198,6 @@ public class TransitionOverlay extends StGraphOverlay{
 			}				
 		}
 		return first_edge;
-	}
-	
-	public void saveToPdf(){
-		
-		String file_name = SaveDialog.chooseFile(
-				"Please choose where to save the PDF transitions image", 
-				"/Users/davide/analysis/",
-				"t1_transitions.pdf",
-				"");
-		
-		//PDF generation	
-		try {
-			
-			//open
-			FileOutputStream fileOutputStream;
-			fileOutputStream = new FileOutputStream(new File(file_name));
-			PDFJob job = new PDFJob(fileOutputStream);
-			
-			//apply custom format
-			PageFormat format = new PageFormat();
-			Paper paper=format.getPaper();
-			paper.setSize(1392,1040);
-			format.setPaper(paper);
-			Graphics2D pdfGraphics = (Graphics2D) job.getGraphics(format);
-			
-			//paint
-			FrameGraph frame0 = stGraph.getFrame(0);
-			new PolygonOverlay(stGraph, Color.BLACK).paintFrame(pdfGraphics, frame0);
-			this.paintFrame(pdfGraphics,frame0);
-			
-			//close
-			pdfGraphics.dispose();
-			job.end();
-			fileOutputStream.close();
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 	}
 	
 

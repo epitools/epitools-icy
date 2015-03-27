@@ -5,25 +5,27 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
+import icy.canvas.IcyCanvas;
+import icy.gui.dialog.OpenDialog;
+import icy.main.Icy;
+import icy.painter.Overlay;
+import icy.sequence.Sequence;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Node;
+import au.com.bytecode.opencsv.CSVReader;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
-
-import au.com.bytecode.opencsv.CSVReader;
-import icy.canvas.IcyCanvas;
-import icy.gui.dialog.LoadDialog;
-import icy.main.Icy;
-import icy.painter.AbstractPainter;
-import icy.sequence.Sequence;
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
-import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
  * CSV File reader to add the division information to cells from
@@ -34,17 +36,19 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class DivisionReader extends AbstractPainter{
+public class DivisionReader extends Overlay{
 	
 	private SpatioTemporalGraph stGraph;
 	HashMap<Integer,ArrayList<Point>> division_map;
 
 	public DivisionReader(SpatioTemporalGraph spatioTemporalGraph) throws IOException {
 		
+		super("Division Reader");
+		
 		this.stGraph = spatioTemporalGraph;
 		this.division_map = new HashMap<Integer,ArrayList<Point>>();
 		
-		String divisions_file = LoadDialog.chooseFile(
+		String divisions_file = OpenDialog.chooseFile(
 				"Please select division file to load...", 
 				"/Users/davide/Dropbox/Mosaic/davide_mt/2012_05_16",
 				"divisions_2012_05_16", ".xls");
@@ -134,7 +138,7 @@ public class DivisionReader extends AbstractPainter{
 	
 	public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
 	{
-		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getT();
+		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){
 			

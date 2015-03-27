@@ -163,7 +163,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//Which painter should be shown by default
 		varPlotting = new EzVarEnum<OverlayEnum>("Overlay",
-				OverlayEnum.values(),OverlayEnum.CELL_OVERLAY);
+				OverlayEnum.values(),OverlayEnum.CELL_OUTLINE);
 		
 
 		//Division mode
@@ -237,7 +237,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				
 		);
 		
-		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OVERLAY);
+		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
 		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.POLYGON_CLASS);
 		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.VORONOI_DIAGRAM);
 		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
@@ -331,7 +331,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								new BorderOverlay(wing_disc_movie));
 						break;
 
-					case CELL_OVERLAY: 
+					case CELL_OUTLINE: 
 						cellMode(wing_disc_movie);
 						break;
 

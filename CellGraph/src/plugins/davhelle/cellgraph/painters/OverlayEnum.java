@@ -22,7 +22,7 @@ public enum OverlayEnum{
 	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
 
 	TEST("Test Overlay"),
-	CELL_OVERLAY(PolygonOverlay.DESCRIPTION),
+	CELL_OUTLINE(PolygonOverlay.DESCRIPTION),
 	CELL_AREA(AreaGradientOverlay.DESCRIPTION),
 	SEGMENTATION_BORDER(BorderOverlay.DESCRIPTION), 
 	

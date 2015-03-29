@@ -41,14 +41,19 @@ public class PdfPrinter {
 	public PdfPrinter(SpatioTemporalGraph stGraph, Sequence sequence){
 		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
-		if(time_point < 0 && time_point > stGraph.size())
+		if(time_point < 0 || time_point >= stGraph.size()){
 			new AnnounceFrame("Time point is not available, please position selected sequence on valid time point",10);
+			return;
+		}
 		
 		String file_name = SaveDialog.chooseFile(
 				"Please choose where to save the PDF transitions image", 
 				"/Users/davide/",
 				"test_pdf",
 				"");
+		
+		if(file_name == null)
+			return;
 		
 		//PDF generation	
 		try {

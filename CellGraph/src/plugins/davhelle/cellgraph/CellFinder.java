@@ -25,6 +25,10 @@ public class CellFinder extends EzPlug {
 	
 	@Override
 	protected void initialize() {
+		
+		this.getUI().setRunButtonText("Center viewer on [X,Y]");
+		this.getUI().setParametersIOVisible(false);
+		
 		varSequence = new EzVarSequence("Input sequence");
 		super.addEzComponent(varSequence);
 		

@@ -58,6 +58,9 @@ public class NeoLoader extends EzPlug {
 	@Override
 	protected void initialize() {
 		
+		this.getUI().setRunButtonText("Load Neo");
+		this.getUI().setParametersIOVisible(false);
+		
 		varSequence = new EzVarSequence("Input sequence");
 		super.addEzComponent(varSequence);
 		

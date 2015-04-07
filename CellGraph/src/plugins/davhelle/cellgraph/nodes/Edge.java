@@ -26,6 +26,8 @@ import plugins.davhelle.cellgraph.misc.CantorPairing;
  */
 public class Edge extends DefaultWeightedEdge {
 
+	private static final long serialVersionUID = 1L;
+	
 	//optional geometry field
 	private Geometry geometry;
 	private double value;

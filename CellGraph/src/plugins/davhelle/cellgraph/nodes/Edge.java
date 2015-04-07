@@ -32,7 +32,12 @@ public class Edge extends DefaultWeightedEdge {
 	private Geometry geometry;
 	private double value;
 	private boolean touches_division;
-	private long alternative_track_id;
+	
+	//linking fields
+	private long trackId;
+	private Edge next;
+	private Edge previous;
+	
 	
 	/**
 	 * An Edge For StGraphs
@@ -41,8 +46,9 @@ public class Edge extends DefaultWeightedEdge {
 		this.geometry = null;
 		this.value = -1.0;
 		this.touches_division = false;
-		this.alternative_track_id = -1;
-		// TODO Auto-generated constructor stub
+		this.trackId = -1;
+		this.next = null;
+		this.previous = null;
 	}
 	/**
 	 * @return the value
@@ -66,7 +72,7 @@ public class Edge extends DefaultWeightedEdge {
 	 * @param frame
 	 * @return true if both vertices are tracked. False if either is not tracked <br>or the edge does not belong to the input graph
 	 */
-	public boolean isTracked(FrameGraph frame){
+	public boolean canBeTracked(FrameGraph frame){
 		boolean is_tracked = true;
 		
 		if(!frame.containsEdge(this))
@@ -121,7 +127,9 @@ public class Edge extends DefaultWeightedEdge {
 		int a = source_node.getTrackID();
 		int b = target_node.getTrackID();
 		
-		return computePairCode(a, b);
+		this.trackId = computePairCode(a, b);
+		
+		return trackId;
 		
 	}
 
@@ -196,15 +204,39 @@ public class Edge extends DefaultWeightedEdge {
 	/**
 	 * @return the alternative_track_id
 	 */
-	public long getAlternativeTrackID() {
-		return alternative_track_id;
+	public long getTrackId() {
+		return trackId;
 	}
 	/**
 	 * @param alternative_track_id the alternative_track_id to set
 	 */
-	public void setAlternativeTrackID(long alternative_track_id) {
-		this.alternative_track_id = alternative_track_id;
+	public void setTrackId(long alternative_track_id) {
+		this.trackId = alternative_track_id;
 	}
-
+	
+	/**
+	 * @return the next
+	 */
+	public Edge getNext() {
+		return next;
+	}
+	/**
+	 * @param next the next to set
+	 */
+	public void setNext(Edge next) {
+		this.next = next;
+	}
+	/**
+	 * @return the previous
+	 */
+	public Edge getPrevious() {
+		return previous;
+	}
+	/**
+	 * @param previous the previous to set
+	 */
+	public void setPrevious(Edge previous) {
+		this.previous = previous;
+	}
 
 }

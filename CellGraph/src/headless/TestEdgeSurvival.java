@@ -52,7 +52,7 @@ public class TestEdgeSurvival {
 			FrameGraph frame_i = stGraph.getFrame(i);
 			int no_of_tracked_edges = 0;
 			for(Edge e: frame_i.edgeSet()){
-				if(e.isTracked(frame_i)){
+				if(e.canBeTracked(frame_i)){
 					
 					long edge_track_code = e.getPairCode(frame_i);
 				

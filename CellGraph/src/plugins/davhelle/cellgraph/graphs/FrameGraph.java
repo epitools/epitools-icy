@@ -156,4 +156,26 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 		return !this.file_source.isEmpty();
 	}
 	
+	public boolean hasEdgeTrackId(long track_id){
+		int[] node_ids = Edge.getCodePair(track_id);
+		Node[] nodes = new Node[2];
+		for(int i=0; i<2; i++){
+			if(hasTrackID(node_ids[i]))
+				nodes[i] = getNode(node_ids[i]);
+			else
+				return false;
+		}
+		
+		return this.containsEdge(nodes[0],nodes[1]); 
+	}
+	
+	public Edge getEdgeWithTrackId(long track_id){
+		int[] node_ids = Edge.getCodePair(track_id);
+		Node[] nodes = new Node[2];
+		for(int i=0; i<2; i++)
+			nodes[i] = getNode(node_ids[i]);
+		
+		return this.getEdge(nodes[0], nodes[1]);
+	}
+	
 }

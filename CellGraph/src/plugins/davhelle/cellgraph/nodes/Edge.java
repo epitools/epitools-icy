@@ -11,6 +11,7 @@
 
 package plugins.davhelle.cellgraph.nodes;
 
+import java.awt.Color;
 import java.util.Arrays;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -37,6 +38,8 @@ public class Edge extends DefaultWeightedEdge {
 	private long trackId;
 	private Edge next;
 	private Edge previous;
+
+	private Color colorTag;
 	
 	
 	/**
@@ -49,6 +52,7 @@ public class Edge extends DefaultWeightedEdge {
 		this.trackId = -1;
 		this.next = null;
 		this.previous = null;
+		this.colorTag = null;
 	}
 	/**
 	 * @return the value
@@ -237,6 +241,15 @@ public class Edge extends DefaultWeightedEdge {
 	 */
 	public void setPrevious(Edge previous) {
 		this.previous = previous;
+	}
+	public void setColorTag(Color colorTag) {
+		this.colorTag = colorTag;		
+	}
+	public Color getColorTag() {
+		return colorTag;		
+	}
+	public boolean hasColorTag() {
+		return colorTag != null;		
 	}
 
 }

@@ -38,6 +38,7 @@ import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.EdgeIntensityOverlay;
+import plugins.davhelle.cellgraph.painters.EdgeMarkerOverlay;
 import plugins.davhelle.cellgraph.painters.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
@@ -327,7 +328,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					switch (USER_CHOICE){
 					case TEST:
 						sequence.addOverlay(
-								new AlwaysTrackedCellsOverlay(wing_disc_movie));
+								new EdgeMarkerOverlay(wing_disc_movie));
 						break;
 					case ELLIPSE_FIT:
 						sequence.addOverlay(

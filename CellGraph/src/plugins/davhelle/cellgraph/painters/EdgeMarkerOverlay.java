@@ -54,7 +54,7 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	
 	public void drawEdge(Graphics2D g, Edge e, Color color){
 		g.setColor(color);
-		g.draw(writer.toShape(e.getGeometry()));
+		g.draw(writer.toShape(e.getGeometry().buffer(1.0)));
 	}
 	
 	@Override
@@ -71,30 +71,51 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet()){
 			 	Geometry cellGeometry = cell.getGeometry();
-				if(cellGeometry.contains(point_geometry)){
+				
+			 	//if cell contains click search it's edges
+			 	if(cellGeometry.contains(point_geometry)){
 			 		for(Node neighbor: cell.getNeighbors()){
 			 			Edge edge = frame_i.getEdge(cell, neighbor);
 			 			if(edge.hasColorTag()){
-			 				if(edge.getGeometry().contains(point_geometry)){
+			 				Geometry envelope = edge.getGeometry().buffer(1.0);
+			 				if(envelope.contains(point_geometry)){
 			 					if(edge.getColorTag() == colorTag)
-			 						edge.setColorTag(null);
+			 						propagateTag(edge,null,frame_i);
 			 					else
-			 						edge.setColorTag(colorTag);
+			 						propagateTag(edge,colorTag,frame_i);
 			 				}
 			 			}
 			 			else{
-			 				Geometry intersection = cellGeometry.intersection(neighbor.getGeometry());
+			 				if(!edge.hasGeometry())
+			 					edge.computeGeometry(frame_i);
+			 					
+			 				Geometry intersection = edge.getGeometry();
+			 				
 			 				Geometry envelope = intersection.buffer(1.0);
-			 				if(envelope.contains(point_geometry)){
-			 					edge.setGeometry(envelope);
-			 					edge.setColorTag(colorTag);
-			 				}
+			 				if(envelope.contains(point_geometry))
+			 					propagateTag(edge,colorTag,frame_i);
 			 			}
 			 		}
 			 	}
 			}
 		}
 
+	}
+
+	private void propagateTag(Edge edge, Color colorTag, FrameGraph frame) {
+		edge.setColorTag(colorTag);
+		
+		long edgeTrackId = edge.getPairCode(frame);
+		for(int i=frame.getFrameNo(); i<stGraph.size(); i++){
+			
+			FrameGraph futureFrame = stGraph.getFrame(i);
+			if(futureFrame.hasEdgeTrackId(edgeTrackId)){
+				Edge futureEdge = futureFrame.getEdgeWithTrackId(edgeTrackId);
+				futureEdge.computeGeometry(futureFrame);
+				futureEdge.setColorTag(colorTag);
+			}
+		}
+		
 	}
 
 	/* (non-Javadoc)

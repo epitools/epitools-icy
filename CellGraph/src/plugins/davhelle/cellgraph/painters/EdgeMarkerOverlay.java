@@ -60,6 +60,7 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	@Override
 	public void mouseClick(MouseEvent e, Point2D imagePoint, IcyCanvas canvas){
 		int time_point = canvas.getPositionT();
+		Color colorTag = Color.cyan;
 		
 		if(time_point < stGraph.size()){
 			
@@ -72,14 +73,23 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			 	Geometry cellGeometry = cell.getGeometry();
 				if(cellGeometry.contains(point_geometry)){
 			 		for(Node neighbor: cell.getNeighbors()){
-			 			Geometry intersection = cellGeometry.intersection(neighbor.getGeometry());
-			 			Geometry envelope = intersection.buffer(5.0);
-			 			if(envelope.contains(point_geometry)){
-			 				Edge edge = frame_i.getEdge(cell, neighbor);
-							edge.setGeometry(envelope);
-							edge.setColorTag(Color.cyan);
+			 			Edge edge = frame_i.getEdge(cell, neighbor);
+			 			if(edge.hasColorTag()){
+			 				if(edge.getGeometry().contains(point_geometry)){
+			 					if(edge.getColorTag() == colorTag)
+			 						edge.setColorTag(null);
+			 					else
+			 						edge.setColorTag(colorTag);
+			 				}
 			 			}
-			 				
+			 			else{
+			 				Geometry intersection = cellGeometry.intersection(neighbor.getGeometry());
+			 				Geometry envelope = intersection.buffer(1.0);
+			 				if(envelope.contains(point_geometry)){
+			 					edge.setGeometry(envelope);
+			 					edge.setColorTag(colorTag);
+			 				}
+			 			}
 			 		}
 			 	}
 			}

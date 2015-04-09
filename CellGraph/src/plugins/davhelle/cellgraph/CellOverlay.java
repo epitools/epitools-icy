@@ -328,7 +328,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					switch (USER_CHOICE){
 					case TEST:
 						sequence.addOverlay(
-								new EdgeMarkerOverlay(wing_disc_movie));
+								new EdgeMarkerOverlay(wing_disc_movie,sequence));
 						break;
 					case ELLIPSE_FIT:
 						sequence.addOverlay(

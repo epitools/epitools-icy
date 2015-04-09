@@ -6,6 +6,8 @@ package plugins.davhelle.cellgraph.painters;
 import icy.canvas.IcyCanvas;
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
+import icy.roi.ROIUtil;
+import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
 
@@ -22,6 +24,7 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.misc.ShapeRoi;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -40,13 +43,15 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 
 	private ShapeWriter writer;
 	private GeometryFactory factory;
+	private Sequence sequence;
 	
 	
-	public EdgeMarkerOverlay(SpatioTemporalGraph stGraph) {
+	public EdgeMarkerOverlay(SpatioTemporalGraph stGraph,Sequence sequence) {
 		super("Edge Color Tag", stGraph);
 		
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
+		this.sequence = sequence;
 	}
 
 	/* (non-Javadoc)
@@ -256,52 +261,7 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 				
 			WritableWorkbook wb = XLSUtil.createWorkbook(file_name);
 			
-			
-			String sheetName = String.format("Edge Length");
-			WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
-			int col_no = 0;
-			for(int i=0; i<stGraph.size(); i++){
-				for(Edge edge: stGraph.getFrame(i).edgeSet()){
-					if(edge.hasColorTag()){
-						
-						//avoid writing the same edge again
-						if(edge.hasPrevious())
-							if(edge.getPrevious().hasColorTag())
-								continue; 
-
-						//Column header: [colorString] [tStart,xStart,yStart]
-						int row_no = 0;
-
-						double xStart = edge.getGeometry().getCentroid().getX();
-						double yStart = edge.getGeometry().getCentroid().getY();
-						int tStart = edge.getFrame().getFrameNo();
-
-						String header = String.format("%s [t%d,x%.0f,y%.0f]",
-								getColorName(edge.getColorTag()),
-								tStart,
-								xStart,
-								yStart);
-						XLSUtil.setCellString(sheet, col_no, row_no, header);
-
-						//For every row write the length of a tagged edge
-						//leave an empty row for a time point where the edge is not present
-						row_no = tStart + 1;
-						XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
-
-						//Fill all linked time points
-						Edge next = edge;
-						while(next.hasNext()){
-							next = next.getNext();
-							row_no = next.getFrame().getFrameNo() + 1;
-							XLSUtil.setCellNumber(sheet, col_no, row_no, next.getGeometry().getLength());
-						}
-
-						//update counter
-						col_no++;
-						
-					}
-				}
-			}
+			writeEdges(wb);
 			
 			XLSUtil.saveAndClose(wb);
 			
@@ -312,6 +272,85 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 		} catch (IOException ioException) {
 			IcyExceptionHandler.showErrorMessage(ioException, true, true);
 		}
+	}
+	
+	/**
+	 * @param wb
+	 */
+	private void writeEdges(WritableWorkbook wb) {
+		String sheetName = String.format("Edge Length");
+		WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
+		
+		String intensitySheetName = "Edge Intensity";
+		WritableSheet intensitySheet = XLSUtil.createNewPage(wb, intensitySheetName);
+		
+		int col_no = 0;
+		for(int i=0; i<stGraph.size(); i++){
+			for(Edge edge: stGraph.getFrame(i).edgeSet()){
+				if(edge.hasColorTag()){
+					
+					//avoid writing the same edge again
+					if(edge.hasPrevious())
+						if(edge.getPrevious().hasColorTag())
+							continue; 
+
+					//Column header: [colorString] [tStart,xStart,yStart]
+					int row_no = 0;
+
+					double xStart = edge.getGeometry().getCentroid().getX();
+					double yStart = edge.getGeometry().getCentroid().getY();
+					int tStart = edge.getFrame().getFrameNo();
+
+					String header = String.format("%s [t%d,x%.0f,y%.0f]",
+							getColorName(edge.getColorTag()),
+							tStart,
+							xStart,
+							yStart);
+					XLSUtil.setCellString(sheet, col_no, row_no, header);
+					XLSUtil.setCellString(intensitySheet, col_no, row_no, header);
+
+					//For every row write the length of a tagged edge
+					//leave an empty row for a time point where the edge is not present
+					row_no = tStart + 1;
+					XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
+
+					double meanIntensity = computeIntensity(edge);
+					XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
+					
+					//Fill all linked time points
+					Edge next = edge;
+					while(next.hasNext()){
+						
+						next = next.getNext();
+						row_no = next.getFrame().getFrameNo() + 1;
+						XLSUtil.setCellNumber(sheet, col_no, row_no, next.getGeometry().getLength());
+						
+						meanIntensity = computeIntensity(next);
+						XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
+						
+					}
+
+					//update counter
+					col_no++;
+					
+				}
+			}
+		}
+	}
+	
+	public double computeIntensity(Edge edge){
+		
+		Geometry envelope = edge.getGeometry().buffer(3.0);
+		
+		ShapeRoi edgeEnvelopeRoi = new ShapeRoi(writer.toShape(envelope));
+		
+		int z=0;
+		int t=edge.getFrame().getFrameNo();
+		int c=0;
+		double envelopeMeanIntenisty = ROIUtil.getMeanIntensity(sequence, edgeEnvelopeRoi, z, t, c);
+
+		return envelopeMeanIntenisty;
+		
 	}
 	
 	/**

@@ -14,6 +14,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
@@ -58,7 +59,8 @@ public class SmallCellRemover {
 		
 		ArrayList<Node> small_cell_list = new ArrayList<Node>();
 		
-		for(Node cell:stGraph.getFrame(time_point).vertexSet())
+		FrameGraph frame = stGraph.getFrame(time_point);
+		for(Node cell:frame.vertexSet())
 			if(cell.getGeometry().getArea() < threshold){
 				small_cell_list.add(cell);
 				
@@ -106,7 +108,8 @@ public class SmallCellRemover {
 						for(Node neighbor: cell.getNeighbors())
 							if(neighbor != max_length_candidate && !max_length_candidate.getNeighbors().contains(neighbor)){
 								//System.out.println("\t\t\t Adding "+neighbor.getCentroid().toText()+" as neighbor");
-								stGraph.getFrame(time_point).addEdge(max_length_candidate, neighbor);
+								Edge newEdge = frame.addEdge(max_length_candidate, neighbor);
+								newEdge.setFrame(frame);
 							}
 
 
@@ -123,7 +126,7 @@ public class SmallCellRemover {
 		//TODO update Graph in terms of neighborhoods?
 		//TODO fuse lost cell with containing/nearby cell? => need criteria for best fusing candidate
 		
-		stGraph.getFrame(time_point).removeAllVertices(small_cell_list);
+		frame.removeAllVertices(small_cell_list);
 		
 		return small_cell_list.size();
 	}

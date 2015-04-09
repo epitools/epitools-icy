@@ -38,6 +38,7 @@ public class Edge extends DefaultWeightedEdge {
 	private long trackId;
 	private Edge next;
 	private Edge previous;
+	private FrameGraph frame;
 
 	private Color colorTag;
 	
@@ -53,6 +54,7 @@ public class Edge extends DefaultWeightedEdge {
 		this.next = null;
 		this.previous = null;
 		this.colorTag = null;
+		this.frame = null;
 	}
 	/**
 	 * @return the value
@@ -264,6 +266,21 @@ public class Edge extends DefaultWeightedEdge {
 	 */
 	public boolean hasPrevious(){
 		return previous != null;
+	}
+	
+	/**
+	 * @return the frame
+	 */
+	public FrameGraph getFrame() {
+		return frame;
+	}
+	
+	/**
+	 * @param frame the frame in which Edge was inserted
+	 */
+	public void setFrame(FrameGraph frame) {
+		if(frame.containsEdge(this))
+			this.frame = frame;
 	}
 
 }

@@ -138,6 +138,7 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 					int t1 = d1.getTimePoint();
 					int t2 = d2.getTimePoint();
 					
+					//always choose the event closest to the current frame
 					if(t1 < t2){
 						if (t2 <= i)
 							futureEdge = findFutureEdge(futureFrame, source, target);
@@ -182,7 +183,12 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	private Edge findFutureEdge(FrameGraph futureFrame, Node dividingCell, Node neighbor) {
 		Division d = dividingCell.getDivision();
 		
+		//if the current time point is prior to the division this event should be ignored
 		if(futureFrame.getFrameNo() < d.getTimePoint())
+			return null;
+		
+		//if the dividing cell is a daughter cell the id change already happened
+		if(!d.isMother(dividingCell))
 			return null;
 		
 		Node child1 = d.getChild1();

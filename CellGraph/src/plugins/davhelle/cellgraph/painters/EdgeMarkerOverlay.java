@@ -127,12 +127,33 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 				futureEdge = futureFrame.getEdgeWithTrackId(edgeTrackId);
 			} else {
 				//did source or target divide? => changing the ids
-				Node target = frame.getEdgeTarget(edge);
-				Node source = frame.getEdgeSource(edge);
+				Node target = oldFrame.getEdgeTarget(oldEdge);
+				Node source = oldFrame.getEdgeSource(oldEdge);
 				
-				if(target.hasObservedDivision())
+				//1. Both cells divide
+				if(target.hasObservedDivision() && source.hasObservedDivision()){
+					Division d1 = target.getDivision();
+					Division d2 = source.getDivision();
+					
+					int t1 = d1.getTimePoint();
+					int t2 = d2.getTimePoint();
+					
+					if(t1 < t2){
+						if (t2 <= i)
+							futureEdge = findFutureEdge(futureFrame, source, target);
+						else if(t1 <= i)
+							futureEdge = findFutureEdge(futureFrame, target, source);
+					} else if (t1 > t2) {
+						if (t1 <= i)
+							futureEdge = findFutureEdge(futureFrame, target, source);
+						else if(t2 <= i)
+							futureEdge = findFutureEdge(futureFrame, source, target);
+					} else  //(t1==t2)
+						continue;
+				}
+				else if(target.hasObservedDivision()) // only target divides
 					futureEdge = findFutureEdge(futureFrame, target, source);
-				else if(source.hasObservedDivision())
+				else if(source.hasObservedDivision()) // only source divides
 					futureEdge = findFutureEdge(futureFrame, source, target);
 			}
 			
@@ -153,18 +174,22 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	}
 
 	/**
-	 * @param futureFrame
-	 * @param target
-	 * @param source
+	 * @param futureFrame the currently analyzed frame
+	 * @param dividingCell the dividing cell in a previous frame
+	 * @param neighbor the neighboring cell in a previous frame
 	 * @return
 	 */
-	private Edge findFutureEdge(FrameGraph futureFrame, Node target, Node source) {
-		Division d = target.getDivision();
+	private Edge findFutureEdge(FrameGraph futureFrame, Node dividingCell, Node neighbor) {
+		Division d = dividingCell.getDivision();
+		
+		if(futureFrame.getFrameNo() < d.getTimePoint())
+			return null;
+		
 		Node child1 = d.getChild1();
 		Node child2 = d.getChild2();
 		
-		long code1 = Edge.computePairCode(child1.getTrackID(), source.getTrackID());
-		long code2 = Edge.computePairCode(child2.getTrackID(), source.getTrackID());
+		long code1 = Edge.computePairCode(child1.getTrackID(), neighbor.getTrackID());
+		long code2 = Edge.computePairCode(child2.getTrackID(), neighbor.getTrackID());
 
 		Edge futureEdge = null;
 		if(futureFrame.hasEdgeTrackId(code1) &&

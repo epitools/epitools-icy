@@ -260,28 +260,32 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			String sheetName = String.format("Edge Length");
 			WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
 			int col_no = 0;
-			int row_no = 0;
 			FrameGraph frame0 = stGraph.getFrame(0);
 			for(Edge edge: frame0.edgeSet()){
 				if(edge.hasColorTag()){
 					
 					//Column header: [colorString] ([EdgeSourceID],[EdgeTargetID])
+					int row_no = 0;
 					String header = getColorName(edge.getColorTag());
 					header += " (" + frame0.getEdgeSource(edge).getTrackID();
 					header += " ," + frame0.getEdgeTarget(edge).getTrackID() + ")";
-					XLSUtil.setCellString(sheet, col_no, row_no++, header);
+					XLSUtil.setCellString(sheet, col_no, row_no, header);
 					
 					//For every row write the length of a tagged edge
-					XLSUtil.setCellNumber(sheet, col_no, row_no++, edge.getGeometry().getLength());
+					//leave an empty row for a time point where the edge is not present
+					row_no = edge.getFrame().getFrameNo() + 1;
+					XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
+					
+					//Fill all linked time points
 					Edge next = edge;
 					while(next.hasNext()){
 						next = next.getNext();
-						XLSUtil.setCellNumber(sheet, col_no, row_no++, next.getGeometry().getLength());
+						row_no = next.getFrame().getFrameNo() + 1;
+						XLSUtil.setCellNumber(sheet, col_no, row_no, next.getGeometry().getLength());
 					}
 					
-					//update counters
+					//update counter
 					col_no++;
-					row_no=0;
 				}
 			}
 			

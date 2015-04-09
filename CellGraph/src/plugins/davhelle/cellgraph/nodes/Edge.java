@@ -251,5 +251,19 @@ public class Edge extends DefaultWeightedEdge {
 	public boolean hasColorTag() {
 		return colorTag != null;		
 	}
+	
+	/**
+	 * @return true if a future reference to the edge exists
+	 */
+	public boolean hasNext(){
+		return next != null;
+	}
+	
+	/**
+	 * @return true if a previous reference to the edge exist
+	 */
+	public boolean hasPrevious(){
+		return previous != null;
+	}
 
 }

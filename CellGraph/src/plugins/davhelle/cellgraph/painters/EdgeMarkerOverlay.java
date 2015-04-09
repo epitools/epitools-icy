@@ -16,23 +16,21 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashMap;
+
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Edge;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
-
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import plugins.davhelle.cellgraph.export.BigXlsExporter;
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.nodes.Edge;
-import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
  * @author Davide Heller
@@ -117,24 +115,80 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	private void propagateTag(Edge edge, Color colorTag, FrameGraph frame) {
 		edge.setColorTag(colorTag);
 		
-		long edgeTrackId = edge.getPairCode(frame);
 		Edge oldEdge = edge;
+		FrameGraph oldFrame = frame;
 		for(int i=frame.getFrameNo(); i<stGraph.size(); i++){
 			
 			FrameGraph futureFrame = stGraph.getFrame(i);
+			long edgeTrackId = oldEdge.getPairCode(oldFrame);
+			Edge futureEdge = null;
+
 			if(futureFrame.hasEdgeTrackId(edgeTrackId)){
-				Edge futureEdge = futureFrame.getEdgeWithTrackId(edgeTrackId);
+				futureEdge = futureFrame.getEdgeWithTrackId(edgeTrackId);
+			} else {
+				//did source or target divide? => changing the ids
+				Node target = frame.getEdgeTarget(edge);
+				Node source = frame.getEdgeSource(edge);
+				
+				if(target.hasObservedDivision())
+					futureEdge = findFutureEdge(futureFrame, target, source);
+				else if(source.hasObservedDivision())
+					futureEdge = findFutureEdge(futureFrame, source, target);
+			}
+			
+			if(futureEdge != null){
+				//set
 				futureEdge.computeGeometry(futureFrame);
 				futureEdge.setColorTag(colorTag);
 				
-				//Linking
+				//link
 				futureEdge.setPrevious(oldEdge);
 				oldEdge.setNext(futureEdge);
+
+				//update
 				oldEdge = futureEdge;
+				oldFrame = futureFrame;
 			}
 		}
-		
 	}
+
+	/**
+	 * @param futureFrame
+	 * @param target
+	 * @param source
+	 * @return
+	 */
+	private Edge findFutureEdge(FrameGraph futureFrame, Node target, Node source) {
+		Division d = target.getDivision();
+		Node child1 = d.getChild1();
+		Node child2 = d.getChild2();
+		
+		long code1 = Edge.computePairCode(child1.getTrackID(), source.getTrackID());
+		long code2 = Edge.computePairCode(child2.getTrackID(), source.getTrackID());
+
+		Edge futureEdge = null;
+		if(futureFrame.hasEdgeTrackId(code1) &&
+				!futureFrame.hasEdgeTrackId(code2)){
+			futureEdge = futureFrame.getEdgeWithTrackId(code1);
+		} 
+		else if(futureFrame.hasEdgeTrackId(code2) &&
+				!futureFrame.hasEdgeTrackId(code1)){
+			futureEdge = futureFrame.getEdgeWithTrackId(code2);
+		}
+		return futureEdge;
+	}
+
+
+	/**
+	 * @param oldEdge
+	 * @param futureEdge
+	 * @return
+	 */
+	private void linkAndUpdate(Edge oldEdge, Edge futureEdge) {
+		futureEdge.setPrevious(oldEdge);
+		oldEdge.setNext(futureEdge);
+		oldEdge = futureEdge;
+	}	
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {

@@ -260,32 +260,42 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			String sheetName = String.format("Edge Length");
 			WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
 			int col_no = 0;
-			FrameGraph frame0 = stGraph.getFrame(0);
-			for(Edge edge: frame0.edgeSet()){
-				if(edge.hasColorTag()){
-					
-					//Column header: [colorString] ([EdgeSourceID],[EdgeTargetID])
-					int row_no = 0;
-					String header = getColorName(edge.getColorTag());
-					header += " (" + frame0.getEdgeSource(edge).getTrackID();
-					header += " ," + frame0.getEdgeTarget(edge).getTrackID() + ")";
-					XLSUtil.setCellString(sheet, col_no, row_no, header);
-					
-					//For every row write the length of a tagged edge
-					//leave an empty row for a time point where the edge is not present
-					row_no = edge.getFrame().getFrameNo() + 1;
-					XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
-					
-					//Fill all linked time points
-					Edge next = edge;
-					while(next.hasNext()){
-						next = next.getNext();
-						row_no = next.getFrame().getFrameNo() + 1;
-						XLSUtil.setCellNumber(sheet, col_no, row_no, next.getGeometry().getLength());
+			for(int i=0; i<stGraph.size(); i++){
+				for(Edge edge: stGraph.getFrame(i).edgeSet()){
+					if(edge.hasColorTag()){
+						if(!edge.hasPrevious()){ //avoid writing the same edge again
+							
+							//Column header: [colorString] [tStart,(xStart,yStart)]
+							int row_no = 0;
+
+							double xStart = edge.getGeometry().getCentroid().getX();
+							double yStart = edge.getGeometry().getCentroid().getY();
+							int tStart = edge.getFrame().getFrameNo();
+
+							String header = String.format("%s [%d,(%.0f,%.0f)]",
+									getColorName(edge.getColorTag()),
+									tStart,
+									xStart,
+									yStart);
+							XLSUtil.setCellString(sheet, col_no, row_no, header);
+
+							//For every row write the length of a tagged edge
+							//leave an empty row for a time point where the edge is not present
+							row_no = tStart + 1;
+							XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
+
+							//Fill all linked time points
+							Edge next = edge;
+							while(next.hasNext()){
+								next = next.getNext();
+								row_no = next.getFrame().getFrameNo() + 1;
+								XLSUtil.setCellNumber(sheet, col_no, row_no, next.getGeometry().getLength());
+							}
+
+							//update counter
+							col_no++;
+						}
 					}
-					
-					//update counter
-					col_no++;
 				}
 			}
 			

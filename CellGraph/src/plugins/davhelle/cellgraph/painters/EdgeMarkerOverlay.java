@@ -86,38 +86,56 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			 	if(cellGeometry.contains(point_geometry)){
 			 		for(Node neighbor: cell.getNeighbors()){
 			 			Edge edge = frame_i.getEdge(cell, neighbor);
-			 			if(edge.hasColorTag()){
-			 				Geometry envelope = edge.getGeometry().buffer(1.0);
-			 				if(envelope.contains(point_geometry)){
+			 			
+			 			//get edge geometry
+			 			if(!edge.hasGeometry())
+			 				edge.computeGeometry(frame_i);
+			 			Geometry intersection = edge.getGeometry();
+			 			Geometry envelope = intersection.buffer(1.0);
+			 			
+			 			//check if click falls into envelope
+			 			if(envelope.contains(point_geometry)){
+			 				if(edge.hasColorTag()){
 			 					if(edge.getColorTag() == colorTag)
-			 						propagateTag(edge,null,frame_i);
+			 						propagateTag(edge,null);
 			 					else
-			 						propagateTag(edge,colorTag,frame_i);
+			 						propagateTag(edge,colorTag);
 			 				}
-			 			}
-			 			else{
-			 				if(!edge.hasGeometry())
-			 					edge.computeGeometry(frame_i);
-			 					
-			 				Geometry intersection = edge.getGeometry();
-			 				
-			 				Geometry envelope = intersection.buffer(1.0);
-			 				if(envelope.contains(point_geometry))
-			 					propagateTag(edge,colorTag,frame_i);
+			 				else
+			 					initializeTag(edge,colorTag,frame_i);
 			 			}
 			 		}
 			 	}
 			}
 		}
-
 	}
 
-	private void propagateTag(Edge edge, Color colorTag, FrameGraph frame) {
+	private void propagateTag(Edge edge, Color colorTag) {
+		//change current edge
+		edge.setColorTag(colorTag);
+		
+		//change previous edges
+		Edge old = edge;
+		while(old.hasPrevious()){
+			old = old.getPrevious();
+			old.setColorTag(colorTag);
+		}
+		
+		//change next edges
+		Edge next = edge;
+		while(next.hasNext()){
+			next = next.getNext();
+			next.setColorTag(colorTag);
+		}
+	}
+
+	private void initializeTag(Edge edge, Color colorTag, FrameGraph frame) {
 		edge.setColorTag(colorTag);
 		
 		Edge oldEdge = edge;
 		FrameGraph oldFrame = frame;
-		for(int i=frame.getFrameNo(); i<stGraph.size(); i++){
+		int nextFrameNo = frame.getFrameNo() + 1;
+		for(int i=nextFrameNo; i<stGraph.size(); i++){
 			
 			FrameGraph futureFrame = stGraph.getFrame(i);
 			long edgeTrackId = oldEdge.getPairCode(oldFrame);

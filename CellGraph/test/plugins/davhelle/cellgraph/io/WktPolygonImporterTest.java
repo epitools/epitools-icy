@@ -35,9 +35,7 @@ public class WktPolygonImporterTest {
 		Assert.assertTrue(test_file.exists(),"Input File does not exist");
 
 		FrameGenerator frame_generator = new FrameGenerator(
-				InputType.WKT,
-				false, 
-				null);
+				InputType.WKT);
 
 		SpatioTemporalGraph stGraph = new TissueEvolution();
 
@@ -84,9 +82,7 @@ public class WktPolygonImporterTest {
 	public static SpatioTemporalGraph loadWtkTestGraph(int file_no) {
 		SpatioTemporalGraph stGraph = new TissueEvolution();
 		FrameGenerator frame_generator = new FrameGenerator(
-				InputType.WKT,
-				false, 
-				null);
+				InputType.WKT);
 
 		//Check file correctness
 		for(int i=0; i < file_no; i++){
@@ -130,9 +126,7 @@ public class WktPolygonImporterTest {
 	public static void loadWktNeo1() {
 		SpatioTemporalGraph stGraph = new TissueEvolution();
 		FrameGenerator frame_generator = new FrameGenerator(
-				InputType.WKT,
-				false, 
-				null);
+				InputType.WKT);
 
 		//Check file correctness
 		for(int i=0; i < 99; i++){

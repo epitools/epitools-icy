@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import plugins.adufour.ezplug.EzButton;
 import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzPlug;
@@ -155,6 +156,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	Sequence sequence;
 	EzVarFolder varWktFolder;
 	EzVarBoolean varSaveWkt;
+	private EzVarBoolean varUsePackingAnalyzer;
 	
 	@Override
 	protected void initialize()
@@ -231,6 +233,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//In case yes, what particular program was used
 		varTool = new EzVarEnum<SegmentationProgram>(
 				"\tSegmentation tool",SegmentationProgram.values(), SegmentationProgram.MatlabLabelOutlines);
+		varUsePackingAnalyzer = new EzVarBoolean("PackingAnalyzer files", false);
 		
 		//Border cut
 		varCutBorder = new EzVarBoolean("Cut one border line",true);
@@ -241,8 +244,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
 		EzGroup inputTypeGroup = new EzGroup("Input parameters",
-				varDirectInput,
-				varTool,
+				//varDirectInput,
+				//varTool,
+				varUsePackingAnalyzer,
 				varCutBorder,
 				varRemoveSmallCells,
 				varAreaThreshold
@@ -515,6 +519,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 		}
 		
+		if(varUsePackingAnalyzer.getValue())
+			varTool.setValue(SegmentationProgram.PackingAnalyzer);
+		
 		//Generate a FrameGraph for each time point/input file
 		int time_points_no = varMaxT.getValue();
 		
@@ -531,9 +538,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Create FrameGenerator
 		FrameGenerator frame_generator = new FrameGenerator(
-				varInput.getValue(),
-				varDirectInput.getValue(), 
-				varTool.getValue());
+				varInput.getValue());
 		
 		this.getUI().setProgressBarMessage("Creating Spatial Graphs...");
 

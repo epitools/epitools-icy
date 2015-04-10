@@ -63,9 +63,7 @@ public class PaintPdfTest {
 		Assert.assertTrue(test_file.exists(),"Input File does not exist");
 
 		FrameGenerator frame_generator = new FrameGenerator(
-				InputType.WKT,
-				false, 
-				null);
+				InputType.WKT);
 		
 		FrameGraph frame = frame_generator.generateFrame(0, test_file_name);
 		

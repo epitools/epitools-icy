@@ -21,7 +21,7 @@ public class SkeletonReaderTest {
 		String file_name = "testData/square_example.tif";
 
 		SkeletonReader reader = 
-				new SkeletonReader(true, SegmentationProgram.MatlabLabelOutlines);
+				new SkeletonReader();
 		ArrayList<Polygon> extracted_polygons = reader.extractPolygons(file_name);
 
 		int true_no_of_cells = 1;
@@ -48,7 +48,7 @@ public class SkeletonReaderTest {
 		String file_name = "testData/nested_example.tiff";
 
 		SkeletonReader reader = 
-				new SkeletonReader(true, SegmentationProgram.MatlabLabelOutlines);
+				new SkeletonReader();
 		ArrayList<Polygon> extracted_polygons = reader.extractPolygons(file_name);
 
 		int true_no_of_cells = 2;
@@ -73,7 +73,7 @@ public class SkeletonReaderTest {
 		String file_name = "testData/cell_tissue_crop.tif";
 
 		SkeletonReader reader = 
-				new SkeletonReader(true, SegmentationProgram.SeedWater);
+				new SkeletonReader();
 		ArrayList<Polygon> extracted_polygons = reader.extractPolygons(file_name);
 		
 		//verify correct no of cells

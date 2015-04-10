@@ -54,7 +54,7 @@ public class CorrectionOverlay extends StGraphOverlay {
 			"* [RED] FP, i.e. over-segmentation\n" + 
 			"* [YELLOW] FN, i.e. under-segmentation\n" +
 			"* Click on any mark to cancel the evidence\n\n"+
-			"Useful in combination with CellEditor. Please not that it must be run on a different sequence than latters [INPUT]" +
+			"Useful in combination with CellEditor. Please note that it must be run on a different sequence than latter's [INPUT]" +
 			" (i.e. to avoid event conflict between the clicking events)";
 	
 	public CorrectionOverlay(SpatioTemporalGraph stGraph) {

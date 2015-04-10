@@ -135,7 +135,7 @@ public class Edge extends DefaultWeightedEdge {
 		
 		//this.trackId = computePairCode(a, b);
 		
-		return trackId;
+		return computePairCode(a, b);
 		
 	}
 

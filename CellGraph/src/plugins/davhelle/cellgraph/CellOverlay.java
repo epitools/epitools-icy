@@ -260,16 +260,16 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		);
 		
 		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
-		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.POLYGON_CLASS);
-		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.VORONOI_DIAGRAM);
+		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.CELL_POLYGON_CLASS);
+		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.CELL_VORONOI_DIAGRAM);
 		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
 		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
-		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.CELL_TRACKING);
-		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.CELL_DISPLACEMENT);
+		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.TRACKING_REVIEW);
+		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.TRACKING_DISPLACEMENT);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
 		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
 		varPlotting.addVisibilityTriggerTo(groupEdgeMarker, OverlayEnum.EDGE_COLOR_TAG);
-		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
+		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.EDGE_T1_TRANSITIONS);
 		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
 		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
 		super.addEzComponent(groupPainters);
@@ -350,7 +350,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 										varDoDetectionDistance.getValue(),
 										varDoDetectionLength.getValue()));
 						break;
-					case SEGMENTATION_BORDER: 
+					case CELL_SEGMENTATION_BORDER: 
 						sequence.addOverlay(
 								new BorderOverlay(wing_disc_movie));
 						break;
@@ -359,7 +359,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						cellMode(wing_disc_movie);
 						break;
 
-					case POLYGON_CLASS: 
+					case CELL_POLYGON_CLASS: 
 						boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
 						int highlight_polygonal_class = varHighlightClass.getValue();
 
@@ -376,7 +376,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						divisionMode(wing_disc_movie);
 						break;
 
-					case VORONOI_DIAGRAM: 
+					case CELL_VORONOI_DIAGRAM: 
 						voronoiMode(wing_disc_movie);
 						break;
 
@@ -387,7 +387,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 										varAreaThreshold));
 						break;
 
-					case CELL_TRACKING:
+					case TRACKING_REVIEW:
 
 						trackingMode(
 								wing_disc_movie,
@@ -395,7 +395,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								varBooleanHighlightMistakesBoolean.getValue(),
 								false);
 						break;
-					case CELL_DISPLACEMENT:
+					case TRACKING_DISPLACEMENT:
 						trackingMode(
 								wing_disc_movie,
 								varBooleanCellIDs.getValue(),
@@ -412,7 +412,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 						break;
 
-					case GRAPH_VIEW:	
+					case CELL_GRAPH_VIEW:	
 						sequence.addOverlay(
 								new GraphOverlay(
 										wing_disc_movie));
@@ -436,11 +436,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								new EdgeMarkerOverlay(wing_disc_movie,varEdgeColor,varEnvelopeBuffer,sequence));
 						break;
 
-					case CORRECTION_HINTS:
+					case TRACKING_CORRECTION_HINTS:
 						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
 						break;
 
-					case T1_TRANSITIONS:
+					case EDGE_T1_TRANSITIONS:
 						sequence.addOverlay(new TransitionOverlay(wing_disc_movie, this));
 						break;
 
@@ -452,11 +452,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						sequence.addOverlay(
 								new EllipseFitColorOverlay(wing_disc_movie,sequence));
 						break;
-					case ELONGATION_RATIO:
+					case ELLIPSE_ELONGATION_RATIO:
 						sequence.addOverlay(
 								new ElongationRatioOverlay(wing_disc_movie,sequence));
 						break;
-					case ALWAYS_TRACKED_CELLS:
+					case TRACKING_STABLE_ONLY:
 						sequence.addOverlay(
 								new AlwaysTrackedCellsOverlay(wing_disc_movie));
 						break;

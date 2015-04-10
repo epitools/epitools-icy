@@ -133,7 +133,7 @@ public class Edge extends DefaultWeightedEdge {
 		int a = source_node.getTrackID();
 		int b = target_node.getTrackID();
 		
-		this.trackId = computePairCode(a, b);
+		//this.trackId = computePairCode(a, b);
 		
 		return trackId;
 		

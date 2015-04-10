@@ -520,7 +520,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Hack for single files not adopting FileNameGenerator rules
 		FileNameGenerator file_name_generator = null;
-		if(time_points_no != 1 && varTool.getValue() != SegmentationProgram.PackingAnalyzer)
+		if(time_points_no != 1 || varTool.getValue() == SegmentationProgram.PackingAnalyzer)
 			file_name_generator = new FileNameGenerator(
 					input_file,
 					varInput.getValue(), 

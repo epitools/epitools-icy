@@ -173,7 +173,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		EzGroup groupInputPrameters = initializeInputGUI();
 		
 		//Tracking GUI
-		varDoTracking = new EzVarBoolean("Apply cell tracking", true);
+		varDoTracking = new EzVarBoolean("    2. CHOOSE IF TO USE CELL TRACKING", false);
 		EzGroup groupTracking = initializeTrackingGUI();
 
 		//Usage of temporary ICY-memory (java object swimming pool)
@@ -243,7 +243,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varAreaThreshold = new EzVarDouble("\tThreshold area [px]", 10, 0, Double.MAX_VALUE, 0.1);
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
-		EzGroup inputTypeGroup = new EzGroup("Input parameters",
+		EzGroup inputTypeGroup = new EzGroup("Optional input parameters",
 				//varDirectInput,
 				//varTool,
 				varUsePackingAnalyzer,
@@ -307,7 +307,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varSaveTracking = new EzVarBoolean("Save track in CSV format",false);
 		varTrackingFolder = new EzVarFolder("Tracking output folder", "");
 		
-		EzGroup groupTracking = new EzGroup("2. SELECT TRACKING ALGORITHM",
+		EzGroup groupTracking = new EzGroup("SELECT TRACKING ALGORITHM",
 				varTrackingAlgorithm,
 				groupTrackingParameters,
 				varLoadFile,

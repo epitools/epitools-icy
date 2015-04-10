@@ -1,6 +1,8 @@
-/**
- * 
- */
+/*=========================================================================
+ *
+ *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
+ *
+ *=========================================================================*/
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
@@ -22,8 +24,11 @@ import java.lang.reflect.Field;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import plugins.adufour.ezplug.EzVarEnum;
+import plugins.adufour.ezplug.EzVarInteger;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.ShapeRoi;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Edge;
@@ -36,19 +41,40 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 /**
+ * Interactive overlay to mark individual edges by clicking actions.
+ * Export allows to extract the length of the tagged edges over time
+ * as well as the intensity.
+ * 
  * @author Davide Heller
  *
  */
 public class EdgeMarkerOverlay extends StGraphOverlay {
 
+	public static final String DESCRIPTION = "Interactive overlay to mark edges/junctions" +
+			" in the graph and follow them over time. See CELL_COLOR_TAG for usage help.\n\n" +
+			" [color]  = color to tag the edge with\n" +
+			" [buffer] = width for intensity measurement\n" +
+			" both options can be changed at runtime.\n\n" +
+			" The XLS export option in the layer panel saves" +
+			" for every selected edge the length over time in the first sheet and the mean" +
+			" intensity of the image underneath the expanded edge geometry. The column" +
+			" header provides a identification for the edge:\n\n" +
+			" [colorString] [tStart,xStart,yStart]";
+	
 	private ShapeWriter writer;
 	private GeometryFactory factory;
 	private Sequence sequence;
+	private EzVarEnum<CellColor> tag_color;
+	private EzVarInteger envelope_buffer;
 	
 	
-	public EdgeMarkerOverlay(SpatioTemporalGraph stGraph,Sequence sequence) {
+	public EdgeMarkerOverlay(SpatioTemporalGraph stGraph,
+			EzVarEnum<CellColor> varEdgeColor,
+			EzVarInteger varEnvelopeBuffer, Sequence sequence) {
 		super("Edge Color Tag", stGraph);
-		
+	
+		this.tag_color = varEdgeColor;
+		this.envelope_buffer = varEnvelopeBuffer;
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
 		this.sequence = sequence;
@@ -69,13 +95,13 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	
 	public void drawEdge(Graphics2D g, Edge e, Color color){
 		g.setColor(color);
-		g.draw(writer.toShape(e.getGeometry().buffer(1.0)));
+		g.draw(writer.toShape(e.getGeometry().buffer(envelope_buffer.getValue())));
 	}
 	
 	@Override
 	public void mouseClick(MouseEvent e, Point2D imagePoint, IcyCanvas canvas){
 		int time_point = canvas.getPositionT();
-		Color colorTag = Color.cyan;
+		Color colorTag = tag_color.getValue().getColor();
 		
 		if(time_point < stGraph.size()){
 			
@@ -230,18 +256,6 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			futureEdge = futureFrame.getEdgeWithTrackId(code2);
 		}
 		return futureEdge;
-	}
-
-
-	/**
-	 * @param oldEdge
-	 * @param futureEdge
-	 * @return
-	 */
-	private void linkAndUpdate(Edge oldEdge, Edge futureEdge) {
-		futureEdge.setPrevious(oldEdge);
-		oldEdge.setNext(futureEdge);
-		oldEdge = futureEdge;
 	}	
 
 	@Override
@@ -275,6 +289,10 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	}
 	
 	/**
+	 * write sheet with edge length and intensities
+	 * 
+	 * Edge header (column): [colorString] [tStart,xStart,yStart]
+	 * 
 	 * @param wb
 	 */
 	private void writeEdges(WritableWorkbook wb) {
@@ -338,9 +356,9 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 		}
 	}
 	
-	public double computeIntensity(Edge edge){
+	private double computeIntensity(Edge edge){
 		
-		Geometry envelope = edge.getGeometry().buffer(3.0);
+		Geometry envelope = edge.getGeometry().buffer(envelope_buffer.getValue());
 		
 		ShapeRoi edgeEnvelopeRoi = new ShapeRoi(writer.toShape(envelope));
 		

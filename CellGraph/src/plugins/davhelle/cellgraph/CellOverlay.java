@@ -118,6 +118,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	private EzVarBoolean varDrawColorTag;
 	private EzVarInteger varDoDetectionDistance;
 	private EzVarInteger varDoDetectionLength;
+	private EzVarEnum<CellColor> varEdgeColor;
+	private EzVarInteger varEnvelopeBuffer;
 
 	@Override
 	protected void initialize() {
@@ -200,6 +202,13 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		EzGroup groupMarker = new EzGroup("Overlay elements",
 				varCellColor,
 				varDrawColorTag);
+		
+		//EdgeMarker mode
+		varEdgeColor = new EzVarEnum<CellColor>("Edge color", CellColor.values(), CellColor.CYAN);
+		varEnvelopeBuffer = new EzVarInteger("Intensity Buffer [px]", 1, 10, 1);
+		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
+				varEdgeColor,
+				varEnvelopeBuffer);
 
 		//Save transitions
 		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
@@ -223,6 +232,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varDoDetectionDistance,	
 				varDoDetectionLength);
 		
+		
 		//Description label
 		varPlotting.addVarChangeListener(this);
 		varDescriptionLabel = new EzLabel(varPlotting.getValue().getDescription());
@@ -242,6 +252,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupTracking,
 				groupDisplacement,
 				groupMarker,
+				groupEdgeMarker,
 				groupTransitions,
 				groupEdgeIntensity,
 				groupDivisionOrientation
@@ -257,6 +268,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.CELL_DISPLACEMENT);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
 		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
+		varPlotting.addVisibilityTriggerTo(groupEdgeMarker, OverlayEnum.EDGE_COLOR_TAG);
 		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.T1_TRANSITIONS);
 		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
 		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
@@ -327,8 +339,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					switch (USER_CHOICE){
 					case TEST:
-						sequence.addOverlay(
-								new EdgeMarkerOverlay(wing_disc_movie,sequence));
 						break;
 					case ELLIPSE_FIT:
 						sequence.addOverlay(
@@ -409,12 +419,21 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						break;
 
 					case CELL_COLOR_TAG:
-						if(sequence.hasOverlay(CellMarkerOverlay.class)){
+						if(sequence.hasOverlay(CellMarkerOverlay.class) || sequence.hasOverlay(EdgeMarkerOverlay.class)){
 							new AnnounceFrame("Only one marker overlay is allowed per sequence");
 							return;
 						}
 						sequence.addOverlay(
 								new CellMarkerOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
+						break;
+						
+					case EDGE_COLOR_TAG:
+						if(sequence.hasOverlay(CellMarkerOverlay.class) || sequence.hasOverlay(EdgeMarkerOverlay.class)){
+							new AnnounceFrame("Only one marker overlay is allowed per sequence");
+							return;
+						}
+						sequence.addOverlay(
+								new EdgeMarkerOverlay(wing_disc_movie,varEdgeColor,varEnvelopeBuffer,sequence));
 						break;
 
 					case CORRECTION_HINTS:

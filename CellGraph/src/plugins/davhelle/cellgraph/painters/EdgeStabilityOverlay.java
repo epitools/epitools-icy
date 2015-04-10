@@ -91,7 +91,7 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 			FrameGraph frame_i = stGraph.getFrame(i);
 			int no_of_tracked_edges = 0;
 			for(Edge e: frame_i.edgeSet()){
-				if(e.isTracked(frame_i)){ //both source and target nodes are tracked in this frame
+				if(e.canBeTracked(frame_i)){ //both source and target nodes are tracked in this frame
 					
 					if(!e.hasGeometry())
 						e.computeGeometry(frame_i); //TODO: put into initial loading / i.e. graph creation
@@ -195,7 +195,7 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 		long division_code = Edge.computePairCode(mother.getTrackID(), other_node.getTrackID());
 		
 		e.setDivision(true);
-		e.setAlternativeTrackID(division_code);
+		e.setTrackId(division_code);
 		return division_code;
 	}
 
@@ -216,7 +216,7 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 			long track_code = e.getPairCode(frame_i);
 			
 			if(e.hasDivision())
-				track_code = e.getAlternativeTrackID();
+				track_code = e.getTrackId();
 			
 			if(stable_set.contains(track_code))
 				drawEdge(g,e,Color.green);

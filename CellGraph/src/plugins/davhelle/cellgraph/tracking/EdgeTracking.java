@@ -56,7 +56,7 @@ public class EdgeTracking {
 			HashMap<Long, boolean[]> tracked_edges) {
 		FrameGraph first_frame = stGraph.getFrame(0);
 		for(Edge e: first_frame.edgeSet())
-			if(e.isTracked(first_frame)){
+			if(e.canBeTracked(first_frame)){
 				long track_code = e.getPairCode(first_frame);
 				tracked_edges.put(track_code, new boolean[stGraph.size()]);
 				tracked_edges.get(track_code)[0] = true;
@@ -68,7 +68,7 @@ public class EdgeTracking {
 			FrameGraph frame_i) {
 		
 		for(Edge e: frame_i.edgeSet())
-			if(e.isTracked(frame_i)){
+			if(e.canBeTracked(frame_i)){
 				long edge_track_code = e.getPairCode(frame_i);
 				if(tracked_edges.containsKey(edge_track_code))
 					tracked_edges.get(edge_track_code)[frame_i.getFrameNo()] = true;

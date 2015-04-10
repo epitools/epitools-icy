@@ -19,6 +19,7 @@ import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.ComparablePolygon;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -177,13 +178,12 @@ public class FrameGenerator {
 					boolean cells_intersect = cached_a.intersects(b.getGeometry());
 					
 					if(cells_intersect){
-						frame.addEdge(a, b);
+						Edge newEdge = frame.addEdge(a, b);
+						newEdge.setFrame(frame);
 					}
-					
 				}
 			}
 		}		
-		
 	}
 			
 

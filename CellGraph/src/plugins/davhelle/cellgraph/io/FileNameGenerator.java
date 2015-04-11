@@ -42,7 +42,7 @@ public class FileNameGenerator {
 		enumeration_start = 0;
 		start_file_no = 0;
 		input_file_name = input_file.getAbsolutePath();
-		point_idx = input_file_name.indexOf('.');
+		point_idx = input_file_name.lastIndexOf('.');
 		
 		//assumption of 3 digit number
 		//TODO: proper number read in (no. represented in 2 digit format...)

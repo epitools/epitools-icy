@@ -154,8 +154,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	
 	//sequence to paint on 
 	Sequence sequence;
-	EzVarFolder varWktFolder;
-	EzVarBoolean varSaveWkt;
 	private EzVarBoolean varUsePackingAnalyzer;
 	
 	@Override
@@ -203,8 +201,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 				TrackEnum.STABLE_MARRIAGE,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
 		
 		//These commands should only be available when the inputType is not wkt
-		varInput.addVisibilityTriggerTo(varSaveWkt,
-				InputType.SKELETON,InputType.VTK_MESH);
 		varInput.addVisibilityTriggerTo(varCutBorder,
 				InputType.SKELETON,InputType.VTK_MESH);
 		
@@ -257,19 +253,14 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varAreaThreshold
 				);
 		
-		//Save skeletons using the well-known-text format (jts)
-		varSaveWkt = new EzVarBoolean("Save files in WKT format",false);
-		varWktFolder = new EzVarFolder("WKT output folder", "");
-		varSaveWkt.addVisibilityTriggerTo(varWktFolder, true);
+
 		
 		EzGroup groupInputPrameters = new EzGroup("1. SELECT MESH INPUT FILES",
 				varInput,
 				varFile, 
 				varMaxT,
 				varUseAdvanceOptions,
-				inputTypeGroup,
-				varSaveWkt,
-				varWktFolder
+				inputTypeGroup
 				);
 		
 		varUseAdvanceOptions.addVisibilityTriggerTo(inputTypeGroup, true);
@@ -352,14 +343,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 			return;
 
 		//Border identification + discard/mark
-		Geometry[] boundaries = applyBorderOptions(wing_disc_movie);
+		applyBorderOptions(wing_disc_movie);
 
 		//Small cell handling, executed after border options 
 		if(varRemoveSmallCells.getValue())
 			new SmallCellRemover(wing_disc_movie).removeCellsBelow(varAreaThreshold.getValue());
-
-		if(varSaveWkt.getValue() && varInput.getValue() != InputType.WKT)
-			saveWktSkeletons(wing_disc_movie, boundaries);
 
 		if(varDoTracking.getValue())
 			applyTracking(wing_disc_movie);
@@ -374,22 +362,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			pushToSwimingPool(wing_disc_movie);	
 	}
 
-	/**
-	 * @param wing_disc_movie
-	 * @param boundaries
-	 */
-	public void saveWktSkeletons(SpatioTemporalGraph wing_disc_movie,
-			Geometry[] boundaries) {
-		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
-		String export_folder = varWktFolder.getValue().getAbsolutePath();
-		
-		for(int i=0; i < wing_disc_movie.size(); i++){
-			wkt_exporter.export(boundaries[i], String.format("%s/border_%03d.wkt",export_folder,i));
-			wkt_exporter.exportFrame(wing_disc_movie.getFrame(i), String.format("%s/skeleton_%03d.wkt",export_folder,i));
-		}
-		
-		System.out.println("Successfully saved Wkt Files to: "+export_folder);
-	}
+
 
 	/**
 	 * Safety checks for wrong GUI input
@@ -404,18 +377,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 			return true;
 		
 		sequence = varSequence.getValue();
-		
-		if(varSaveWkt.getValue()){
-			if(faultyInputCheck(varWktFolder.getValue() == null,
-					"SaveWKT feature requires an ouput directory: please review!"))
-				return true;
-
-			File output_directory = varWktFolder.getValue();
-
-			if(faultyInputCheck(!output_directory.isDirectory(), "Output WKT directory is not valid, please review"))
-				return true;
-
-		}
 		
 		//TODO integrate these into respective classes!
 		if(varDoTracking.getValue()){

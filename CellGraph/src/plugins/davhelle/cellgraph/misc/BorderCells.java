@@ -197,6 +197,8 @@ public class BorderCells{
 			if(cached_boundary.intersects(p))
 				n.setBoundary(true);
 		}
+		
+		frame_i.setBoundary(boundary);
 	}
 
 }

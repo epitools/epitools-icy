@@ -7,7 +7,9 @@ public enum ExportEnum {
 	SPREADSHEET_EXPORT(BigXlsExporter.DESCRIPTION),
 	GRAPHML_EXPORT(GraphExporter.DESCRIPTION),
 	//SAVE_SKELETONS("Saves the imported skeletons with modifications (e.g. small cell removal/border removal) as separate set"),
-	PDF_SCREENSHOT(PdfPrinter.DESCRIPTION);
+	PDF_SCREENSHOT(PdfPrinter.DESCRIPTION),
+	WKT_SKELETONS(""),
+	CSV_TRACKING("");
 	
 	//SAVE_WKT_POLYGONS
 	//SAVE_TRACKING

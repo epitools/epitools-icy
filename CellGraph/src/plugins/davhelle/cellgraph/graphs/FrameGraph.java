@@ -5,20 +5,18 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.graphs;
 
-import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.jgrapht.alg.NeighborIndex;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.ListenableUndirectedGraph;
 import org.jgrapht.graph.ListenableUndirectedWeightedGraph;
 
-import plugins.davhelle.cellgraph.nodes.Cell;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Elimination;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Frame Graph represents the polygonal abstraction of a 
@@ -34,11 +32,14 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 	
+	private static final long serialVersionUID = 1L;
+	
 	private NeighborIndex<Node, Edge> neighborList;
 	private ArrayList<Division> divisions;
 	private ArrayList<Elimination> eliminations;
 	private int frame_no;
-	private String file_source; 
+	private String file_source;
+	private Geometry boundary; 
 	
 	/**
 	 * Constructor builds an empty ListenableUndirectedGraph at first
@@ -58,6 +59,9 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 		//initialize division list
 		this.divisions = new ArrayList<Division>();
 		this.eliminations = new ArrayList<Elimination>();
+		
+		//initialize empty boundary
+		this.boundary = null;
 	}
 	
 	public FrameGraph(){
@@ -177,5 +181,16 @@ public class FrameGraph extends ListenableUndirectedWeightedGraph<Node, Edge> {
 		
 		return this.getEdge(nodes[0], nodes[1]);
 	}
+
+	public void setBoundary(Geometry boundary) {
+		this.boundary = boundary;		
+	}
 	
+	public Geometry getBoundary(){
+		return boundary;
+	}
+	
+	public boolean hasBoundary(){
+		return boundary != null;
+	}
 }

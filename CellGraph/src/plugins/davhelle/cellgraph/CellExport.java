@@ -10,20 +10,25 @@ import java.io.File;
 
 import javax.swing.JSeparator;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
+import plugins.adufour.ezplug.EzVarFolder;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.export.ExportEnum;
 import plugins.davhelle.cellgraph.export.ExportFieldType;
 import plugins.davhelle.cellgraph.export.GraphExporter;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.PdfPrinter;
+import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 
 public class CellExport extends EzPlug {
 
@@ -33,6 +38,9 @@ public class CellExport extends EzPlug {
 	private EzVarBoolean varTagExport;
 //	private EzVarEnum<ExportFieldType> varExportType;
 //	private EzVarInteger varFrameNo;
+	
+	EzVarFolder varWktFolder;
+	EzVarBoolean varSaveWkt;
 	
 	@Override
 	protected void initialize()
@@ -44,10 +52,21 @@ public class CellExport extends EzPlug {
 		varExport = new EzVarEnum<ExportEnum>(
 				"Export Format", ExportEnum.values());
 		varTagExport = new EzVarBoolean("Only Tagged Cells", false);
+		
+		//Save skeletons using the well-known-text format (jts)
+		varSaveWkt = new EzVarBoolean("Save files in WKT format",false);
+		varWktFolder = new EzVarFolder("WKT output folder", "");
+		varSaveWkt.addVisibilityTriggerTo(varWktFolder, true);
+		
 		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
 				varExport,
 				varTagExport);
 		addEzComponent(groupFormatChoice);
+		
+		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET_EXPORT);
+//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
+//		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
+		
 		
 		varSequence = new EzVarSequence("Sequence");
 		EzGroup groupSequenceDescription = new EzGroup("2. SELECT THE CONNECTED SEQUENCE",
@@ -93,10 +112,6 @@ public class CellExport extends EzPlug {
 				varExportDescription.setText(newValue.getDescription());		
 			}
 		});
-		
-		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET_EXPORT);
-//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
-//		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
 		
 	}    
 	
@@ -145,6 +160,8 @@ public class CellExport extends EzPlug {
 								varTagExport.getValue(),sequence, this.getUI());
 						xlsExporter.writeXLSFile();
 						break;
+					case WKT_SKELETONS:
+						saveWktSkeletons(wing_disc_movie);
 					default:
 						break;	
 					}
@@ -176,4 +193,40 @@ public class CellExport extends EzPlug {
 					String.format("%s/frame%03d.xml",base_dir,i));
 
 	}
+	
+	/**
+	 * @param wing_disc_movie
+	 */
+	public void saveWktSkeletons(SpatioTemporalGraph wing_disc_movie) {
+		
+		String folder_name = SaveDialog.chooseFile(
+				"Please select location and enter folder name",
+				"/Users/davide/",
+				"folderName");
+		
+		if(folder_name == null)
+			return;
+		
+		File output_folder = new File(folder_name);
+		if(output_folder.isDirectory()){
+			new AnnounceFrame("Folder already exists, please select new name");
+			return;
+		}else{
+			output_folder.mkdir();
+		}
+			
+		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
+		String export_folder = output_folder.getAbsolutePath();
+		
+		for(int i=0; i < wing_disc_movie.size(); i++){
+			FrameGraph frame_i = wing_disc_movie.getFrame(i);
+			if(frame_i.hasBoundary())
+				wkt_exporter.export(frame_i.getBoundary(), String.format("%s/border_%03d.wkt",export_folder,i));
+			
+			wkt_exporter.exportFrame(frame_i, String.format("%s/skeleton_%03d.wkt",export_folder,i));
+		}
+		
+		System.out.println("Successfully saved Wkt Files to: "+export_folder);
+	}
+	
 }

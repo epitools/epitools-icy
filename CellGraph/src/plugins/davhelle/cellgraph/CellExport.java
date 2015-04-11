@@ -39,9 +39,6 @@ public class CellExport extends EzPlug {
 //	private EzVarEnum<ExportFieldType> varExportType;
 //	private EzVarInteger varFrameNo;
 	
-	EzVarFolder varWktFolder;
-	EzVarBoolean varSaveWkt;
-	
 	@Override
 	protected void initialize()
 	{
@@ -54,9 +51,6 @@ public class CellExport extends EzPlug {
 		varTagExport = new EzVarBoolean("Only Tagged Cells", false);
 		
 		//Save skeletons using the well-known-text format (jts)
-		varSaveWkt = new EzVarBoolean("Save files in WKT format",false);
-		varWktFolder = new EzVarFolder("WKT output folder", "");
-		varSaveWkt.addVisibilityTriggerTo(varWktFolder, true);
 		
 		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
 				varExport,

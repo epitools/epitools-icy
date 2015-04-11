@@ -273,6 +273,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varLambda1 = new EzVarDouble("Min. Distance weight", 1, 0, 10, 0.1);
 		varLambda2 = new EzVarDouble("Overlap Ratio weight", 1, 0, 10, 0.1);
 		
+		varLoadFile = new EzVarFolder("Select csv location", "");
+
 		EzGroup groupTrackingParameters = new EzGroup("Algorithm parameters",
 				varLinkrange,
 				//varDisplacement,

@@ -10,15 +10,12 @@ import java.io.File;
 
 import javax.swing.JSeparator;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
-import plugins.adufour.ezplug.EzVarFolder;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
@@ -27,14 +24,13 @@ import plugins.davhelle.cellgraph.export.ExportFieldType;
 import plugins.davhelle.cellgraph.export.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.PdfPrinter;
+import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 
 public class CellExport extends EzPlug {
 
-//	private EzVarFile varSaveSkeleton;
 	private EzVarEnum<ExportEnum> varExport;
 	private EzVarSequence varSequence;
 	private EzVarBoolean varTagExport;
@@ -50,32 +46,11 @@ public class CellExport extends EzPlug {
 		
 		varExport = new EzVarEnum<ExportEnum>(
 				"Export Format", ExportEnum.values());
+
+		//Spreadsheet option
 		varTagExport = new EzVarBoolean("Only Tagged Cells", false);
 		
-		//Save skeletons using the well-known-text format (jts)
-		
-		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
-				varExport,
-				varTagExport);
-		addEzComponent(groupFormatChoice);
-		
-		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET_EXPORT);
-//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
-//		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
-		
-		
-		varSequence = new EzVarSequence("Sequence");
-		EzGroup groupSequenceDescription = new EzGroup("2. SELECT THE CONNECTED SEQUENCE",
-				varSequence);
-		addEzComponent(groupSequenceDescription);
-		
-		EzGroup groupPluginDescription = new EzGroup("3. RUN THE PLUGIN",
-				new EzLabel("A save dialog will appear"));
-		addEzComponent(groupPluginDescription);
-		
-		addComponent(new JSeparator(JSeparator.VERTICAL));
-		
-//		//Graph Export Mode
+//		//GraphML expert mode [currently not used!]
 //		varExportType = new EzVarEnum<ExportFieldType>("Export", 
 //				ExportFieldType.values(), ExportFieldType.STANDARD);
 //		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
@@ -85,11 +60,28 @@ public class CellExport extends EzPlug {
 //				varFrameNo);
 //		addEzComponent(groupGraphML);
 		
-//		//SAVE_SKELETON mode 
-//		varSaveSkeleton = new EzVarFile("Output File", "");
-//		EzGroup groupSaveSkeleton = new EzGroup(
-//				"Skeleton export options",varSaveSkeleton);
-
+		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
+				varExport,
+				varTagExport);
+		addEzComponent(groupFormatChoice);
+		
+		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET_EXPORT);
+//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
+		
+		//Sequence selection
+		varSequence = new EzVarSequence("Sequence");
+		EzGroup groupSequenceDescription = new EzGroup("2. SELECT THE CONNECTED SEQUENCE",
+				varSequence);
+		addEzComponent(groupSequenceDescription);
+		
+		EzGroup groupPluginDescription = new EzGroup("3. RUN THE PLUGIN",
+				new EzLabel("A save dialog will appear"));
+		addEzComponent(groupPluginDescription);
+		
+		
+		//Export format description
+		addComponent(new JSeparator(JSeparator.VERTICAL));
+		
 		//Use a list to allow multiple exports at ones?
 //		getUI().setActionPanelVisible(true);
 //		String[] data = {"one", "two", "three", "four","Five","Six","Seven","eight"};
@@ -137,11 +129,7 @@ public class CellExport extends EzPlug {
 					ExportEnum USER_CHOICE = varExport.getValue();
 
 					switch (USER_CHOICE){
-
-//					case SAVE_SKELETONS:
-//						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
-//						break;
-
+					
 					case PDF_SCREENSHOT:
 						new PdfPrinter(stGraph,sequence);
 						break;
@@ -155,14 +143,19 @@ public class CellExport extends EzPlug {
 								varTagExport.getValue(),sequence, this.getUI());
 						xlsExporter.writeXLSFile();
 						break;
+						
+					case TIFF_SKELETONS:
+						saveTiffSkeletons(sequence, stGraph);
+						break;
+						
 					case WKT_SKELETONS:
 						saveWktSkeletons(stGraph);
 						break;
+						
 					case CSV_TRACKING:
 						saveCsvTracking(stGraph);
 						break;
-					default:
-						break;	
+						
 					}
 				}
 			}
@@ -172,6 +165,30 @@ public class CellExport extends EzPlug {
 	}
 	
 	/**
+	 * Export 8bit tiff images from the loaded stGraph
+	 * 
+	 * @param sequence
+	 * @param stGraph
+	 */
+	private void saveTiffSkeletons(Sequence sequence, SpatioTemporalGraph stGraph) {
+		
+		String export_folder = chooseFolder();
+		if(export_folder == "")
+			return;
+		
+		SkeletonWriter writer = new SkeletonWriter(sequence);
+		
+		for(int i=0; i < stGraph.size(); i++){
+			FrameGraph frame_i = stGraph.getFrame(i);
+			writer.write(frame_i,String.format("%s/skeleton_%03d.tiff",export_folder,i));
+		}
+	}
+
+
+
+	/**
+	 * Export the graph as collection of xml graph based files, i.e. GraphML
+	 * 
 	 * @param stGraph Spatiotemporal graph to export as GraphML files
 	 */
 	private void graphExportMode(SpatioTemporalGraph stGraph) {
@@ -190,6 +207,8 @@ public class CellExport extends EzPlug {
 	}
 	
 	/**
+	 * Export the graph geometries in Well-known text format
+	 * 
 	 * @param stGraph Spatiotemporal graph to export as WKT files
 	 */
 	private void saveWktSkeletons(SpatioTemporalGraph stGraph) {
@@ -212,6 +231,8 @@ public class CellExport extends EzPlug {
 	}
 	
 	/**
+	 * Export the tracking of the graph structure as CSV format
+	 * 
 	 * @param stGraph Spatiotemporal graph to export as CSV tracking files
 	 */
 	private void saveCsvTracking(SpatioTemporalGraph stGraph) {
@@ -228,6 +249,8 @@ public class CellExport extends EzPlug {
 	}
 	
 	/**
+	 * Prompts a file chooser to specify a name for a new directory where to save the results 
+	 * 
 	 * @return Absolute path of chosen folder or empty string if invalid input
 	 */
 	private String chooseFolder(){

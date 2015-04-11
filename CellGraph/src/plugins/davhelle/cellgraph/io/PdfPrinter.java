@@ -7,7 +7,6 @@ import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
@@ -17,16 +16,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.painters.DivisionOrientationOverlay;
-import plugins.davhelle.cellgraph.painters.DivisionOverlay;
-import plugins.davhelle.cellgraph.painters.EllipseFitColorOverlay;
-import plugins.davhelle.cellgraph.painters.EllipseFitterOverlay;
-import plugins.davhelle.cellgraph.painters.PolygonClassOverlay;
-import plugins.davhelle.cellgraph.painters.PolygonOverlay;
 import plugins.davhelle.cellgraph.painters.StGraphOverlay;
 
 public class PdfPrinter {

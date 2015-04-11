@@ -1,6 +1,5 @@
 package plugins.davhelle.cellgraph;
 
-import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.sequence.Sequence;
@@ -8,6 +7,7 @@ import icy.swimmingPool.SwimmingObject;
 
 import java.io.File;
 
+import javax.swing.JFileChooser;
 import javax.swing.JSeparator;
 
 import plugins.adufour.ezplug.EzGroup;
@@ -22,12 +22,15 @@ import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.export.ExportEnum;
 import plugins.davhelle.cellgraph.export.ExportFieldType;
 import plugins.davhelle.cellgraph.export.GraphExporter;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.PdfPrinter;
+import plugins.davhelle.cellgraph.io.SkeletonWriter;
+import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 
 public class CellExport extends EzPlug {
 
-//	private EzVarFile varSaveSkeleton;
 	private EzVarEnum<ExportEnum> varExport;
 	private EzVarSequence varSequence;
 	private EzVarBoolean varTagExport;
@@ -43,12 +46,29 @@ public class CellExport extends EzPlug {
 		
 		varExport = new EzVarEnum<ExportEnum>(
 				"Export Format", ExportEnum.values());
+
+		//Spreadsheet option
 		varTagExport = new EzVarBoolean("Only Tagged Cells", false);
+		
+//		//GraphML expert mode [currently not used!]
+//		varExportType = new EzVarEnum<ExportFieldType>("Export", 
+//				ExportFieldType.values(), ExportFieldType.STANDARD);
+//		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
+//		
+//		EzGroup groupGraphML = new EzGroup("GraphML export options",
+//				varExportType,
+//				varFrameNo);
+//		addEzComponent(groupGraphML);
+		
 		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
 				varExport,
 				varTagExport);
 		addEzComponent(groupFormatChoice);
 		
+		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET);
+//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
+		
+		//Sequence selection
 		varSequence = new EzVarSequence("Sequence");
 		EzGroup groupSequenceDescription = new EzGroup("2. SELECT THE CONNECTED SEQUENCE",
 				varSequence);
@@ -58,25 +78,11 @@ public class CellExport extends EzPlug {
 				new EzLabel("A save dialog will appear"));
 		addEzComponent(groupPluginDescription);
 		
+		
+		//Export format description
 		addComponent(new JSeparator(JSeparator.VERTICAL));
 		
-////		//Graph Export Mode
-//		varExportType = new EzVarEnum<ExportFieldType>("Export", 
-//				ExportFieldType.values(), ExportFieldType.STANDARD);
-//		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
-//		
-//		EzGroup groupGraphML = new EzGroup("GraphML export options",
-//				varExportType,
-//				varFrameNo);
-//		
-//		addEzComponent(groupGraphML);
-		
-//		//SAVE_SKELETON mode 
-//		varSaveSkeleton = new EzVarFile("Output File", "");
-//		EzGroup groupSaveSkeleton = new EzGroup(
-//				"Skeleton export options",varSaveSkeleton);
-
-		//save one complete excel file
+		//Use a list to allow multiple exports at ones?
 //		getUI().setActionPanelVisible(true);
 //		String[] data = {"one", "two", "three", "four","Five","Six","Seven","eight"};
 //		JList myList = new JList(data);
@@ -93,10 +99,6 @@ public class CellExport extends EzPlug {
 				varExportDescription.setText(newValue.getDescription());		
 			}
 		});
-		
-		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET_EXPORT);
-//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
-//		varExport.addVisibilityTriggerTo(groupSaveSkeleton, ExportEnum.SAVE_SKELETONS);
 		
 	}    
 	
@@ -122,31 +124,38 @@ public class CellExport extends EzPlug {
 
 				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
 
-					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+					SpatioTemporalGraph stGraph = (SpatioTemporalGraph) swimmingObject.getObject();	
 
 					ExportEnum USER_CHOICE = varExport.getValue();
 
 					switch (USER_CHOICE){
-
-//					case SAVE_SKELETONS:
-//						new SkeletonWriter(sequence, wing_disc_movie).write(varSaveSkeleton.getValue(false).getAbsolutePath());
-//						break;
-
+					
 					case PDF_SCREENSHOT:
-						new PdfPrinter(wing_disc_movie,sequence);
+						new PdfPrinter(stGraph,sequence);
 						break;
 
-					case GRAPHML_EXPORT:
-						graphExportMode(wing_disc_movie);
+					case GRAPHML:
+						graphExportMode(stGraph);
 						break;
 					
-					case SPREADSHEET_EXPORT:
-						BigXlsExporter xlsExporter = new BigXlsExporter(wing_disc_movie,
+					case SPREADSHEET:
+						BigXlsExporter xlsExporter = new BigXlsExporter(stGraph,
 								varTagExport.getValue(),sequence, this.getUI());
 						xlsExporter.writeXLSFile();
 						break;
-					default:
-						break;	
+						
+					case TIFF_SKELETONS:
+						saveTiffSkeletons(sequence, stGraph);
+						break;
+						
+					case WKT_SKELETONS:
+						saveWktSkeletons(stGraph);
+						break;
+						
+					case CSV_TRACKING:
+						saveCsvTracking(stGraph);
+						break;
+						
 					}
 				}
 			}
@@ -155,25 +164,110 @@ public class CellExport extends EzPlug {
 			new AnnounceFrame("No spatio temporal graph found in ICYsp, please load a CellGraph first!");
 	}
 	
+	/**
+	 * Export 8bit tiff images from the loaded stGraph
+	 * 
+	 * @param sequence
+	 * @param stGraph
+	 */
+	private void saveTiffSkeletons(Sequence sequence, SpatioTemporalGraph stGraph) {
+		
+		String export_folder = chooseFolder();
+		if(export_folder == "")
+			return;
+		
+		SkeletonWriter writer = new SkeletonWriter(sequence);
+		
+		for(int i=0; i < stGraph.size(); i++){
+			FrameGraph frame_i = stGraph.getFrame(i);
+			writer.write(frame_i,String.format("%s/skeleton_%03d.tiff",export_folder,i));
+		}
+	}
+
+
+
+	/**
+	 * Export the graph as collection of xml graph based files, i.e. GraphML
+	 * 
+	 * @param stGraph Spatiotemporal graph to export as GraphML files
+	 */
 	private void graphExportMode(SpatioTemporalGraph stGraph) {
 
-		String file_name = SaveDialog.chooseFile(
-				"Please enter a folder where to save the graphML xml files",
-				"/Users/davide/",
-				"frame000", ".xml");
-
-		if(file_name == null)
+		String export_folder = chooseFolder();
+		if(export_folder == "")
 			return;
-
-		File output_file = new File(file_name);
-		String base_dir = output_file.getParent();
 		
 		GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
 
 		for(int i=0; i<stGraph.size(); i++)
 			exporter.exportFrame(
 					stGraph.getFrame(i), 
-					String.format("%s/frame%03d.xml",base_dir,i));
+					String.format("%s/frame%03d.xml",export_folder,i));
 
 	}
+	
+	/**
+	 * Export the graph geometries in Well-known text format
+	 * 
+	 * @param stGraph Spatiotemporal graph to export as WKT files
+	 */
+	private void saveWktSkeletons(SpatioTemporalGraph stGraph) {
+		
+		String export_folder = chooseFolder();
+		if(export_folder == "")
+			return;
+			
+		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
+		
+		for(int i=0; i < stGraph.size(); i++){
+			FrameGraph frame_i = stGraph.getFrame(i);
+			if(frame_i.hasBoundary())
+				wkt_exporter.export(frame_i.getBoundary(), String.format("%s/border_%03d.wkt",export_folder,i));
+			
+			wkt_exporter.exportFrame(frame_i, String.format("%s/skeleton_%03d.wkt",export_folder,i));
+		}
+		
+		System.out.println("Successfully saved Wkt Files to: "+export_folder);
+	}
+	
+	/**
+	 * Export the tracking of the graph structure as CSV format
+	 * 
+	 * @param stGraph Spatiotemporal graph to export as CSV tracking files
+	 */
+	private void saveCsvTracking(SpatioTemporalGraph stGraph) {
+		
+		String export_folder = chooseFolder();
+		if(export_folder == "")
+			return;
+		
+		CsvTrackWriter track_writer = new CsvTrackWriter(stGraph,export_folder);
+		track_writer.write();
+		
+		System.out.println("Successfully saved tracking to: "+export_folder);
+		
+	}
+	
+	/**
+	 * Prompts a file chooser to specify a name for a new directory where to save the results 
+	 * 
+	 * @return Absolute path of chosen folder or empty string if invalid input
+	 */
+	private String chooseFolder(){
+		
+		//Choose location of test folder
+		JFileChooser dialog = new JFileChooser();
+		dialog.setDialogTitle("Please choose export folder location");
+		dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+		//Only proceed if the user puts in a valid directory
+		if(dialog.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
+			return "";
+		
+		final File f = dialog.getSelectedFile();
+		
+		return f.getAbsolutePath();
+	}
+
+	
 }

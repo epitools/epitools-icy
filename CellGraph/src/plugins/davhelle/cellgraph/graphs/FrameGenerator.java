@@ -50,30 +50,11 @@ public class FrameGenerator {
 	 * @param is_direct_input true if the files come from a known Segmentation Program
 	 * @param tool Segmentation program used to create the skeletons
 	 */
-	public FrameGenerator(
-			InputType input_type,
-			boolean is_direct_input,
-			SegmentationProgram tool){
+	public FrameGenerator(InputType input_type){
 		
 		switch(input_type){
 		case SKELETON:
-			
-			boolean REDO_SKELETON = false;
-			
-			if(is_direct_input)
-				switch(tool){
-				case MatlabLabelOutlines:
-					REDO_SKELETON = true;
-					break;
-				case PackingAnalyzer:
-					REDO_SKELETON = false;
-					break;
-				case SeedWater:
-					REDO_SKELETON = true;
-					break;
-				}
-			
-			this.polygonReader = new SkeletonReader(REDO_SKELETON, tool);
+			this.polygonReader = new SkeletonReader();
 				
 			break;
 		case VTK_MESH:

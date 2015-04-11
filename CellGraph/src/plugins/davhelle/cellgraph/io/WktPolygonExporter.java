@@ -24,6 +24,13 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class WktPolygonExporter {
 	
+	public static final String DESCRIPTION = 
+			"Export the loaded polygon geometries as Well-Known text (WKT) files." +
+			" The WKT format accelerates significantly" +
+			" the loading process when choosen in CellGraph.\n\n" +
+			" To know more about this format visit:\n " +
+			"en.wikipedia.org/wiki/Well-known_text";
+	
 	private WKTWriter writer;
 	
 	public WktPolygonExporter(){

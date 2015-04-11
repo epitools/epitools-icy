@@ -35,9 +35,7 @@ public class SpatioTemporalGraphGenerator {
 				SegmentationProgram.SeedWater);
 		
 		this.frame_generator = new FrameGenerator(
-				InputType.SKELETON,
-				use_direct_input, 
-				SegmentationProgram.SeedWater);
+				InputType.SKELETON);
 		
 		//check if files exist
 		for(int i=0;i<time_points;i++)
@@ -65,9 +63,7 @@ public class SpatioTemporalGraphGenerator {
 				SegmentationProgram.SeedWater);
 		
 		this.frame_generator = new FrameGenerator(
-				input_type,
-				use_direct_input, 
-				SegmentationProgram.SeedWater);
+				input_type);
 		
 		//check if files exist
 		for(int i=0;i<time_points;i++)

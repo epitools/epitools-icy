@@ -4,23 +4,16 @@
 package plugins.davhelle.cellgraph;
 
 import icy.file.Loader;
-import icy.gui.dialog.LoadDialog;
-import icy.gui.dialog.OpenDialog;
-import icy.gui.dialog.SaveDialog;
 import icy.main.Icy;
 import icy.plugin.abstract_.PluginActionable;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
-import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 
-import com.vividsolutions.jts.geom.Geometry;
-
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
@@ -28,9 +21,10 @@ import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.painters.PolygonOverlay;
 import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Test class to automatically load a test image and the connected graph
@@ -48,8 +42,8 @@ public class TestLoader extends PluginActionable {
 		dialog.setDialogTitle("Please choose [test folder] location");
 		dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
-		//Only proceed if the user put in a valid directory
-		if(dialog.showOpenDialog(null) != dialog.APPROVE_OPTION)
+		//Only proceed if the user puts in a valid directory
+		if(dialog.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
 			return;
 		
 		final File f = dialog.getSelectedFile();

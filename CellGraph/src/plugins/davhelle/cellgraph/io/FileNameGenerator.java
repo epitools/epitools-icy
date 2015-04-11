@@ -54,14 +54,6 @@ public class FileNameGenerator {
 
 	}
 	
-	public int getFrameNo(int i){
-		//difference between file no and frame no, 
-		//as the first might start at 1 while frames always start at 0
-		//in icy-numeration
-		return start_file_no + i;
-	}
-	
-	
 	public String getFileName(int i){
 		
 		int file_no = start_file_no + i;

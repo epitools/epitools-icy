@@ -255,7 +255,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 
 		
-		EzGroup groupInputPrameters = new EzGroup("1. SELECT MESH INPUT FILES",
+		EzGroup groupInputPrameters = new EzGroup("1. SELECT INPUT FILES",
 				varInput,
 				varFile, 
 				varMaxT,

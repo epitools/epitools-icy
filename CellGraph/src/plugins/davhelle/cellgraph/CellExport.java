@@ -1,6 +1,5 @@
 package plugins.davhelle.cellgraph;
 
-import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.sequence.Sequence;
@@ -8,6 +7,7 @@ import icy.swimmingPool.SwimmingObject;
 
 import java.io.File;
 
+import javax.swing.JFileChooser;
 import javax.swing.JSeparator;
 
 import plugins.adufour.ezplug.EzGroup;
@@ -65,7 +65,7 @@ public class CellExport extends EzPlug {
 				varTagExport);
 		addEzComponent(groupFormatChoice);
 		
-		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET_EXPORT);
+		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET);
 //		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
 		
 		//Sequence selection
@@ -134,11 +134,11 @@ public class CellExport extends EzPlug {
 						new PdfPrinter(stGraph,sequence);
 						break;
 
-					case GRAPHML_EXPORT:
+					case GRAPHML:
 						graphExportMode(stGraph);
 						break;
 					
-					case SPREADSHEET_EXPORT:
+					case SPREADSHEET:
 						BigXlsExporter xlsExporter = new BigXlsExporter(stGraph,
 								varTagExport.getValue(),sequence, this.getUI());
 						xlsExporter.writeXLSFile();
@@ -254,23 +254,19 @@ public class CellExport extends EzPlug {
 	 * @return Absolute path of chosen folder or empty string if invalid input
 	 */
 	private String chooseFolder(){
-		String folder_name = SaveDialog.chooseFile(
-				"Please select location and name of the folder where to export",
-				"/Users/davide/",
-				"newFolderName");
 		
-		if(folder_name == null)
+		//Choose location of test folder
+		JFileChooser dialog = new JFileChooser();
+		dialog.setDialogTitle("Please choose export folder location");
+		dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+		//Only proceed if the user puts in a valid directory
+		if(dialog.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
 			return "";
 		
-		File output_folder = new File(folder_name);
-		if(output_folder.isDirectory()){
-			new AnnounceFrame("Folder already exists, please select another name");
-			return "";
-		}else{
-			output_folder.mkdir();
-		}
+		final File f = dialog.getSelectedFile();
 		
-		return output_folder.getAbsolutePath();
+		return f.getAbsolutePath();
 	}
 
 	

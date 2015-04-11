@@ -7,8 +7,8 @@ import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 
 public enum ExportEnum {
 	
-	SPREADSHEET_EXPORT(BigXlsExporter.DESCRIPTION),
-	GRAPHML_EXPORT(GraphExporter.DESCRIPTION),
+	SPREADSHEET(BigXlsExporter.DESCRIPTION),
+	GRAPHML(GraphExporter.DESCRIPTION),
 	PDF_SCREENSHOT(PdfPrinter.DESCRIPTION),
 	TIFF_SKELETONS(SkeletonWriter.DESCRIPTION),
 	WKT_SKELETONS(WktPolygonExporter.DESCRIPTION),

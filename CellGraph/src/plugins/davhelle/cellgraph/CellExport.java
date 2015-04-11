@@ -27,6 +27,8 @@ import plugins.davhelle.cellgraph.export.ExportFieldType;
 import plugins.davhelle.cellgraph.export.GraphExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.graphs.TissueEvolution;
+import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 
@@ -73,7 +75,7 @@ public class CellExport extends EzPlug {
 		
 		addComponent(new JSeparator(JSeparator.VERTICAL));
 		
-////		//Graph Export Mode
+//		//Graph Export Mode
 //		varExportType = new EzVarEnum<ExportFieldType>("Export", 
 //				ExportFieldType.values(), ExportFieldType.STANDARD);
 //		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
@@ -81,7 +83,6 @@ public class CellExport extends EzPlug {
 //		EzGroup groupGraphML = new EzGroup("GraphML export options",
 //				varExportType,
 //				varFrameNo);
-//		
 //		addEzComponent(groupGraphML);
 		
 //		//SAVE_SKELETON mode 
@@ -89,7 +90,7 @@ public class CellExport extends EzPlug {
 //		EzGroup groupSaveSkeleton = new EzGroup(
 //				"Skeleton export options",varSaveSkeleton);
 
-		//save one complete excel file
+		//Use a list to allow multiple exports at ones?
 //		getUI().setActionPanelVisible(true);
 //		String[] data = {"one", "two", "three", "four","Five","Six","Seven","eight"};
 //		JList myList = new JList(data);
@@ -131,7 +132,7 @@ public class CellExport extends EzPlug {
 
 				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
 
-					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+					SpatioTemporalGraph stGraph = (SpatioTemporalGraph) swimmingObject.getObject();	
 
 					ExportEnum USER_CHOICE = varExport.getValue();
 
@@ -142,20 +143,24 @@ public class CellExport extends EzPlug {
 //						break;
 
 					case PDF_SCREENSHOT:
-						new PdfPrinter(wing_disc_movie,sequence);
+						new PdfPrinter(stGraph,sequence);
 						break;
 
 					case GRAPHML_EXPORT:
-						graphExportMode(wing_disc_movie);
+						graphExportMode(stGraph);
 						break;
 					
 					case SPREADSHEET_EXPORT:
-						BigXlsExporter xlsExporter = new BigXlsExporter(wing_disc_movie,
+						BigXlsExporter xlsExporter = new BigXlsExporter(stGraph,
 								varTagExport.getValue(),sequence, this.getUI());
 						xlsExporter.writeXLSFile();
 						break;
 					case WKT_SKELETONS:
-						saveWktSkeletons(wing_disc_movie);
+						saveWktSkeletons(stGraph);
+						break;
+					case CSV_TRACKING:
+						saveCsvTracking(stGraph);
+						break;
 					default:
 						break;	
 					}
@@ -166,54 +171,37 @@ public class CellExport extends EzPlug {
 			new AnnounceFrame("No spatio temporal graph found in ICYsp, please load a CellGraph first!");
 	}
 	
+	/**
+	 * @param stGraph Spatiotemporal graph to export as GraphML files
+	 */
 	private void graphExportMode(SpatioTemporalGraph stGraph) {
 
-		String file_name = SaveDialog.chooseFile(
-				"Please enter a folder where to save the graphML xml files",
-				"/Users/davide/",
-				"frame000", ".xml");
-
-		if(file_name == null)
+		String export_folder = chooseFolder();
+		if(export_folder == "")
 			return;
-
-		File output_file = new File(file_name);
-		String base_dir = output_file.getParent();
 		
 		GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
 
 		for(int i=0; i<stGraph.size(); i++)
 			exporter.exportFrame(
 					stGraph.getFrame(i), 
-					String.format("%s/frame%03d.xml",base_dir,i));
+					String.format("%s/frame%03d.xml",export_folder,i));
 
 	}
 	
 	/**
-	 * @param wing_disc_movie
+	 * @param stGraph Spatiotemporal graph to export as WKT files
 	 */
-	public void saveWktSkeletons(SpatioTemporalGraph wing_disc_movie) {
+	private void saveWktSkeletons(SpatioTemporalGraph stGraph) {
 		
-		String folder_name = SaveDialog.chooseFile(
-				"Please select location and enter folder name",
-				"/Users/davide/",
-				"folderName");
-		
-		if(folder_name == null)
+		String export_folder = chooseFolder();
+		if(export_folder == "")
 			return;
-		
-		File output_folder = new File(folder_name);
-		if(output_folder.isDirectory()){
-			new AnnounceFrame("Folder already exists, please select new name");
-			return;
-		}else{
-			output_folder.mkdir();
-		}
 			
 		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
-		String export_folder = output_folder.getAbsolutePath();
 		
-		for(int i=0; i < wing_disc_movie.size(); i++){
-			FrameGraph frame_i = wing_disc_movie.getFrame(i);
+		for(int i=0; i < stGraph.size(); i++){
+			FrameGraph frame_i = stGraph.getFrame(i);
 			if(frame_i.hasBoundary())
 				wkt_exporter.export(frame_i.getBoundary(), String.format("%s/border_%03d.wkt",export_folder,i));
 			
@@ -222,5 +210,45 @@ public class CellExport extends EzPlug {
 		
 		System.out.println("Successfully saved Wkt Files to: "+export_folder);
 	}
+	
+	/**
+	 * @param stGraph Spatiotemporal graph to export as CSV tracking files
+	 */
+	private void saveCsvTracking(SpatioTemporalGraph stGraph) {
+		
+		String export_folder = chooseFolder();
+		if(export_folder == "")
+			return;
+		
+		CsvTrackWriter track_writer = new CsvTrackWriter(stGraph,export_folder);
+		track_writer.write();
+		
+		System.out.println("Successfully saved tracking to: "+export_folder);
+		
+	}
+	
+	/**
+	 * @return Absolute path of chosen folder or empty string if invalid input
+	 */
+	private String chooseFolder(){
+		String folder_name = SaveDialog.chooseFile(
+				"Please select location and name of the folder where to export",
+				"/Users/davide/",
+				"newFolderName");
+		
+		if(folder_name == null)
+			return "";
+		
+		File output_folder = new File(folder_name);
+		if(output_folder.isDirectory()){
+			new AnnounceFrame("Folder already exists, please select another name");
+			return "";
+		}else{
+			output_folder.mkdir();
+		}
+		
+		return output_folder.getAbsolutePath();
+	}
+
 	
 }

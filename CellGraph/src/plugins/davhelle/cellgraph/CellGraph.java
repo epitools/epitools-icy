@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import plugins.adufour.ezplug.EzButton;
 import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzPlug;
@@ -40,12 +39,10 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.io.CsvTrackReader;
-import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
-import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
@@ -142,10 +139,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	//Load structure into Swimming Pool
 	EzVarBoolean				varUseSwimmingPool;
 	
-	//Save Track to CSV files
-	EzVarBoolean varSaveTracking;
-	EzVarFolder varTrackingFolder;
-	
 	//Load Track from CSV files
 	EzVarFolder varLoadFile;
 	
@@ -192,13 +185,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 		//set visibility according to choice
 		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
-		varDoTracking.addVisibilityTriggerTo(varSaveTracking,true);
-		varSaveTracking.addVisibilityTriggerTo(varTrackingFolder, true);
-		
-		//cleaner way? This can still be tricked if the user selects it and then
-		//changes the Tracking Algorithm to CSV
-		varTrackingAlgorithm.addVisibilityTriggerTo(varSaveTracking, 
-				TrackEnum.STABLE_MARRIAGE,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
 		
 		//These commands should only be available when the inputType is not wkt
 		varInput.addVisibilityTriggerTo(varCutBorder,
@@ -299,18 +285,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//varBooleanDrawDisplacement,
 				varBooleanDrawGraphCoherence);
 		
-		varLoadFile = new EzVarFolder("Select csv location", "");
-		
-		//Save tracking in csv format
-		varSaveTracking = new EzVarBoolean("Save track in CSV format",false);
-		varTrackingFolder = new EzVarFolder("Tracking output folder", "");
-		
 		EzGroup groupTracking = new EzGroup("SELECT TRACKING ALGORITHM",
 				varTrackingAlgorithm,
 				groupTrackingParameters,
-				varLoadFile,
-				varSaveTracking,
-				varTrackingFolder
+				varLoadFile
 				);
 		
 		varTrackingAlgorithm.addVisibilityTriggerTo(varLoadFile, TrackEnum.LOAD_CSV_FILE);
@@ -353,9 +331,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 			applyTracking(wing_disc_movie);
 		else
 			sequence.addOverlay(new PolygonOverlay(wing_disc_movie,Color.red));
-
-		if(varSaveTracking.getValue())
-			saveTracking(wing_disc_movie);
 
 		//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 		if(varUseSwimmingPool.getValue())
@@ -405,18 +380,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 				if(faultyInputCheck(!elimination_file.exists(), "Missing elimination file: "+CsvTrackReader.elimination_file_pattern))
 					return true;
 			}
-			
-			if(varSaveTracking.getValue()){
-				if(faultyInputCheck(varTrackingFolder.getValue() == null,
-					"SaveTrack feature requires an ouput directory: please review!"))
-					return true;
-				
-				File output_directory = varTrackingFolder.getValue();
-				
-				if(faultyInputCheck(!output_directory.isDirectory(), "Output directory is not valid, please review"))
-					return true;
-				
-			}
 		}
 
 		return is_input_wrong;
@@ -432,18 +395,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 		return faultyInput;
 	}
 
-	private void saveTracking(TissueEvolution wing_disc_movie) {
-		
-		//TODO: save-check
-		
-		String output_folder = varTrackingFolder.getValue().getAbsolutePath();
-		
-		CsvTrackWriter track_writer = new CsvTrackWriter(wing_disc_movie,output_folder);
-		track_writer.write();
-		
-		System.out.println("Successfully saved tracking to: "+output_folder);
-		
-	}
 
 	private void removeAllPainters() {
 		List<Overlay> overlays = sequence.getOverlays();
@@ -625,8 +576,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 						varLambda2.getValue());
 				break;
 			case LOAD_CSV_FILE:
-				//do not save the track if loaded with CSV
-				varSaveTracking.setValue(false);
 				String output_folder = varLoadFile.getValue().getAbsolutePath();
 				tracker = new CsvTrackReader(wing_disc_movie, output_folder);
 				break;

@@ -21,7 +21,6 @@ public class FileNameGenerator {
 	private SegmentationProgram tool;
 	private String input_file_name;
 	
-	private int enumeration_start;
 	private int start_file_no;
 	private int file_no_idx;
 	private int point_idx;
@@ -39,7 +38,6 @@ public class FileNameGenerator {
 		this.input_file = input_file;
 		
 		//default values
-		enumeration_start = 0;
 		start_file_no = 0;
 		input_file_name = input_file.getAbsolutePath();
 		point_idx = input_file_name.lastIndexOf('.');
@@ -53,30 +51,14 @@ public class FileNameGenerator {
 			int file_no = Integer.valueOf(file_str_no);
 			start_file_no = file_no;
 		}
-		
-		//Customize file name generation in case skeletons come from
-		//direct tool input
-		use_tool_option = fileType == InputType.SKELETON && directInput;
-		
-		if(use_tool_option)
-			switch(tool){
-			case MatlabLabelOutlines:
-				enumeration_start = 1;
-				break;
-			case PackingAnalyzer:
-				enumeration_start = 0;
-				break;
-			case SeedWater:
-				enumeration_start = 0;
-				break;
-		}	
+
 	}
 	
 	public int getFrameNo(int i){
 		//difference between file no and frame no, 
 		//as the first might start at 1 while frames always start at 0
 		//in icy-numeration
-		return start_file_no + i - enumeration_start;
+		return start_file_no + i;
 	}
 	
 	

@@ -5,18 +5,17 @@
  *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
+import icy.gui.dialog.SaveDialog;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Set;
 
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
-import icy.gui.dialog.SaveDialog;
 
 /**
  * Class to ease the generation of data output.

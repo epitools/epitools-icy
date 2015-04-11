@@ -7,8 +7,6 @@ package plugins.davhelle.cellgraph.io;
 
 import icy.image.IcyBufferedImage;
 import icy.image.ImageUtil;
-import icy.main.Icy;
-import icy.sequence.Sequence;
 import icy.type.collection.array.Array1DUtil;
 import ij.ImagePlus;
 

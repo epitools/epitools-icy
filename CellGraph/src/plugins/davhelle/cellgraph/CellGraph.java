@@ -173,7 +173,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		EzGroup groupInputPrameters = initializeInputGUI();
 		
 		//Tracking GUI
-		varDoTracking = new EzVarBoolean("    2. CHOOSE IF TO USE CELL TRACKING", false);
+		varDoTracking = new EzVarBoolean("    2. SELECT IF TO TRACK CELLS", false);
 		EzGroup groupTracking = initializeTrackingGUI();
 
 		//Usage of temporary ICY-memory (java object swimming pool)
@@ -221,12 +221,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile(
-				"First time point", "/Users/davide/data/");
+				"First file", "/Users/davide/data/");
 		
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,1,100,1);
 		varMaxT.setToolTipText("For t > 1 file name pattern [base]001.[ext] is currently required");
-			
+		
+		
+		EzVarBoolean varUseAdvanceOptions = 
+				new EzVarBoolean("Show advanced options",false);
+		
+		
 		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Known source", true);
 		
@@ -257,15 +262,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varWktFolder = new EzVarFolder("WKT output folder", "");
 		varSaveWkt.addVisibilityTriggerTo(varWktFolder, true);
 		
-		EzGroup groupInputPrameters = new EzGroup("1. SELECT INPUT FILES FOR GRAPH CREATION",
+		EzGroup groupInputPrameters = new EzGroup("1. SELECT MESH INPUT FILES",
 				varInput,
 				varFile, 
 				varMaxT,
+				varUseAdvanceOptions,
 				inputTypeGroup,
 				varSaveWkt,
 				varWktFolder
 				);
 		
+		varUseAdvanceOptions.addVisibilityTriggerTo(inputTypeGroup, true);
 		varInput.addVisibilityTriggerTo(varDirectInput, InputType.SKELETON);
 		varInput.addVisibilityTriggerTo(varTool, InputType.SKELETON);
 		

@@ -202,8 +202,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				"File type",InputType.values(), InputType.SKELETON);
 		
 		//Constraints on file, time and space
-		varFile = new EzVarFile(
-				"First file", "/Users/davide/data/");
+		varFile = new EzVarFile("First file", "/Users/davide/data/");
+		varFile.setToolTipText("For a series choose the first time point, e.g. frame001.png");
 		
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,1,100,1);
@@ -221,13 +221,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varTool = new EzVarEnum<SegmentationProgram>(
 				"\tSegmentation tool",SegmentationProgram.values(), SegmentationProgram.MatlabLabelOutlines);
 		varUsePackingAnalyzer = new EzVarBoolean("PackingAnalyzer files", false);
-		
+		varUsePackingAnalyzer.setToolTipText("Select the raw image analyzed by PA and CellGraph will use " +
+				"[imageName]/handCorrected.png as skeleton");
+
 		//Border cut
 		varCutBorder = new EzVarBoolean("Cut one border line",true);
+		varCutBorder.setToolTipText("Skip the polygons retrieved on the segmentation border");
 		
 		//small cell elimination
 		varRemoveSmallCells = new EzVarBoolean("Remove very small cells", true);
+		varRemoveSmallCells.setToolTipText("Remove cells below the threshold and merge their area to the biggest intersecting neighbor");
 		varAreaThreshold = new EzVarDouble("\tThreshold area [px]", 10, 0, Double.MAX_VALUE, 0.1);
+		varAreaThreshold.setToolTipText("Area below which cells will be excluded");
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
 		EzGroup inputTypeGroup = new EzGroup("Optional input parameters",

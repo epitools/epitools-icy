@@ -100,6 +100,9 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	
 	@Override
 	public void mouseClick(MouseEvent e, Point2D imagePoint, IcyCanvas canvas){
+		
+		final double CLICK_BUFFER_WIDTH = 2.0;
+		
 		int time_point = canvas.getPositionT();
 		Color colorTag = tag_color.getValue().getColor();
 		
@@ -122,7 +125,7 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			 			if(!edge.hasGeometry())
 			 				edge.computeGeometry(frame_i);
 			 			Geometry intersection = edge.getGeometry();
-			 			Geometry envelope = intersection.buffer(1.0);
+			 			Geometry envelope = intersection.buffer(CLICK_BUFFER_WIDTH);
 			 			
 			 			//check if click falls into envelope
 			 			if(envelope.contains(point_geometry)){

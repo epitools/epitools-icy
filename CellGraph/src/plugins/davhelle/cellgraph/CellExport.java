@@ -5,9 +5,6 @@ import icy.main.Icy;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
 
-import java.io.File;
-
-import javax.swing.JFileChooser;
 import javax.swing.JSeparator;
 
 import plugins.adufour.ezplug.EzGroup;
@@ -26,6 +23,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.CsvTrackWriter;
 import plugins.davhelle.cellgraph.io.PdfPrinter;
+import plugins.davhelle.cellgraph.io.SaveFolderDialog;
 import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 
@@ -172,8 +170,8 @@ public class CellExport extends EzPlug {
 	 */
 	private void saveTiffSkeletons(Sequence sequence, SpatioTemporalGraph stGraph) {
 		
-		String export_folder = chooseFolder();
-		if(export_folder == "")
+		String export_folder = SaveFolderDialog.chooseFolder("Tiff Skeleton images");
+		if(export_folder == null)
 			return;
 		
 		SkeletonWriter writer = new SkeletonWriter(sequence);
@@ -193,8 +191,8 @@ public class CellExport extends EzPlug {
 	 */
 	private void graphExportMode(SpatioTemporalGraph stGraph) {
 
-		String export_folder = chooseFolder();
-		if(export_folder == "")
+		String export_folder = SaveFolderDialog.chooseFolder("GraphML files");
+		if(export_folder == null)
 			return;
 		
 		GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
@@ -213,8 +211,8 @@ public class CellExport extends EzPlug {
 	 */
 	private void saveWktSkeletons(SpatioTemporalGraph stGraph) {
 		
-		String export_folder = chooseFolder();
-		if(export_folder == "")
+		String export_folder = SaveFolderDialog.chooseFolder("WKT skeleton files");
+		if(export_folder == null)
 			return;
 			
 		WktPolygonExporter wkt_exporter = new WktPolygonExporter();
@@ -237,8 +235,8 @@ public class CellExport extends EzPlug {
 	 */
 	private void saveCsvTracking(SpatioTemporalGraph stGraph) {
 		
-		String export_folder = chooseFolder();
-		if(export_folder == "")
+		String export_folder = SaveFolderDialog.chooseFolder("CSV Tracking files");
+		if(export_folder == null)
 			return;
 		
 		CsvTrackWriter track_writer = new CsvTrackWriter(stGraph,export_folder);
@@ -247,27 +245,5 @@ public class CellExport extends EzPlug {
 		System.out.println("Successfully saved tracking to: "+export_folder);
 		
 	}
-	
-	/**
-	 * Prompts a file chooser to specify a name for a new directory where to save the results 
-	 * 
-	 * @return Absolute path of chosen folder or empty string if invalid input
-	 */
-	private String chooseFolder(){
-		
-		//Choose location of test folder
-		JFileChooser dialog = new JFileChooser();
-		dialog.setDialogTitle("Please choose export folder location");
-		dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		
-		//Only proceed if the user puts in a valid directory
-		if(dialog.showOpenDialog(null) != JFileChooser.APPROVE_OPTION)
-			return "";
-		
-		final File f = dialog.getSelectedFile();
-		
-		return f.getAbsolutePath();
-	}
-
 	
 }

@@ -54,7 +54,6 @@ import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 import plugins.davhelle.cellgraph.tracking.HungarianTracking;
-import plugins.davhelle.cellgraph.tracking.MosaicTracking;
 import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
@@ -99,7 +98,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 {
 	
 	private enum TrackEnum{
-		MOSAIC, STABLE_MARRIAGE, HUNGARIAN, LOAD_CSV_FILE
+	   STABLE_MARRIAGE, HUNGARIAN, LOAD_CSV_FILE
 	}
 
 	//Ezplug fields 
@@ -300,7 +299,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		varTrackingAlgorithm.addVisibilityTriggerTo(varLoadFile, TrackEnum.LOAD_CSV_FILE);
 		varTrackingAlgorithm.addVisibilityTriggerTo(groupTrackingParameters, 
-				TrackEnum.STABLE_MARRIAGE,TrackEnum.MOSAIC,TrackEnum.HUNGARIAN);
+				TrackEnum.STABLE_MARRIAGE,TrackEnum.HUNGARIAN);
 		
 		groupTrackingParameters.setVisible(false);
 		
@@ -562,12 +561,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 			TrackingAlgorithm tracker = null;
 					
 			switch(varTrackingAlgorithm.getValue()){
-			case MOSAIC:
-				tracker = new MosaicTracking(
-						wing_disc_movie,
-						varLinkrange.getValue(),
-						varDisplacement.getValue());
-				break;
 			case STABLE_MARRIAGE:
 				tracker = new NearestNeighborTracking(
 						wing_disc_movie, 

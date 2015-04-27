@@ -109,6 +109,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	private EzVarBoolean varBooleanPlotDivisions;
 	private EzVarBoolean varBooleanPlotEliminations;
 	private EzVarBoolean varBooleanFillCells;
+	private EzVarBoolean varBooleanConnectDaughterCells;
 	private EzVarInteger varHighlightClass;
 	private EzVarBoolean varBooleanColorClass;
 	private EzVarEnum<CellColor> varPolygonColor;
@@ -175,11 +176,13 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions",true);
 		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations",false);
 		varBooleanFillCells = new EzVarBoolean("Fill cells with color",true);
+		varBooleanConnectDaughterCells = new EzVarBoolean("Connect daughter cells with line",false);
 		EzGroup groupDivisions = new EzGroup("Overlay elements", 
 				//varBooleanReadDivisions, TODO
 				varBooleanPlotDivisions,
 				varBooleanPlotEliminations,
-				varBooleanFillCells
+				varBooleanFillCells,
+				varBooleanConnectDaughterCells
 				);
 		
 		
@@ -559,7 +562,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				wing_disc_movie,
 				varBooleanPlotDivisions.getValue(),
 				varBooleanPlotEliminations.getValue(),
-				varBooleanFillCells.getValue());
+				varBooleanFillCells.getValue(),
+				varBooleanConnectDaughterCells.getValue());
 		sequence.addOverlay(dividing_cells);
 		
 	}

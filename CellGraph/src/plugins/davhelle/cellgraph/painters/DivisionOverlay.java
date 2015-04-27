@@ -80,31 +80,37 @@ public class DivisionOverlay extends StGraphOverlay {
 						
 						if(FILL_CELLS)
 							g.fill(cell.toShape());
-						else{
+						else
 							g.draw(cell.toShape());
 						
-							//Connect daughter cells if possible
-							if(CONNECT_DAUGHTER_CELLS){
-								Division d = cell.getDivision();
-								if(d.getTimePoint() <= frame_i.getFrameNo()){
-									int id1 = d.getChild1().getTrackID();
-									int id2 = d.getChild2().getTrackID();
+						//Connect daughter cells if possible
+						if(CONNECT_DAUGHTER_CELLS){
+							Division d = cell.getDivision();
+							if(d.getTimePoint() <= frame_i.getFrameNo()){
+								int id1 = d.getChild1().getTrackID();
+								int id2 = d.getChild2().getTrackID();
 
-									if(frame_i.hasTrackID(id1) && frame_i.hasTrackID(id2)){
+								if(frame_i.hasTrackID(id1) && frame_i.hasTrackID(id2)){
 
-										Node c1 = frame_i.getNode(id1);
-										Node c2 = frame_i.getNode(id2);
+									Node c1 = frame_i.getNode(id1);
+									Node c2 = frame_i.getNode(id2);
 
-										//draw a line connecting the daughter cells
-										g.setStroke(new BasicStroke(1));
-										g.drawLine(
-												(int)c1.getGeometry().getCentroid().getX(),
-												(int)c1.getGeometry().getCentroid().getY(), 
-												(int)c2.getGeometry().getCentroid().getX(), 
-												(int)c2.getGeometry().getCentroid().getY());
-										g.setStroke(new BasicStroke(3));
+									//draw a line connecting the daughter cells
+									Color old = g.getColor();
+									if(FILL_CELLS)
+										g.setColor(Color.BLACK);
 
-									}
+									g.setStroke(new BasicStroke(1));
+									g.drawLine(
+											(int)c1.getGeometry().getCentroid().getX(),
+											(int)c1.getGeometry().getCentroid().getY(), 
+											(int)c2.getGeometry().getCentroid().getX(), 
+											(int)c2.getGeometry().getCentroid().getY());
+									g.setStroke(new BasicStroke(3));
+
+									if(FILL_CELLS)
+										g.setColor(old);
+
 								}
 							}
 						}

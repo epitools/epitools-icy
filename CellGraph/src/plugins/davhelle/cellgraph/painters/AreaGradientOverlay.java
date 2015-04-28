@@ -109,53 +109,11 @@ public class AreaGradientOverlay extends StGraphOverlay{
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
-		int binNo = 7;
-		
-		int binWidth = (int)((line.x2 - line.x1)/binNo);
-		
-		double scaling_factor = gradientScalingFactor.getValue();;
+		int binNo = 50;
 		double shift_factor = 0;
 		
-		double step = (max_area - min_area)/binNo;
-		
-		for(int i=0; i<binNo; i++){
-
-			double h = (step*i)/max_area;
-			
-			//adapt for certain color range
-			//by multiplying with factor
-			
-			h = h * scaling_factor + shift_factor;
-			
-			Color hsbColor = Color.getHSBColor(
-					(float)h,
-					1f,
-					1f);
-
-			g.setColor(hsbColor);
-
-			int x = binWidth*i + (int)line.x1;
-			int y = (int)line.y1;
-			
-			g.fillRect(x,y,binWidth,binWidth);
-			
-
-		}
-		
-		g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
-		
-		g.setColor(Color.black);
-		g.drawString(String.format("[%.0f", min_area), 
-				(float)line.x1, 
-				(float)line.y1 - (1 * binWidth/4));
-		
-		FontMetrics fm = g.getFontMetrics();
-		
-		g.setColor(Color.black);
-		String s = String.format("%.0f]", max_area);
-		g.drawString(s, 
-				(float)line.x2 - fm.stringWidth(s), 
-				(float)line.y1 - (1 * binWidth/4));
+		OverlayUtils.gradientColorLegend(g, line, min_area, max_area, binNo,
+				gradientScalingFactor.getValue(), shift_factor);
 		
 	}
 }

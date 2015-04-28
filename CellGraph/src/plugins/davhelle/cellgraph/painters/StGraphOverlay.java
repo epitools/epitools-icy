@@ -33,6 +33,8 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 
 import plugins.adufour.ezplug.EzGroup;
+import plugins.adufour.vars.gui.swing.SwingVarEditor;
+import plugins.adufour.vars.lang.VarBoolean;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -95,7 +97,8 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 			paintFrame(g, frame_i);
 		}
 		
-		paintLegend(g,sequence,canvas);
+		if(showLegend.getValue())
+			paintLegend(g,sequence,canvas);
 		
     }
 	
@@ -158,12 +161,40 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	
 	abstract void writeFrameSheet(WritableSheet sheet, FrameGraph frame);
 
+
+	private final VarBoolean  showLegend = new VarBoolean("Show Legend", false)
+	{
+		public void setValue(Boolean newValue)
+		{
+			if (getValue().equals(newValue)) return;
+
+			super.setValue(newValue);
+
+
+			painterChanged();
+
+		}
+	};
 	
 	@Override
 	public JPanel getOptionsPanel() {
+		
 		JPanel optionPanel = new JPanel(new GridBagLayout());
 		
+		//Legend output
 		GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        optionPanel.add(new JLabel(showLegend.getName()), gbc);
+		
+        gbc.weightx = 1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        SwingVarEditor<?> editor = (SwingVarEditor<?>) showLegend.createVarEditor(true);
+        optionPanel.add(editor.getEditorComponent(), gbc);
+        
+		//Excel output
+		gbc = new GridBagConstraints();
         
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.BOTH;

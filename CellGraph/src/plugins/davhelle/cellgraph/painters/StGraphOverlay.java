@@ -1,20 +1,26 @@
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
+import icy.canvas.IcyCanvas2D;
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
+import icy.math.UnitUtil;
+import icy.math.UnitUtil.UnitPrefix;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Line2D;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -88,8 +94,36 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			paintFrame(g, frame_i);
 		}
+		
+		paintLegend(g,sequence,canvas);
+		
     }
 	
+	private void paintLegend(Graphics2D g, Sequence sequence, IcyCanvas canvas) {
+		if (g == null || !(canvas instanceof IcyCanvas2D)) return;
+        
+        IcyCanvas2D c2 = (IcyCanvas2D) canvas;
+        Graphics2D g2 = (Graphics2D) g.create();
+        
+        g2.setColor(Color.GREEN);
+        float thickness = 2;
+        
+        double length = 50;
+
+        final Line2D.Double line = new Line2D.Double();
+        //case VIEWER_TOP_LEFT:
+        g2.transform(c2.getInverseTransform());
+        line.x1 = canvas.getCanvasSizeX() * 0.05;
+        line.x2 = line.x1 + length * c2.getScaleX();
+        line.y1 = line.y2 = canvas.getCanvasSizeY() * 0.05;
+        
+        g2.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
+        g2.draw(line);
+        
+        g2.dispose();
+		
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {

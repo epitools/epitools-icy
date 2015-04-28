@@ -160,7 +160,19 @@ public class DisplacementOverlay extends StGraphOverlay {
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		
+		String s = "Shift > [x] px to next frame";
+		Color c = Color.WHITE;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "Shift < [x] px to next frame";
+		c = Color.GREEN;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
 		
 	}
 

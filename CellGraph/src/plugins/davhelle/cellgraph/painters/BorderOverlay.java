@@ -69,7 +69,7 @@ public class BorderOverlay extends StGraphOverlay{
 		@Override
 		public void specifyLegend(Graphics2D g, Double line) {
 			
-			String s = "Continuosly tracked cells";
+			String s = "Border Cells";
 			Color c = Color.white;
 			int offset = 0;
 			

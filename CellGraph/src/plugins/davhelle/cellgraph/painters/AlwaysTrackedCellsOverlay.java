@@ -169,11 +169,8 @@ public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		g.setColor(Color.orange);
-		
-		g.drawString("Continuosly tracked cells", 
-				(float)line.x1, 
-				(float)line.y1);
+
+		OverlayUtils.stringColorLegend(g, line, "Continuosly tracked cells", Color.orange, 0);
 		
 	}
 	

@@ -237,7 +237,26 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		
+		String s = "Stable Edges";
+		Color c = Color.GREEN;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "Unstable Edges";
+		c = Color.RED;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+
+		s = "Novel Edges";
+		c = Color.YELLOW;
+		offset = 40;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
 		
 	}
 }

@@ -7,6 +7,7 @@ package plugins.davhelle.cellgraph.painters;
 
 import java.awt.Graphics2D;
 import java.awt.Color;
+import java.awt.geom.Line2D.Double;
 
 import com.vividsolutions.jts.io.WKTWriter;
 
@@ -74,6 +75,12 @@ public class PolygonOverlay extends StGraphOverlay{
 				row_no++;
 
 		}
+		
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		// TODO Auto-generated method stub
 		
 	}
 	

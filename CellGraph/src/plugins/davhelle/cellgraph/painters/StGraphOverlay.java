@@ -111,7 +111,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         g2.setColor(Color.GREEN);
         float thickness = 2;
         
-        double length = 100;
+        double length = 150;
 
         final Line2D.Double line = new Line2D.Double();
         
@@ -132,47 +132,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		
 	}
 
-	private void specifyLegend(Graphics2D g, Line2D.Double line) {
-		
-		int binWidth = (int)((line.x2 - line.x1)/7);
-		int binHeight = (int)(line.y2 - line.y1);
-		
-		for(int i=0; i<7; i++){
-
-			switch(i + 3){ 
-			case 3:
-				g.setColor(new Color(232, 233, 41)); //yellow
-				break;
-			case 4:
-				g.setColor(new Color(223, 0, 8)); //red
-				break;
-			case 5:
-				g.setColor(new Color(84, 176, 26)); //green
-				break;
-			case 6:
-				g.setColor(new Color(190, 190, 190)); //grey
-				break;
-			case 7:
-				g.setColor(new Color(18, 51, 143)); //blue
-				break;
-			case 8:
-				g.setColor(new Color(158, 53, 145)); //violet
-				break;
-			case 9:
-				g.setColor(new Color(128, 45, 20)); //brown
-				break;
-			default:
-				continue;
-			}
-
-			int x = binWidth*i + (int)line.x1;
-			int y = (int)line.y1;
-			
-			g.fillRect(x,y,binWidth,binHeight);
-
-		}
-		
-	}
+	public abstract void specifyLegend(Graphics2D g, Line2D.Double line);
 
 	@Override
 	public void actionPerformed(ActionEvent e) {

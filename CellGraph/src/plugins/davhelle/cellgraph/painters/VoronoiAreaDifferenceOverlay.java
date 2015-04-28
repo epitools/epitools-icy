@@ -129,5 +129,11 @@ public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 		}
 		
 	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+		// TODO Auto-generated method stub
+		
+	}
 }
 

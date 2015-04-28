@@ -10,6 +10,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -102,44 +103,6 @@ public class PolygonClassOverlay extends StGraphOverlay{
 				}
 			}
 		}
-
-		if(draw_color_legend){
-			for(int i=0; i<7; i++){
-
-				switch(i + 3){ 
-				case 3:
-					g.setColor(new Color(232, 233, 41)); //yellow
-					break;
-				case 4:
-					g.setColor(new Color(223, 0, 8)); //red
-					break;
-				case 5:
-					g.setColor(new Color(84, 176, 26)); //green
-					break;
-				case 6:
-					g.setColor(new Color(190, 190, 190)); //grey
-					break;
-				case 7:
-					g.setColor(new Color(18, 51, 143)); //blue
-					break;
-				case 8:
-					g.setColor(new Color(158, 53, 145)); //violet
-					break;
-				case 9:
-					g.setColor(new Color(128, 45, 20)); //brown
-					break;
-				default:
-					continue;
-				}
-
-				g.fillRect(20*i + 30,30,20,20);
-				g.setColor(Color.white);
-				g.drawString(Integer.toString(i+3), 
-						(float)20*i + 30 + 5, 
-						(float)30 + 15);
-
-			}
-		}
 	}
 
 	@Override
@@ -164,6 +127,53 @@ public class PolygonClassOverlay extends StGraphOverlay{
 				row_no++;
 			}
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line)  {
+		
+		int binWidth = (int)((line.x2 - line.x1)/7);
+		int binHeight = (int)(line.y2 - line.y1);
+		
+		for(int i=0; i<7; i++){
+
+			switch(i + 3){ 
+			case 3:
+				g.setColor(new Color(232, 233, 41)); //yellow
+				break;
+			case 4:
+				g.setColor(new Color(223, 0, 8)); //red
+				break;
+			case 5:
+				g.setColor(new Color(84, 176, 26)); //green
+				break;
+			case 6:
+				g.setColor(new Color(190, 190, 190)); //grey
+				break;
+			case 7:
+				g.setColor(new Color(18, 51, 143)); //blue
+				break;
+			case 8:
+				g.setColor(new Color(158, 53, 145)); //violet
+				break;
+			case 9:
+				g.setColor(new Color(128, 45, 20)); //brown
+				break;
+			default:
+				continue;
+			}
+
+			int x = binWidth*i + (int)line.x1;
+			int y = (int)line.y1;
+			
+			g.fillRect(x,y,binWidth,binWidth);
+			g.setColor(Color.white);
+			g.drawString(Integer.toString(i+3), 
+					(float)x + 5, 
+					(float)y + 15);
+
+		}
+		
 	}
 	
 }

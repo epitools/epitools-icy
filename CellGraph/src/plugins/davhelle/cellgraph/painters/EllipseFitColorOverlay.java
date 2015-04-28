@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Double;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -200,5 +201,11 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 
 			}
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		// TODO Auto-generated method stub
+		
 	}
 }

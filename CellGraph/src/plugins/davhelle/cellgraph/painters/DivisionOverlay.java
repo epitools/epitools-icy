@@ -10,6 +10,7 @@ import icy.util.XLSUtil;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.Iterator;
 
 import jxl.write.WritableSheet;
@@ -189,5 +190,11 @@ public class DivisionOverlay extends StGraphOverlay {
 
 			}
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		// TODO Auto-generated method stub
+		
 	}
 }

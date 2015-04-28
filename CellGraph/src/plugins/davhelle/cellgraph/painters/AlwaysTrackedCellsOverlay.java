@@ -9,6 +9,7 @@ package plugins.davhelle.cellgraph.painters;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -168,6 +169,16 @@ public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 			}
 		}
 
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		g.setColor(Color.orange);
+		
+		g.drawString("Continuosly tracked cells", 
+				(float)line.x1 + 5, 
+				(float)line.x2 + 15);
+		
 	}
 	
 }

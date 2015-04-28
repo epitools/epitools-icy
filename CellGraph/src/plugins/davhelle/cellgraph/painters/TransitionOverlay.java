@@ -16,6 +16,7 @@ import icy.gui.dialog.SaveDialog;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Line2D.Double;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -247,6 +248,12 @@ public class TransitionOverlay extends StGraphOverlay{
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

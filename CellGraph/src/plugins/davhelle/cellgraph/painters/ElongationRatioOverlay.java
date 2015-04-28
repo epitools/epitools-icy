@@ -15,6 +15,7 @@ import ij.process.EllipseFitter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.HashMap;
 
 import jxl.write.WritableSheet;
@@ -110,6 +111,12 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 
 			}
 		}
+		
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		// TODO Auto-generated method stub
 		
 	}
 }

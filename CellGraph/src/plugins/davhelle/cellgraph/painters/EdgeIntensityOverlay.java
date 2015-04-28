@@ -351,19 +351,6 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 
 		}
 
-		//draw scale bar
-		for(int i=0; i<heat_map.length; i++){
-
-			Color hsbColor = Color.getHSBColor(
-					(float)(heat_map[i] * scaling_factor + shift_factor),
-					1f,
-					1f);
-
-			g.setColor(hsbColor);
-
-			g.fillRect(20*i + 30,30,20, 20);
-
-		}
 	}
 
 	@Override
@@ -403,7 +390,13 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
-		// TODO Auto-generated method stub
+		
+		int binNo = 50;
+		double scaling_factor = - slider.getValue();
+		double shift_factor = 0.8;
+		
+		OverlayUtils.gradientColorLegend(g, line, min, max, binNo,
+				scaling_factor, shift_factor);
 		
 	}
 	

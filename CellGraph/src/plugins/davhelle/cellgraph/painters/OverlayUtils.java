@@ -61,4 +61,26 @@ public class OverlayUtils {
 				(float)line.y1 + 15);
 	}
 	
+	public static void stringColorLegend(
+			Graphics2D g,
+			java.awt.geom.Line2D.Double line,
+			String s,
+			Color c,
+			int offset){
+		
+		g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
+		
+		FontMetrics fm = g.getFontMetrics();
+		g.setColor(c);
+		g.fillRect((int)line.x1 - 2, (int)line.y1 - 2 + offset, fm.stringWidth(s) + 5, 15 + 2);
+		
+		g.setColor(Color.BLACK);
+		g.drawRect((int)line.x1 - 2, (int)line.y1 - 2 + offset, fm.stringWidth(s) + 5, 15 + 2);
+		
+		g.drawString(s, 
+				(float)line.x1, 
+				(float)line.y1 + 12 + offset);
+		
+	}
+	
 }

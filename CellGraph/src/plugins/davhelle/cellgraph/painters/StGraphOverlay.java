@@ -60,6 +60,23 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	HashMap<Node,Double> data; 
 	
 	/**
+	 * Boolean value to define whether to show the legend or not
+	 */
+	private final VarBoolean  showLegend = new VarBoolean("Show Legend", true)
+	{
+		public void setValue(Boolean newValue)
+		{
+			if (getValue().equals(newValue)) return;
+			
+			super.setValue(newValue);
+			
+			
+			painterChanged();
+			
+		}
+	};
+	
+	/**
 	 * Creates a new Overlay to interpret the 
 	 * to be set with spatio-temporal graph (stGraph) in input
 	 * 
@@ -167,21 +184,6 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	}
 	
 	abstract void writeFrameSheet(WritableSheet sheet, FrameGraph frame);
-
-
-	private final VarBoolean  showLegend = new VarBoolean("Show Legend", false)
-	{
-		public void setValue(Boolean newValue)
-		{
-			if (getValue().equals(newValue)) return;
-
-			super.setValue(newValue);
-
-
-			painterChanged();
-
-		}
-	};
 	
 	@Override
 	public JPanel getOptionsPanel() {

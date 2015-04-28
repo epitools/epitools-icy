@@ -122,6 +122,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	private EzVarEnum<CellColor> varEdgeColor;
 	private EzVarInteger varEnvelopeBuffer;
 	private EzVarInteger varEnvelopeBuffer2;
+	private EzVarBoolean varBooleanNormalize;
+	private EzVarInteger varIntegerChannel;
 
 	@Override
 	protected void initialize() {
@@ -225,11 +227,16 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varIntensitySlider = new EzVarDouble("Color Scaling", 
 				0.5, 0.1, 1.0, 0.05);//, RangeEditorType.SLIDER,new HashMap<Double,String>());
 		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
-		varEnvelopeBuffer2 = new EzVarInteger("Intensity Buffer [px]", 1, 10, 1);
+		varEnvelopeBuffer2 = new EzVarInteger("Intensity Buffer [px]", 3, 1, 10, 1);
+		varBooleanNormalize = new EzVarBoolean("Normalize intensity",true);
+		varIntegerChannel = new EzVarInteger("Channel to measure",0,0,3,1);
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
+				varEnvelopeBuffer2,
+				varIntegerChannel,
+				varBooleanNormalize,
 				varIntensitySlider,
-				varFillingCheckbox,
-				varEnvelopeBuffer2);
+				varFillingCheckbox
+				);
 		
 		//Division orientation variable
 		varDoDetectionDistance = new EzVarInteger("Detection start",11,1,100,1);
@@ -415,7 +422,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 										wing_disc_movie, sequence, this.getUI(),
 										varIntensitySlider,
 										varFillingCheckbox,
-										varEnvelopeBuffer2));
+										varEnvelopeBuffer2,
+										varBooleanNormalize.getValue(),
+										varIntegerChannel.getValue()));
 
 						break;
 

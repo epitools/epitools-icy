@@ -78,10 +78,15 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	private double[] heat_map;
 
 	private double bufferWidth;
+
+	private boolean normalize_intensities;
+	private int channelNumber;
 	
 	public EdgeIntensityOverlay(SpatioTemporalGraph stGraph, Sequence sequence,
 			EzGUI gui, EzVarDouble varIntensitySlider, EzVarBoolean varFillingCheckbox,
-			EzVarInteger varBufferWidth) {
+			EzVarInteger varBufferWidth,
+			boolean normalize_intensities,
+			int channelNumber) {
 		super("Edge Intensities",stGraph);
 		
 		this.gui = gui;
@@ -97,6 +102,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.cell_edges = new HashMap<Node, Double>();
 		this.sequence = sequence;
 		this.bufferWidth = varBufferWidth.getValue();
+		this.normalize_intensities = normalize_intensities;
+		this.channelNumber = channelNumber;
 		
 		
 		for(int i = 0; i < 1; i++){
@@ -118,9 +125,11 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		//Compute individual edge intensities
 		gui.setProgressBarMessage("Computing Edge Intensities...");
 		for(Edge e: frame_i.edgeSet()){
-			e.computeGeometry(frame_i);
-			double cell_background = computeEdgeIntensity(e,frame_i);
-			sum_mean_cell_background += cell_background;
+			if(!e.hasGeometry())
+				e.computeGeometry(frame_i);
+			
+			double edge_intensity = computeEdgeIntensity(e,frame_i);
+			sum_mean_cell_background += edge_intensity;
 			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
 		}
 
@@ -138,55 +147,54 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.min = Double.MAX_VALUE;
 		this.max = Double.MIN_VALUE;
 
-		gui.setProgressBarValue(0);
-		gui_counter = 0;
-		gui.setProgressBarMessage("Normalizing Intensities...");
 		
-		for(Edge e: frame_i.edgeSet()){
-    
-			double rel_value = normalizeEdgeIntensity(e,frame_i);
-			relativeEdgeIntensity.put(e, rel_value);
+		if(normalize_intensities){
+			gui.setProgressBarValue(0);
+			gui_counter = 0;
+			gui.setProgressBarMessage("Normalizing Intensities...");
 
-			if(rel_value > max)
-				max = rel_value;
-			else if(rel_value < min)
-				min = rel_value;
+			for(Edge e: frame_i.edgeSet()){
 
-			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
+				double rel_value = normalizeEdgeIntensity(e,frame_i);
+				relativeEdgeIntensity.put(e, rel_value);
 
+				if(rel_value > max)
+					max = rel_value;
+				else if(rel_value < min)
+					min = rel_value;
+
+				gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
+
+			}
 		}
+		else{
+			for(Edge e: frame_i.edgeSet()){
 
-		int edge_no = frame_i.edgeSet().size();
-		double[] intensity_values = new double[edge_no];
-		int e_i = 0;
+				double rel_value = e.getValue();
+				//put same raw values in data fieds
+				relativeEdgeIntensity.put(e, rel_value);
+
+				if(rel_value > max)
+					max = rel_value;
+				else if(rel_value < min)
+					min = rel_value;
+			}
+		}
 		
+		//Normalize
 		for(Edge e: frame_i.edgeSet()){
 			//update from relative to normalized
 			double rel_value = relativeEdgeIntensity.get(e);
 			double normalized_value = (rel_value - min)/max;
 			normalizedEdgeIntensity.put(e,normalized_value);
 
-			intensity_values[e_i++] = normalized_value;
-		}
-
-		//Find out the color map
-		Arrays.sort(intensity_values);
-		int step_no = 10; 
-		int step = edge_no / step_no;
-		this.heat_map = new double[step_no];
-
-		for(e_i = 0; e_i < 10; e_i++){
-			int index = e_i * step;
-
-			if(index >= edge_no)
-				index = edge_no - 1;
-
-			heat_map[e_i] = intensity_values[index];
 		}
 		
-		double overall_mean_cell_background = sum_mean_cell_background / frame_i.edgeSet().size();
-//		System.out.printf("Overall background correction is: %.2f\n",overall_mean_cell_background);
-//		System.out.printf("Min/max relative value is: %.2f\t%.2f\n",min,max);
+		if(normalize_intensities){
+			min = 0;
+			max = 1;
+		}
+			
 	}
 	
 	private double computeEdgeIntensity(Edge e, FrameGraph frame_i){
@@ -214,7 +222,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		
 		int z=0;
 		int t=frame_i.getFrameNo();
-		int c=0;
+		int c=channelNumber;
 		
 		//TODO possibly use getIntensityInfo here
 		double mean_intensity = 
@@ -263,7 +271,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		//Compute intensities
 		int z=0;
 		int t=frame.getFrameNo();
-		int c=0;
+		int c=channelNumber;
 		double s_mean = ROIUtil.getMeanIntensity(sequence, s_minimal, z, t, c);
 		double mean_edge_intensity = ROIUtil.getMeanIntensity(sequence, edge_union, z, t, c);
 

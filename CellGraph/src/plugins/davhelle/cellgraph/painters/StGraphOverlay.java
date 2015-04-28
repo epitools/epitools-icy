@@ -111,7 +111,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         g2.setColor(Color.GREEN);
         float thickness = 2;
         
-        double length = 50;
+        double length = 100;
 
         final Line2D.Double line = new Line2D.Double();
         
@@ -119,7 +119,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         //supply the rectangle to draw within
         g2.transform(c2.getInverseTransform());
         line.x1 = canvas.getCanvasSizeX() * 0.05;
-        line.x2 = line.x1 + length * c2.getScaleX();
+        line.x2 = line.x1 + length;// * c2.getScaleX();
         line.y1 = canvas.getCanvasSizeY() * 0.05;
         line.y2 = line.y1 + 20;
         

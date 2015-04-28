@@ -121,6 +121,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	private EzVarInteger varDoDetectionLength;
 	private EzVarEnum<CellColor> varEdgeColor;
 	private EzVarInteger varEnvelopeBuffer;
+	private EzVarInteger varEnvelopeBuffer2;
 
 	@Override
 	protected void initialize() {
@@ -220,13 +221,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varMinimalTransitionLength,
 				varMinimalOldSurvival);
 		
-		//IntensitySlider
+		//Edge Intensity
 		varIntensitySlider = new EzVarDouble("Color Scaling", 
 				0.5, 0.1, 1.0, 0.05);//, RangeEditorType.SLIDER,new HashMap<Double,String>());
 		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
+		varEnvelopeBuffer2 = new EzVarInteger("Intensity Buffer [px]", 1, 10, 1);
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varIntensitySlider,
-				varFillingCheckbox);
+				varFillingCheckbox,
+				varEnvelopeBuffer2);
 		
 		//Division orientation variable
 		varDoDetectionDistance = new EzVarInteger("Detection start",11,1,100,1);
@@ -411,7 +414,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 								new EdgeIntensityOverlay(
 										wing_disc_movie, sequence, this.getUI(),
 										varIntensitySlider,
-										varFillingCheckbox));
+										varFillingCheckbox,
+										varEnvelopeBuffer2));
 
 						break;
 

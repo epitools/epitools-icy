@@ -22,6 +22,7 @@ import jxl.write.WritableSheet;
 import plugins.adufour.ezplug.EzGUI;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
+import plugins.adufour.ezplug.EzVarInteger;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.ShapeRoi;
@@ -75,9 +76,12 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	private double min;
 	private double max;
 	private double[] heat_map;
+
+	private double bufferWidth;
 	
 	public EdgeIntensityOverlay(SpatioTemporalGraph stGraph, Sequence sequence,
-			EzGUI gui, EzVarDouble varIntensitySlider, EzVarBoolean varFillingCheckbox) {
+			EzGUI gui, EzVarDouble varIntensitySlider, EzVarBoolean varFillingCheckbox,
+			EzVarInteger varBufferWidth) {
 		super("Edge Intensities",stGraph);
 		
 		this.gui = gui;
@@ -92,6 +96,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.cell_background = new HashMap<Node, Double>();
 		this.cell_edges = new HashMap<Node, Double>();
 		this.sequence = sequence;
+		this.bufferWidth = varBufferWidth.getValue();
 		
 		
 		for(int i = 0; i < 1; i++){
@@ -138,7 +143,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		gui.setProgressBarMessage("Normalizing Intensities...");
 		
 		for(Edge e: frame_i.edgeSet()){
-
+    
 			double rel_value = normalizeEdgeIntensity(e,frame_i);
 			relativeEdgeIntensity.put(e, rel_value);
 
@@ -189,7 +194,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		Geometry edge_geo = e.getGeometry();
 		
 		//taking 3px buffer distance from edge
-		Geometry edge_buffer = edge_geo.buffer(5.0);
+		Geometry edge_buffer = edge_geo.buffer(bufferWidth);
 		
 		Shape egde_shape = writer.toShape(edge_buffer);
 		

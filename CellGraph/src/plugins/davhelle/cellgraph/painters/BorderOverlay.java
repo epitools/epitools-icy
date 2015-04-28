@@ -8,6 +8,8 @@ package plugins.davhelle.cellgraph.painters;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D.Double;
 
@@ -66,7 +68,23 @@ public class BorderOverlay extends StGraphOverlay{
 
 		@Override
 		public void specifyLegend(Graphics2D g, Double line) {
-			// TODO Auto-generated method stub
+			
+			g.setFont(new Font("TimesRoman", Font.PLAIN, 15));
+			
+			
+			String s = "Continuosly tracked cells";
+			FontMetrics fm = g.getFontMetrics();
+			g.setColor(Color.white);
+			g.fillRect((int)line.x1 - 2, (int)line.x1 - 2, fm.stringWidth(s) + 5, 15 + 2);
+			
+			g.setColor(Color.BLACK);
+			g.drawRect((int)line.x1 - 2, (int)line.x1 - 2, fm.stringWidth(s) + 5, 15 + 2);
+			
+			g.drawString(s, 
+					(float)line.x1, 
+					(float)line.y1 + 15);
+			
+			
 			
 		}
 }

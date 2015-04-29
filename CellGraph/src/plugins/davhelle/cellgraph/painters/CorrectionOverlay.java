@@ -19,6 +19,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D.Double;
 import java.awt.geom.Point2D;
 import java.util.Iterator;
 
@@ -193,6 +194,23 @@ public class CorrectionOverlay extends StGraphOverlay {
 				row_no++;
 			}
 		}
+		
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		
+		String s = "False Positive - Oversegmentation";
+		Color c = Color.RED;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "False Negative - Undersegmentation";
+		c = Color.YELLOW;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		
 	}
 

@@ -9,6 +9,7 @@ import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.Map;
 
 import jxl.write.WritableSheet;
@@ -86,6 +87,17 @@ public class VoronoiOverlay extends StGraphOverlay {
 				row_no++;
 			}
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+		
+		String s = "Voronoi tesselation";
+		Color c = Color.GREEN;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
 	}
 
 }

@@ -6,23 +6,20 @@
 
 package plugins.davhelle.cellgraph.painters;
 
+import icy.util.XLSUtil;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import jxl.write.WritableSheet;
-
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
-import icy.util.XLSUtil;
 
 /**
  * Painter to visualize all cells that have contiguously tracked
@@ -168,6 +165,13 @@ public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 			}
 		}
 
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+
+		OverlayUtils.stringColorLegend(g, line, "Continuosly tracked cells", Color.orange, 0);
+		
 	}
 	
 }

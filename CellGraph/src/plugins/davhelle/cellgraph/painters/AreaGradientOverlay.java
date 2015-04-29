@@ -8,6 +8,8 @@ package plugins.davhelle.cellgraph.painters;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
 import jxl.write.WritableSheet;
@@ -102,5 +104,16 @@ public class AreaGradientOverlay extends StGraphOverlay{
 			XLSUtil.setCellNumber(sheet, 1, row_no, node.getGeometry().getArea());
 			row_no++;
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+		
+		int binNo = 50;
+		double shift_factor = 0;
+		
+		OverlayUtils.gradientColorLegend(g, line, min_area, max_area, binNo,
+				gradientScalingFactor.getValue(), shift_factor);
+		
 	}
 }

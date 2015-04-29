@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D.Double;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -66,7 +67,7 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	private Sequence sequence;
 	private EzVarEnum<CellColor> tag_color;
 	private EzVarInteger envelope_buffer;
-	
+	private boolean tags_exist;
 	
 	public EdgeMarkerOverlay(SpatioTemporalGraph stGraph,
 			EzVarEnum<CellColor> varEdgeColor,
@@ -78,6 +79,15 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
 		this.sequence = sequence;
+		
+		this.tags_exist = false;
+		for(Edge edge: stGraph.getFrame(0).edgeSet()){
+			if(edge.hasColorTag()){
+				this.tags_exist = true;
+				break;
+			}
+		}
+		
 	}
 
 	/* (non-Javadoc)
@@ -129,6 +139,8 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 			 			
 			 			//check if click falls into envelope
 			 			if(envelope.contains(point_geometry)){
+			 				tags_exist = true;
+			 				
 			 				if(edge.hasColorTag()){
 			 					if(edge.getColorTag() == colorTag)
 			 						propagateTag(edge,null);
@@ -393,6 +405,17 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	        } 
 	    }
 	    return "unknown";
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		if(!tags_exist){
+			String s = "Click on a junction to color-tag it";
+			Color c = Color.WHITE;
+			int offset = 0;
+
+			OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		}
 	}
 
 }

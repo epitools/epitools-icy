@@ -194,5 +194,16 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 			}
 		}
 	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+		
+		int binNo = 50;
+		double shift_factor = 0;
+
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line,"90\u00b0","0\u00b0",
+				binNo, 0.3, shift_factor);
+		
+	}
 	
 }

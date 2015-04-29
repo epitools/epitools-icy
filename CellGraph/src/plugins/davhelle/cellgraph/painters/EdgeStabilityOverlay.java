@@ -13,6 +13,7 @@ package plugins.davhelle.cellgraph.painters;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -231,6 +232,31 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		
+		String s = "Stable Edges";
+		Color c = Color.GREEN;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "Unstable Edges";
+		c = Color.RED;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+
+		s = "Novel Edges";
+		c = Color.YELLOW;
+		offset = 40;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
 		
 	}
 }

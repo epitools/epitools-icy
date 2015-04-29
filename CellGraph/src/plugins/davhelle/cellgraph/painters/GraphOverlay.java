@@ -7,6 +7,7 @@ package plugins.davhelle.cellgraph.painters;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 
 import jxl.write.WritableSheet;
 
@@ -102,6 +103,17 @@ public class GraphOverlay extends StGraphOverlay{
 
 			}
 		}
+		
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		
+		String s = "Neighborhood connectivity";
+		Color c = Color.YELLOW;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		
 	}
 	

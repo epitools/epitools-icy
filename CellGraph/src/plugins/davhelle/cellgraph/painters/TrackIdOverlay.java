@@ -10,6 +10,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -69,6 +70,12 @@ public class TrackIdOverlay extends StGraphOverlay{
 			XLSUtil.setCellNumber(sheet, 2, row_no, n.getGeometry().getCentroid().getY());
 			row_no++;
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 

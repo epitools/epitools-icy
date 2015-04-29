@@ -11,6 +11,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D.Double;
 import java.awt.geom.Point2D;
 
 import jxl.write.WritableSheet;
@@ -154,6 +155,25 @@ public class DisplacementOverlay extends StGraphOverlay {
 			row_no++;
 		}
 			
+	}
+
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		
+		String s = "Shift > [x] px to next frame";
+		Color c = Color.WHITE;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "Shift < [x] px to next frame";
+		c = Color.GREEN;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		
 	}
 
 }

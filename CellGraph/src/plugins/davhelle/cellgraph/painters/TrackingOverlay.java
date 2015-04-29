@@ -5,6 +5,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -216,6 +217,47 @@ public class TrackingOverlay extends StGraphOverlay{
 			}
 		}
 
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		
+		String s = "Missing in previous frame";
+		Color c = Color.RED;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "Missing in next frame";
+		c = Color.YELLOW;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Missing in previous&next";
+		c = Color.GREEN;
+		offset = 40;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Dividing in next frame";
+		c = Color.BLUE;
+		offset = 60;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Sibling missing";
+		c = Color.MAGENTA;
+		offset = 80;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Eliminated in next frame";
+		c = Color.CYAN;
+		offset = 100;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
 	}
 
 }

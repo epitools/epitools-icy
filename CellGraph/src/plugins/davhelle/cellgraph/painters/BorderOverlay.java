@@ -8,7 +8,10 @@ package plugins.davhelle.cellgraph.painters;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -61,5 +64,16 @@ public class BorderOverlay extends StGraphOverlay{
 
 				row_no++;
 			}
+		}
+
+		@Override
+		public void specifyLegend(Graphics2D g, Double line) {
+			
+			String s = "Border Cells";
+			Color c = Color.white;
+			int offset = 0;
+			
+			OverlayUtils.stringColorLegend(g, line, s, c, offset);
+			
 		}
 }

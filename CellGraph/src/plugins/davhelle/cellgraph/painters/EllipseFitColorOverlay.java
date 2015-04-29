@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Double;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -44,12 +45,13 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 	
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 	private Coordinate roi_coor;
+	private Sequence sequence;
 	
 	public EllipseFitColorOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("Ellipse Orientation wrt PointROI",spatioTemporalGraph);
 
 		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
-		
+		this.sequence = sequence; 
 		//initialize empty
 		roi_coor = null;
 	
@@ -58,7 +60,6 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
-		double[] heat_map = {0.0,0.25,0.5,0.75,1.0};
 		
 		int time_point = canvas.getPositionT();
 
@@ -75,8 +76,11 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 					boolean show_guides = false;
 
 					paintFrame(g, time_point, xp, yp, show_guides);
+					
 				}
 			}
+			
+			super.paintLegend(g,sequence,canvas);
 		}
     }
 
@@ -200,5 +204,27 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 
 			}
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		
+		if(sequence.hasROI()){
+			int binNo = 50;
+			double shift_factor = 0;
+
+			OverlayUtils.gradientColorLegend_ZeroOne(g, line,"90\u00b0","0\u00b0",
+					binNo, 0.3, shift_factor);
+
+		} else {
+
+			String s = "No Point ROI detected - Please add one";
+			Color c = Color.WHITE;
+			int offset = 0;
+
+			OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		}
+		
 	}
 }

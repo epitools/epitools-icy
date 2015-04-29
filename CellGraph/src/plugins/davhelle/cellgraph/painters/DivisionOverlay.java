@@ -10,6 +10,7 @@ import icy.util.XLSUtil;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 import java.util.Iterator;
 
 import jxl.write.WritableSheet;
@@ -189,5 +190,46 @@ public class DivisionOverlay extends StGraphOverlay {
 
 			}
 		}
+	}
+
+	@Override
+	public void specifyLegend(Graphics2D g, Double line) {
+		
+		String s = "";
+		Color c = null;
+		int offset = 0;
+		
+		if(PLOT_DIVISIONS){
+
+			s = "Dividing cell";
+			c = Color.BLUE;
+			offset = 0;
+
+			OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+			s = "Daughter cell";
+			c = Color.CYAN;
+			offset = 20;
+
+			OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		}
+
+		if(PLOT_ELIMINATIONS){
+			s = "Eliminated cell";
+			c = Color.RED;
+			offset = 40;
+
+			OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+			if(PLOT_DIVISIONS){
+				s = "Dividing & Eliminated cell";
+				c = Color.MAGENTA;
+				offset = 60;
+
+				OverlayUtils.stringColorLegend(g, line, s, c, offset);
+			}
+		}
+
+		
 	}
 }

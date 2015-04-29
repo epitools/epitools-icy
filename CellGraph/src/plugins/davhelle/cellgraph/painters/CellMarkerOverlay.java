@@ -22,6 +22,7 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -48,6 +49,7 @@ public class CellMarkerOverlay extends StGraphOverlay {
 	private ShapeWriter writer;
 	private Sequence sequence;
 	private EzVarBoolean drawColorTag;
+	private boolean tags_exist;
 	
 	public static final String DESCRIPTION = 
 			"Overlay to interactively mark cells with a color of choice and export the selection.\n\n" +
@@ -68,6 +70,14 @@ public class CellMarkerOverlay extends StGraphOverlay {
 		this.writer = new ShapeWriter();
 		this.sequence = sequence;
 		this.drawColorTag = drawColorTag;
+		
+		this.tags_exist = false;
+		for(Node node: stGraph.getFrame(0).vertexSet()){
+			if(node.hasColorTag()){
+				this.tags_exist = true;
+				break;
+			}
+		}
 
 	}
 	
@@ -84,6 +94,8 @@ public class CellMarkerOverlay extends StGraphOverlay {
 			FrameGraph frame_i = stGraph.getFrame(time_point);
 			for(Node cell: frame_i.vertexSet())
 			 	if(cell.getGeometry().contains(point_geometry)){
+			 		tags_exist = true;
+			 		
 			 		Color new_tag = tag_color.getValue().getColor();
 
 			 		if(cell.hasColorTag()){
@@ -194,7 +206,13 @@ public class CellMarkerOverlay extends StGraphOverlay {
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		if(!tags_exist){
+			String s = "Click on a cell to color-tag it";
+			Color c = Color.WHITE;
+			int offset = 0;
+
+			OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		}
 		
 	}
 	

@@ -205,7 +205,12 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		
+		int binNo = 50;
+		double shift_factor = 0;
+
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line,"90\u00b0","0\u00b0",
+				binNo, 0.3, shift_factor);
 		
 	}
 }

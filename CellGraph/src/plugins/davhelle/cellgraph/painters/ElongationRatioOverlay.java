@@ -34,20 +34,39 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 
 	public static final String DESCRIPTION = "Color codes the cell according to their elongation ratio and "+
 			"writes the elongation factor within every cell";
-	private HashMap<Node, EllipseFitter> fittedEllipses;
+	private HashMap<Node, java.lang.Double> elongationRatios;
+	
+	private double min;
+	private double max;
 
 	
 	public ElongationRatioOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("EllipseRatio Coloring",spatioTemporalGraph);
 
-		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
+		HashMap<Node, EllipseFitter> fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 	
+		this.min = java.lang.Double.MAX_VALUE;
+		this.max = java.lang.Double.MIN_VALUE;
+		
+		this.elongationRatios = new HashMap<Node, java.lang.Double>();
+		
+		for(Node n: fittedEllipses.keySet()){
+			EllipseFitter ef = fittedEllipses.get(n);
+			double elongation_ratio = ef.major/ef.minor;
+			
+			elongationRatios.put(n, elongation_ratio);
+
+			if(elongation_ratio > max)
+				max = elongation_ratio;
+			else if(elongation_ratio < min)
+				min = elongation_ratio;
+		}
+
 	}
 
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i)
 	{
-		double[] heat_map = {0.0,0.25,0.5,0.75,1.0};
 
 		int fontSize = 3;
 		boolean show_only_divsion=false;
@@ -60,13 +79,12 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 				if(!n.hasObservedDivision())
 					continue;
 
-			EllipseFitter ef = fittedEllipses.get(n);
-			double elongation_ratio = ef.major/ef.minor;
+			double elongation_ratio = elongationRatios.get(n);
 
-			double normalized_ratio = (elongation_ratio - 1.0)/3.0;
+			double normalized_ratio = (elongation_ratio - min)/max;
 
 			Color hsbColor = Color.getHSBColor(
-					(float)(normalized_ratio*0.9 + 0.4		),
+					(float)(normalized_ratio*0.9 + 0.4),
 					1f,
 					1f);
 
@@ -97,10 +115,9 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 		int row_no = 1;
 
 		for(Node n: frame.vertexSet()){
-			if(fittedEllipses.containsKey(n)){
+			if(elongationRatios.containsKey(n)){
 				
-				EllipseFitter ef = fittedEllipses.get(n);
-				double elongation_ratio = ef.major/ef.minor;
+				double elongation_ratio = elongationRatios.get(n);
 			
 				XLSUtil.setCellNumber(sheet, 0, row_no, n.getTrackID());
 				XLSUtil.setCellNumber(sheet, 1, row_no, n.getCentroid().getX());
@@ -115,8 +132,13 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
+		int binNo = 50;
+		double scaling_factor = 0.9;
+		double shift_factor = 0.4;
+		
+		OverlayUtils.gradientColorLegend_1Digit(g, line, min, max, binNo,
+				scaling_factor, shift_factor);
 	}
 }

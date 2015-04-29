@@ -91,7 +91,12 @@ public class VoronoiOverlay extends StGraphOverlay {
 
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
-		// TODO Auto-generated method stub
+		
+		String s = "Voronoi tesselation";
+		Color c = Color.GREEN;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		
 	}
 

@@ -252,7 +252,18 @@ public class TransitionOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		
+		String s = "T1 Transition Winners";
+		Color c = Color.MAGENTA;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "T1 Transition Losers";
+		c = Color.CYAN;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		
 	}
 	

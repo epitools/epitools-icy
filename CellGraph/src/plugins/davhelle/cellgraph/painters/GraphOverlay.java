@@ -108,7 +108,12 @@ public class GraphOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		
+		String s = "Neighborhood connectivity";
+		Color c = Color.YELLOW;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		
 	}
 	

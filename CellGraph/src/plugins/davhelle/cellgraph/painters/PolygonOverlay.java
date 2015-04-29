@@ -80,7 +80,12 @@ public class PolygonOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		
+		String s = "Cell Outlines";
+		Color c = painter_color;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		
 	}
 	

@@ -221,7 +221,42 @@ public class TrackingOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
+		
+		String s = "Missing in previous frame";
+		Color c = Color.RED;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+
+		s = "Missing in next frame";
+		c = Color.YELLOW;
+		offset = 20;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Missing in previous&next";
+		c = Color.GREEN;
+		offset = 40;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Dividing in next frame";
+		c = Color.BLUE;
+		offset = 60;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Sibling missing";
+		c = Color.MAGENTA;
+		offset = 80;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
+		
+		s = "Eliminated in next frame";
+		c = Color.CYAN;
+		offset = 100;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		
 	}
 

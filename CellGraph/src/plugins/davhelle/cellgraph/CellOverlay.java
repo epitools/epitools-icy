@@ -48,6 +48,7 @@ import plugins.davhelle.cellgraph.painters.OverlayEnum;
 import plugins.davhelle.cellgraph.painters.PolygonClassOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.painters.PolygonOverlay;
+import plugins.davhelle.cellgraph.painters.StGraphOverlay;
 import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 import plugins.davhelle.cellgraph.painters.TransitionOverlay;
@@ -343,6 +344,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						for (Overlay overlay : overlays) {
 							sequence.removeOverlay(overlay);
 							sequence.overlayChanged(overlay);    				
+						}
+					}
+					
+					//Disable previous legends
+					List<Overlay> overlays = sequence.getOverlays();
+					for (Overlay overlay : overlays) {
+						if(overlay instanceof StGraphOverlay){
+							StGraphOverlay stgO = (StGraphOverlay) overlay;
+							stgO.setLegendVisibility(false);
 						}
 					}
 

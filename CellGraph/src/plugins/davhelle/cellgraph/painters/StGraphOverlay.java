@@ -119,7 +119,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		
     }
 	
-	private void paintLegend(Graphics2D g, Sequence sequence, IcyCanvas canvas) {
+	protected void paintLegend(Graphics2D g, Sequence sequence, IcyCanvas canvas) {
 		if (g == null || !(canvas instanceof IcyCanvas2D)) return;
         
         IcyCanvas2D c2 = (IcyCanvas2D) canvas;
@@ -215,6 +215,10 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         
         
 		return optionPanel;
+	}
+	
+	public void setLegendVisibility(boolean state){
+		showLegend.setValue(state);
 	}
 
 }

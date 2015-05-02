@@ -80,7 +80,8 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 				}
 			}
 			
-			super.paintLegend(g,sequence,canvas);
+			if(super.isLegendVisible())
+				super.paintLegend(g,sequence,canvas);
 		}
     }
 

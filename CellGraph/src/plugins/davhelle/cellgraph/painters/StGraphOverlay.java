@@ -220,5 +220,9 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	public void setLegendVisibility(boolean state){
 		showLegend.setValue(state);
 	}
+	
+	public boolean isLegendVisible(){
+		return showLegend.getValue();
+	}
 
 }

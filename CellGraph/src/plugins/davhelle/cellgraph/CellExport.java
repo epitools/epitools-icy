@@ -1,5 +1,9 @@
 package plugins.davhelle.cellgraph;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.sequence.Sequence;
@@ -26,6 +30,7 @@ import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.io.SaveFolderDialog;
 import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.WktPolygonExporter;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 public class CellExport extends EzPlug {
 
@@ -196,7 +201,22 @@ public class CellExport extends EzPlug {
 			return;
 		
 		GraphExporter exporter = new GraphExporter(ExportFieldType.COMPLETE_CSV);
-
+		
+		//Write header file for complete_csv
+		try {
+			
+			FileWriter fw = new FileWriter(String.format("%s/GraphML_attributeHeader.csv",export_folder));
+			
+			fw.write("id,x,y,area,on_border,has_division,has_elimination,division_time,elimination_time\n");
+			fw.write("numeric,numeric,numeric,numeric,logical,logical,logical,numeric,numeric\n");
+			
+			fw.close();
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}			
+		
+		
 		for(int i=0; i<stGraph.size(); i++)
 			exporter.exportFrame(
 					stGraph.getFrame(i), 

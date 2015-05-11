@@ -1,6 +1,3 @@
-/**
- * 
- */
 package headless;
 
 import java.io.File;
@@ -11,6 +8,9 @@ import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.nodes.Edge;
 
 /**
+ * Headless method to identify the length of all edges in the
+ * first frame of the input Graph.
+ * 
  * @author Davide Heller
  *
  */

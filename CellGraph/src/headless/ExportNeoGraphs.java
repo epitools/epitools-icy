@@ -1,6 +1,3 @@
-/**
- * 
- */
 package headless;
 
 import plugins.davhelle.cellgraph.export.ExportFieldType;

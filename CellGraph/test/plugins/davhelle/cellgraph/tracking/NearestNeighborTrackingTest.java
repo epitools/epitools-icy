@@ -1,6 +1,6 @@
 package plugins.davhelle.cellgraph.tracking;
 
-import headless.LoadNeoWtkFiles;
+import headless.LoadNeoWktFiles;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -13,7 +13,7 @@ public class NearestNeighborTrackingTest {
 	  
 	  int time_points = 3;
 	  
-	  SpatioTemporalGraph st_graph = LoadNeoWtkFiles.loadStGraph(0, time_points);
+	  SpatioTemporalGraph st_graph = LoadNeoWktFiles.loadStGraph(0, time_points);
 	  
 	  Assert.assertEquals(st_graph.size(), time_points, "Input file not correctly loaded");
 	  

@@ -25,7 +25,7 @@ public class FindEdgeLength {
 		File input_file = new File(export_folder +input_name);
 		
 		//Graph generation
-		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadWktStGraph(1,
+		SpatioTemporalGraph stGraph = LoadNeoWktFiles.loadWktStGraph(1,
 				export_folder, input_file);
 		
 		PolygonalCellTileGenerator.createPolygonalTiles(stGraph);

@@ -3,7 +3,7 @@
  */
 package plugins.davhelle.cellgraph;
 
-import headless.LoadNeoWtkFiles;
+import headless.LoadNeoWktFiles;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.painter.Overlay;
@@ -41,7 +41,7 @@ public class NeoLoader extends EzPlug {
 		}
 		
 		//Load stGraph
-		SpatioTemporalGraph wing_disc_movie = LoadNeoWtkFiles.loadNeo(varNeo.getValue());
+		SpatioTemporalGraph wing_disc_movie = LoadNeoWktFiles.loadNeo(varNeo.getValue());
 		
 		//Overlay tracking view
 		Overlay trackID = new TrackIdOverlay(wing_disc_movie);

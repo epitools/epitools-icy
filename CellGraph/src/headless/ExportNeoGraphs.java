@@ -17,7 +17,7 @@ public class ExportNeoGraphs {
 	public static void main(String[] args) {
 		for(int neo_no = 0; neo_no < 3; neo_no++){
 
-			SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(neo_no);
+			SpatioTemporalGraph stGraph = LoadNeoWktFiles.loadNeo(neo_no);
 
 			for(int i=0; i< stGraph.size(); i++){
 

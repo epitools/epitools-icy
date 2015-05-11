@@ -39,7 +39,7 @@ public class DetectT1Transition {
 			stGraph = StGraphUtils.createDefaultGraph(test_file,no_of_test_files);
 		}
 		else
-			stGraph = LoadNeoWtkFiles.loadNeo(0);
+			stGraph = LoadNeoWktFiles.loadNeo(0);
 		assert stGraph != null: "Spatio temporal graph creation failed!";
 		
 		HashMap<Node, PolygonalCellTile> cell_tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph);

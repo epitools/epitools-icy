@@ -12,7 +12,14 @@ import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 
-public class SaveNeoWtkFiles {
+/**
+ * Headless (no runnign icy instance) method to save the NEO sample files
+ * in the Well Known text format (WKT) for faster loading. See LoadNeoWt
+ * 
+ * @author Davide Heller
+ *
+ */
+public class SaveNeoWktFiles {
 
 	/**
 	 * @param args

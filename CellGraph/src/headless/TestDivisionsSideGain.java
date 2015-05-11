@@ -26,7 +26,7 @@ public class TestDivisionsSideGain {
 
 	public static void main(String[] args) {
 		
-		SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadMarcm(0);
+		SpatioTemporalGraph stGraph = LoadNeoWktFiles.loadMarcm(0);
 		
 		FrameGraph frame0 = stGraph.getFrame(0);
 		

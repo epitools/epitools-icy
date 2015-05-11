@@ -21,7 +21,7 @@ public class FollowChildrenPolyClass {
 
 		for(int neo_no = 0; neo_no < 3; neo_no++){
 
-			SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(neo_no);
+			SpatioTemporalGraph stGraph = LoadNeoWktFiles.loadNeo(neo_no);
 
 			StringBuilder builder = new StringBuilder();
 			boolean fill_start = true;

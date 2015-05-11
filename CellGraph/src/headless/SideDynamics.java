@@ -113,7 +113,7 @@ public class SideDynamics {
 //		int neo_no = 0;
 		for(int neo_no=0;neo_no<3;neo_no++){
 			//load neo
-			SpatioTemporalGraph stGraph = LoadNeoWtkFiles.loadNeo(neo_no);
+			SpatioTemporalGraph stGraph = LoadNeoWktFiles.loadNeo(neo_no);
 
 			//load edges
 			//PolygonalCellTileGenerator.createPolygonalTiles(stGraph);

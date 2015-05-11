@@ -16,7 +16,14 @@ import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-public class LoadNeoWtkFiles {
+/**
+ * Wrapper class for fast headless loading of samples saved in the
+ * well known text format (WKT)
+ * 
+ * @author Davide Heller
+ *
+ */
+public class LoadNeoWktFiles {
 
 	/**
 	 * @param args
@@ -47,8 +54,8 @@ public class LoadNeoWtkFiles {
 	 * 
 	 * Attention: Path is hard-coded for IMLS-NBM-DAHE (MBP-Retina)
 	 * 
-	 * @param neo_no
-	 * @param time_points
+	 * @param neo_no neo sample identifier (i.e. 0/1/2)
+	 * @param time_points number of time points to load
 	 * @return 
 	 */
 	public static SpatioTemporalGraph loadStGraph(int neo_no, int time_points) {
@@ -64,9 +71,11 @@ public class LoadNeoWtkFiles {
 	}
 
 	/**
-	 * @param time_points
-	 * @param export_folder
-	 * @param input_file
+	 * Load a WKT graph of choice specifying the location and number of time points
+	 * 
+	 * @param time_points number of time points to load
+	 * @param export_folder location of the wkt files
+	 * @param input_file first input file
 	 * @return
 	 */
 	public static SpatioTemporalGraph loadWktStGraph(int time_points,
@@ -83,6 +92,12 @@ public class LoadNeoWtkFiles {
 		return stGraph;
 	}
 	
+	/**
+	 * Analogous method to loadNeo for the Marcm sample
+	 * 
+	 * @param no marcm sample number
+	 * @return
+	 */
 	public static SpatioTemporalGraph loadMarcm(int no){ 
 		int time_points = 60;
 		
@@ -102,6 +117,12 @@ public class LoadNeoWtkFiles {
 		
 	}
 	
+	/**
+	 * Fast version of loadStGraph with defaults set to load all available time points
+	 * 
+	 * @param neo_no neo sample number
+	 * @return
+	 */
 	public static SpatioTemporalGraph loadNeo(int neo_no){
 		
 		//Graph generation
@@ -124,6 +145,13 @@ public class LoadNeoWtkFiles {
 		return stGraph;
 	}
 
+	/**
+	 * Segmentation Border loader. Loads a boundary ring from the specified
+	 * WKT file location and marks intersecting cells in the input graph. 
+	 * 
+	 * @param export_folder border file location
+	 * @param stGraph graph in which the cells should be marked
+	 */
 	public static void loadBorder(String export_folder,
 			SpatioTemporalGraph stGraph) {
 		WktPolygonImporter wkt_importer = new WktPolygonImporter();

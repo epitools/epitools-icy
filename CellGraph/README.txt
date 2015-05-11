@@ -1,6 +1,9 @@
 The MIT License (MIT)
 
-Copyright (c) 2013-2015 Davide Heller, Basler Lab
+Copyright (c) (2012-2015) Basler Group, IMLS, UZH
+
+author:	Davide Heller
+email:	davide.heller@imls.uzh.ch
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

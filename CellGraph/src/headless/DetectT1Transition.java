@@ -1,14 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
-
 package headless;
 
 import java.io.File;
@@ -24,9 +13,16 @@ import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.T1Transition;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.davhelle.cellgraph.painters.TransitionOverlay;
 import plugins.davhelle.cellgraph.tracking.EdgeTracking;
 
+/**
+ * Headless (no running icy instance required) method to detect T1 transitions
+ * in the time lapse. Parts of the file are hard coded for samples used in the
+ * manuscript.
+ * 
+ * @author Davide Heller
+ *
+ */
 public class DetectT1Transition {
 
 	public static void main(String[] args){
@@ -60,8 +56,12 @@ public class DetectT1Transition {
 	}
 
 	/**
-	 * @param stGraph
-	 * @param tracked_edges
+	 * Saves the stable edges (i.e. without missing frames) to a CSV file. Every line
+	 * corresponds to one edge entry and the comma separated values specify length at a 
+	 * specific time point (or the relative edge value if used differently)
+	 * 
+	 * @param stGraph the input graph
+	 * @param tracked_edges a Map containing a boolean presence array for every edgeID for every frame
 	 */
 	public static void saveStableEdgesToCSV(SpatioTemporalGraph stGraph,
 			HashMap<Long, boolean[]> tracked_edges) {
@@ -114,6 +114,17 @@ public class DetectT1Transition {
 	}
 	
 
+	/**
+	 * Identifies T1 transitions in the input graph. Currently dividing cells are excluded from
+	 * transition detection.
+	 * 
+	 * @param stGraph the input graph
+	 * @param cell_tiles the edge resolved cell object
+	 * @param tracked_edges the edge tracking as Map of boolean presence arrays
+	 * @param minimalTransitionLength minimal time/frameNo the transition should persist
+	 * @param minimalOldEdgeSurvivalLength minimal time/frameNo the old edge should persist
+	 * @return a list of T1 transitions objects
+	 */
 	public static ArrayList<T1Transition> findTransitions(
 			SpatioTemporalGraph stGraph,
 			HashMap<Node, PolygonalCellTile> cell_tiles,

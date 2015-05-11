@@ -1,6 +1,3 @@
-/**
- * 
- */
 package headless;
 
 import java.io.File;
@@ -13,7 +10,7 @@ import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
- * Save the evolution of children's polyclass
+ * Save the evolution of children cells's polygon class (i.e. the number of neighboring cells) 
  * 
  * @author Davide Heller
  *
@@ -51,6 +48,13 @@ public class FollowChildrenPolyClass {
 		}
 	}
 	
+	/**
+	 * Save the degree of a node as Sting in a builder object for all available time points
+	 * 
+	 * @param vertex input node
+	 * @param builder StringBuilder to be written
+	 * @param fill_start flag to fill or not the initial time points using the "NA" string
+	 */
 	private static void addSequentialNodeDegree(Node vertex, StringBuilder builder, boolean fill_start) {
 		
 		//Start line with cell id

@@ -3,7 +3,6 @@
  */
 package plugins.davhelle.cellgraph.painters;
 
-import headless.DetectDivisionOrientation;
 import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
@@ -36,7 +35,7 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 
 	private HashMap<Node, EllipseFitter> fittedEllipses;
 	private HashMap<Node, Double> division_orientation;
-	private HashMap<Node, Double> division_orientation2;
+	private final boolean DEBUG_FLAG = false;
 
 	public static final String DESCRIPTION = "Color codes the dividing cells according to their new junction orientation" +
 			" (Longest axis of mother cell vs New junction). The more red the cells are the more the new junstion is " +
@@ -50,10 +49,7 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 		super("Division Orientation",spatioTemporalGraph);
 		fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 		
-		division_orientation = DetectDivisionOrientation.computeDivisionOrientation(
-				stGraph, fittedEllipses);
-		
-		division_orientation2 = 
+		division_orientation = 
 				new DivisionOrientationFinder(stGraph, fittedEllipses, detection_distance, detection_length).run();
 		
 	}
@@ -73,13 +69,13 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 		
 		for(Node n: frame_i.vertexSet()){
 			if(fittedEllipses.containsKey(n)){
-				if(division_orientation2.containsKey(n.getFirst())){
+				if(division_orientation.containsKey(n.getFirst())){
 
 					double cX = n.getGeometry().getCentroid().getX();
 					double cY = n.getGeometry().getCentroid().getY();
-					double angle = Angle.toDegrees(division_orientation2.get(n.getFirst()));
+					double angle = Angle.toDegrees(division_orientation.get(n.getFirst()));
 
-					//TODO: set limit if desired
+					//Set limit if desired
 					//if(angle > 30)
 					//	continue;
 					
@@ -116,37 +112,35 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 					g.draw(new Line2D.Double(x0, y0,x1,y1));
 					
 					//Draw chosen Mother orientation
-//					g.setColor(longestAxisOrientationColor);
-//					g.draw(new Line2D.Double(mx0, my0,mx1,my1));
+					if(DEBUG_FLAG){
+						g.setColor(longestAxisOrientationColor);
+						g.draw(new Line2D.Double(mx0, my0,mx1,my1));
+					}
 					
 					//Give text information about angles
-					if(division_orientation2.containsKey(n.getFirst())){
+					if(DEBUG_FLAG)
+						if(division_orientation.containsKey(n.getFirst())){
 
-						double angle2 = Angle.toDegrees(
-								division_orientation2.get(n.getFirst()));
+							double angle2 = Angle.toDegrees(
+									division_orientation.get(n.getFirst()));
 
-						
-						EllipseFitter ef = fittedEllipses.get(n);
-						double longest_axis_angle = Math.abs(ef.theta - Math.PI);
-						double current_min_diff = Angle.diff(longest_axis_angle, future_junction_angle_radians);
-						current_min_diff = Angle.toDegrees(current_min_diff);
-						
-						if(current_min_diff > 90)
-							current_min_diff = Math.abs(current_min_diff - 180);
-						
-						int time_to_division = n.getDivision().getTimePoint() - time_point;
-						
-						double previous_value = -1;
-						if(division_orientation.containsKey(n.getFirst()))
-							previous_value = division_orientation.get(n.getFirst());
-						
-//						g.setColor(newJunctionAngleColor);
-//						g.drawString(String.format(
-//								"-%d :%.0f,%.0f,%.0f\n",
-//								time_to_division,angle,previous_value,current_min_diff), 
-//								(float)cX - 5  , 
-//								(float)cY + 5);
-					}
+							EllipseFitter ef = fittedEllipses.get(n);
+							double longest_axis_angle = Math.abs(ef.theta - Math.PI);
+							double current_min_diff = Angle.diff(longest_axis_angle, future_junction_angle_radians);
+							current_min_diff = Angle.toDegrees(current_min_diff);
+
+							if(current_min_diff > 90)
+								current_min_diff = Math.abs(current_min_diff - 180);
+
+							int time_to_division = n.getDivision().getTimePoint() - time_point;
+
+							g.setColor(newJunctionAngleColor);
+							g.drawString(String.format(
+									"-%d :%.0f,%.0f\n",
+									time_to_division,angle,current_min_diff), 
+									(float)cX - 5  , 
+									(float)cY + 5);
+						}
 					//System.out.printf("%.2f\n",n.getDivision().getDivisionOrientation());
 				}
 			}
@@ -181,10 +175,10 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 			Division d = divisions.next();
 			Node mother = d.getMother();
 			
-			if(division_orientation2.containsKey(mother.getFirst())){
+			if(division_orientation.containsKey(mother.getFirst())){
 				
 				double angle = Angle.toDegrees(
-						division_orientation2.get(mother.getFirst()));
+						division_orientation.get(mother.getFirst()));
 			
 				XLSUtil.setCellNumber(sheet, 0, row_no, mother.getCentroid().getX());
 				XLSUtil.setCellNumber(sheet, 1, row_no, mother.getCentroid().getY());

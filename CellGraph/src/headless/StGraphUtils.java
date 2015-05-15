@@ -1,40 +1,36 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
-
 package headless;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
 
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
 import plugins.davhelle.cellgraph.io.CsvTrackReader;
-import plugins.davhelle.cellgraph.io.WktPolygonExporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
-import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.tracking.HungarianTracking;
 
 /**
- * Utilities to assist a spatio temporal graph creation
+ * Static helper methods for the creation of a spatio-temporal graph
+ * through the input of skeleton images
  * 
  * @author Davide Heller
  *
  */
 public class StGraphUtils {
 	
+	/**
+	 * Creates a spatio-temporal graph with the following default settings:<br>
+	 * - TissueEvolution <br>
+	 * - No Border cut <br>
+	 * - Small Cells removed if below 10px area <br>
+	 * - HungarianTracking algorithm
+	 * 
+	 * @param test_file first skeleton file to be read
+	 * @param no_of_test_files number of time points to be read (sequential file name pattern required)
+	 * @return spatio-temporal graph of the input files
+	 */
 	public static SpatioTemporalGraph createDefaultGraph(
 			File test_file, int no_of_test_files) {
 		System.out.println("Creating graph..");
@@ -57,6 +53,12 @@ public class StGraphUtils {
 		return stGraph;
 	}
 	
+	/**
+	 * Specific setting to load the neo samples
+	 * 
+	 * @param i series id
+	 * @return spatio-temporal graph of the input files
+	 */
 	public static SpatioTemporalGraph loadNeo(int i){
 		
 		String sample_folder = String.format("/Users/davide/data/neo/%d/",i);
@@ -94,6 +96,12 @@ public class StGraphUtils {
 		return stGraph;
 	}
 	
+	/**
+	 * Load neo samples without tracking information
+	 * 
+	 * @param i
+	 * @return spatio-temporal graph of the input files
+	 */
 	public static SpatioTemporalGraph loadNeoWoTracking(int i){
 		
 		String sample_folder = String.format("/Users/davide/data/neo/%d/",i);

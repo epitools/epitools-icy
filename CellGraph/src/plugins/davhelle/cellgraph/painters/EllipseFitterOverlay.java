@@ -19,7 +19,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Double;
-import java.util.HashMap;
+import java.util.Map;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -39,7 +39,7 @@ public class EllipseFitterOverlay extends StGraphOverlay {
 	public static final String DESCRIPTION = "Fits an ellipse to each cell geometry and displays the longest axis" +
 			"using the ImageJ(R) EllipseFitter Macro.";
 	
-	private HashMap<Node, EllipseFitter> fittedEllipses;
+	private Map<Node, EllipseFitter> fittedEllipses;
 	
 	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("Ellipse Fitter",spatioTemporalGraph);

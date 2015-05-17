@@ -13,6 +13,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -33,8 +34,8 @@ import com.vividsolutions.jts.algorithm.Angle;
  */
 public class DivisionOrientationOverlay extends StGraphOverlay {
 
-	private HashMap<Node, EllipseFitter> fittedEllipses;
-	private HashMap<Node, Double> division_orientation;
+	private Map<Node, EllipseFitter> fittedEllipses;
+	private Map<Node, Double> division_orientation;
 	private final boolean DEBUG_FLAG = false;
 
 	public static final String DESCRIPTION = "Color codes the dividing cells according to their new junction orientation" +

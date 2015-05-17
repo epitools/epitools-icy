@@ -6,6 +6,7 @@ package plugins.davhelle.cellgraph.misc;
 import ij.process.EllipseFitter;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.algorithm.MinimumBoundingCircle;
@@ -28,7 +29,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class DivisionOrientationFinder {
 
 	SpatioTemporalGraph stGraph;
-	HashMap<Node, EllipseFitter> fittedEllipses;
+	Map<Node, EllipseFitter> fittedEllipses;
 	int detection_distance;
 	int detection_length;
 	final boolean USE_INTERSECTION_METHOD = false;
@@ -37,7 +38,7 @@ public class DivisionOrientationFinder {
 	
 	public DivisionOrientationFinder(
 			SpatioTemporalGraph stGraph,
-			HashMap<Node, EllipseFitter> fittedEllipses,
+			Map<Node, EllipseFitter> fittedEllipses,
 			int detection_distance,
 			int detection_length){
 
@@ -54,7 +55,7 @@ public class DivisionOrientationFinder {
 	 * 
 	 * @return map with the division angle for every dividing node
 	 */
-	public HashMap<Node,Double> run(){
+	public Map<Node,Double> run(){
 
 		HashMap<Node, Double> division_orientations = new HashMap<Node, Double>();
 		

@@ -21,6 +21,7 @@ import ij.process.ImageProcessor;
 
 import java.awt.Shape;
 import java.util.HashMap;
+import java.util.Map;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -39,7 +40,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class EllipseFitGenerator {
 	
-	private HashMap<Node, EllipseFitter> fittedElipses;
+	private Map<Node, EllipseFitter> fittedElipses;
 	ShapeWriter sw;
 	
 	public EllipseFitGenerator(SpatioTemporalGraph stGraph,Sequence sequence){
@@ -108,7 +109,7 @@ public class EllipseFitGenerator {
 		return ef;
 	}
 		
-	public HashMap<Node, EllipseFitter> getFittedEllipses(){
+	public Map<Node, EllipseFitter> getFittedEllipses(){
 		return fittedElipses;
 	}
 

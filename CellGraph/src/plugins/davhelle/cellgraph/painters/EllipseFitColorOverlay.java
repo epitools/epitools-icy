@@ -4,8 +4,6 @@
 package plugins.davhelle.cellgraph.painters;
 
 import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
 import icy.roi.ROI;
 import icy.sequence.Sequence;
 import icy.type.point.Point5D;
@@ -17,11 +15,9 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Double;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 
 import jxl.write.WritableSheet;
-
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
@@ -29,7 +25,6 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineSegment;
 
 /**
  * Overlay to color cells according to the longest axis 
@@ -43,7 +38,7 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 	"The overlay computes the angle with respect to (wrt) the estimated ellipse and displays it as a color code. " +
 	"Red being the perpendicular case and Green the parallel case (Longest axis vs Segment joining ROI and Ellipse Centroid)";
 	
-	private HashMap<Node, EllipseFitter> fittedEllipses;
+	private Map<Node, EllipseFitter> fittedEllipses;
 	private Coordinate roi_coor;
 	private Sequence sequence;
 	

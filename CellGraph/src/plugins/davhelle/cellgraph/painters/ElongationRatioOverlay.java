@@ -15,8 +15,8 @@ import ij.process.EllipseFitter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.geom.Line2D.Double;
 import java.util.HashMap;
+import java.util.Map;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -34,7 +34,7 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 
 	public static final String DESCRIPTION = "Color codes the cell according to their elongation ratio and "+
 			"writes the elongation factor within every cell";
-	private HashMap<Node, java.lang.Double> elongationRatios;
+	private Map<Node, java.lang.Double> elongationRatios;
 	
 	private double min;
 	private double max;
@@ -43,7 +43,7 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 	public ElongationRatioOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("EllipseRatio Coloring",spatioTemporalGraph);
 
-		HashMap<Node, EllipseFitter> fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
+		Map<Node, EllipseFitter> fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 	
 		this.min = java.lang.Double.MAX_VALUE;
 		this.max = java.lang.Double.MIN_VALUE;

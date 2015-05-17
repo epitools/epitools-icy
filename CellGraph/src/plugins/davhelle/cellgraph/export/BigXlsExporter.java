@@ -50,6 +50,9 @@ import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
  */
 public class BigXlsExporter {
 	
+	/**
+	 * Description read by the GUI-Plugins
+	 */
 	public static final String DESCRIPTION = 
 			"Loaded graph is saved as one Excel Spreadsheet (.xls) with one " +
 			"worksheet for every frame." +
@@ -70,10 +73,18 @@ public class BigXlsExporter {
 			"* Time of elimination\n" +
 			"* Cell on segmentation border[T/F]";
 
+	/**
+	 * Spatio temporal graph to export
+	 */
 	SpatioTemporalGraph stGraph;
 	
+	/**
+	 * Voronoi Tesselation container 
+	 */
 	Map<Node, Geometry> voronoiTesselation;
-	HashMap<Node, EllipseFitter> fittedEllipses;
+	
+	
+	Map<Node, EllipseFitter> fittedEllipses;
 
 	private boolean exprotTaggedOnly;
 

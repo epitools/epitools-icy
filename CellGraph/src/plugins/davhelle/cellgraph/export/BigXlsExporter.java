@@ -1,17 +1,15 @@
 package plugins.davhelle.cellgraph.export;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.vividsolutions.jts.geom.Geometry;
-
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
 import ij.process.EllipseFitter;
+
+import java.io.IOException;
+import java.util.Map;
+
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
@@ -22,6 +20,8 @@ import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Generate one big XLS sheet for a spatio-temporal graph
@@ -88,6 +88,14 @@ public class BigXlsExporter {
 
 	private boolean exprotTaggedOnly;
 
+	/**
+	 * Creates object with progress bar feedback
+	 * 
+	 * @param stGraph
+	 * @param exportTaggedOnly
+	 * @param sequence 
+	 * @param gui EzGUI handle from which setProgressBarMessage will be accessed
+	 */
 	public BigXlsExporter(SpatioTemporalGraph stGraph, boolean exportTaggedOnly, Sequence sequence, EzGUI gui){
 		
 		this.stGraph = stGraph;
@@ -104,6 +112,13 @@ public class BigXlsExporter {
 		
 	}
 	
+	/**
+	 * Creates the object to be written into a excel file
+	 * 
+	 * @param stGraph graph to be written out
+	 * @param exportTaggedOnly flag indicating whether only tagged cells should be exported
+	 * @param sequence icy sequence on with which the stgraph is coupled
+	 */
 	public BigXlsExporter(SpatioTemporalGraph stGraph, boolean exportTaggedOnly, Sequence sequence){
 		
 		this.stGraph = stGraph;
@@ -118,6 +133,12 @@ public class BigXlsExporter {
 		
 	}
 	
+	/**
+	 * Individual Excel sheet writer 
+	 * 
+	 * @param sheet Sheet to be written to
+	 * @param frame Frame of stGraph to be written
+	 */
 	private void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		
 		int row_no = 0;
@@ -203,6 +224,9 @@ public class BigXlsExporter {
 		}
 	}
 	
+	/**
+	 * Writes the object to a user defined file (gui-popup)
+	 */
 	public void writeXLSFile(){
 		try {
 			String file_name = SaveDialog.chooseFile(

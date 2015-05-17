@@ -29,9 +29,15 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class VertexLabelProvider implements VertexNameProvider<Node> {
 	
+	/**
+	 * Type of information to be put in the attribute label
+	 */
 	ExportFieldType export_field;
 	
 	
+	/**
+	 * @param field information to be put in the export field
+	 */
 	public VertexLabelProvider(ExportFieldType field){
 		this.export_field = field;
 	}
@@ -176,6 +182,12 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		return vertex_label;
 	}
 	
+	/**
+	 * sequential csv output of node degree
+	 * 
+	 * @param vertex of which node degree to write
+	 * @return
+	 */
 	private String getSequentialNodeDegree(Node vertex) {
 		
 		String csv_degree_over_time = String.format("%d,%d",
@@ -190,6 +202,12 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		return csv_degree_over_time;
 	}
 
+	/**
+	 * sequential csv output of y coordinates
+	 * 
+	 * @param vertex
+	 * @return
+	 */
 	private String getSequentialYCoordinates(Node vertex) {
 		
 		double cell_y = vertex.getCentroid().getY();
@@ -216,6 +234,12 @@ public class VertexLabelProvider implements VertexNameProvider<Node> {
 		return csv_y_over_time;
 	}
 	
+	/**
+	 * Sequential csv output of x-coordinates
+	 * 
+	 * @param vertex 
+	 * @return
+	 */
 	private String getSequentialXCoordinates(Node vertex) {
 		
 		double cell_x = vertex.getCentroid().getX();

@@ -12,8 +12,22 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
+/**
+ * Class to export a SpatioTemporal graph object as individual
+ * GraphML (xml based graph format) files.
+ * 
+ * Uses {@link GraphMLExporter} from the jgraphT package.
+ * 
+ * See {@link VertexLabelProvider} for the specific implementation
+ * 
+ * @author Davide Heller
+ *
+ */
 public class GraphExporter {
 	
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"The loaded graph is saved as a GraphML file. This format is a" +
 			" xml based graph format. Bejond the spatial graph structure" +
@@ -31,6 +45,9 @@ public class GraphExporter {
 	
 	GraphMLExporter<Node, Edge> graphML_exporter;
 	
+	/**
+	 * @param export_field attribute option to be exported
+	 */
 	public GraphExporter(ExportFieldType export_field) {
 		VertexIdProvider vertex_id_provider = new VertexIdProvider();
 		VertexLabelProvider vertex_label_provider = new VertexLabelProvider(export_field);
@@ -44,6 +61,12 @@ public class GraphExporter {
 				edge_label_provider);
 	}
 	
+	/**
+	 * Exports the stgraph frame to a file with the specified name
+	 * 
+	 * @param frame
+	 * @param file_name
+	 */
 	public void exportFrame(FrameGraph frame, String file_name){
 		try{
 			FileWriter writer = new FileWriter(file_name);

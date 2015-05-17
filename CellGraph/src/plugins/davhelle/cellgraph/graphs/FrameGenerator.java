@@ -1,20 +1,13 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.graphs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.JtsVtkReader;
 import plugins.davhelle.cellgraph.io.PolygonReader;
-import plugins.davhelle.cellgraph.io.SegmentationProgram;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.nodes.Cell;
@@ -31,8 +24,8 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 /**
  * FrameGenerator is a helper class to create FrameGraph objects
  * given a specific user input. Once initialized it can generate
- * FrameGraphs without the need to respecify all the generation
- * details, e.g. Input Type ecc...
+ * FrameGraphs without the need to specify again all the generation
+ * details.
  * 
  * @author Davide Heller
  *
@@ -40,8 +33,7 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 public class FrameGenerator {
 	
 	PolygonReader polygonReader;
-	private PreparedGeometryFactory cached_factory;
-
+	PreparedGeometryFactory cached_factory;
 	
 	/**
 	 * Initializes the parameters
@@ -75,7 +67,7 @@ public class FrameGenerator {
 	}
 	
 	/**
-	 * generates a single FrameGraph for the specified time point 
+	 * Generates a single FrameGraph for the specified time point 
 	 * and absolute file name.
 	 * 
 	 * @param frame_no time point of the new frame
@@ -95,6 +87,14 @@ public class FrameGenerator {
 		return frame;
 	}
 
+	/**
+	 * Fills the frame with the geometries/cells found in the input polygonMesh
+	 * list. It uses the intersection method to determine the connectivity between
+	 * nodes of the CellGraph. An STR tree is used to improve efficiency. 
+	 * 
+	 * @param frame
+	 * @param polygonMesh
+	 */
 	public void populateFrame(FrameGraph frame, ArrayList<Polygon> polygonMesh) {
 		
 		//insert all polygons into graph as CellPolygons
@@ -144,6 +144,7 @@ public class FrameGenerator {
 			PreparedGeometry cached_a = cached_factory.create(geometry_a);
 			
 			//Get candidates from STRtree
+			@SuppressWarnings("unchecked")
 			ArrayList<Polygon> intersections = 
 					(ArrayList<Polygon>) index.query(geometry_a.getEnvelopeInternal());
 			

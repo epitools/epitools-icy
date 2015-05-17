@@ -7,18 +7,37 @@ import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 
 /**
- * Generates a graph and populates it with Frames
+ * Generates a {@link SpatioTemporalGraph} and populates it with {@link FrameGraph} objects
  * 
  * @author Davide Heller
  *
  */
 public class SpatioTemporalGraphGenerator {
 
+	/**
+	 * The graph to be populated
+	 */
 	SpatioTemporalGraph stGraph;
+	/**
+	 * The naming generator for sequential skeleton files
+	 */
 	FileNameGenerator file_name_generator;
+	/**
+	 * The factory generating individual frameGraphs
+	 */
 	FrameGenerator frame_generator;
+	/**
+	 * Number of frames to be inserted
+	 */
 	int frame_no;
 	
+	/**
+	 * Default generator using skeleton images as input
+	 * 
+	 * @param type which implementation of SpatioTemporalGraph to use
+	 * @param input_file skeleton file of the first time point
+	 * @param time_points number of time points to be read
+	 */
 	public SpatioTemporalGraphGenerator(GraphType type, File input_file, int time_points) {
 		switch(type){
 			case TISSUE_EVOLUTION:
@@ -47,6 +66,14 @@ public class SpatioTemporalGraphGenerator {
 			
 	}
 	
+	/**
+	 * Generic generator with additional input file format type specification see {@link InputType}
+	 * 
+	 * @param type
+	 * @param input_file
+	 * @param time_points
+	 * @param input_type input file format to use
+	 */
 	public SpatioTemporalGraphGenerator(GraphType type, File input_file, int time_points, InputType input_type) {
 		switch(type){
 			case TISSUE_EVOLUTION:
@@ -75,6 +102,11 @@ public class SpatioTemporalGraphGenerator {
 			
 	}
 
+	/**
+	 * Checks if the file name generated for the specified time point exists
+	 * 
+	 * @param i time point to generate the file name for
+	 */
 	private void checkFileExistence(int i) {
 		String time_point_file_name = file_name_generator.getFileName(i);
 		File time_point_file = new File(time_point_file_name);
@@ -82,6 +114,9 @@ public class SpatioTemporalGraphGenerator {
 			String.format("Time point %s is missing",time_point_file_name);
 	}
 	
+	/**
+	 * @param frame_no frame number to add
+	 */
 	private void addFrame(int frame_no){
 		String frame_file_name = file_name_generator.getFileName(frame_no);
 		
@@ -99,6 +134,9 @@ public class SpatioTemporalGraphGenerator {
 				endTime - startTime));
 	}
 	
+	/**
+	 * @return the populated spatiotemporal graph
+	 */
 	public SpatioTemporalGraph getStGraph(){
 		return this.stGraph;
 	}

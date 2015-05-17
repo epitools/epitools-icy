@@ -1,14 +1,10 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.graphs;
 
 /**
- * DevelopmentType represents the entire abstraction
- * of the development of the tissue represented through
- * single frames taken and represented trough a TissueGraph. * 
+ * Parent class of {@link FrameGraph} containing all frames belonging 
+ * to one series. With the frames being tracked, a temporal connectivity is
+ * added to the spatial connectivity of the individual frame. This is
+ * the reason for naming the structure spatio - temporal - graph;
  * 
  * @author Davide Heller
  * 
@@ -16,7 +12,7 @@ package plugins.davhelle.cellgraph.graphs;
 public interface SpatioTemporalGraph {
 	
 	/**
-	 * Method to access a specific TissueGraph by it's temporal
+	 * Method to access a specific FrameGraph by it's temporal
 	 * index/frame no. 
 	 * 
 	 * @param frame_no Index of the Tissue Graph to be extracted
@@ -25,10 +21,10 @@ public interface SpatioTemporalGraph {
 	public FrameGraph getFrame(int frame_no);
 	
 	/**
-	 * Method to set a specific TissueGraph at a given time point
+	 * Method to set a specific FrameGraph at a given time point
 	 * -frame number.
 	 * 
-	 * @param graph	TissueGraph to be inserted into Time structure
+	 * @param graph	FrameGraph to be inserted into stGraph structure
 	 * @param frame_no Time point at which the insertion takes place
 	 */
 	public void setFrame(FrameGraph graph, int frame_no);

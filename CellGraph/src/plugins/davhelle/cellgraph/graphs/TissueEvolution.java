@@ -1,16 +1,10 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
-/**
- * 
- */
 package plugins.davhelle.cellgraph.graphs;
 
 import java.util.ArrayList;
 
 /**
+ * Standard implementation of StGraph
+ * 
  * @author Davide Heller
  *
  */
@@ -25,7 +19,6 @@ public class TissueEvolution implements SpatioTemporalGraph {
 	 * 
 	 */
 	public TissueEvolution(int time_points) {
-		// TODO Auto-generated constructor stub
 		this.has_tracking = false;
 		this.has_voronoi = false;
 		this.has_ellipse_fitting = false;

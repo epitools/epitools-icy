@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import plugins.davhelle.cellgraph.io.InputType;
-import plugins.davhelle.cellgraph.io.JtsVtkReader;
+import plugins.davhelle.cellgraph.io.VtkPolygonReader;
 import plugins.davhelle.cellgraph.io.PolygonReader;
 import plugins.davhelle.cellgraph.io.SkeletonReader;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
@@ -51,7 +51,7 @@ public class FrameGenerator {
 			break;
 		case VTK_MESH:
 			
-			this.polygonReader = new JtsVtkReader();
+			this.polygonReader = new VtkPolygonReader();
 			break;
 		
 		case WKT:

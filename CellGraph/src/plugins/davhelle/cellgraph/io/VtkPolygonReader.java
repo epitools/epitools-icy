@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
 import icy.gui.frame.progress.AnnounceFrame;
@@ -10,34 +5,39 @@ import icy.gui.frame.progress.AnnounceFrame;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import vtk.vtkCellArray;
+import vtk.vtkIdTypeArray;
+import vtk.vtkPoints;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataReader;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 
-import vtk.vtkCellArray;
-import vtk.vtkIdTypeArray;
-import vtk.vtkPoints;
-import vtk.vtkPolyData;
-import vtk.vtkPolyDataReader;
-import vtk.vtkPolyDataWriter;
-
 /**
- * Class to read a VTK mesh file and elaborate it into a 
- * collection of JTS Geometry objects (method dependend)
+ * Class to read a VTK polydata mesh file and elaborate it into a 
+ * collection of JTS Geometry objects
  * 
  * @author Davide Heller
  *
  */
-public class JtsVtkReader implements PolygonReader{
+public class VtkPolygonReader implements PolygonReader{
 	
+	/**
+	 * VTK polygon data reader
+	 */
 	vtkPolyDataReader reader;
 	
-	public JtsVtkReader(){	
+	public VtkPolygonReader(){	
 		reader = new vtkPolyDataReader();	
 	}
 	
+	/**
+	 * @return true if the data is not vtk polygon data (polydata)
+	 */
 	private boolean is_not_polydata(){
 		return reader.IsFilePolyData() != 1;
 	}
@@ -48,6 +48,7 @@ public class JtsVtkReader implements PolygonReader{
 	 * 
 	 * @return Collection of jts polygons
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ArrayList<Polygon> extractPolygons(String file_name){
 		
 		//define input
@@ -119,7 +120,7 @@ public class JtsVtkReader implements PolygonReader{
         }
         
         //TODO try adding directly without using the raw type collection
-//        System.out.println("Lines in collection:"+line_collection.size());
+        //System.out.println("Lines in collection:"+line_collection.size());
         polygonizer.add(line_collection);
         
         //Polygonize line work

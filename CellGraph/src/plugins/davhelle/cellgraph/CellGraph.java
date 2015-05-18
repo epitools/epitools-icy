@@ -18,7 +18,6 @@ import icy.swimmingPool.SwimmingObject;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +38,6 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.TissueEvolution;
 import plugins.davhelle.cellgraph.io.CsvTrackReader;
-import plugins.davhelle.cellgraph.io.DivisionReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
@@ -47,10 +45,8 @@ import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.painters.DisplacementOverlay;
-import plugins.davhelle.cellgraph.painters.DivisionOverlay;
 import plugins.davhelle.cellgraph.painters.GraphCoherenceOverlay;
 import plugins.davhelle.cellgraph.painters.PolygonOverlay;
-import plugins.davhelle.cellgraph.painters.SiblingPainter;
 import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
 import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 import plugins.davhelle.cellgraph.tracking.HungarianTracking;
@@ -129,7 +125,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarDouble					varLambda1;
 	EzVarDouble					varLambda2;
 	EzVarBoolean				varBooleanCellIDs;
-	EzVarBoolean				varBooleanLoadDivisions;
 	
 	//Remove cells
 	EzVarBoolean				varRemoveSmallCells;
@@ -267,7 +262,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varDisplacement = new EzVarFloat(
 				"Max. displacement (px)",5,1,20,(float)0.1);
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
-		varBooleanLoadDivisions = new EzVarBoolean("Load division file", false);
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		varBooleanDrawGraphCoherence = new EzVarBoolean("Draw Graph coherence indeces",false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
@@ -287,7 +281,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varBorderEliminationNo,
 				//varBooleanCellIDs,
 				//varBooleanHighlightMistakesBoolean,
-				//varBooleanLoadDivisions,
 				//varBooleanDrawDisplacement,
 				varBooleanDrawGraphCoherence);
 		
@@ -607,24 +600,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 			sequence.addOverlay(new GraphCoherenceOverlay(wing_disc_movie));
 		}
 		
-		if(varBooleanLoadDivisions.getValue()){
-			//read manual divisions and combine with tracking information
-			try{
-				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-				division_reader.assignDivisions();
-				sequence.addOverlay(new DivisionOverlay(wing_disc_movie, true,false,true,false));
-			}
-			catch(IOException e){
-				System.out.println("Something went wrong in division reading");
-			}
-			
-			sequence.addOverlay(new SiblingPainter(wing_disc_movie));
-		}
-		else{
-			//Paint corresponding cells in time
-			TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
-			sequence.addOverlay(correspondence);
-		}
+		//Paint corresponding cells in time
+		TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
+		sequence.addOverlay(correspondence);
+		
 	}
 
 	private void pushToSwimingPool(TissueEvolution wing_disc_movie) {

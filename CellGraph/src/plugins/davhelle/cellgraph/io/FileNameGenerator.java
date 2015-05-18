@@ -18,16 +18,51 @@ import java.io.File;
  */
 public class FileNameGenerator {
 	
+	/**
+	 * Custom enumeration to support specific application input
+	 */
 	private SegmentationProgram tool;
+	
+	/**
+	 * First input file path
+	 */
 	private String input_file_name;
 	
+	/**
+	 * File sequence start (might not be 0)
+	 */
 	private int start_file_no;
+	
+	/**
+	 * Frame index 
+	 */
 	private int file_no_idx;
+	
+	/**
+	 * Position of the point 
+	 */
 	private int point_idx;
 
+	/**
+	 * Flag to use application specific input
+	 */
 	private boolean use_tool_option;
+	
+	/**
+	 * Original file input
+	 */
 	private File input_file;
 	
+	/**
+	 * File name generator for sequences
+	 * 
+	 * Assumption: [file_name][Zero tabbed - 3 digit number].[extension]
+	 * 
+	 * @param input_file First frame of a series
+	 * @param fileType Type of input (i.e. skeletons, vkt ecc..)
+	 * @param directInput Flag for Application Specific input
+	 * @param tool Application Enumeration Tag
+	 */
 	public FileNameGenerator(
 			File input_file, 
 			InputType fileType, 
@@ -42,8 +77,7 @@ public class FileNameGenerator {
 		input_file_name = input_file.getAbsolutePath();
 		point_idx = input_file_name.lastIndexOf('.');
 		
-		//assumption of 3 digit number
-		//TODO: proper number read in (no. represented in 2 digit format...)
+		//Assumption: Zero tabbed - 3 digit number
 		//TODO: do it like fiji-loci-fileImporter : parse Option
 		file_no_idx = point_idx - 3;
 		if(point_idx > 3){		
@@ -54,16 +88,14 @@ public class FileNameGenerator {
 
 	}
 	
+	/**
+	 * @param i time point to generate the file name for
+	 * @return absolute path of input file for time point i
+	 */
 	public String getFileName(int i){
 		
 		int file_no = start_file_no + i;
-		String file_str_no = Integer.toString(file_no);
-		
-		//TODO add support for more than 2 digit no
-		if(file_no < 10)
-			file_str_no = "00" + file_str_no;  
-		else if(file_no < 100)
-			file_str_no = "0" + file_str_no;  
+		String file_str_no = String.format("%03d", file_no);
 		
 		String abs_path = "";
 	
@@ -85,6 +117,9 @@ public class FileNameGenerator {
 		return abs_path;
 	}
 	
+	/**
+	 * @return Short first input file name for input GUI
+	 */
 	public String getShortName(){
 		return input_file.getName();
 	}

@@ -3,10 +3,8 @@
  */
 package plugins.davhelle.cellgraph.io;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -17,23 +15,29 @@ import com.vividsolutions.jts.io.OutputStreamOutStream;
 import com.vividsolutions.jts.io.WKBWriter;
 
 /**
+ * Experimental class for Well Known Binary input.
  * 
  * Similar to WKT but this version saves binary. Possible SpeedGAIN. 
+ * 
  * @author Davide Heller
  *
  */
 public class WkbPolygonExporter {
 
+	/**
+	 * Well Known Binary writer class
+	 */
 	private WKBWriter writer;
 	
-	/**
-	 * 
-	 */
 	private WkbPolygonExporter() {
 		writer = new WKBWriter();
 	}
 
-	
+	/**
+	 * Exports the stGraph contained frames as polygonal WKB files
+	 * 
+	 * @param stGraph
+	 */
 	public WkbPolygonExporter(SpatioTemporalGraph stGraph){
 		this();
 		
@@ -56,39 +60,13 @@ public class WkbPolygonExporter {
 			exportFrame(frame, output_name);
 		}
 	}
-
-
-	private void exportFrameHEX(FrameGraph frame, String frame_file_name) {
-
-		File frame_file = new File(frame_file_name);
-		
-		try {
-			
-			frame_file.createNewFile();
-			
-			FileWriter fw = new FileWriter(frame_file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			for(Node cell: frame.vertexSet()){
-				
-				byte[] geo_bin = writer.write(cell.getGeometry());
-				String node_string = WKBWriter.bytesToHex(geo_bin);
-				
-				if(node_string.length() > 0){
-					bw.write(node_string);
-					bw.newLine();
-				}
-			}
-			
-			
-			bw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Something went wrong while attempting to write: "+frame_file_name);
-		}
-		
-	}
 	
+	/**
+	 * Writes binary WKB files for input frame
+	 * 
+	 * @param frame frame to be written out
+	 * @param frame_file_name output path
+	 */
 	private void exportFrame(FrameGraph frame, String frame_file_name) {
 
 		File frame_file = new File(frame_file_name);

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package plugins.davhelle.cellgraph.io;
 
 import java.io.BufferedWriter;
@@ -16,14 +13,17 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
- * 
- * This class saves the polygons read from the image for faster reload
+ * Class to save the polygons contained in the stGraph as Well Known Text geometries
+ * for faster re-load using the WKT Polygon Importer as Polygon Reader.
  * 
  * @author Davide Heller
  *
  */
 public class WktPolygonExporter {
 	
+	/**
+	 * Description for Exporter Plugin
+	 */
 	public static final String DESCRIPTION = 
 			"Export the loaded polygon geometries as Well-Known text (WKT) files." +
 			" The WKT format accelerates significantly" +
@@ -31,6 +31,9 @@ public class WktPolygonExporter {
 			" To know more about this format visit:\n " +
 			"en.wikipedia.org/wiki/Well-known_text";
 	
+	/**
+	 * JTS Well Known Text writer 
+	 */
 	private WKTWriter writer;
 	
 	public WktPolygonExporter(){
@@ -38,8 +41,10 @@ public class WktPolygonExporter {
 	}
 
 	/**
-	 * @param wing_disc_movie 
+	 * Exports all frames in the stGraph as WKT files
 	 * 
+	 * @param stGraph graph to export
+	 * @param frame_file_name output path (folder)
 	 */
 	public WktPolygonExporter(SpatioTemporalGraph stGraph,String frame_file_name) {
 		this();
@@ -51,6 +56,14 @@ public class WktPolygonExporter {
 		
 	}
 	
+	/**
+	 * Transforms single JTS geometry to WKT and saves it at the output path
+	 * 
+	 * Used for boundary ring export
+	 * 
+	 * @param geometry single JTS geometry to export
+	 * @param output_name output path
+	 */
 	public void export(Geometry geometry, String output_name){
 
 		File frame_file = new File(output_name);
@@ -77,6 +90,11 @@ public class WktPolygonExporter {
 
 	}
 	
+	/**
+	 * Exports all frames in the graph to default location
+	 * 
+	 * @param stGraph
+	 */
 	public WktPolygonExporter(SpatioTemporalGraph stGraph){
 		this();
 		
@@ -98,6 +116,12 @@ public class WktPolygonExporter {
 		}
 	}
 
+	/**
+	 * Export individual frameGraph as WKT file
+	 * 
+	 * @param frame frame to export
+	 * @param frame_file_name output path (folder)
+	 */
 	public void exportFrame(FrameGraph frame, String frame_file_name) {		
 		
 		File frame_file = new File(frame_file_name);

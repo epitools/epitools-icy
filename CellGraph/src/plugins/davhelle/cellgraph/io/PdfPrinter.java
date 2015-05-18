@@ -20,8 +20,18 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.painters.StGraphOverlay;
 
+/**
+ * PDF printer class that converts the AWT Overlays for StGraphs
+ * into vector graphics using the gnu.jpdf package.
+ * 
+ * @author Davide Heller
+ *
+ */
 public class PdfPrinter {
 	
+	/**
+	 * Descriptor String for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"Exports a Vector graphic (PDF) file of the loaded graph structure.\n\n" +
 			" Currently the only the selected frame is exported with all" +
@@ -29,6 +39,12 @@ public class PdfPrinter {
 			" bit-map image is not included in the pdf but sets the" +
 			" dimensions of the file.";
 
+	/**
+	 * Specify the stGraph to be converted to PDF (sequence image excluded)
+	 * 
+	 * @param stGraph input graph to be converted
+	 * @param sequence sequence on which the overlays are displayed
+	 */
 	public PdfPrinter(SpatioTemporalGraph stGraph, Sequence sequence){
 		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
@@ -74,9 +90,8 @@ public class PdfPrinter {
 				}
 			}
 			
-			//paint
+			//test paint for specific overlays
 			//new PolygonClassOverlay(stGraph,false,0).paintFrame(pdfGraphics,frame0);
-			
 			//new DivisionOrientationOverlay(stGraph).paintFrame(pdfGraphics, 0);
 			//new PolygonOverlay(stGraph, Color.BLACK).paintFrame(pdfGraphics,frame0);
 			

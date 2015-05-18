@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
 import icy.image.IcyBufferedImage;
@@ -23,6 +18,9 @@ import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 /**
  * SkeletonReader allows direct input of a Skeleton image which 
  * is converted into a JTS Polygon collection. 
+ * 
+ * Currently skeleton/membrane signal is required to have value 255
+ * and be 8-connected.
  * 
  * @author Davide Heller
  *
@@ -70,6 +68,7 @@ public class SkeletonReader implements PolygonReader{
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ArrayList<Polygon> extractPolygons(String file_name){
 		
 		BufferedImage raw_img = ImageUtil.load(file_name);

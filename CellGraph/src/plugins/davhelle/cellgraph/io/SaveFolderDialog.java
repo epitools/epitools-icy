@@ -10,7 +10,7 @@ import javax.swing.JFileChooser;
 /**
  * Simple folder choice dialog to let user locate an export folder of choice.
  * 
- * based on icy.gui.dialog.SaveDialog by Stephane
+ * based on icy.gui.dialog.SaveDialog by Stephane Dallongeville
  * distributed under GNU General Public License
  * 
  * @author Davide Heller

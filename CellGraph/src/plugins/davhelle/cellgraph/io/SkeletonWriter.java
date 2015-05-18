@@ -16,23 +16,35 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Class to save the read & processed skeletons
+ * Class to save the cell graph skeletons as TIFF skeleton images
  * 
  * @author Davide Heller
  *
  */
 public class SkeletonWriter {
 	
+	/**
+	 * Description Sting for Export Plugin
+	 */
 	public static final String DESCRIPTION = "Export each frame of the spatiotemporal graph loaded as" +
 			" individual TIFF skeleton file. This skeleton reflext also modification such as"+
 			"small cell or border removal. Useful for further editing with CellEditor.";
 	
+	/**
+	 * Sequence attached to stGraph
+	 */
 	Sequence sequence;
 	
 	public SkeletonWriter(Sequence sequence){
 		this.sequence = sequence;
 	}
 	
+	/**
+	 * writes FrameGraph to skeleton TIFF image
+	 * 
+	 * @param frame_i FrameGraph to export
+	 * @param file_name output path
+	 */
 	public void write(FrameGraph frame_i,String file_name){
 		
 		IcyBufferedImage skeleton_img = createSkeleton(frame_i);
@@ -41,6 +53,12 @@ public class SkeletonWriter {
 		
 	}
 	
+	/**
+	 * Transformation JTS Geometry to Buffered ICY image
+	 * 
+	 * @param frame_i FrameGraph to transform
+	 * @return buffered icy image of input frame
+	 */
 	private IcyBufferedImage createSkeleton(FrameGraph frame_i) {
 		
 		int img_width = sequence.getSizeX();
@@ -63,6 +81,12 @@ public class SkeletonWriter {
 		return img;
 	}
 	
+	/**
+	 * Saving Procedure of ICY buffered image
+	 * 
+	 * @param current_file_name output path
+	 * @param img image to save
+	 */
 	private void saveSkeleton(String current_file_name, IcyBufferedImage img) {
 		
 		System.out.println("Saving skeleton:"+current_file_name);

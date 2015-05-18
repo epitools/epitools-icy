@@ -1,13 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
 import java.io.BufferedWriter;

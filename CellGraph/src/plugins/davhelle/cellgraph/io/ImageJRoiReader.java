@@ -7,14 +7,31 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
+/**
+ * Helper class to import Region of Interest (ROI) points
+ * from ImageJ to CellGraph
+ * 
+ * @author Davide Heller
+ *
+ */
 public class ImageJRoiReader {
 	
-	private final 	GeometryFactory factory = new GeometryFactory();
+	/**
+	 * JTS factory for transforming the ImageJ ROIs in JTS point geometries
+	 */
+	private final GeometryFactory factory = new GeometryFactory();
 
-	public Map<Integer, Point> readMultiPointRoi(String testInput) {
+	/**
+	 * Reads all ROIs specified in the input string and converts them to 
+	 * mapped JTS point to the original ROI number
+	 * 
+	 * @param imageJ_ROI_string input string containing the imageJ ROI file
+	 * @return a map of ROIs accessible through the original ROI number
+	 */
+	public Map<Integer, Point> readMultiPointRoi(String imageJ_ROI_string) {
 		
 		Map<Integer, Point> map = new HashMap<Integer, Point>();
-		String[] rows = testInput.split("\n");
+		String[] rows = imageJ_ROI_string.split("\n");
 		
 		//skip header row and parse location of each point roi
 		for (int i = 1; i < rows.length; i++) {

@@ -3,20 +3,33 @@ package plugins.davhelle.cellgraph.graphs;
 import java.util.ArrayList;
 
 /**
- * Standard implementation of StGraph
+ * Standard implementation of StGraph for representing developing tissues
+ * like the imaginal wing disk of Drosophila melanogaster.
  * 
  * @author Davide Heller
  *
  */
 public class TissueEvolution implements SpatioTemporalGraph {
 
+	/**
+	 * Container for individual time points
+	 */
 	private ArrayList<FrameGraph> frames;
+	/**
+	 * Flag if temporal connectivity has been added to the graph
+	 */
 	private boolean has_tracking;
+	/**
+	 * Flag if a voronoi diagram has been computed for the graph 
+	 */
 	private boolean has_voronoi;
+	/**
+	 * Flag if ellipses have been fitted to the indiviual cell polygons
+	 */
 	private boolean has_ellipse_fitting;
 	
 	/**
-	 * 
+	 * Initialization with number of time points
 	 */
 	public TissueEvolution(int time_points) {
 		this.has_tracking = false;
@@ -25,6 +38,9 @@ public class TissueEvolution implements SpatioTemporalGraph {
 		this.frames = new ArrayList<FrameGraph>(time_points);
 	}
 	
+	/**
+	 * Default initialization with 0 time points
+	 */
 	public TissueEvolution(){
 		this(0);
 	}
@@ -52,25 +68,16 @@ public class TissueEvolution implements SpatioTemporalGraph {
 		frames.add(graph);
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.graphs.DevelopmentType#size()
-	 */
 	@Override
 	public int size() {
 		return frames.size();
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.graphs.DevelopmentType#hasTracking()
-	 */
 	@Override
 	public boolean hasTracking() {
 		return has_tracking;
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.graphs.DevelopmentType#hasVoronoi()
-	 */
 	@Override
 	public boolean hasVoronoi() {
 		return has_voronoi;
@@ -88,7 +95,6 @@ public class TissueEvolution implements SpatioTemporalGraph {
 
 	@Override
 	public boolean hasEllipseFitting() {
-		// TODO Auto-generated method stub
 		return has_ellipse_fitting;
 	}
 

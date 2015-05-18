@@ -1,13 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
 import java.io.BufferedReader;
@@ -29,24 +19,49 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * Program for reading a saved tracking by CsvTrackWriter
+ * Simple Reader Class for saved tracking files written by CsvTrackWriter.
+ * Extend TrackingAlgorithm such that it can be substituted to a normal tracking algorithm.
  * 
  * @author Davide Heller
  *
  */
 public class CsvTrackReader extends TrackingAlgorithm{
 
+	/**
+	 * Tracking files location
+	 */
 	private String input_directory;
+	
+	/**
+	 * Amount of frames that should be linked 
+	 */
 	private int linkage_threshold;
 	
+	/**
+	 * Matching pattern for coordinate files
+	 */
 	public static final String tracking_file_pattern = "tracking_t%03d.csv";
+	
+	/**
+	 * Matching pattern for divisions file
+	 */
 	public static final String division_file_pattern = "divisions.csv";
+	
+	/**
+	 * Matching pattern for elimination file
+	 */
 	public static final String elimination_file_pattern = "eliminations.csv";
 	
+	/**
+	 * Set up the reader
+	 * 
+	 * @param stGraph spatio-temporal graph to apply the tracking to
+	 * @param input_directory location of the tracking files
+	 */
 	public CsvTrackReader(SpatioTemporalGraph stGraph,String input_directory) {
 		 super(stGraph,false);
 		 //Make sure directory ends with slash
-		 //TODO: Substitute this whith new File(parent, child)
+		 //TODO: Substitute this with new File(parent, child)
 		 if(input_directory.charAt(input_directory.length() - 1) != '/')
 			 input_directory += "/";
 		 this.input_directory = input_directory;
@@ -57,7 +72,6 @@ public class CsvTrackReader extends TrackingAlgorithm{
 	
 	@Override
 	public void track(){
-		//helper method to enable CSV reader as alternative Tracking Manager
 		readTrackingIds();
 		readDivisions();
 		readEliminations();
@@ -65,6 +79,9 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		System.out.println("Successfully read tracking form: "+input_directory);
 	}
 	
+	/**
+	 * Reads coordinates of tracked cells
+	 */
 	public void readTrackingIds(){
 		for(int i=0; i < stGraph.size(); i++){
 			FrameGraph frame = stGraph.getFrame(i);
@@ -74,6 +91,9 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		}
 	}
 	
+	/**
+	 * Reads identified divisions
+	 */
 	public void readDivisions(){
 		if(stGraph.size() > 0){
 			FrameGraph frame = stGraph.getFrame(0);
@@ -83,6 +103,9 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		}
 	}
 	
+	/**
+	 * Reads identified eliminations
+	 */
 	public void readEliminations(){
 		if(stGraph.size() > 0){
 			FrameGraph frame = stGraph.getFrame(0);
@@ -92,6 +115,13 @@ public class CsvTrackReader extends TrackingAlgorithm{
 		}
 	}
 	
+	/**
+	 * Reader function to populate individual frames (frameGraphs) of the spatiotemporal graph.
+	 * 
+	 * @param frame frameGraph to apply the tracking to
+	 * @param input_file file to be read
+	 * @param export_field export field to be applied
+	 */
 	private void read(FrameGraph frame, File input_file,ExportFieldType export_field){
 
 		try{

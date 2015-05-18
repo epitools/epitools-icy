@@ -37,9 +37,21 @@ public class CsvTrackWriter {
 			" division and elimination occurrences are stored. The CSV export is recommend for fast" +
 			" loading ones a stable tracking was found.";
 	
+	/**
+	 * Graph to be written out
+	 */
 	SpatioTemporalGraph wing_disc_movie;
+	/**
+	 * Output destination path
+	 */
 	String output_directory;
 
+	/**
+	 * Set up the writer
+	 * 
+	 * @param wing_disc_movie stGraph to be written out
+	 * @param output_directory destination location of tracking files
+	 */
 	public CsvTrackWriter(SpatioTemporalGraph wing_disc_movie,String output_directory) {
 		 this.wing_disc_movie = wing_disc_movie;
 		 
@@ -51,12 +63,18 @@ public class CsvTrackWriter {
 		 
 	}
 	
+	/**
+	 * Writes individual tracking files
+	 */
 	public void write(){
 		writeTrackingIds();
 		writeDivisions();
 		writeEliminations();
 	}
 	
+	/**
+	 * Writes tracking ids and coordinates
+	 */
 	public void writeTrackingIds(){
 		
 		for(int i=0; i < wing_disc_movie.size(); i++){
@@ -69,6 +87,9 @@ public class CsvTrackWriter {
 		
 	}
 	
+	/**
+	 * Writes division objects
+	 */
 	public void writeDivisions(){
 		if(wing_disc_movie.size() > 0){
 			FrameGraph frame = wing_disc_movie.getFrame(0);
@@ -78,6 +99,9 @@ public class CsvTrackWriter {
 		}
 	}
 	
+	/**
+	 * Writes elimination objects
+	 */
 	public void writeEliminations(){
 		if(wing_disc_movie.size() > 0){
 			FrameGraph frame = wing_disc_movie.getFrame(0);
@@ -87,6 +111,13 @@ public class CsvTrackWriter {
 		}
 	}
 	
+	/**
+	 * Actual writer routine
+	 * 
+	 * @param frame frame to be written out
+	 * @param output_file destination
+	 * @param export_information export field to written
+	 */
 	private void write(FrameGraph frame, File output_file, ExportFieldType export_information){
 		VertexLabelProvider tracking_information_provider = new VertexLabelProvider(export_information);
 		

@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
 import icy.sequence.Sequence;
@@ -21,11 +16,24 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.triangulate.VoronoiDiagramBuilder;
 
+/**
+ * Generates a voronoi tesselation from the centroids of all cells in a frame.
+ * Computes the difference between the voronoi cell area and the original cell area.
+ *
+ * Based on the JTS VoronoiDiagramBuilder.
+ * 
+ * @author Davide Heller
+ *
+ */
 public class VoronoiGenerator {
 
 	private Map<Node, Geometry> nodeVoronoiMap;
 	private Map<Node, Double> areaDifferenceMap;
 	
+	/**
+	 * @param stGraph graph for which to compute the voronoi tesselation
+	 * @param sequence image connected to the stGraph
+	 */
 	public VoronoiGenerator(SpatioTemporalGraph stGraph, Sequence sequence) {
 		
 		this.nodeVoronoiMap = new HashMap<Node,Geometry>();
@@ -35,7 +43,6 @@ public class VoronoiGenerator {
 		
 		//for every frame
 		for(int i=0; i<stGraph.size(); i++){
-			
 			
 			//Set up JTS Voronoi diagram builder
 			VoronoiDiagramBuilder vdb = new VoronoiDiagramBuilder();
@@ -70,10 +77,16 @@ public class VoronoiGenerator {
 		}
 	}
 	
+	/**
+	 * @return Voronoi tesselation map
+	 */
 	public Map<Node,Geometry> getNodeVoroniMapping(){
 		return nodeVoronoiMap;
 	}
 	
+	/**
+	 * @return Area difference map between the voronoi tesselation and the actual cell area
+	 */
 	public Map<Node,Double> getAreaDifference(){
 		return areaDifferenceMap;
 

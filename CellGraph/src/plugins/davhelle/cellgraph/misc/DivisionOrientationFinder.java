@@ -1,6 +1,3 @@
-/**
- * 
- */
 package plugins.davhelle.cellgraph.misc;
 
 import ij.process.EllipseFitter;
@@ -28,14 +25,35 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class DivisionOrientationFinder {
 
+	/**
+	 * StGraph being analyzed
+	 */
 	SpatioTemporalGraph stGraph;
+	/**
+	 * EllipseFit map for every cell
+	 */
 	Map<Node, EllipseFitter> fittedEllipses;
+	/**
+	 * number of time points before division to start measuring the longest axis angle
+	 */
 	int detection_distance;
+	/**
+	 * number of time points to average for the longest axis and the children axis
+	 */
 	int detection_length;
+	/**
+	 * Flag to use the geometrical intersection instead of the centroid connection for the children axis
+	 */
 	final boolean USE_INTERSECTION_METHOD = false;
 	
 	GeometryFactory factory;
 	
+	/**
+	 * @param stGraph graph to analyze
+	 * @param fittedEllipses map of fitted ellipses for each cell in the stGraph
+	 * @param detection_distance number of time points before division to start measuring the longest axis angle 
+	 * @param detection_length number of time points to average for the longest axis and the children axis
+	 */
 	public DivisionOrientationFinder(
 			SpatioTemporalGraph stGraph,
 			Map<Node, EllipseFitter> fittedEllipses,
@@ -107,9 +125,9 @@ public class DivisionOrientationFinder {
 	 * and the children intersection at several time points from the moment 
 	 * of division. (The number is defined by the detection_distance field)
 	 * 
-	 * @param longest_axis_angle_rad
-	 * @param d
-	 * @return
+	 * @param longest_axis_angle_rad the orientation of the longest mother cell orientation
+	 * @param d the division object being investigated
+	 * @return the averaged division orientation
 	 */
 	public double computeDivisionOrientation(double longest_axis_angle_rad,
 			Division d) {
@@ -147,11 +165,11 @@ public class DivisionOrientationFinder {
 	}
 
 	/**
-	 * Given two children cells this function computes 
+	 * Given two children cells this function computes the connecting axis between the two children cell
 	 * 
-	 * @param child1
-	 * @param child2
-	 * @return
+	 * @param child1 first child cell of the division
+	 * @param child2 second child cell of the division
+	 * @return coordinates of the connecting segment
 	 */
 	private Coordinate[] computeChildrenIntersection(Node child1, Node child2) {
 		Coordinate[] new_junction_ends = null;
@@ -179,9 +197,9 @@ public class DivisionOrientationFinder {
 	 * Given the children intersection segment and the angle of the longest axis
 	 * of the mother cell, this function computes the minimal angle between them.
 	 * 
-	 * @param longest_axis_angle_rad
-	 * @param new_junction_ends
-	 * @return
+	 * @param longest_axis_angle_rad angle of the longest axis of the mother cell
+	 * @param new_junction_ends segment connecting the two children cells
+	 * @return the division orientation angle
 	 */
 	private double findSmallestInteriorAngle(double longest_axis_angle_rad,
 			Coordinate[] new_junction_ends) {

@@ -1,13 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
 import icy.sequence.Sequence;
@@ -33,7 +23,12 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * Generates EllipseFitter for SpatioTemporalGraph Object
  * 
- * Uses ImageJ's 'Fit ellipse' function
+ * Uses ImageJ's 'Fit ellipse' function see source code here:
+ * ij.process.EllipseFitter
+ * 
+ * Every cell geometry is transformed to a ImageJ ROI and
+ * the ellipseFit is computed for the latter. A map of ellipse
+ * fitter objects and nodes is created.
  * 
  * @author Davide Heller
  *
@@ -41,12 +36,29 @@ import com.vividsolutions.jts.geom.Geometry;
 public class EllipseFitGenerator {
 	
 	private Map<Node, EllipseFitter> fittedElipses;
+	/**
+	 * JTS writer to transform the JTS geometries into AWT objects 
+	 */
 	ShapeWriter sw;
 	
+	/**
+	 * wrapper constructor that extracts the img height and width from the icy sequence
+	 * 
+	 * @param stGraph spatio temporal graph to be analyzed
+	 * @param sequence sequence connected to the stGraph
+	 */
 	public EllipseFitGenerator(SpatioTemporalGraph stGraph,Sequence sequence){
 		this(stGraph,sequence.getWidth(),sequence.getHeight());
 	}
 	
+	/**
+	 * Constructor that reads the graph to be analyzed and the original image dimensions to
+	 * position the ellipses correctly in imageJ
+	 * 
+	 * @param stGraph input graph
+	 * @param imgWidth graph input file's width 
+	 * @param imgHeight graph input file's height
+	 */
 	public EllipseFitGenerator(SpatioTemporalGraph stGraph,int imgWidth,int imgHeight){
 		
 		fittedElipses = new HashMap<Node, EllipseFitter>();
@@ -69,9 +81,11 @@ public class EllipseFitGenerator {
 	}
 	
 	/**
-	 * @param ip
-	 * @param n
-	 * @return
+	 * Computes the ellipsFit for an individual node
+	 * 
+	 * @param ip imageJ processor on which the node geometry will be projected
+	 * @param n input node
+	 * @return Ellipse fitting
 	 */
 	public EllipseFitter computeEllipseFit(ImageProcessor ip, Node n) {
 		Geometry g = n.getGeometry();
@@ -109,6 +123,9 @@ public class EllipseFitGenerator {
 		return ef;
 	}
 		
+	/**
+	 * @return Ellipse fitting map
+	 */
 	public Map<Node, EllipseFitter> getFittedEllipses(){
 		return fittedElipses;
 	}

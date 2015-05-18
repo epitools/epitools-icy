@@ -1,6 +1,3 @@
-/**
- * 
- */
 package plugins.davhelle.cellgraph.misc;
 
 import java.util.HashMap;
@@ -18,6 +15,14 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class PolygonalCellTileGenerator {
 	
+	/**
+	 * Static method create polygonal tiles for all cells in the input stGraph. Gives progress back to
+	 * EzPlug GUI using setProgressBarMessage
+	 * 
+	 * @param stGraph input graph
+	 * @param plugin EzPlugin that launches the method
+	 * @return Map of nodes to their polygon tile
+	 */
 	public static HashMap<Node, PolygonalCellTile> createPolygonalTiles(SpatioTemporalGraph stGraph, EzPlug plugin) {
 		plugin.getUI().setProgressBarMessage("Identifying tiles...");
 
@@ -35,6 +40,12 @@ public class PolygonalCellTileGenerator {
 		return cell_tiles;
 	}
 
+	/**
+	 * Same as above without progress to EzPlug but text based (for headless execution)
+	 * 
+	 * @param stGraph input graph
+	 * @return Map of nodes to their polygon tile
+	 */
 	public static HashMap<Node, PolygonalCellTile> createPolygonalTiles(SpatioTemporalGraph stGraph) {
 		System.out.println("Identifying the tiles..");
 		HashMap<Node,PolygonalCellTile> cell_tiles = new HashMap<Node, PolygonalCellTile>();
@@ -51,7 +62,14 @@ public class PolygonalCellTileGenerator {
 		return cell_tiles;
 	}
 	
-	//adapted from: http://nakkaya.com/2009/11/08/command-line-progress-bar/
+	
+	/**
+	 * Text based progress bar based on:
+	 * http://nakkaya.com/2009/11/08/command-line-progress-bar/
+	 * 
+	 * @param current current iteration value
+	 * @param max maximum iteration value
+	 */
 	public static void printProgressBar(int current, int max){
 		int percent = (current * 100) / max;
 		

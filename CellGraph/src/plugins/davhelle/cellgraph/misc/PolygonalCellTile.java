@@ -1,13 +1,6 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
 import java.util.HashMap;
-
-import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.nodes.Edge;

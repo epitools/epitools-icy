@@ -1,14 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
-
 package plugins.davhelle.cellgraph.misc;
 
 import java.util.ArrayList;
@@ -66,6 +55,11 @@ public class T1Transition {
 	int oldEdgeSurvivalLength;
 	
 
+	/**
+	 * @param stGraph parent stGraph
+	 * @param pair track ids of parent nodes
+	 * @param edge_track presence array for each time point in the stGraph
+	 */
 	public T1Transition(SpatioTemporalGraph stGraph, int[] pair, boolean[] edge_track) {
 		
 		this.stGraph = stGraph;
@@ -85,8 +79,10 @@ public class T1Transition {
 		
 	}
 
+	/**
+	 * @return the first time point in which the old edge is missing 
+	 */
 	private int findFirstMissingFrameNo(){
-		//TODO what if this is not the correct start
 		
 		for(int i=0; i<lostEdgeTrack.length; i++)
 			if(!lostEdgeTrack[i])
@@ -98,7 +94,7 @@ public class T1Transition {
 	/**
 	 * Determine how long the transition was observed
 	 * 
-	 * @return
+	 * @return maximal consecutive transition length
 	 */
 	private int computeTransitionLength(){
 		
@@ -148,10 +144,16 @@ public class T1Transition {
 					detectionTimePoint);
 	}
 	
+	/**
+	 * @return tracking id's of loser cells
+	 */
 	public int[] getLoserNodes(){
 		return loserNodes;
 	}
 	
+	/**
+	 * @return true if the winner cells have been identified
+	 */
 	public boolean hasWinners(){
 		for(int winner: winnerNodes)
 			if(winner == -1)
@@ -160,10 +162,16 @@ public class T1Transition {
 		return true;
 	}
 	
+	/**
+	 * @return tracking id's of winning cells
+	 */
 	public int[] getWinnerNodes(){
 		return winnerNodes;
 	}
 	
+	/**
+	 * @return frame in which the longest consecutive detection begins
+	 */
 	public int getDetectionTime(){
 		return detectionTimePoint;
 	}
@@ -172,13 +180,16 @@ public class T1Transition {
 	 * Return how many time points
 	 * contain the old edge.
 	 * 
-	 * @return the oldEdgeSurvivalLength
+	 * @return the amount of frames in which the old edge is visible
 	 */
 	public int getOldEdgeSurvivalLength() {
 		return oldEdgeSurvivalLength;
 	}
 	
-	//Check if looser nodes are on the boundary
+	
+	/**
+	 * @return true if the transition occurs on the border
+	 */
 	public boolean onBoundary(){
 		FrameGraph previous_frame = stGraph.getFrame(detectionTimePoint - 1);
 		
@@ -191,6 +202,11 @@ public class T1Transition {
 			return false;
 	}
 	
+	/**
+	 * Identification of the winner cells
+	 * 
+	 * @param cell_tiles
+	 */
 	public void findSideGain(HashMap<Node, PolygonalCellTile> cell_tiles) {
 		
 		FrameGraph previous_frame = stGraph.getFrame(detectionTimePoint - 1);
@@ -245,6 +261,9 @@ public class T1Transition {
 		
 	}
 
+	/**
+	 * @return the number of frames in which the new edge / junction is visible
+	 */
 	public int length() {
 		return transitionLength;
 	}

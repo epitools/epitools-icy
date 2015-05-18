@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
 import java.util.ArrayList;
@@ -20,7 +15,7 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 /**
  * Class identifies the cells which constitute the border 
- * of the given selection. The task is achieved by consid-
+ * of the given geometry collection. The task is achieved by consid-
  * ering the union of all cells and asking which polygons
  * intersect with the outer ring.  
  * 
@@ -29,8 +24,17 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
  */
 public class BorderCells{
 
+	/**
+	 * The input graph
+	 */
 	private SpatioTemporalGraph stGraph;
+	/**
+	 * JTS geometry factory
+	 */
 	private PreparedGeometryFactory cached_factory;
+	/**
+	 * Array for boundary geometries
+	 */
 	private Geometry[] boundaries;
 	
 	/**
@@ -40,7 +44,11 @@ public class BorderCells{
 		return boundaries;
 	}
 
-
+	/**
+	 * Initialize containers for size of stGraph
+	 * 
+	 * @param stGraph graph to compute boundaries for
+	 */
 	public BorderCells(SpatioTemporalGraph stGraph) {
 		//Set data structures
 		this.stGraph = stGraph;
@@ -50,15 +58,14 @@ public class BorderCells{
 	
 	
 	/**
-	 * The boundary cells of every frame are identified by merging all Node geometries.
-	 * After removing the boundary cells from the graph the Nodes forming the new
-	 * boundary are updated (setBoundary);
-	 * 
-	 * The removed layer is saved as polygon ring union.
-	 * 
-	 * TODO: split the method to allow for separate removal and labeling of boundary cells
+	 * Applies to all frames in the stGraph the following procedure:<br>
+	 * 1. Border cell detection<br>
+	 * 2. Border cell removal<br>
+	 * 3. New Border cell detection<br>
 	 */
 	public void removeOneBoundaryLayerFromAllFrames(){
+		
+		 //TODO: split the method to allow for separate removal and labeling of boundary cells
 		
 		for(int time_point_i=0; time_point_i<stGraph.size();time_point_i++){
 			
@@ -87,13 +94,10 @@ public class BorderCells{
 	
 	
 	/**
-	 * The boundary cells of every frame are identified by merging all Node geometries.
-	 * After removing the boundary cells from the graph the Nodes forming the new
-	 * boundary are updated (setBoundary);
+	 * Detects and removes all border cells of the frame at the specified time point
+	 * in the stGraph set through the constructor.
 	 * 
-	 * The removed layer is saved as polygon ring union.
-	 * 
-	 * TODO: split the method to allow for separate removal and labeling of boundary cells
+	 * @param time_point_i time point to be processed
 	 */
 	public void removeOneBoundaryLayerFromFrame(int time_point_i){
 		
@@ -116,10 +120,10 @@ public class BorderCells{
 	}
 
 	/**
-	 * Removes all cells on the boundary from the graph
+	 * Removes all cells that intersect the border from the input frame
 	 * 
-	 * @param frame_i
-	 * @param boundary
+	 * @param frame_i input frame
+	 * @param boundary boundary/border geometry
 	 */
 	public void removeBoundaryLayer(FrameGraph frame_i, Geometry boundary) {
 		
@@ -141,9 +145,7 @@ public class BorderCells{
 	
 	
 	/**
-	 * Only mark border cells without eliminating them
-	 * 
-	 * 
+	 * Marks all border cells in all frames in the stGraph. (i.e. cell.setBoundary(true))
 	 */
 	public void markOnly() {
 		
@@ -159,8 +161,8 @@ public class BorderCells{
 	/**
 	 * Find the border geometry by computing the union of all cells
 	 * 
-	 * @param frame_i
-	 * @return
+	 * @param frame_i frame to compute the border for
+	 * @return LineString geometry representing the border
 	 */
 	private Geometry findBorderCells(FrameGraph frame_i) {
 
@@ -185,8 +187,8 @@ public class BorderCells{
 	/**
 	 * Mark all the nodes that intersect the boundary Geometry
 	 * 
-	 * @param frame_i
-	 * @param boundary
+	 * @param frame_i frame in which to mark the boundary cells
+	 * @param boundary boundary/border geometry
 	 */
 	public void markBorderCells(FrameGraph frame_i, Geometry boundary) {
 

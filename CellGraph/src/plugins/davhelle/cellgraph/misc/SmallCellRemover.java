@@ -1,21 +1,13 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.misc;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-
-import org.jgrapht.graph.DefaultEdge;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Component to eliminate all cells that are below a user 
@@ -26,6 +18,9 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class SmallCellRemover {
 	
+	/**
+	 * Flag for absorb action. The eliminated cells area is allocated to the biggest intersecting neighbor
+	 */
 	final boolean ABSORB_SMALL_CELLS = true;
 
 	private SpatioTemporalGraph stGraph;
@@ -36,7 +31,7 @@ public class SmallCellRemover {
 	
 	/**
 	 * Method to remove all cells below a given area threshold.
-	 * All time points of the spatiotemporal graph are considered.
+	 * All time points of the spatio-temporal graph are considered.
 	 * 
 	 * @param threshold the area threshold
 	 * @return number of removed cells
@@ -55,6 +50,14 @@ public class SmallCellRemover {
 		
 	}
 
+	/**
+	 * Removes all cells below a given threshold in the frame corresponding to the 
+	 * temporal index given as input
+	 * 
+	 * @param time_point number of the frame to be processed
+	 * @param threshold area threshold below which cells are eliminated.
+	 * @return
+	 */
 	public int removeCellsOnFrame(int time_point, double threshold) {
 		
 		ArrayList<Node> small_cell_list = new ArrayList<Node>();
@@ -63,7 +66,6 @@ public class SmallCellRemover {
 		for(Node cell:frame.vertexSet())
 			if(cell.getGeometry().getArea() < threshold){
 				small_cell_list.add(cell);
-				
 				
 				/*
 				 * The following section enables the 
@@ -82,17 +84,8 @@ public class SmallCellRemover {
 					for(Node neighbor: cell.getNeighbors()){
 						Geometry neighbor_intersection = small_cell_geom.intersection(neighbor.getGeometry());
 						
-						//System.out.println("\t joins with "+neighbor.getCentroid().toText());
-						
 						//use the getLength method to find the largest intersection
-						//area not suited as the intersection is most likely a linear segment
-						//TODO check actual object type
-						
-						//double intersection_area = neighbor_intersection.getArea();
 						double intersection_length = neighbor_intersection.getLength();
-						
-						//System.out.println("\t\t area:"+intersection_area);
-						//System.out.println("\t\t length:"+intersection_length);
 						
 						if( intersection_length > max_length){
 							max_length = intersection_length;
@@ -102,16 +95,12 @@ public class SmallCellRemover {
 
 					if(max_length_candidate != null){
 						
-						//System.out.println("\t\t Winner: "+max_length_candidate.getCentroid().toText());
-						
 						//neighbor gains all neighbors of to_small_cell not yet connected and so do those
 						for(Node neighbor: cell.getNeighbors())
 							if(neighbor != max_length_candidate && !max_length_candidate.getNeighbors().contains(neighbor)){
-								//System.out.println("\t\t\t Adding "+neighbor.getCentroid().toText()+" as neighbor");
 								Edge newEdge = frame.addEdge(max_length_candidate, neighbor);
 								newEdge.setFrame(frame);
 							}
-
 
 						//max_area_candidate obtains union with to_small_cell as new area
 						max_length_candidate.setGeometry(max_length_candidate.getGeometry().union(small_cell_geom));
@@ -120,11 +109,6 @@ public class SmallCellRemover {
 				}
 			
 			}
-		
-		
-		
-		//TODO update Graph in terms of neighborhoods?
-		//TODO fuse lost cell with containing/nearby cell? => need criteria for best fusing candidate
 		
 		frame.removeAllVertices(small_cell_list);
 		

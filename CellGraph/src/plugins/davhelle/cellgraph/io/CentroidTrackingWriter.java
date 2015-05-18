@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.io;
 
 import java.io.BufferedWriter;
@@ -15,35 +10,50 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 
 /**
- * CellWriter generates coordinate files of the found cell centers.
+ * CentroidTrackingWriter generates coordinate files of the found cell centers.
  * These can be used, for example, to track cell centers with the 
  * MOSAIC tracking plugin in FIJI. Or import them as ROI set to 
  * FIJI and modify them with a interactive voronoi tool by 
- * Johannes Schindelin [DelaunayVoronoi plugin].
+ * Johannes Schindelin [DelaunayVoronoi plugin].<br><br>
  * 
- * The import to the latter can be set up with a custom 
- * ImageJ macro:VoronoiMacro.ijm written by DH.
+ * The import to the latter can be set up with a custom written
+ * ImageJ macro (VoronoiMacro.ijm) available at:
+ * https://www.dropbox.com/sh/deoey8kc1w6wnej/AAAFthxbeX4MXnCKM506utFwa?dl=0
  * 
  * @author Davide Heller
  *
  */
-/**
- * @author davide
- *
- */
-public class CellWriter {
+public class CentroidTrackingWriter {
 	
-	private final String output_file_name;
-	private int time_point;
+	/**
+	 * Spatiotemporal graph to be written out
+	 */
+	private final SpatioTemporalGraph stGraph;
 	
-	public CellWriter(String output_file_name, int time_point)
+	/**
+	 * Set up writer
+	 * 
+	 * @param stGraph graph to write out
+	 * @param output_base_name base path for output files
+	 */
+	public CentroidTrackingWriter(SpatioTemporalGraph stGraph, String output_base_name)
 	{
 		String file_ext = ".txt";
-		this.output_file_name = output_file_name + time_point + file_ext;
-		this.time_point = time_point;
+		this.stGraph = stGraph; 
+		
+		for(int time_point=0; time_point < stGraph.size(); time_point++){
+			String output_file_name = output_base_name + time_point + file_ext;
+			write_tracking_file(output_file_name,time_point);
+		}
 	}
 	
-	public void write_tracking_file(SpatioTemporalGraph stGraph){
+	/**
+	 * Write out individual frames
+	 * 
+	 * @param output_file_name output path for frame file
+	 * @param time_point time point of the frame to export
+	 */
+	private void write_tracking_file(String output_file_name, int time_point){
 
 		try{
 

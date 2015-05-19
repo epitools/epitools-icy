@@ -1,11 +1,4 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.nodes;
-
-import java.text.DecimalFormat;
 
 /**
  * ComparableNode is a utility class to access sort operations
@@ -18,7 +11,13 @@ import java.text.DecimalFormat;
  */
 public class ComparableNode implements Comparable<ComparableNode> {
 	
+	/**
+	 * Corresponding node
+	 */
 	Node key;
+    /**
+     * Comparable value associated with the node
+     */
     Double value;
     
 	public ComparableNode(Node key, Double value) {

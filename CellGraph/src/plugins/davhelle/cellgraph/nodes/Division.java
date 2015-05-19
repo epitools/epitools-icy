@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.nodes;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -25,23 +20,59 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
  */
 public class Division {
 	
-	
-	//TODO perhaps make the field final, no need for getters
+	/**
+	 * Node which divides
+	 */
 	private Node mother;
+	/**
+	 * 1st Node originating from the division
+	 */
 	private Node child1;
+	/**
+	 * 2nd Node originating from the division 
+	 */
 	private Node child2;
+	/**
+	 * Time point of the division. Defined as the frame in which the two children cells appear.
+	 */
 	private int time_point;
+	/**
+	 * Frame in which the division occurs, i.e. corresponding to the time point of division
+	 */
 	private FrameGraph division_frame;
 	
-	//Angle between new junction and longest axis of mother cell
+	
+	//Division Orientation analysis fields
+	
+	/**
+	 * Geometry of the initial plane between the two children
+	 */
 	private Geometry planeGeometry;
+	/**
+	 * Angle between new junction and longest axis of mother cell
+	 */
 	private double divisionOrientation;
+	/**
+	 * Angle of the longest axis of the ellipse fitted to the mother cell
+	 */
 	private double longestMotherAxisOrientation;
+	/**
+	 * Angle of the new junction geometry between the two children cells
+	 */
 	private double newJunctionOrientation;
 
+	/**
+	 * Initialize the Division object. The children cells are given the
+	 * tracking id + 1 & + 2
+	 * 
+	 * @param mother node which divides
+	 * @param child1 first child node
+	 * @param child2 second child node
+	 * @param tracking_id tracking id of the mother cell
+	 */
 	public Division(Node mother, Node child1, Node child2, int tracking_id) {
 		
-		//TODO should mother be mother.first?
+		//set basic fields
 		this.mother = mother;
 		this.child1 = child1;
 		this.child2 = child2;
@@ -58,7 +89,7 @@ public class Division {
 		if(division_frame != child2.getBelongingFrame())
 			System.out.println("The division children do not share the same time point");
 		
-		//update children first node (themself)
+		//update children first node (themselves)
 		child1.setFirst(child1);
 		child2.setFirst(child2);
 		//tracking id
@@ -70,9 +101,9 @@ public class Division {
 		
 		//Update Mother node
 		mother.setDivision(this);
-		//TODO best choice? or recurrent e.g. like first's first
+		//mother has no further future linking
 		mother.setNext(null);
-		//division tag, not exactly an error.. TODO
+		//division tag for TrackingOverlay
 		mother.setErrorTag(-5);
 		
 		//division notification to frame
@@ -93,9 +124,9 @@ public class Division {
 	 * 
 	 * Propagation is therefore done both forwards as backwards
 	 * 
-	 * @param mother
-	 * @param child1
-	 * @param child2
+	 * @param mother node dividing
+	 * @param child1 first children node
+	 * @param child2 second children node
 	 */
 	public Division(Node mother, Node child1, Node child2) {
 		
@@ -146,57 +177,57 @@ public class Division {
 	}
 
 	/**
-	 * @return the mother
+	 * @return the node that divides
 	 */
 	public Node getMother() {
 		return mother;
 	}
 	/**
-	 * @param mother the mother to set
+	 * @param mother the node that divides
 	 */
 	public void setMother(Node mother) {
 		this.mother = mother;
 	}
 	/**
-	 * @return the child1
+	 * @return the first child node
 	 */
 	public Node getChild1() {
 		return child1;
 	}
 	/**
-	 * @param child1 the child1 to set
+	 * @param child1 the first child node
 	 */
 	public void setChild1(Node child1) {
 		this.child1 = child1;
 	}
 	/**
-	 * @return the child2
+	 * @return the second child node
 	 */
 	public Node getChild2() {
 		return child2;
 	}
 	/**
-	 * @param child2 the child2 to set
+	 * @param child2 the second child node
 	 */
 	public void setChild2(Node child2) {
 		this.child2 = child2;
 	}
 	/**
-	 * @return the time_point
+	 * @return the time point at which the division occurs
 	 */
 	public int getTimePoint() {
 		return time_point;
 	}
 	
 	/**
-	 * @param time_point the time_point to set
+	 * @param time_point time point at which the division occurs
 	 */
 	public void setTimePoint(int time_point) {
 		this.time_point = time_point;
 	}
 	
 	/**
-	 * Check whether the participant is the mother
+	 * Check whether a node is the mother
 	 * cell of the division
 	 * 
 	 * @param participant to test
@@ -222,7 +253,6 @@ public class Division {
 			else
 				return false;
 	}
-	
 	
 	
 	/**
@@ -287,61 +317,64 @@ public class Division {
 	}
 
 	/**
-	 * @return the divisionOrientation
+	 * @return the orientation of the division, i.e. the angle between the longest axis of the mother cell and the children axis
 	 */
 	public double getDivisionOrientation() {
 		return divisionOrientation;
 	}
 
 	/**
-	 * @param divisionOrientation the divisionOrientation to set
+	 * @param divisionOrientation the division orientation to set
 	 */
 	public void setDivisionOrientation(double divisionOrientation) {
 		this.divisionOrientation = divisionOrientation;
 	}
 
 	/**
-	 * @return the longestMotherAxisOrientation
+	 * @return the angle of the longest axis of the ellipse fitted to the mother cell
 	 */
 	public double getLongestMotherAxisOrientation() {
 		return longestMotherAxisOrientation;
 	}
 
 	/**
-	 * @param longestMotherAxisOrientation the longestMotherAxisOrientation to set
+	 * @param longestMotherAxisOrientation the angle of the longest axis of the ellipse fitted to the mother cell
 	 */
 	public void setLongestMotherAxisOrientation(double longestMotherAxisOrientation) {
 		this.longestMotherAxisOrientation = longestMotherAxisOrientation;
 	}
 
 	/**
-	 * @return the newJunctionOrientation
+	 * @return the newJunctionOrientation the angle of the junction between the children cells
 	 */
 	public double getNewJunctionOrientation() {
 		return newJunctionOrientation;
 	}
 
 	/**
-	 * @param newJunctionOrientation the newJunctionOrientation to set
+	 * @param newJunctionOrientation the angle of the junction between the children cells
 	 */
 	public void setNewJunctionOrientation(double newJunctionOrientation) {
 		this.newJunctionOrientation = newJunctionOrientation;
 	}
 
 	/**
-	 * @return the planeGeometry
+	 * @return the initial geometry of the plane connecting the two children cells
 	 */
 	public Geometry getPlaneGeometry() {
 		return planeGeometry;
 	}
 
 	/**
-	 * @param planeGeometry the planeGeometry to set
+	 * @param planeGeometry the initial geometry of the plane connecting the two children cells
 	 */
 	public void setPlaneGeometry(Geometry planeGeometry) {
 		this.planeGeometry = planeGeometry;
 	}
 	
+	/**
+	 * @return true if the initial plane geometry has been set
+	 */
 	public boolean hasPlaneGeometry(){
 		return this.planeGeometry != null;
 	}

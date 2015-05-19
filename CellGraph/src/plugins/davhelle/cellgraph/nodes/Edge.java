@@ -1,27 +1,20 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
-
 package plugins.davhelle.cellgraph.nodes;
 
 import java.awt.Color;
-import java.util.Arrays;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.CantorPairing;
+import plugins.davhelle.cellgraph.painters.EdgeMarkerOverlay;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
+ * The Edge class represents the connectivity in the {@link FrameGraph} class
+ * 
+ * In a practical application it symbolizes the junction between two cells
+ * 
  * @author Davide Heller
  *
  */
@@ -29,17 +22,40 @@ public class Edge extends DefaultWeightedEdge {
 
 	private static final long serialVersionUID = 1L;
 	
-	//optional geometry field
+	/**
+	 * JTS geometry describing the Edge
+	 */
 	private Geometry geometry;
+	/**
+	 * Value associated to an edge
+	 */
 	private double value;
+	/**
+	 * Flag highlighting if one of the edge vertices divides
+	 */
 	private boolean touches_division;
 	
-	//linking fields
+	//tracking fields
+	/**
+	 * Temporal tracking: time independent id associated to the edge 
+	 */
 	private long trackId;
+	/**
+	 * Temporal tracking: next occurrence of the edge id in time
+	 */
 	private Edge next;
+	/**
+	 * Temporal tracking: previous occurrence of the edge id in time
+	 */
 	private Edge previous;
+	/**
+	 * Parent graph to which the edge is associated
+	 */
 	private FrameGraph frame;
 
+	/**
+	 * Color tag associated to {@link EdgeMarkerOverlay}
+	 */
 	private Color colorTag;
 	
 	
@@ -73,10 +89,12 @@ public class Edge extends DefaultWeightedEdge {
 	
 	/**
 	 * Checks whether the vertices of the edge are tracked.
-	 * <br> Def. A tracked edge has both vertices tracked.
+	 * <br> 
 	 * 
-	 * @param frame
-	 * @return true if both vertices are tracked. False if either is not tracked <br>or the edge does not belong to the input graph
+	 * Def. A tracked edge has both vertices tracked.
+	 * 
+	 * @param frame FrameGraph of the edge
+	 * @return true if both vertices are tracked. False if not or wrong input frame
 	 */
 	public boolean canBeTracked(FrameGraph frame){
 		boolean is_tracked = true;
@@ -93,29 +111,13 @@ public class Edge extends DefaultWeightedEdge {
 		return is_tracked;
 	}
 	
-	public int getTrackHashCode(FrameGraph frame){
-		
-		//TODO: dangerous, this harms the reversibilty of the cantor function
-		//also there is no safety check for the input being natural numbers
-		if(!frame.containsEdge(this))
-			return -1;
-
-		int[] vertex_track_ids =  new int[2];
-
-		Node source_node = frame.getEdgeSource(this);
-		Node target_node = frame.getEdgeTarget(this);
-
-		vertex_track_ids[0] = source_node.getTrackID();
-		vertex_track_ids[1] = target_node.getTrackID();
-
-		Arrays.sort(vertex_track_ids);
-
-		int track_hash_code = Arrays.hashCode(vertex_track_ids);
-
-		return track_hash_code;
-
-	}
-	
+	/**
+	 * Tracking code associated to the edge. Based on the cantor
+	 * pairing of the vertex ids. See {@link CantorPairing} for more details.
+	 * 
+	 * @param frame FrameGraph to which the edge belongs
+	 * @return tracking id
+	 */
 	public long getPairCode(FrameGraph frame){
 		
 		if(!frame.containsEdge(this))
@@ -123,12 +125,6 @@ public class Edge extends DefaultWeightedEdge {
 		
 		Node source_node = frame.getEdgeSource(this);
 		Node target_node = frame.getEdgeTarget(this);
-
-//		if(source_node.hasObservedDivision())
-//			source_node = source_node.getDivision().getMother();
-//		
-//		if(target_node.hasObservedDivision())
-//			target_node = target_node.getDivision().getMother();
 		
 		int a = source_node.getTrackID();
 		int b = target_node.getTrackID();
@@ -140,9 +136,11 @@ public class Edge extends DefaultWeightedEdge {
 	}
 
 	/**
-	 * @param a
-	 * @param b
-	 * @return
+	 * Returns the {@link CantorPairing} of the ordered ids
+	 * 
+	 * @param a id 1
+	 * @param b id 2
+	 * @return cantor pairing of ordered ids
 	 */
 	public static long computePairCode(int a, int b) {
 		if(a<b)
@@ -151,6 +149,12 @@ public class Edge extends DefaultWeightedEdge {
 			return CantorPairing.compute(b, a);
 	}
 	
+	/**
+	 * Return the tracking ids of the vertices associated to the trackin id
+	 * 
+	 * @param code tracking id from the cantor pairing
+	 * @return pair of generating vertex ids
+	 */
 	public static int[] getCodePair(long code){
 		
 		//TODO: proper -1 management
@@ -164,10 +168,19 @@ public class Edge extends DefaultWeightedEdge {
 		
 	}
 	
+	/**
+	 * @return true if there is an associated JTS geometry
+	 */
 	public boolean hasGeometry(){
 		return geometry != null;
 	}
 	
+	/**
+	 * Computes the geometrical intersection between the two vertex geometries
+	 * and sets the result as geometry of the edge
+	 * 
+	 * @param frame FrameGraph to which the Edge belongs
+	 */
 	public void computeGeometry(FrameGraph frame){
 		
 		Node source = frame.getEdgeSource(this);
@@ -182,14 +195,14 @@ public class Edge extends DefaultWeightedEdge {
 	}
 	
 	/**
-	 * @return the geometry
+	 * @return the JTS geometry of the edge
 	 */
 	public Geometry getGeometry() {
 		return geometry;
 	}
 
 	/**
-	 * @param geometry the geometry to set
+	 * @param geometry the JTS geometry representing the edge
 	 */
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
@@ -208,48 +221,61 @@ public class Edge extends DefaultWeightedEdge {
 	}
 	
 	/**
-	 * @return the alternative_track_id
+	 * @return the tracking id
 	 */
 	public long getTrackId() {
 		return trackId;
 	}
 	/**
-	 * @param alternative_track_id the alternative_track_id to set
+	 * @param alternative_track_id an alternative tracking id to set
 	 */
 	public void setTrackId(long alternative_track_id) {
 		this.trackId = alternative_track_id;
 	}
 	
 	/**
-	 * @return the next
+	 * @return the next temporal occurrence of the edge
 	 */
 	public Edge getNext() {
 		return next;
 	}
 	/**
-	 * @param next the next to set
+	 * @param next the next temporal occurrence of the edge
 	 */
 	public void setNext(Edge next) {
 		this.next = next;
 	}
 	/**
-	 * @return the previous
+	 * @return the previous occurrence of the edge
 	 */
 	public Edge getPrevious() {
 		return previous;
 	}
+	
 	/**
-	 * @param previous the previous to set
+	 * @param previous the previous occurrence of the edge
 	 */
 	public void setPrevious(Edge previous) {
 		this.previous = previous;
 	}
+	
+	/**
+	 * @param colorTag define a colorTag associated with the edge
+	 */
 	public void setColorTag(Color colorTag) {
 		this.colorTag = colorTag;		
 	}
+	
+	/**
+	 * @return the color tag associated with the edge
+	 */
 	public Color getColorTag() {
 		return colorTag;		
 	}
+	
+	/**
+	 * @return true if the edge has an associated color tag
+	 */
 	public boolean hasColorTag() {
 		return colorTag != null;		
 	}
@@ -269,7 +295,7 @@ public class Edge extends DefaultWeightedEdge {
 	}
 	
 	/**
-	 * @return the frame
+	 * @return the frame to which the edge is inserted
 	 */
 	public FrameGraph getFrame() {
 		return frame;

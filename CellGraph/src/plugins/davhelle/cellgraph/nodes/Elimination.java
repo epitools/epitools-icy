@@ -1,29 +1,33 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
-
 package plugins.davhelle.cellgraph.nodes;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.tracking.TrackingFeedback;
 
+/**
+ * Class representing a Elimination event.<br>
+ * 
+ * In a practical scenario this describes a cell which is excluded
+ * from a tissue and will therefore be absent from all future frames.
+ * 
+ * @author Davide Heller
+ *
+ */
 public class Elimination {
 
 	/**
 	 * Time point at which the cell was last seen
-	 * and cell reference
 	 */
 	private int time_point;
+	/**
+	 * Cell that is eliminated (reference at the last time point)
+	 */
 	private Node cell;
-	
 
+	/**
+	 * Describes the elimination event
+	 * 
+	 * @param eliminated_cell last reference to the cell that is eliminated
+	 */
 	public Elimination(Node eliminated_cell){
 		this.cell = eliminated_cell;
 		
@@ -34,8 +38,7 @@ public class Elimination {
 		cell.setElimination(this);
 		cell.setErrorTag(TrackingFeedback.ELIMINATED_IN_NEXT_FRAME.numeric_code);
 		
-		//add elimination to all the preceding cells in the 
-		//tracked lineage
+		//add elimination to all the preceding cells if tracking is available
 		Node ancestor = cell.getPrevious();
 		while(ancestor != null){
 			ancestor.setElimination(this);
@@ -51,7 +54,7 @@ public class Elimination {
 	}
 	
 	/**
-	 * @return the time_point
+	 * @return the time_point in which the cell is last observed
 	 */
 	public int getTimePoint() {
 		return time_point;

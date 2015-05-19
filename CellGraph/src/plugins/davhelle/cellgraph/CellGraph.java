@@ -45,7 +45,6 @@ import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
-import plugins.davhelle.cellgraph.overlays.GraphCoherenceOverlay;
 import plugins.davhelle.cellgraph.overlays.PolygonOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
@@ -119,7 +118,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean 				varDoTracking;
 	EzVarBoolean				varBooleanHighlightMistakesBoolean;
 	EzVarBoolean 				varBooleanDrawDisplacement;
-	EzVarBoolean				varBooleanDrawGraphCoherence;
 	EzVarInteger				varLinkrange;
 	EzVarFloat					varDisplacement;
 	EzVarDouble					varLambda1;
@@ -263,7 +261,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 				"Max. displacement (px)",5,1,20,(float)0.1);
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
-		varBooleanDrawGraphCoherence = new EzVarBoolean("Draw Graph coherence indeces",false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		varTrackingAlgorithm = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.STABLE_MARRIAGE);
 		varBorderEliminationNo = new EzVarInteger("Cut N border lines in 1st frame",1,0,10,1);
@@ -278,11 +275,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 				//varDisplacement,
 				//varLambda1,
 				//varLambda2,
-				varBorderEliminationNo,
+				varBorderEliminationNo
 				//varBooleanCellIDs,
 				//varBooleanHighlightMistakesBoolean,
-				//varBooleanDrawDisplacement,
-				varBooleanDrawGraphCoherence);
+				//varBooleanDrawDisplacement
+				);
 		
 		EzGroup groupTracking = new EzGroup("SELECT TRACKING ALGORITHM",
 				varTrackingAlgorithm,
@@ -595,11 +592,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			Overlay displacementSegments = new DisplacementOverlay(wing_disc_movie, varDisplacement.getValue());
 			sequence.addOverlay(displacementSegments);
 		}
-		
-		if(varBooleanDrawGraphCoherence.getValue()){
-			sequence.addOverlay(new GraphCoherenceOverlay(wing_disc_movie));
-		}
-		
+
 		//Paint corresponding cells in time
 		TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
 		sequence.addOverlay(correspondence);

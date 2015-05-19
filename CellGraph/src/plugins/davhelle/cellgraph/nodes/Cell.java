@@ -1,11 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
-/**
- * 
- */
 package plugins.davhelle.cellgraph.nodes;
 
 import java.awt.Color;
@@ -14,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.misc.BorderCells;
+import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
+import plugins.davhelle.cellgraph.painters.TrackingOverlay;
 
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -22,47 +17,91 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
- * Node class to represent each cell as polygon.
- * 
+ * Node class to represent polygonal cells.
  * 
  * @author Davide Heller
  *
  */
 public class Cell implements Node {
 	
-	//geometry to abstract the Node
+	/**
+	 * JTS Polygon geometry representing the cell
+	 */
 	private Polygon geometry;
 	
-	//avoid redundant centroid computation
+	/**
+	 * Cache of centroid geometry to avoid redundant computation 
+	 */
 	private Point centroid;
 	
-	//FrameGraph to which 
+	/**
+	 * FrameGraph to which the node is linked 
+	 */
 	private final FrameGraph parent;
 	
-	//tracking information
+	/**
+	 * Temporal linking: next occurrence in time
+	 */
 	private Node next;
+	
+	/**
+	 * Temporal linking: previous occurrence in time
+	 */
 	private Node previous;
+	
+	/**
+	 * Temporal linking: connection to first known occurrence 
+	 */
 	private Node first;
+	
+	/**
+	 * Candidate list for tracking algorithms
+	 */
 	private List<Node> first_candidates;
+	
+	/**
+	 * Temporal linking: time independent tracking id
+	 */
 	private int track_id;
+	
+	/**
+	 * Error id (see {@link TrackingOverlay})
+	 */
 	private int errorTag;
 
-	//boundary information
+	/**
+	 * Flag if node is located on segmentation boundary see {@link BorderCells}
+	 */
 	private boolean is_on_boundary;
 	
-	//division information
+	/**
+	 * Flag for division occurrence during the time lapse
+	 */
 	private boolean has_observed_division;
+	/**
+	 * Division object if division occurs
+	 */
 	private Division division;
 	
-	//elimination information
+	/**
+	 * Flag for elimination occurrence during the time lapse
+	 */
 	private boolean has_observed_elimination;
+	/**
+	 * Elimination object if elimination occurs
+	 */
 	private Elimination elimination;
 	
-	//cell color tag
+	/**
+	 * Color tag created in combination with {@link CellMarkerOverlay}
+	 */
 	private Color color_tag;
 
 	/**
 	 * Initializes the Node type representing a Cell as Polygon 
+	 * 
+	 * @param cell_polygon JTS geometry representing the cell
+	 * @param parent FrameGraph containing the node
 	 */
 	public Cell(Polygon cell_polygon, FrameGraph parent) {
 		this.parent = parent;
@@ -91,56 +130,26 @@ public class Cell implements Node {
 		this.color_tag = null;
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.NodeType#getCentroid()
-	 */
 	@Override
 	public Point getCentroid() {
 		return centroid;
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.NodeType#getGeometry()
-	 */
 	@Override
 	public Geometry getGeometry() {
 		return geometry;
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.NodeType#getProperty()
-	 */
-	@Override
-	public Object getProperty() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public void setProperty(Object property) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.NodeType#getTrackID()
-	 */
 	@Override
 	public int getTrackID() {
 		return track_id;
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.NodeType#setTrackID(int)
-	 */
 	@Override
 	public void setTrackID(int tracking_id) {
 		this.track_id = tracking_id;
 	}
 
-	/* (non-Javadoc)
-	 * @see plugins.davhelle.cellgraph.NodeType#toShape()
-	 */
 	@Override
 	public Shape toShape() {
 		ShapeWriter writer = new ShapeWriter();
@@ -190,7 +199,6 @@ public class Cell implements Node {
 
 	@Override
 	public FrameGraph getBelongingFrame() {
-		// TODO Auto-generated method stub
 		return parent;
 	}
 
@@ -204,7 +212,7 @@ public class Cell implements Node {
 
 	@Override
 	public List<Node> getNeighbors() {
-		// TODO dangerous! what if not yet inserted in graph?
+		// TODO implicit assumption that node has been inserted in a graph..
 		return parent.getNeighborsOf(this);
 	}
 
@@ -226,22 +234,15 @@ public class Cell implements Node {
 
 	@Override
 	public Division getDivision() {
-		// TODO Auto-generated method stub
 		return division;
 	}
 	
 	@Override
-	/**
-	 * @return the errorTag
-	 */
 	public int getErrorTag() {
 		return errorTag;
 	}
 
 	@Override
-	/**
-	 * @param errorTag the errorTag to set
-	 */
 	public void setErrorTag(int errorTag) {
 		this.errorTag = errorTag;
 	}
@@ -253,7 +254,6 @@ public class Cell implements Node {
 
 	@Override
 	public boolean hasPrevious() {
-		// TODO Auto-generated method stub
 		return (previous != null);
 	}
 

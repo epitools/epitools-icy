@@ -15,10 +15,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * Node represents the vertex object for the TissueGraph.
- * Among various implementations examples can be:
- * a Cell type representing the cell relation in the tissue
- * or a Corner type representing the vertex relation.
+ * Node interface represents the vertex object for the FrameGraph.
+ * 
+ * Currently the main implementation is the {@link Cell} representing
+ * a polygonal shape in a tissue.
  * 
  * By default it is assumed that there is a JTS Geometry field.
  * 
@@ -29,7 +29,7 @@ public interface Node{
 	
 	
 	/**
-	 * Given a geometrical representation of the node(JTS)
+	 * Given a geometrical representation of the node (JTS geometry)
 	 * the method returns the centroid of the latter geometry.
 	 * In case of a Point, the latter will be returned.
 	 * 
@@ -38,39 +38,20 @@ public interface Node{
 	public Point getCentroid();
 	
 	/**
-	 * @param node_geometry JTS geometry representing the NodeType
+	 * @param node_geometry JTS geometry representing the Node
 	 */
 	public void setGeometry(Geometry node_geometry);
 	
 	/**
-	 * @return JTS geometry representing the NodeType
+	 * @return JTS geometry representing the Node
 	 */
 	public Geometry getGeometry();
-
-	/**
-	 * Abstract feature of a NodeType. For example for 
-	 * a polygonal cell representation this might include
-	 * the voroni tesselation.  
-	 * 
-	 * @return a defined property of the implementation 
-	 */
-	public Object getProperty();
 	
 	/**
-	 * Abstract feature of a NodeType. For example for 
-	 * a polygonal cell representation this might include
-	 * the voroni tesselation.  
+	 * Given that the spatio-temporal graph structure has been connected
+	 * in time the method returns the index assigned to the node.
 	 * 
-	 * @param property to be set
-	 */
-	public void setProperty(Object property);
-	
-	
-	/**
-	 * Given that the HyperGraph structure has been tracked
-	 * in time the method returns the idx assigned to the node.
-	 * 
-	 * @return constant tracking index for the cell or default -1
+	 * @return time independent tracking index for the cell or default -1
 	 */
 	public int getTrackID();
 	
@@ -81,7 +62,6 @@ public interface Node{
 	 * @param tracking_id
 	 */
 	public void setTrackID(int tracking_id);
-	
 	
 	/**
 	 * Store reference to same node in successive time
@@ -128,7 +108,7 @@ public interface Node{
 	public boolean hasPrevious();
 	
 	/**
-	 * Check whether object lies on the window boundary
+	 * Check whether object lies on the segmentation boundary
 	 * 
 	 * @return true if object is part of boundary
 	 */

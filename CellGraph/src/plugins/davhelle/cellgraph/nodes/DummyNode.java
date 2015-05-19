@@ -5,223 +5,159 @@ import java.awt.Shape;
 import java.util.List;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.tracking.HungarianTracking;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
+/**
+ * Dummy implementation of Node for use in {@link HungarianTracking}
+ * 
+ * @author Davide Heller
+ *
+ */
 public class DummyNode implements Node {
 
-	public DummyNode() {
-		// TODO Auto-generated constructor stub
-	}
+	public DummyNode() {}
 
 	@Override
 	public Point getCentroid() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setGeometry(Geometry node_geometry) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setGeometry(Geometry node_geometry) {}
 
 	@Override
 	public Geometry getGeometry() {
-		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public Object getProperty() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setProperty(Object property) {
-		// TODO Auto-generated method stub
-
-	}
-
+	
 	@Override
 	public int getTrackID() {
-		// TODO Auto-generated method stub
 		return -10;
 	}
 
 	@Override
-	public void setTrackID(int tracking_id) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setTrackID(int tracking_id) {}
 
 	@Override
-	public void setNext(Node next_node) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setNext(Node next_node) {}
 
 	@Override
-	public void setPrevious(Node next_node) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setPrevious(Node next_node) {}
 
 	@Override
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public Node getNext() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node getPrevious() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean hasPrevious() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean onBoundary() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void setBoundary(boolean onBoundary) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setBoundary(boolean onBoundary) {}
 
 	@Override
 	public boolean hasObservedDivision() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void setObservedDivision(boolean observedDivision) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setObservedDivision(boolean observedDivision) {}
 
 	@Override
-	public void setDivision(Division division) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setDivision(Division division) {}
 
 	@Override
 	public Division getDivision() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Shape toShape() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public FrameGraph getBelongingFrame() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Node getFirst() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setFirst(Node first) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setFirst(Node first) {}
 
 	@Override
 	public List<Node> getNeighbors() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void addParentCandidate(Node first) {
-		// TODO Auto-generated method stub
-
-	}
+	public void addParentCandidate(Node first) {}
 
 	@Override
 	public List<Node> getParentCandidates() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setErrorTag(int errorTag) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setErrorTag(int errorTag) {}
 
 	@Override
 	public int getErrorTag() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public void setElimination(Elimination elimination) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setElimination(Elimination elimination) {}
 
 	@Override
 	public Elimination getElimination() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean hasObservedElimination() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public Color getColorTag() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setColorTag(Color color_tag) {
-		// TODO Auto-generated method stub
-
-	}
+	public void setColorTag(Color color_tag) {}
 
 	@Override
 	public boolean hasColorTag() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public int getFrameNo() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

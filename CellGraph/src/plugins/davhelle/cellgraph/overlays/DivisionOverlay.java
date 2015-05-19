@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
@@ -32,16 +27,45 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class DivisionOverlay extends StGraphOverlay {
 
+	//Visualization FLAGS
+	/**
+	 * Visualization flag whether to plot dividing cells
+	 */
 	private boolean PLOT_DIVISIONS;
+	/**
+	 * Visualization flag whether to plot eliminated cells
+	 */
 	private boolean PLOT_ELIMINATIONS;
+	/**
+	 * Visualization flag whether to fill or outline the cells
+	 */
 	private boolean FILL_CELLS;
+	/**
+	 * Visualization flag whether to connect daughter cells by a line
+	 */
 	private boolean CONNECT_DAUGHTER_CELLS;
-	
+
+	//Colorings
+	/**
+	 * Color for dividing cells
+	 */
 	private static final Color DIVIDING_CELL = Color.blue;
+	/**
+	 * Color for daughter/Children cells
+	 */
 	private static final Color DAUGHTER_CELL = Color.cyan;
+	/**
+	 * Color for eliminated cells
+	 */
 	private static final Color ELIMINATED_CELL = Color.red;
+	/**
+	 * Color for dividing and eliminated children cells
+	 */
 	private static final Color DIVIDING_AND_ELIMINATED_CELL = Color.magenta;
 	
+	/**
+	 * Description String for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"Highlights the cells that underwent division or elimination during the time lapse.\n\n" +
 			"Color code:\n" +
@@ -50,6 +74,13 @@ public class DivisionOverlay extends StGraphOverlay {
 			"* [red] eliminated cell\n" +
 			"* [magenta] dividing & eliminated daughter cell";
 	
+	/**
+	 * @param stGraph graph to analyze
+	 * @param PLOT_DIVSIONS flag to plot dividing cells
+	 * @param PLOT_ELIMINATIONS flag to plot eliminated cells
+	 * @param FILL_CELLS flag to fill or outline cells with color
+	 * @param CONNECT_DAUGHTER_CELLS flag to connect daughter cells with a colored line segment
+	 */
 	public DivisionOverlay(
 			SpatioTemporalGraph stGraph,
 			boolean PLOT_DIVSIONS,

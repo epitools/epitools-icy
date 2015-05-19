@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.roi.ROI;
@@ -14,7 +9,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -31,11 +25,10 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * Class to visualize the intensity underlying edges of the
+ * Class to visualize the intensity underlying the edges of the
  * spatial-temporal graph as overlay in icy.
  * 
  * @author Davide Heller
@@ -43,6 +36,9 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class EdgeIntensityOverlay extends StGraphOverlay{
 	
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"Transforms the edge geometries into ROIs and displays " +
 			"the underlying intensity (I) of the first frame." +
@@ -60,28 +56,86 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			"3. The noralized I is computed considering the" +
 			" maximum and minimun relative I in the frame.";
 
-	private GeometryFactory factory;
+	/**
+	 * JTS to AWT shape writer
+	 */
 	private ShapeWriter writer;
+	/**
+	 * Connected Icy sequence to retrieve the intensity from
+	 */
 	private Sequence sequence;
+	/**
+	 * Connected GUI for Progress and Parameter retrieval
+	 */
 	private EzGUI gui;
+	/**
+	 * Visualization parameter for scaling the color gradient reflecting the intensity values
+	 */
 	private EzVarDouble slider;
+	/**
+	 * Visualization flag for filling or drawing the edge envelope
+	 */
 	private EzVarBoolean fillEdgeCheckbox;
 	
+	//Containers
+	/**
+	 * ROI representation for each edge
+	 */
 	private HashMap<Edge,ROI> buffer_roi;
+	/**
+	 * AWT Shape representation for each edge 
+	 */
 	private HashMap<Edge,Shape> buffer_shape;
+	/**
+	 * Relative intensity value for each edge
+	 */
 	private HashMap<Edge,Double> relativeEdgeIntensity;
+	/**
+	 * Normalized intensity value for each edge
+	 */
 	private HashMap<Edge,Double> normalizedEdgeIntensity;
+	/**
+	 * Background intensity of every cell (reverse selection of edges)
+	 */
 	private HashMap<Node,Double> cell_background;
+	/**
+	 * Mean Edge Intensities for every cell 
+	 */
 	private HashMap<Node,Double> cell_edges;
+	
+	/**
+	 * Minimal displayed edge intensity
+	 */
 	private double min;
+	/**
+	 * Maximal displayed edge intensity
+	 */
 	private double max;
-	private double[] heat_map;
 
+	/**
+	 * Buffer width of the edge envelope with which to retrieve the intensities
+	 */
 	private double bufferWidth;
 
+	/**
+	 * Flag whether to normalize the intensities
+	 */
 	private boolean normalize_intensities;
+	/**
+	 * Image channel from which to retrieve the intensities
+	 */
 	private int channelNumber;
 	
+	/**
+	 * @param stGraph graph to display
+	 * @param sequence image from which to measure the intensities
+	 * @param gui connected GUI
+	 * @param varIntensitySlider scaling of color gradient
+	 * @param varFillingCheckbox visualization of coloring as filling or outline
+	 * @param varBufferWidth edge envelope thickness for intensity retrieval
+	 * @param normalize_intensities flag to normalize or not the intensities
+	 * @param channelNumber image channel to measure
+	 */
 	public EdgeIntensityOverlay(SpatioTemporalGraph stGraph, Sequence sequence,
 			EzGUI gui, EzVarDouble varIntensitySlider, EzVarBoolean varFillingCheckbox,
 			EzVarInteger varBufferWidth,
@@ -92,7 +146,6 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.gui = gui;
 		this.slider = varIntensitySlider;
 		this.fillEdgeCheckbox = varFillingCheckbox;
-		this.factory = new GeometryFactory();
 		this.writer = new ShapeWriter();
 		this.buffer_shape = new	HashMap<Edge, Shape>();
 		this.buffer_roi = new HashMap<Edge, ROI>();
@@ -115,11 +168,11 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	/**
 	 * Computes the edge intensities for all edges in the graph
 	 * 
-	 * @param frame_i
+	 * @param frame_i frame to measure
 	 */
 	private void computeFrameIntensities(FrameGraph frame_i) {
 		
-		double sum_mean_cell_background = 0;
+		//double sum_mean_cell_background = 0;
 		int gui_counter = 0;
 		
 		//Compute individual edge intensities
@@ -128,8 +181,9 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			if(!e.hasGeometry())
 				e.computeGeometry(frame_i);
 			
-			double edge_intensity = computeEdgeIntensity(e,frame_i);
-			sum_mean_cell_background += edge_intensity;
+			computeEdgeIntensity(e,frame_i);
+			//double edge_intensity = computeEdgeIntensity(e,frame_i);
+			//sum_mean_cell_background += edge_intensity;
 			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
 		}
 
@@ -197,11 +251,18 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			
 	}
 	
+	/**
+	 * Compute underlying intensity for edge using a ROI corresponding
+	 * to the edge envelope (specified by bufferWidth)
+	 * 
+	 * @param e edge to measure
+	 * @param frame_i frame to which the edge belongs
+	 * @return mean intensity value of pixels within the edge envelope
+	 */
 	private double computeEdgeIntensity(Edge e, FrameGraph frame_i){
 		
 		Geometry edge_geo = e.getGeometry();
 		
-		//taking 3px buffer distance from edge
 		Geometry edge_buffer = edge_geo.buffer(bufferWidth);
 		
 		Shape egde_shape = writer.toShape(edge_buffer);
@@ -231,7 +292,6 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 						edge_roi,
 						z, t, c);
 
-		//TODO re-think name of value
 		e.setValue(mean_intensity);
 		
 		return mean_intensity;

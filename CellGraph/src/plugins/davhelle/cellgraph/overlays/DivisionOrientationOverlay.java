@@ -1,6 +1,3 @@
-/**
- * 
- */
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.sequence.Sequence;
@@ -11,7 +8,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -26,18 +22,34 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import com.vividsolutions.jts.algorithm.Angle;
 
 /**
- * Overaly to visualize the orientation of a dividing cell
- * and the new junction of the daughter cells
+ * Overlay to visualize the orientation between the longest axis of a dividing cell
+ * and the new junction of the daughter cells. To make the measurement more robust
+ * the respective orientations can be computed and averaged over multiple frames.
  * 
  * @author Davide Heller
  *
  */
 public class DivisionOrientationOverlay extends StGraphOverlay {
 
+	/**
+	 * Map containing the Ellipse fit for each Node / Cell
+	 */
 	private Map<Node, EllipseFitter> fittedEllipses;
+	
+	/**
+	 * Map containing the Division orientation angle for each Node
+	 */
 	private Map<Node, Double> division_orientation;
+	
+	/**
+	 * Flag to add numeric information to the visual output, including<br>
+	 * division orientation(DO) towards current frame, avg DO, difference between DOs 
+	 */
 	private final boolean DEBUG_FLAG = false;
 
+	/**
+	 * Description String for GUI
+	 */
 	public static final String DESCRIPTION = "Color codes the dividing cells according to their new junction orientation" +
 			" (Longest axis of mother cell vs New junction). The more red the cells are the more the new junstion is " +
 			"perpendicular to the longest axis of the mother cell, the more green the cell the more parallel the new" +
@@ -45,6 +57,12 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 			"[Detection start] = how many frames before the division should the longest axis be taken\n\n" +
 			"[Detection length]= how many frames should be averaged for the longest axis and the new junction\n";
 	
+	/**
+	 * @param spatioTemporalGraph graph to analyze
+	 * @param sequence image connected to graph
+	 * @param detection_distance number of frames before the division at which the the longest axis should be measured 
+	 * @param detection_length number of frames over which to average for the two angle measurements
+	 */
 	public DivisionOrientationOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence,
 			int detection_distance, int detection_length) {
 		super("Division Orientation",spatioTemporalGraph);
@@ -58,7 +76,6 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		Color old = g.getColor();
-		double[] heat_map = {0.0,0.25,0.5,0.75,1.0};
 		
 		Color newJunctionAngleColor = Color.BLACK;
 		Color longestAxisOrientationColor = Color.darkGray;
@@ -144,19 +161,6 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 						}
 					//System.out.printf("%.2f\n",n.getDivision().getDivisionOrientation());
 				}
-			}
-			
-			//add color scale bar [0-90]
-			for(int i=0; i<heat_map.length; i++){
-				
-				Color hsbColor = Color.getHSBColor(
-						(float)(heat_map[i] * 0.3),
-						1f,
-						1f);
-				
-				g.setColor(hsbColor);
-				
-				//g.fillRect(20*i + 30,30,20,20);
 			}
 		}		
 		g.setColor(old);

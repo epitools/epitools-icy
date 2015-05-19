@@ -1,35 +1,22 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
+
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D.Double;
 
 import jxl.write.WritableSheet;
-
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.DefaultWeightedEdge;
+import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.nodes.Edge;
+import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.nodes.Edge;
-import plugins.davhelle.cellgraph.nodes.Node;
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
-import icy.util.XLSUtil;
-import ij.process.EllipseFitter;
 
 /**
  * Class to visualize all the edges of a 
@@ -40,12 +27,24 @@ import ij.process.EllipseFitter;
  */
 public class GraphOverlay extends StGraphOverlay{
 
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = "Shows the connectivity (neighbors) of each cell; " +
 			"The XLS export contains the vertex ids for every tracked edge in the graph.";
 	
+	/**
+	 * JTS Geometry factory to generate segments to visualize connectivity
+	 */
 	private GeometryFactory factory;
+	/**
+	 * JTS to AWT shape converter
+	 */
 	private ShapeWriter writer;
 	
+	/**
+	 * @param stGraph graph to analyze
+	 */
 	public GraphOverlay(SpatioTemporalGraph stGraph) {
 		super("Graph edges",stGraph);
 		this.factory = new GeometryFactory();

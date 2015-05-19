@@ -161,4 +161,17 @@ public class DummyNode implements Node {
 		return 0;
 	}
 
+	@Override
+	public boolean hasObservedOrigin() {
+		return false;
+	}
+
+	@Override
+	public Division getOrigin() {
+		return null;
+	}
+
+	@Override
+	public void setOrigin(Division origin) {}
+
 }

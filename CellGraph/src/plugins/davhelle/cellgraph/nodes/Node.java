@@ -268,4 +268,25 @@ public interface Node{
 	 */
 	public int getFrameNo();
 	
+	/**
+	 * Flag for observed origin
+	 * 
+	 * @return true if the node is a child node from an observed division
+	 */
+	public boolean hasObservedOrigin();
+	
+	/**
+	 * Return the division object from which the node (child) was generated
+	 * 
+	 * @return division from observed origin
+	 */
+	public Division getOrigin();
+	
+	/**
+	 * Set the division object that generated the node (child)
+	 * 
+	 * @param origin the division that generated the node
+	 */
+	public void setOrigin(Division origin);
+	
 }

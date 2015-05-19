@@ -78,10 +78,21 @@ public class Cell implements Node {
 	 * Flag for division occurrence during the time lapse
 	 */
 	private boolean has_observed_division;
+	
 	/**
-	 * Division object if division occurs
+	 * Division object if node divides
 	 */
 	private Division division;
+	
+	/**
+	 * Flag for generating division occurrence (i.e. node is an observed child node) 
+	 */
+	private boolean has_observed_origin;
+	
+	/**
+	 * Division object if node is an observed child
+	 */
+	private Division origin;
 	
 	/**
 	 * Flag for elimination occurrence during the time lapse
@@ -121,6 +132,8 @@ public class Cell implements Node {
 		//default division information
 		this.has_observed_division = false;
 		this.division = null;
+		this.has_observed_origin = false;
+		this.origin = null;
 		
 		//default elimination information
 		this.has_observed_elimination = false;
@@ -303,6 +316,21 @@ public class Cell implements Node {
 			return parent.getFrameNo();
 		else
 			return 0;
+	}
+
+	@Override
+	public boolean hasObservedOrigin() {
+		return has_observed_origin;
+	}
+
+	@Override
+	public Division getOrigin() {
+		return origin;
+	}
+
+	@Override
+	public void setOrigin(Division origin) {
+		this.origin = origin;
 	}
 
 }

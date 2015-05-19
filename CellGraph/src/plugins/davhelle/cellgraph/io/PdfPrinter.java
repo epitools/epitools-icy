@@ -18,7 +18,7 @@ import java.util.List;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.painters.StGraphOverlay;
+import plugins.davhelle.cellgraph.overlays.StGraphOverlay;
 
 /**
  * PDF printer class that converts the AWT Overlays for StGraphs

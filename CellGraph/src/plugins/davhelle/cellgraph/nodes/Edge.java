@@ -6,7 +6,7 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.CantorPairing;
-import plugins.davhelle.cellgraph.painters.EdgeMarkerOverlay;
+import plugins.davhelle.cellgraph.overlays.EdgeMarkerOverlay;
 
 import com.vividsolutions.jts.geom.Geometry;
 

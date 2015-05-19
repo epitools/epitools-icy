@@ -7,8 +7,8 @@ import java.util.List;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
-import plugins.davhelle.cellgraph.painters.TrackingOverlay;
+import plugins.davhelle.cellgraph.overlays.CellMarkerOverlay;
+import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 
 
 import com.vividsolutions.jts.awt.ShapeWriter;

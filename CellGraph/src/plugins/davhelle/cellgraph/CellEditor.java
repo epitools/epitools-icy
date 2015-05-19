@@ -12,7 +12,7 @@ import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarSequence;
-import plugins.davhelle.cellgraph.painters.SkeletonModifier;
+import plugins.davhelle.cellgraph.overlays.SkeletonModifier;
 
 /**
  * Tool to apply manual modifications to skeleton files

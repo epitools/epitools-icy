@@ -13,8 +13,8 @@ import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.painters.TrackIdOverlay;
-import plugins.davhelle.cellgraph.painters.TrackingOverlay;
+import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
+import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 
 /**
  * Loads neo samples using wkt

@@ -19,7 +19,7 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.davhelle.cellgraph.painters.CellMarkerOverlay;
+import plugins.davhelle.cellgraph.overlays.CellMarkerOverlay;
 
 import com.vividsolutions.jts.geom.Geometry;
 

@@ -1,6 +1,3 @@
- 	/**
- * 
- */
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.canvas.IcyCanvas;
@@ -27,8 +24,9 @@ import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 
 /**
- * Overlay to color cells according to the longest axis 
+ * Overlay to color cells according to the angle between the longest axis 
  * and a given roi center.
+ * 
  * @author Davide Heller
  *
  */
@@ -38,10 +36,23 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 	"The overlay computes the angle with respect to (wrt) the estimated ellipse and displays it as a color code. " +
 	"Red being the perpendicular case and Green the parallel case (Longest axis vs Segment joining ROI and Ellipse Centroid)";
 	
+	/**
+	 * Ellipse fit for each node
+	 */
 	private Map<Node, EllipseFitter> fittedEllipses;
+	/**
+	 * ROI coordinate specified by the user
+	 */
 	private Coordinate roi_coor;
+	/**
+	 * Sequence on which the ROI is placed
+	 */
 	private Sequence sequence;
 	
+	/**
+	 * @param spatioTemporalGraph graph to be analyzed
+	 * @param sequence Icy sequence on which the ROI is placed
+	 */
 	public EllipseFitColorOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("Ellipse Orientation wrt PointROI",spatioTemporalGraph);
 
@@ -68,9 +79,11 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 
 					double xp = position.getX();
 					double yp = position.getY();
-					boolean show_guides = false;
+					
+					//Update ROI coordinate
+					roi_coor = new Coordinate(xp, yp);
 
-					paintFrame(g, time_point, xp, yp, show_guides);
+					paintFrame(g, stGraph.getFrame(time_point));
 					
 				}
 			}
@@ -81,61 +94,11 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
     }
 
 	/**
-	 * @param g
-	 * @param time_point
-	 * @param xp_roi
-	 * @param yp_roi
-	 * @param show_guides
-	 */
-	public void paintFrame(Graphics2D g, int time_point, double xp_roi,
-			double yp_roi, boolean show_guides) {
-		
-		//Update ROI coor
-		roi_coor = new Coordinate(xp_roi, yp_roi);
-		
-		int fontSize = 2;
-		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-				
-		for(Node n: stGraph.getFrame(time_point).vertexSet()){
-			if(fittedEllipses.containsKey(n)){
-				double angle_difference = computeAngleWrtLongestAxis(roi_coor,
-						n);
-				
-				
-				double normalized_angle = Math.abs(1 - angle_difference/Angle.PI_OVER_2);
-				normalized_angle = normalized_angle * 0.3;
-
-				Color hsbColor = Color.getHSBColor(
-						(float)(normalized_angle),
-						1f,
-						1f);
-				
-
-				g.setColor(hsbColor);
-				g.fill((n.toShape()));
-				
-				//DebugTools
-				if(show_guides){
-					g.setColor(Color.BLACK);
-					g.draw(new Line2D.Double(xp_roi, yp_roi,n.getCentroid().getX(),	n.getCentroid().getY()));						
-//					g.drawString(String.format("%.0f, %.0f, %.0f",
-//							Angle.toDegrees(angle0),
-//							Angle.toDegrees(angle1),
-//							Angle.toDegrees(angle_difference)), 
-//							(float)cell_center.x - 5  , 
-//							(float)cell_center.y + 5);
-				}
-				
-//				System.out.printf("%.2f\t%.2f\n",Angle.toDegrees(angle_difference),
-//						new LineSegment(roi_coor,cell_center).getLength());
-			}
-		}
-	}
-
-	/**
-	 * @param roi_coor
-	 * @param n
-	 * @return
+	 * Compute angle between user specified ROI and longest axis of node n
+	 * 
+	 * @param roi_coor user specified ROI coordinate
+	 * @param n node to be computed
+	 * @return between user specified ROI and longest axis of node n 
 	 */
 	private double computeAngleWrtLongestAxis(Coordinate roi_coor, Node n) {
 		EllipseFitter ef = fittedEllipses.get(n);
@@ -169,7 +132,46 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
-		// TODO Auto-generated method stub
+		
+		boolean show_guides = false;
+		
+		int fontSize = 2;
+		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
+				
+		for(Node n: frame_i.vertexSet()){
+			if(fittedEllipses.containsKey(n)){
+				double angle_difference = computeAngleWrtLongestAxis(roi_coor,
+						n);
+				
+				
+				double normalized_angle = Math.abs(1 - angle_difference/Angle.PI_OVER_2);
+				normalized_angle = normalized_angle * 0.3;
+
+				Color hsbColor = Color.getHSBColor(
+						(float)(normalized_angle),
+						1f,
+						1f);
+				
+
+				g.setColor(hsbColor);
+				g.fill((n.toShape()));
+				
+				//DebugTools
+				if(show_guides){
+					g.setColor(Color.BLACK);
+					g.draw(new Line2D.Double(roi_coor.x, roi_coor.y,n.getCentroid().getX(),	n.getCentroid().getY()));						
+//					g.drawString(String.format("%.0f, %.0f, %.0f",
+//							Angle.toDegrees(angle0),
+//							Angle.toDegrees(angle1),
+//							Angle.toDegrees(angle_difference)), 
+//							(float)cell_center.x - 5  , 
+//							(float)cell_center.y + 5);
+				}
+				
+//				System.out.printf("%.2f\t%.2f\n",Angle.toDegrees(angle_difference),
+//						new LineSegment(roi_coor,cell_center).getLength());
+			}
+		}
 		
 	}
 

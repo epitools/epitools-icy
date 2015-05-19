@@ -1,15 +1,8 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
 
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
 import jxl.write.WritableSheet;
@@ -26,14 +19,20 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class AreaGradientOverlay extends StGraphOverlay{
 	
+	/**
+	 * Description string for GUI use
+	 */
 	public static final String DESCRIPTION = 
 			"Overlay to color cells according to their area size in a gradient fashion";
 	/**
-	 * minimum and maximum area values to fix the gradient extremes
+	 * minimum area value to fix the gradient extremes
 	 */
-	private double min_area;
-	private double max_area;
 	
+	private double min_area;
+	/**
+	 * maximum area value to fix the gradient extremes
+	 */
+	private double max_area;
 	
 	/**
 	 * HUE scaling factor of the gradient, dynamically passed from CellOverlay  

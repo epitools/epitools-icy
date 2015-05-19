@@ -19,7 +19,7 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
-import plugins.davhelle.cellgraph.overlays.CellMarkerOverlay;
+import plugins.davhelle.cellgraph.overlays.CellColorTagOverlay;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -169,7 +169,7 @@ public class BigXlsExporter {
 
 			if(exprotTaggedOnly)
 				if(node.hasColorTag()){
-					String colorTag = CellMarkerOverlay.getColorName(node.getColorTag());
+					String colorTag = CellColorTagOverlay.getColorName(node.getColorTag());
 					XLSUtil.setCellString(sheet, col_no++, row_no, colorTag);
 				}
 				else

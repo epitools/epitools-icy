@@ -1,9 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
-
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
@@ -30,12 +24,23 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 	
+	/**
+	 * Description string for GUI use
+	 */
 	public static final String DESCRIPTION = 
 			"Contours in ORANGE only the cells that have been " +
 			"continuously tracked throughout the time lapse";
 	
+	/**
+	 * List of nodes are continuously tracked and will be highlighted
+	 */
 	private ArrayList<Node> nodesToBeHighlighted;
 
+	/**
+	 * Compute the nodes that are continuously tracked
+	 * 
+	 * @param stGraph graph to be analyzed
+	 */
 	public AlwaysTrackedCellsOverlay(SpatioTemporalGraph stGraph) {
 		super("Always tracked cells", stGraph);
 		nodesToBeHighlighted = new ArrayList<Node>();
@@ -134,6 +139,7 @@ public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 			
 	}
 	
+	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame)
 	{
 		g.setColor(Color.orange);

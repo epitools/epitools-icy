@@ -22,7 +22,6 @@ import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.nodes.Division;
-import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
@@ -42,7 +41,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class CellMarkerOverlay extends StGraphOverlay {
+public class CellColorTagOverlay extends StGraphOverlay {
 	
 	private GeometryFactory factory;
 	private EzVarEnum<CellColor> tag_color;
@@ -61,7 +60,7 @@ public class CellMarkerOverlay extends StGraphOverlay {
 			"   a spreadsheet with the marked cells.\n" +
 			"6. Remove the overlay (Layer > [x]) to stop";
 	
-	public CellMarkerOverlay(SpatioTemporalGraph stGraph, 
+	public CellColorTagOverlay(SpatioTemporalGraph stGraph, 
 			EzVarEnum<CellColor> varCellColor,
 			EzVarBoolean drawColorTag, Sequence sequence) {
 		super("Cell Color Tag",stGraph);

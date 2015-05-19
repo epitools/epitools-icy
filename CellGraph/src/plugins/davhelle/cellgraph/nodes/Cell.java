@@ -7,7 +7,7 @@ import java.util.List;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.overlays.CellMarkerOverlay;
+import plugins.davhelle.cellgraph.overlays.CellColorTagOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 
 
@@ -104,7 +104,7 @@ public class Cell implements Node {
 	private Elimination elimination;
 	
 	/**
-	 * Color tag created in combination with {@link CellMarkerOverlay}
+	 * Color tag created in combination with {@link CellColorTagOverlay}
 	 */
 	private Color color_tag;
 

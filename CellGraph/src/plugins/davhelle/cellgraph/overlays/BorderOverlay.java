@@ -1,15 +1,8 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
 
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D.Double;
 
@@ -19,15 +12,21 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
- * Painter to highlight the cells that lie on the boundary. 
+ * Painter to highlight the cells that lie on the boundary in white 
  * 
  * @author Davide Heller
  *
  */
 public class BorderOverlay extends StGraphOverlay{
 
+		/**
+		 * Descriptor String for GUI use
+		 */
 		public static final String DESCRIPTION = "Overlay to show where the border of the segmentation was identified";
 
+		/**
+		 * @param spatioTemporalGraph graph to be analyzed
+		 */
 		public BorderOverlay(SpatioTemporalGraph spatioTemporalGraph){
 			super("Border cells",spatioTemporalGraph);
 		}
@@ -36,16 +35,10 @@ public class BorderOverlay extends StGraphOverlay{
 		public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 			
 			for(Node cell: frame_i.vertexSet()){
-
 				if(cell.onBoundary()){
 					g.setColor(Color.white);
 					g.fill(cell.toShape());
 				}
-//				else
-//					g.setColor(Color.green);
-
-				//Fill cell shape
-				//if(!cell.onBoundary())
 			}			
 		}
 

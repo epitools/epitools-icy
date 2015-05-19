@@ -31,7 +31,7 @@ import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.overlays.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.overlays.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.overlays.BorderOverlay;
-import plugins.davhelle.cellgraph.overlays.CellMarkerOverlay;
+import plugins.davhelle.cellgraph.overlays.CellColorTagOverlay;
 import plugins.davhelle.cellgraph.overlays.CentroidOverlay;
 import plugins.davhelle.cellgraph.overlays.CorrectionOverlay;
 import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
@@ -445,16 +445,16 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						break;
 
 					case CELL_COLOR_TAG:
-						if(sequence.hasOverlay(CellMarkerOverlay.class) || sequence.hasOverlay(EdgeMarkerOverlay.class)){
+						if(sequence.hasOverlay(CellColorTagOverlay.class) || sequence.hasOverlay(EdgeMarkerOverlay.class)){
 							new AnnounceFrame("Only one marker overlay is allowed per sequence");
 							return;
 						}
 						sequence.addOverlay(
-								new CellMarkerOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
+								new CellColorTagOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
 						break;
 						
 					case EDGE_COLOR_TAG:
-						if(sequence.hasOverlay(CellMarkerOverlay.class) || sequence.hasOverlay(EdgeMarkerOverlay.class)){
+						if(sequence.hasOverlay(CellColorTagOverlay.class) || sequence.hasOverlay(EdgeMarkerOverlay.class)){
 							new AnnounceFrame("Only one marker overlay is allowed per sequence");
 							return;
 						}

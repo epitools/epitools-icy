@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.canvas.IcyCanvas;
@@ -51,6 +46,9 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class EdgeColorTagOverlay extends StGraphOverlay {
 
+	/**
+	 * Description String for GUI
+	 */
 	public static final String DESCRIPTION = "Interactive overlay to mark edges/junctions" +
 			" in the graph and follow them over time. See CELL_COLOR_TAG for usage help.\n\n" +
 			" [color]  = color to tag the edge with\n" +
@@ -62,13 +60,37 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 			" header provides a identification for the edge:\n\n" +
 			" [colorString] [tStart,xStart,yStart]";
 	
+	/**
+	 * JTS to AWT writer
+	 */
 	private ShapeWriter writer;
+	/**
+	 * Geometry creator for Edge Envelope
+	 */
 	private GeometryFactory factory;
+	/**
+	 * Sequence from which to retrieve the intensities
+	 */
 	private Sequence sequence;
+	/**
+	 * Current tagging color handle
+	 */
 	private EzVarEnum<CellColor> tag_color;
+	/**
+	 * Current Envelope width handle
+	 */
 	private EzVarInteger envelope_buffer;
+	/**
+	 * Flag to see whether current tags exist
+	 */
 	private boolean tags_exist;
 	
+	/**
+	 * @param stGraph graph to analyze
+	 * @param varEdgeColor color choice EzGUI handle
+	 * @param varEnvelopeBuffer envelope width EzGUI handle
+	 * @param sequence image from which to retrieve the intensities for export
+	 */
 	public EdgeColorTagOverlay(SpatioTemporalGraph stGraph,
 			EzVarEnum<CellColor> varEdgeColor,
 			EzVarInteger varEnvelopeBuffer, Sequence sequence) {
@@ -103,6 +125,13 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 
 	}
 	
+	/**
+	 * Draw envelope of edge
+	 * 
+	 * @param g graphics handle
+	 * @param e edge object to color
+	 * @param color color of the envelope
+	 */
 	public void drawEdge(Graphics2D g, Edge e, Color color){
 		g.setColor(color);
 		g.draw(writer.toShape(e.getGeometry().buffer(envelope_buffer.getValue())));
@@ -156,6 +185,12 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		}
 	}
 
+	/**
+	 * Propagate the Tag of the edge in time when possible
+	 * 
+	 * @param edge edge for which to propagate the tag
+	 * @param colorTag tag to propagate
+	 */
 	private void propagateTag(Edge edge, Color colorTag) {
 		//change current edge
 		edge.setColorTag(colorTag);
@@ -175,6 +210,13 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		}
 	}
 
+	/**
+	 * Initialize the edge Tag
+	 * 
+	 * @param edge edge to be tagged
+	 * @param colorTag color tag
+	 * @param frame frame in which the edge is tagged
+	 */
 	private void initializeTag(Edge edge, Color colorTag, FrameGraph frame) {
 		edge.setColorTag(colorTag);
 		
@@ -242,7 +284,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 * @param futureFrame the currently analyzed frame
 	 * @param dividingCell the dividing cell in a previous frame
 	 * @param neighbor the neighboring cell in a previous frame
-	 * @return
+	 * @return the edge in a future frame
 	 */
 	private Edge findFutureEdge(FrameGraph futureFrame, Node dividingCell, Node neighbor) {
 		Division d = dividingCell.getDivision();
@@ -308,7 +350,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 * 
 	 * Edge header (column): [colorString] [tStart,xStart,yStart]
 	 * 
-	 * @param wb
+	 * @param wb workbook into which to write the edges 
 	 */
 	private void writeEdges(WritableWorkbook wb) {
 		String sheetName = String.format("Edge Length");
@@ -371,6 +413,12 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		}
 	}
 	
+	/**
+	 * Compute mean intensity underlying the edge envelope
+	 * 
+	 * @param edge fow which to compute the intensity
+	 * @return mean intensity underlying the envelope
+	 */
 	private double computeIntensity(Edge edge){
 		
 		Geometry envelope = edge.getGeometry().buffer(envelope_buffer.getValue());

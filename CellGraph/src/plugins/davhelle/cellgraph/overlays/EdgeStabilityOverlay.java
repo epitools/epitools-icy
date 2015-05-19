@@ -1,14 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
-
 package plugins.davhelle.cellgraph.overlays;
 
 import java.awt.Color;
@@ -27,25 +16,38 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import com.vividsolutions.jts.awt.ShapeWriter;
 
 /**
- * Edge Painter
- * 
- * e.g. visualize the persistence of edges
+ * Edge Painter highlighting if edges are conserved in time
  * 
  * @author Davide Heller
  *
  */
 public class EdgeStabilityOverlay extends StGraphOverlay {
 	
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"Displays a color code for how stable edges are (green=stable, red=not stable)[time consuming!]";
 	
+	/**
+	 * JTS to AWT converter
+	 */
 	private ShapeWriter writer;
+	/**
+	 * Set of edges which is present in all frames
+	 */
 	private HashSet<Long> stable_set;
+	/**
+	 * Set of edges which is present till the end
+	 */
 	private HashSet<Long> unstable_set;
+	/**
+	 * Edges which are not present from the start
+	 */
 	private HashSet<Long> novel_set;
 
 	/**
-	 * @param name
+	 * @param stGraph graph to be analyzed
 	 */
 	public EdgeStabilityOverlay(SpatioTemporalGraph stGraph) {
 		super("Edge Survival",stGraph);
@@ -77,11 +79,24 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 		
 	}
 	
+	/**
+	 * Draw edge
+	 * 
+	 * @param g graphics handle
+	 * @param e edge to color
+	 * @param color color to mark the edge geometry with
+	 */
 	public void drawEdge(Graphics2D g, Edge e, Color color){
 		g.setColor(color);
 		g.draw(writer.toShape(e.getGeometry()));
 	}
 	
+	/**
+	 * computes how stable every edge is
+	 * 
+	 * @param stGraph graph to be analyzed
+	 * @return A persistence value (number of frames) for each edge
+	 */
 	private HashMap<Long, Integer> computeEdgeStability(
 			SpatioTemporalGraph stGraph) {
 		HashMap<Long,Integer> tracked_edges = new HashMap<Long,Integer>();
@@ -184,9 +199,11 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 	}
 
 	/**
-	 * @param e
-	 * @param dividing_node
-	 * @param other_node
+	 * Computes an alternative tracking id for an edge if a division is encountered
+	 * 
+	 * @param e edge that has a dividing vertex
+	 * @param dividing_node vertex that will divide
+	 * @param other_node second vertex (assumed non dividing at the same time)
 	 * @return
 	 */
 	private long computeAlternativeId(Edge e, Node dividing_node, Node other_node) {
@@ -201,8 +218,10 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 	}
 
 	/**
-	 * @param tracked_edges
-	 * @param edge_track_code
+	 * Updates the count of frames for an edge in the map
+	 * 
+	 * @param tracked_edges map of counts for each edge
+	 * @param edge_track_code tracking code of the edge to be updated
 	 */
 	private void updateTrackEntry(HashMap<Long, Integer> tracked_edges,
 			long edge_track_code) {
@@ -231,8 +250,6 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

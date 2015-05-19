@@ -206,11 +206,6 @@ public class Cell implements Node {
 	}
 
 	@Override
-	public void setObservedDivision(boolean will_cell_divide) {
-		this.has_observed_division = will_cell_divide;
-	}
-
-	@Override
 	public FrameGraph getBelongingFrame() {
 		return parent;
 	}
@@ -242,7 +237,10 @@ public class Cell implements Node {
 	@Override
 	public void setDivision(Division division) {
 		this.division = division;
-		this.has_observed_division = true;
+		if(division != null)
+			this.has_observed_division = true;
+		else
+			this.has_observed_division = false;
 	}
 
 	@Override
@@ -282,7 +280,10 @@ public class Cell implements Node {
 	@Override
 	public void setElimination(Elimination elimination) {
 		this.elimination = elimination;
-		this.has_observed_elimination = true;
+		if(elimination != null)
+			this.has_observed_elimination = true;
+		else
+			this.has_observed_elimination = false;
 	}
 
 	@Override
@@ -331,6 +332,10 @@ public class Cell implements Node {
 	@Override
 	public void setOrigin(Division origin) {
 		this.origin = origin;
+		if(origin != null)
+			this.has_observed_origin = true;
+		else
+			this.has_observed_origin = false;
 	}
 
 }

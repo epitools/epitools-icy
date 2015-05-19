@@ -81,9 +81,6 @@ public class DummyNode implements Node {
 	}
 
 	@Override
-	public void setObservedDivision(boolean observedDivision) {}
-
-	@Override
 	public void setDivision(Division division) {}
 
 	@Override

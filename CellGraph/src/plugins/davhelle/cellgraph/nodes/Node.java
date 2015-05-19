@@ -127,14 +127,7 @@ public interface Node{
 	 * @return true if the node will divide, otherwise false
 	 */
 	public boolean hasObservedDivision();
-	
-	/**
-	 * Set whether the node has been observed dividing
-	 * 
-	 * @param observedDivision
-	 */
-	public void setObservedDivision(boolean observedDivision);
-	
+		
 	/**
 	 * Associate a division with the node. Relationship can
 	 * be either being a child or the mother cell.

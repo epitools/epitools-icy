@@ -99,6 +99,10 @@ public class Division {
 		child1.setDivision(this);
 		child2.setDivision(this);
 		
+		//experimental, to allow multiple divisions former setDivision would be removed
+		child1.setOrigin(this);
+		child2.setOrigin(this);
+		
 		//Update Mother node
 		mother.setDivision(this);
 		//mother has no further future linking

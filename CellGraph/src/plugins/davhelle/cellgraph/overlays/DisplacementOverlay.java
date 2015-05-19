@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
@@ -38,14 +33,26 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class DisplacementOverlay extends StGraphOverlay {
 
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = "Overlay to highlight the spatial displacement from one frame to the next.\n\n" +
 			"Displacement Color code:\n" +
 			"* [white] cell centroid moves > [x] px\n" +
 			"* [green] cell centroid moves < [x] px\n" +
 			"* [none] next frame info not available\n";
 	
+	/**
+	 * JTS factory for building arrow object
+	 */
 	GeometryFactory factory;
+	/**
+	 * JTS geometry to AWT shape converter
+	 */
 	ShapeWriter writer;
+	/**
+	 * Displacement threshold for background coloring
+	 */
 	float displacement;
 	
 	/**
@@ -84,6 +91,14 @@ public class DisplacementOverlay extends StGraphOverlay {
 	}
 
 
+	/**
+	 * Draw displacement arrow and colors background according to threshold
+	 * 
+	 * @param g graphics object
+	 * @param cell cell to be colored
+	 * @param segment_to_successive_cell segement between cell centroid and next's centroid
+	 * @param tipCoordinate next's centroid
+	 */
 	private void draw(Graphics2D g, Node cell,
 			LineSegment segment_to_successive_cell, 
 			Point2D tipCoordinate) {
@@ -94,6 +109,13 @@ public class DisplacementOverlay extends StGraphOverlay {
 	}
 
 
+	/**
+	 * Returns color according to threshold. If the length of the 
+	 * segment to the cell's next threshold is over threshold it will be white, if below green.
+	 * 
+	 * @param segment_to_successive_cell segment to next's centroid
+	 * @return white if above displacement threshold, green if below
+	 */
 	private Color getSegmentBackgroundColor(LineSegment segment_to_successive_cell) {
 		//choose background color according to displacement length
 		if(segment_to_successive_cell.getLength() > (double) displacement)
@@ -102,6 +124,13 @@ public class DisplacementOverlay extends StGraphOverlay {
 			return Color.green;
 	}
 	
+	/**
+	 * Draw background of cell according to displacement threshold
+	 * 
+	 * @param g graphics handle
+	 * @param cell cell to color
+	 * @param segment_to_successive_cell segment to next's centroid
+	 */
 	private void drawBackground(Graphics2D g, Node cell,
 			LineSegment segment_to_successive_cell) { 
 		g.setColor(getSegmentBackgroundColor(segment_to_successive_cell));
@@ -109,6 +138,13 @@ public class DisplacementOverlay extends StGraphOverlay {
 	}
 
 
+	/**
+	 * Draw arrow tip aligned with segment
+	 * 
+	 * @param g graphics handle
+	 * @param segment_to_successive_cell segment to next's centroid
+	 * @param tipCoordinate point where to paint arrow tip
+	 */
 	private void drawRotatedArrow(Graphics2D g,
 			LineSegment segment_to_successive_cell, Point2D tipCoordinate) {
 		//draw a line segment

@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
@@ -28,6 +23,9 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class CentroidOverlay extends StGraphOverlay{
 	
+	/**
+	 * @param spatioTemporalGraph graph to display
+	 */
 	public CentroidOverlay(SpatioTemporalGraph spatioTemporalGraph){
 		super("Cell centroids", spatioTemporalGraph);
 	}
@@ -35,7 +33,6 @@ public class CentroidOverlay extends StGraphOverlay{
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		//TODO include 3D information!
-		//TODO possible performance improvement if map<Node,Point> is created
 		g.setColor(Color.red);
 		
 		for(Node cell: frame_i.vertexSet()){
@@ -64,8 +61,7 @@ public class CentroidOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
-		
+		//no legend needed
 	}
 
 }

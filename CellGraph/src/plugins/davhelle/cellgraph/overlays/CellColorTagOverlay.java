@@ -43,13 +43,34 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class CellColorTagOverlay extends StGraphOverlay {
 	
+	/**
+	 * JTS Geometry factory convert mouse clicks in JTS Points
+	 */
 	private GeometryFactory factory;
+	/**
+	 * GUI handle of the color selection
+	 */
 	private EzVarEnum<CellColor> tag_color;
+	/**
+	 * JTS class to convert JTS Geometries to AWT Shapes
+	 */
 	private ShapeWriter writer;
+	/**
+	 * ICY sequence to use as display
+	 */
 	private Sequence sequence;
+	/**
+	 * Visualization Flag whether to fill or outline (draw) the color Tag
+	 */
 	private EzVarBoolean drawColorTag;
+	/**
+	 * Flag for presence of tags in the stGraph 
+	 */
 	private boolean tags_exist;
 	
+	/**
+	 * Description string for GUI use
+	 */
 	public static final String DESCRIPTION = 
 			"Overlay to interactively mark cells with a color of choice and export the selection.\n\n" +
 			"1. Run [>] to activate the marker\n" +
@@ -60,6 +81,14 @@ public class CellColorTagOverlay extends StGraphOverlay {
 			"   a spreadsheet with the marked cells.\n" +
 			"6. Remove the overlay (Layer > [x]) to stop";
 	
+	/**
+	 * Initialize the marker overlay
+	 * 
+	 * @param stGraph graph to tag
+	 * @param varCellColor color handle
+	 * @param drawColorTag visualization handle
+	 * @param sequence icy sequence to overlay to
+	 */
 	public CellColorTagOverlay(SpatioTemporalGraph stGraph, 
 			EzVarEnum<CellColor> varCellColor,
 			EzVarBoolean drawColorTag, Sequence sequence) {
@@ -111,6 +140,13 @@ public class CellColorTagOverlay extends StGraphOverlay {
 
 	}
 	
+	/**
+	 * Propagates the Color Tag from the current frame to
+	 * all linked frames for the input cell.
+	 * 
+	 * @param n cell being clicked
+	 * @param tag color tag to propagate
+	 */
 	public void propagateTag(Node n, Color tag){
 		
 		if(n.getFirst() != null)
@@ -187,8 +223,8 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	 * 
 	 * convert the color into a string if possible
 	 * 
-	 * @param c
-	 * @return
+	 * @param c input color
+	 * @return String of Color
 	 */
 	public static String getColorName(Color c) {
 	    for (Field f : Color.class.getFields()) {
@@ -215,7 +251,4 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		
 	}
 	
-	//simpler: interface launch marker with certain color
-	//output: if==color take for certain column -> alex workbook
-
 }

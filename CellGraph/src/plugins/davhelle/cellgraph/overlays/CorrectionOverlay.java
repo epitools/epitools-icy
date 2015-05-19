@@ -1,19 +1,6 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
@@ -24,7 +11,7 @@ import java.awt.geom.Point2D;
 import java.util.Iterator;
 
 import jxl.write.WritableSheet;
-
+import plugins.davhelle.cellgraph.CellEditor;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Division;
@@ -36,21 +23,24 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * Interactive painter to mark cell with a certain
- * color tag set in the UI. Current behavior tags
- * a cell is the default color is present (black)
- * or if another color is present. If the user
- * tries to repaint a cell with the same color it 
- * already has, the cell is put back to default.
+ * Class for helping the visualization of Segmentation errors and make each error "clickable"
+ * such that simple progress can be visually followed.
  * 
+ * Best used together with {@link CellEditor}
  * 
  * @author Davide Heller
  *
  */
 public class CorrectionOverlay extends StGraphOverlay {
 	
+	/**
+	 * JTS factory to transform clicks to JTS points
+	 */
 	private GeometryFactory factory;
 	
+	/**
+	 * Description string for GUI use
+	 */
 	public static final String DESCRIPTION = "Overlay to evidence potential False positives (FP) and False Negatives (FN)\n\n" +
 			"* [RED] FP, i.e. over-segmentation\n" + 
 			"* [YELLOW] FN, i.e. under-segmentation\n" +
@@ -58,6 +48,9 @@ public class CorrectionOverlay extends StGraphOverlay {
 			"Useful in combination with CellEditor. Please note that it must be run on a different sequence than latter's [INPUT]" +
 			" (i.e. to avoid event conflict between the clicking events)";
 	
+	/**
+	 * @param stGraph graph to analyze
+	 */
 	public CorrectionOverlay(SpatioTemporalGraph stGraph) {
 		super("Tracking Corrections",stGraph);
 		this.factory = new GeometryFactory();
@@ -67,6 +60,9 @@ public class CorrectionOverlay extends StGraphOverlay {
 		markFalseNegatives();
 	}
 	
+	/**
+	 * detect false negatives, i.e. possible cases of under-segmentation
+	 */
 	private void markFalseNegatives() {
 		for(int time_point = 0; time_point < stGraph.size(); time_point++){
 					
@@ -87,9 +83,8 @@ public class CorrectionOverlay extends StGraphOverlay {
 		
 	}
 
-	/**
-	 * Method that marks cells which are most likely false 
-	 * positives due to a non existent cell boundary  
+	/** 
+	 * detect false positives, i.e. possible cases of over-segmentation (e.g. non existent cell boundary detection)  
 	 */
 	private void markFalsePositives() {
 		

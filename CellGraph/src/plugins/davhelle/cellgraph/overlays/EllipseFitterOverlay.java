@@ -1,13 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.sequence.Sequence;
@@ -28,19 +18,28 @@ import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
- * Overlay to display the fitted ellipses for each polygon
+ * Overlay to display the fitted ellipses for each polygon as segment representing the longest axis
  * 
  * @author Davide Heller
- * @date 21.11.2014
  *
  */
 public class EllipseFitterOverlay extends StGraphOverlay {
 
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = "Fits an ellipse to each cell geometry and displays the longest axis" +
 			"using the ImageJ(R) EllipseFitter Macro.";
 	
+	/**
+	 * Ellipse fit for every node
+	 */
 	private Map<Node, EllipseFitter> fittedEllipses;
 	
+	/**
+	 * @param spatioTemporalGraph graph to be analyzed
+	 * @param sequence sequence to use for the ellipseFit (dimensions must agree with input skeletons)
+	 */
 	public EllipseFitterOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("Ellipse Fitter",spatioTemporalGraph);
 		fittedEllipses = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight()).getFittedEllipses();

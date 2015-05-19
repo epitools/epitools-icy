@@ -1,11 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2015) Basler Group, IMLS, UZH
- *  
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.sequence.Sequence;
@@ -32,14 +24,29 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class ElongationRatioOverlay extends StGraphOverlay{
 
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = "Color codes the cell according to their elongation ratio and "+
 			"writes the elongation factor within every cell";
+	/**
+	 * Elongation ratio for each node
+	 */
 	private Map<Node, java.lang.Double> elongationRatios;
 	
+	/**
+	 * Maximum elongation ratio found
+	 */
 	private double min;
+	/**
+	 * Minimal elongation ratio found
+	 */
 	private double max;
 
-	
+	/**
+	 * @param spatioTemporalGraph graph to be analyzed
+	 * @param sequence image to be used for ellipse estimation
+	 */
 	public ElongationRatioOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("EllipseRatio Coloring",spatioTemporalGraph);
 

@@ -49,7 +49,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class EdgeMarkerOverlay extends StGraphOverlay {
+public class EdgeColorTagOverlay extends StGraphOverlay {
 
 	public static final String DESCRIPTION = "Interactive overlay to mark edges/junctions" +
 			" in the graph and follow them over time. See CELL_COLOR_TAG for usage help.\n\n" +
@@ -69,7 +69,7 @@ public class EdgeMarkerOverlay extends StGraphOverlay {
 	private EzVarInteger envelope_buffer;
 	private boolean tags_exist;
 	
-	public EdgeMarkerOverlay(SpatioTemporalGraph stGraph,
+	public EdgeColorTagOverlay(SpatioTemporalGraph stGraph,
 			EzVarEnum<CellColor> varEdgeColor,
 			EzVarInteger varEnvelopeBuffer, Sequence sequence) {
 		super("Edge Color Tag", stGraph);

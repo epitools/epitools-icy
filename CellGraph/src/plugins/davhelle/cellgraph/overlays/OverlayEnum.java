@@ -39,7 +39,7 @@ public enum OverlayEnum{
 	DIVISION_ORIENTATION(DivisionOrientationOverlay.DESCRIPTION),
 	
 	CELL_COLOR_TAG(CellColorTagOverlay.DESCRIPTION),
-	EDGE_COLOR_TAG(EdgeMarkerOverlay.DESCRIPTION),
+	EDGE_COLOR_TAG(EdgeColorTagOverlay.DESCRIPTION),
 	
 	EDGE_T1_TRANSITIONS(TransitionOverlay.DESCRIPTION), 
 	EDGE_STABILITY(EdgeStabilityOverlay.DESCRIPTION),

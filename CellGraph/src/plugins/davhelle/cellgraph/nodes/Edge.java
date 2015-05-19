@@ -6,7 +6,7 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.misc.CantorPairing;
-import plugins.davhelle.cellgraph.overlays.EdgeMarkerOverlay;
+import plugins.davhelle.cellgraph.overlays.EdgeColorTagOverlay;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -54,7 +54,7 @@ public class Edge extends DefaultWeightedEdge {
 	private FrameGraph frame;
 
 	/**
-	 * Color tag associated to {@link EdgeMarkerOverlay}
+	 * Color tag associated to {@link EdgeColorTagOverlay}
 	 */
 	private Color colorTag;
 	

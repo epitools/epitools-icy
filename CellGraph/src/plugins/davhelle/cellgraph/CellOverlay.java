@@ -46,7 +46,6 @@ import plugins.davhelle.cellgraph.overlays.ElongationRatioOverlay;
 import plugins.davhelle.cellgraph.overlays.GraphOverlay;
 import plugins.davhelle.cellgraph.overlays.OverlayEnum;
 import plugins.davhelle.cellgraph.overlays.PolygonClassOverlay;
-import plugins.davhelle.cellgraph.overlays.PolygonConverterPainter;
 import plugins.davhelle.cellgraph.overlays.PolygonOverlay;
 import plugins.davhelle.cellgraph.overlays.StGraphOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
@@ -75,7 +74,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarEnum<OverlayEnum> 		varPlotting;
 
 	EzVarBoolean				varBooleanPolygon;
-	EzVarBoolean				varBooleanDerivedPolygons;
 	EzVarBoolean				varBooleanCCenter;
 
 	EzVarBoolean				varBooleanAreaDifference;
@@ -139,12 +137,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varBooleanPolygon = new EzVarBoolean("Polygons", true);
 		varBooleanCCenter = new EzVarBoolean("Centers", true);
 		varBooleanWriteCenters = new EzVarBoolean("Write cell centers to disk",false);
-		varBooleanDerivedPolygons = new EzVarBoolean("Derived Polygons", false);
 		varPolygonColor = new EzVarEnum<CellColor>("Polygon color", CellColor.values(),CellColor.RED);
 		EzGroup groupCellMap = new EzGroup("Overlay elements",
 				varBooleanPolygon,
 				varPolygonColor,
-				varBooleanDerivedPolygons,
 				varBooleanCCenter,
 				varBooleanWriteCenters);
 		
@@ -558,12 +554,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			Overlay polygons = new PolygonOverlay(wing_disc_movie,varPolygonColor.getValue().getColor());
 			sequence.addOverlay(polygons);
 		}
-		
-		if(varBooleanDerivedPolygons.getValue()){
-			Overlay derived_polygons = new PolygonConverterPainter(wing_disc_movie);
-			sequence.addOverlay(derived_polygons);
-		}
-		
 		
 	}
 

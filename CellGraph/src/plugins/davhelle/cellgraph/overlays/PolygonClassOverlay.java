@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
@@ -29,13 +24,27 @@ import com.vividsolutions.jts.geom.Coordinate;
  */
 public class PolygonClassOverlay extends StGraphOverlay{
 	
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = "Displays the number of neighbors each cell has with color code or number";
 	
+	/**
+	 * Flag to display or not the polygon sidedness as number 
+	 */
 	private boolean use_numbers;
+	
+	/**
+	 * Variable to display only a specific polygon class to highlight
+	 * if == 0 all classes are displayed
+	 */
 	private int highlight_no;
-	private boolean draw_color_legend = true;
 	
-	
+	/**
+	 * @param stGraph graph to analyze
+	 * @param use_numbers flag to display the numbers instead of the colors
+	 * @param hightlight_no a specific polygon class number to be highlighted, put 0 to display all
+	 */
 	public PolygonClassOverlay(SpatioTemporalGraph stGraph, boolean use_numbers, int hightlight_no) {
 		super("Polygon class",stGraph);
 		this.use_numbers = use_numbers;
@@ -133,7 +142,6 @@ public class PolygonClassOverlay extends StGraphOverlay{
 	public void specifyLegend(Graphics2D g, Double line)  {
 		
 		int binWidth = (int)((line.x2 - line.x1)/7);
-		int binHeight = (int)(line.y2 - line.y1);
 		
 		for(int i=0; i<7; i++){
 

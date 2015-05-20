@@ -5,8 +5,25 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
+/**
+ * Helper methods to generate legends for the StGraphOverlays
+ * 
+ * @author Davide Heller
+ *
+ */
 public class OverlayUtils {
 
+	/**
+	 * Generates a color gradient legend by indicating the maximum and the minimum value
+	 * 
+	 * @param g graphics handle
+	 * @param line segment defining the location of the legend
+	 * @param min_value minimal value of the displayed values
+	 * @param max_value maximal value of the displayed values
+	 * @param bin_no number of bins to form
+	 * @param scaling_factor multiplying factor for the HSB color value (e.g. narrow to broad color range)
+	 * @param shift_factor shifting factor for the HSB color value (e.g. from green to blue tones)
+	 */
 	public static void gradientColorLegend(
 			Graphics2D g,
 			java.awt.geom.Line2D.Double line,
@@ -61,6 +78,17 @@ public class OverlayUtils {
 				(float)line.y1 + 15);
 	}
 	
+	/**
+	 * Equal to gradient gradientColorLegend but shows an additional digit for values.
+	 * 
+	 * @param g graphics handle
+	 * @param line segment defining the location of the legend
+	 * @param min_value minimal value of the displayed values
+	 * @param max_value maximal value of the displayed values
+	 * @param bin_no number of bins to form
+	 * @param scaling_factor multiplying factor for the HSB color value (e.g. narrow to broad color range)
+	 * @param shift_factor shifting factor for the HSB color value (e.g. from green to blue tones)
+	 */
 	public static void gradientColorLegend_1Digit(
 			Graphics2D g,
 			java.awt.geom.Line2D.Double line,
@@ -115,6 +143,17 @@ public class OverlayUtils {
 				(float)line.y1 + 15);
 	}
 	
+	/**
+	 * Color Gradient legend that scales from 0 to 1 and adds the min and max strings in the legend
+	 * 
+	 * @param g graphics handle
+	 * @param line segment defining the location of the legend
+	 * @param min_value minimum value string to display in the legend
+	 * @param max_value maximum value string to display in the legend
+	 * @param bin_no number of bins to form
+	 * @param scaling_factor multiplying factor for the HSB color value (e.g. narrow to broad color range)
+	 * @param shift_factor shifting factor for the HSB color value (e.g. from green to blue tones)
+	 */
 	public static void gradientColorLegend_ZeroOne(
 			Graphics2D g,
 			java.awt.geom.Line2D.Double line,
@@ -169,6 +208,15 @@ public class OverlayUtils {
 				(float)line.y1 + 15);
 	}
 	
+	/**
+	 * Color legend displaying a colored string 
+	 * 
+	 * @param g graphics handle
+	 * @param line segment defining the location of the legend
+	 * @param s String to display
+	 * @param c Color to print the string s in 
+	 * @param offset vertical distance in case of multiple statements, for default put 0
+	 */
 	public static void stringColorLegend(
 			Graphics2D g,
 			java.awt.geom.Line2D.Double line,

@@ -1,26 +1,15 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2015) Basler Group, IMLS, UZH
- *  
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
-
 package plugins.davhelle.cellgraph.overlays;
 
+import plugins.davhelle.cellgraph.CellOverlay;
+
 /**
- * Enumeration of available overlays in the CellOverlay-Plugin
+ * Enumeration of available overlays in the {@link CellOverlay} plugin
  * 
  * @author Davide Heller
  *
  */
 public enum OverlayEnum{
 	
-	//on hold
-	//POLYGON_TILE("Overlay that simplifies the geometry of each cell to have straight edges"),
-	//NEIGHBOR_STABILITY("An overlay to display the stability of each neighbor (graph based)"),  
-
 	TEST("Test Overlay"),
 	CELL_OUTLINE(PolygonOverlay.DESCRIPTION),
 	CELL_AREA(AreaGradientOverlay.DESCRIPTION),
@@ -49,8 +38,17 @@ public enum OverlayEnum{
 	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),
 	ELLIPSE_ELONGATION_RATIO(ElongationRatioOverlay.DESCRIPTION);
 	
+	/**
+	 * Description String visualized by the {@link CellOverlay} plugin
+	 */
 	private String description;
+	/**
+	 * @param description the description of the overlay
+	 */
 	private OverlayEnum(String description){this.description = description;}
+	/**
+	 * @return the description of the overlay
+	 */
 	public String getDescription(){return description;}
 	
 }

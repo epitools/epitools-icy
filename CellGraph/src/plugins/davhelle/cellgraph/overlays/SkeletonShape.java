@@ -10,6 +10,15 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 
+/**
+ * Skeleton shape is the basic shape to be added for the painter modifications
+ * 
+ * Code is based in large extend on the painting plugin(
+ * plugins.tprovoost.painting) by Thomas Provoost. <br>
+ * 
+ * @author Davide Heller
+ *
+ */
 public class SkeletonShape {
 
 	protected Stroke stroke;

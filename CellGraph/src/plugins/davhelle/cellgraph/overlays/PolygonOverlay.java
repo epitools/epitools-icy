@@ -1,42 +1,41 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
-import java.awt.Graphics2D;
-import java.awt.Color;
-import java.awt.geom.Line2D.Double;
+import icy.util.XLSUtil;
 
-import com.vividsolutions.jts.io.WKTWriter;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D.Double;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
-import icy.canvas.IcyCanvas;
-import icy.main.Icy;
-import icy.painter.AbstractPainter;
-import icy.painter.Overlay;
-import icy.sequence.Sequence;
-import icy.util.XLSUtil;
-import ij.process.EllipseFitter;
+import com.vividsolutions.jts.io.WKTWriter;
 
 /**
- * PolygonPainter depicts Polygons detected by JTS Polygonizer
+ * PolygonPainter depicts polygonal geometries within the stGraph
  * 
  * @author Davide Heller
  *
  */
 public class PolygonOverlay extends StGraphOverlay{
 	
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"Simple Overlay to show cells and their outlines in a color of choice";
 	
+	/**
+	 * Color for polygon outlines
+	 */
 	private Color painter_color;
 	
+	/**
+	 * @param spatioTemporalGraph graph to analyze
+	 * @param painter_color color to paint the polygons with
+	 */
 	public PolygonOverlay(SpatioTemporalGraph spatioTemporalGraph,Color painter_color){
 		super("Polygons",spatioTemporalGraph);
 		this.painter_color = painter_color;

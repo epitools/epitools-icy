@@ -33,32 +33,73 @@ import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
 
 /**
- * Skeleton Modifier. Heavily copied from 
- * package plugins.tprovoost.painting;
+ * A class to modify skeleton images with a simple painter method. <br>
  * 
- * Supports
- * * Mode/Color switch with [SPACE] bar (White<>Black)
- * * Undo/Redo (CTRL + Z) /+ SHIFT
- * * Apply changes with [ENTER] key
+ * Code is based in large extend on the painting plugin(
+ * plugins.tprovoost.painting) by Thomas Provoost. <br>
+ * 
+ * Supports <br>
+ * - Mode/Color switch with [SPACE] bar (White<>Black) <br>
+ * - Undo/Redo (CTRL + Z) /+ SHIFT <br>
+ * - Apply changes with [ENTER] key <br>
  * 
  * @author Davide Heller
  *
  */
 public class SkeletonModifier extends Overlay {
 
+	/**
+	 * Painting Shapes added to the sequence
+	 */
 	private final LinkedList<SkeletonShape> shapes;
+	/**
+	 * Undone Shapes removed from the sequence
+	 */
 	private final LinkedList<SkeletonShape> undo;
+	/**
+	 * Starting Point of a new painting shape 
+	 */
 	private Point startPoint;
+	/**
+	 * Current Point in the new Painting shape
+	 */
 	private Point currentPoint;
+	/**
+	 * Current Mouse location
+	 */
 	private Point mouseMovePoint;
+	/**
+	 * Current Shape being drawn
+	 */
 	private SkeletonShape currentShape;
+	/**
+	 * Current Color
+	 */
 	private Color currentColor;
 	
+	/**
+	 * Image to which the modifications should be applied
+	 */
 	private Sequence skeletonOutputSequence;
+	/**
+	 * Viewer attached to the output sequence
+	 */
 	private Viewer output_viewer;
+	/**
+	 * Flag whether to write the modifications to the disc
+	 */
 	private boolean saveSkeletonImage;
+	/**
+	 * Painter lock to suppress active drawing while saving
+	 */
 	private boolean painterLockFree;
 
+	/**
+	 * Initializes modification Overlay to support Painter operations
+	 * 
+	 * @param skeletonOutputSequence Sequence on which to apply modifications
+	 * @param saveSkeletonImage set true if modifications should be written to file
+	 */
 	public SkeletonModifier(Sequence skeletonOutputSequence, boolean saveSkeletonImage){
 		super("Skeleton Modifier");
 		
@@ -229,10 +270,10 @@ public class SkeletonModifier extends Overlay {
 	}
 
 	/**
-	 * Permanently write the modifications to the skeleton file
+	 * Permanently write the modified image to the original file location
 	 * 
-	 * @param img
-	 * @return
+	 * @param img image containing the modified image
+	 * @return the file path to which the modifications have been written
 	 */
 	private String saveModifications(IcyBufferedImage img) {
 		
@@ -272,7 +313,7 @@ public class SkeletonModifier extends Overlay {
 	}
 
 	/**
-	 * Method to permanently apply the painting overlay of the input sequence
+	 * Method to apply the painting overlay of the input sequence
 	 * to the output sequence.
 	 * 
 	 * Based on the Painting plugin by
@@ -288,7 +329,7 @@ public class SkeletonModifier extends Overlay {
 	 * 
 	 * @param modifications Painter/Overlay of the input sequence to be permanently applied
 	 * @param output_viewer Viewer associated with the output sequence (by default the 1st viewer is chosen)
-	 * @return 
+	 * @return the modified image
 	 */private IcyBufferedImage applyModifications() {
 		
 		IcyCanvas output_canvas = output_viewer.getCanvas();
@@ -334,6 +375,12 @@ public class SkeletonModifier extends Overlay {
 		return img;
 	}
 	
+	/**
+	 * Re-skeletonization method to produce unambiguos skeletons
+	 * 
+	 * @param imgBuff original image
+	 * @return skeletonized image
+	 */
 	private BufferedImage reskeletonize(BufferedImage imgBuff) {
 		ImagePlus img = new ImagePlus("Corrected Image", imgBuff);
 		ij.IJ.run(img, "Make Binary", "");

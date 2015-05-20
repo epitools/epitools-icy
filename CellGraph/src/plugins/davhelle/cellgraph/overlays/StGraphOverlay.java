@@ -5,8 +5,6 @@ import icy.canvas.IcyCanvas2D;
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
-import icy.math.UnitUtil;
-import icy.math.UnitUtil.UnitPrefix;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
@@ -31,8 +29,6 @@ import javax.swing.JPanel;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
-
-import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.vars.gui.swing.SwingVarEditor;
 import plugins.adufour.vars.lang.VarBoolean;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -40,22 +36,20 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
- * Base class for all overlays that interpret the spatiotemporal graph
+ * Base class for all overlays that interpret the spatio-temporal graph
  * 
  * @author Davide Heller
  *
  */
 public abstract class StGraphOverlay extends Overlay implements ActionListener{
 
-	//fields are available to classes in the same package
-	
-	/* 
+	/**
 	 * Spatio-temporal graph interpreted  
 	 */
 	SpatioTemporalGraph stGraph;
 	
-	/* 
-	 * Data to be returned in excel format 
+	/**
+	 * Convenience data to be returned in excel format 
 	 */
 	HashMap<Node,Double> data; 
 	
@@ -90,17 +84,10 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	}
 	
 	/**
-	 * Method to supply the EzVariables to the interface
-	 * 
-	 * @return
-	 */
-	//public abstract EzGroup getEzGroup();
-	
-	/**
 	 * Method to display an overlay on the frame i of the input sequence
 	 * 
-	 * @param g
-	 * @param frame_i
+	 * @param g graphics handle
+	 * @param frame_i frameGraph to visualize
 	 */
 	public abstract void paintFrame(Graphics2D g, FrameGraph frame_i );
 	
@@ -119,6 +106,13 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		
     }
 	
+	/**
+	 * Paints a legend on the viewer
+	 * 
+	 * @param g graphics handle
+	 * @param sequence sequence on which to paint the legend
+	 * @param canvas
+	 */
 	protected void paintLegend(Graphics2D g, Sequence sequence, IcyCanvas canvas) {
 		if (g == null || !(canvas instanceof IcyCanvas2D)) return;
         
@@ -149,6 +143,12 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		
 	}
 
+	/**
+	 * Specify legend
+	 * 
+	 * @param g
+	 * @param line
+	 */
 	public abstract void specifyLegend(Graphics2D g, Line2D.Double line);
 
 	@Override

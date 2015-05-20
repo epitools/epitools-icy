@@ -9,7 +9,6 @@ import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.Line2D.Double;
 import java.util.Map;
 
 import jxl.write.WritableSheet;
@@ -19,7 +18,6 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTWriter;
 
 /**
  * Overlay representing the voronoi tesselation of all inner cells

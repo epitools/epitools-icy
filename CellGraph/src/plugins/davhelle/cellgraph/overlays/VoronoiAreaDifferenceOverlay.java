@@ -1,15 +1,10 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
-import java.util.HashMap;
 import java.util.Map;
 
 import jxl.write.WritableSheet;
@@ -18,85 +13,78 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
- * AreaDifferencePainter computes and depicts the difference between 
+ * AreaDifferencePainter depicts the difference between 
  * cell areas and the correspondent Voronoi cell areas. 
- * 
- * Currently the cells with a positive difference are shaded in green 
- * (i.e. bigger than voronoi) and the ones with a negative difference
- * in red. Neutral (+/- THRESHOLD) are left white. 
- * 
- *  TODO Bug in the double int conversion, check area computation as well
  * 
  * @author Davide Heller
  *
  */
 public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 	
-	private final int DIFFERENCE_THRESHOLD = 10;
-	
+	/**
+	 * Difference between voronoi tile and orignal tile for each cell
+	 */
 	private Map<Node, Double> area_difference_map;
-	private Map<Node, Color> color_map;
 
-	private double color_amplification;
-	private int color_scheme;
+	/**
+	 * Scaling factor for color gradient
+	 */
+	double scaling_factor = 0.6;
+	
+	/**
+	 * Shift factor for color gradient
+	 */
+	double shift_factor = 0.4;
+
+	private double min;
+	private double max;
 	
 	public VoronoiAreaDifferenceOverlay(SpatioTemporalGraph stGraph, Map<Node,Double> area_difference_map) {
 		super("Voronoi Area Difference",stGraph);
 		this.area_difference_map = area_difference_map;
 
-		this.color_scheme = 2;
-		this.color_amplification = 5;
+		this.min = Double.MAX_VALUE;
+		this.max = Double.MIN_VALUE;
 		
-		this.color_map = new HashMap<Node, Color>();
-		defineColorMap();
-		
-	}
-
-	//Color scheme generation
-	private void defineColorMap(){
-		
-		//for every frame and node
-		for(int i=0; i<stGraph.size(); i++){
-
-			for(Node cell: stGraph.getFrame(i).vertexSet()){
+		for(Node n: area_difference_map.keySet()){
+			if(!n.onBoundary()){
+				double area_difference = area_difference_map.get(n);
 				
-				if(area_difference_map.containsKey(cell)){
-
-					double area_difference = area_difference_map.get(cell);
-
-					if(color_scheme == 1){			
-						//Color cells according to threshold into three categories
-						double area_threshold = DIFFERENCE_THRESHOLD;
-						if(area_difference > area_threshold)
-							color_map.put(cell,Color.GREEN);
-						else if(area_difference < area_threshold*(-1))
-							color_map.put(cell,Color.RED);
-						else
-							color_map.put(cell,Color.WHITE);
-					}
-					else{		
-						//color scheme which allows +/- 255 differences (255 being the MAX_DIFF)
-						//magenta (negative diff.) to white (neutral) to light blue (positive)
-						int intensity = 255 - (int)Math.min(
-								color_amplification*Math.abs(area_difference), 255);
-						if(area_difference > 0)
-							color_map.put(cell,new Color(intensity,255,255));
-						else
-							color_map.put(cell,new Color(255,intensity,255));
-					}
-				}
+				if(area_difference > max)
+					max = area_difference;
+				
+				if(area_difference < min)
+					min = area_difference;
 			}
 		}
 	}
 	
 	@Override
-    public void paintFrame(Graphics2D g, FrameGraph frame_i)
-    {
-		for(Node cell: frame_i.vertexSet()){
-			if(!cell.onBoundary()){
-				if(color_map.containsKey(cell)){
-					g.setColor(color_map.get(cell));
-					g.fill(cell.toShape());
+    public void paintFrame(Graphics2D g, FrameGraph frame_i){
+		
+		int fontSize = 3;
+		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
+
+		for(Node n: frame_i.vertexSet()){
+			if(!n.onBoundary()){
+				if(area_difference_map.containsKey(n)){
+					double area_difference = area_difference_map.get(n);
+
+					double normalized_ratio = (area_difference - min)/(max - min);
+
+					Color hsbColor = Color.getHSBColor(
+							(float)(normalized_ratio*scaling_factor + shift_factor),
+							1f,
+							1f);
+					
+					g.setColor(hsbColor);
+					g.fill((n.toShape()));
+
+					g.setColor(Color.black);
+					g.drawString(String.format("%.0f",
+							area_difference), 
+					(float)n.getCentroid().getX(), 
+					(float)n.getCentroid().getY());
 				}
 			}
 		}
@@ -132,8 +120,11 @@ public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
-		// TODO Auto-generated method stub
 		
+		String min_value = String.format("%.0f", min);
+		String max_value = String.format("%.0f", max);
+		
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value, 50, scaling_factor, shift_factor);
 	}
 }
 

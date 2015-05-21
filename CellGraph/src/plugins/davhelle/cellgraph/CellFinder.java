@@ -1,6 +1,3 @@
-/**
- * 
- */
 package plugins.davhelle.cellgraph;
 
 import icy.canvas.IcyCanvas2D;
@@ -11,17 +8,25 @@ import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
 
 /**
- * Class to quickly find the location of an event
+ * Class to quickly find the location of a coordinate in the image
  * 
  * @author Davide Heller
  *
  */
 public class CellFinder extends EzPlug {
 
+	/**
+	 * Sequence to find the coordiante in
+	 */
 	private EzVarSequence varSequence;
+	/**
+	 * X coordinate set by the user
+	 */
 	private EzVarInteger varX;
+	/**
+	 * Y coordinate set by the user
+	 */
 	private EzVarInteger varY;
-	
 	
 	@Override
 	protected void initialize() {
@@ -58,10 +63,6 @@ public class CellFinder extends EzPlug {
 	
 	@Override
 	public void clean() {
-		// TODO Auto-generated method stub
-		
 	}
 	
-	
-
 }

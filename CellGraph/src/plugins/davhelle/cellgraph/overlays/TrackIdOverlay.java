@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
@@ -21,18 +16,25 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * CellIdPainter depicts the cell ID or String supplied at
- * the coordinates of cell centers supplied. 
+ * the coordinates of the cell centers. 
  * 
  * @author Davide Heller
  *
  */
 public class TrackIdOverlay extends StGraphOverlay{
 	
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = "Overlay to paint the track id of each cell";
 	
+	/**
+	 * Initialize the Tracking ID overlay for the input graph
+	 * 
+	 * @param spatioTemporalGraph the stgraph to be analyzed
+	 */
 	public TrackIdOverlay(SpatioTemporalGraph spatioTemporalGraph){
 		super("Cell Tracking IDs",spatioTemporalGraph);
-		
 	}
 	
 	@Override
@@ -74,8 +76,7 @@ public class TrackIdOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, Double line) {
-		// TODO Auto-generated method stub
-		
+		//no legend for this layer as always plotted with TrackingOverlay
 	}
 	
 

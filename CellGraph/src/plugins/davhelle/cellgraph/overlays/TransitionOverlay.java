@@ -1,13 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph.overlays;
 
 import headless.DetectT1Transition;
@@ -37,20 +27,35 @@ import plugins.davhelle.cellgraph.tracking.EdgeTracking;
  * Generate an overlay to display cell rearrangements
  * such as T1 transitions.
  * 
- * TODO generalize T1 to Transition interface
- * 
  * @author Davide Heller
  *
  */
 public class TransitionOverlay extends StGraphOverlay{
 
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"Computes and displays the T1 transitions present in the time lapse [time consuming!]";
-	
+	/**
+	 * List of all detected transitions
+	 */
 	ArrayList<T1Transition> transitions;
+	/**
+	 * Color for loser cells, i.e. that get detached during the transition
+	 */
 	final Color loser_color = Color.cyan;
+	/**
+	 * Color for winner cells, i.e .that get attached during the transition
+	 */
 	final Color winner_color = Color.magenta;
 	
+	/**
+	 * Initialize Transition overlay
+	 * 
+	 * @param stGraph graph to analyze
+	 * @param plugin connected plugin to dispay progress of computation
+	 */
 	public TransitionOverlay(SpatioTemporalGraph stGraph, CellOverlay plugin) {
 		super(String.format("Transition Painter (min=%d)",plugin.varMinimalTransitionLength.getValue()),
 				stGraph);
@@ -77,9 +82,16 @@ public class TransitionOverlay extends StGraphOverlay{
 	}
 	
 	/**
-	 * Save transitions in CSV format
+	 * Saves all transitions in three CSV based files <br>
 	 * 
-	 * @param file_name
+	 * <br>
+	 * - [base_path]_main.csv contains the main statistics for each transition <br>
+	 * - [base_path]_loser.csv contains the sequential length of each loser edge (i.e. eliminated)<br>
+	 * - [base_path]_winner.csv contains the sequential length of each winner edge (i.e. newly established)<br>
+	 * <br>
+	 * Loser and winner edge presence is mutually exclusive
+	 * 
+	 * @param file_name base path to use for the output files
 	 */
 	public void saveToCsv(){
 		
@@ -147,12 +159,12 @@ public class TransitionOverlay extends StGraphOverlay{
 	}
 
 	/**
-	 * For every time point the method extracts the associated
+	 * Extracts the associated edge length of the requested T1 transition
 	 * 
-	 * 
-	 * @param builder_loser
-	 * @param t1
-	 * @return
+	 * @param builder StringBuilder to write the edge length to
+	 * @param t1 T1 transition to be analyzed
+	 * @param extract_loser set true if the loser edges should be extracted, false if the winner edges
+	 * @return the measured edge
 	 */
 	private Edge extractEdgeLength(StringBuilder builder, T1Transition t1, boolean extract_loser) {
 		int[] cell_ids = null;
@@ -166,9 +178,11 @@ public class TransitionOverlay extends StGraphOverlay{
 	}
 
 	/**
-	 * @param builder
-	 * @param cell_ids
-	 * @return
+	 * Custom write out method to write out the length of the junction between the specified cell ids
+	 * 
+	 * @param builder empty StringBuilder to be written out
+	 * @param cell_ids cell_ids of the edge vertices
+	 * @return the measured edge
 	 */
 	public Edge extractJunctionLength(StringBuilder builder,
 			int[] cell_ids) {
@@ -202,13 +216,10 @@ public class TransitionOverlay extends StGraphOverlay{
 	}
 	
 
-	/**
-	 * @param g
-	 * @param frame_i
-	 */
+	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		
-		//try to color the cells that loose the bond
+		//color the loser cells, i.e. that loose the bond
 		for(T1Transition t1: transitions){
 			int[] losers = t1.getLoserNodes();
 			
@@ -221,6 +232,7 @@ public class TransitionOverlay extends StGraphOverlay{
 			}
 		}
 		
+		//color the winner cells, i.e. that gain the bond
 		for(T1Transition t1: transitions){
 			if(t1.hasWinners()){
 				int[] winner_ids = t1.getWinnerNodes();
@@ -247,7 +259,7 @@ public class TransitionOverlay extends StGraphOverlay{
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		// TODO Auto-generated method stub
+		// replaced by custom CSV output
 	}
 
 	@Override

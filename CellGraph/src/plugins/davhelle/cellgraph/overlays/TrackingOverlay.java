@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D.Double;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,6 +30,9 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class TrackingOverlay extends StGraphOverlay{
 	
+	/**
+	 * Description string for GUI
+	 */
 	public static final String DESCRIPTION = 
 			"Overlay to review the tracking in case the default " +
 			"Overlay has been eliminated or to highlight different aspects\n\n" +
@@ -44,21 +48,50 @@ public class TrackingOverlay extends StGraphOverlay{
 			"* [cyan] cell eliminated in next frame\n" +
 			"* [gray] brother cell was eliminated\n";
 	
-	private SpatioTemporalGraph stGraph;
+	/**
+	 * A Random bright color for each cell
+	 */
 	private HashMap<Node,Color> correspondence_color;
-	private Map<Integer, Color> errorMap;
+	/**
+	 * A static color map for each error type
+	 */
+	private static final Map<Integer, Color> errorMap;
+	static{
+		Map<Integer, Color> aMap = new HashMap<Integer, Color>();
+		aMap.put(-2, Color.red);		//cell missing in previous frame
+		aMap.put(-3, Color.yellow);		//cell missing in next frame
+		aMap.put(-4, Color.green);		//cell missing in previous&next
+		aMap.put(-5, Color.blue);		//cell dividing in next frame
+		aMap.put(-6, Color.magenta);	//brother cell missing
+		aMap.put(-7, Color.cyan);   	//cell eliminated in next frame
+		aMap.put(-8, Color.lightGray); 	//brother cell was eliminated
+		errorMap = Collections.unmodifiableMap(aMap);
+	}
+	
+	/**
+	 * Flag whether to highlight mistakes or fill the cells
+	 */
 	private boolean highlightMistakes;
+	/**
+	 * Flag to show frame related tracking statistics
+	 */
 	private boolean SHOW_STATISTICS = false;
 
+	/**
+	 * Initializes the Tracking overlay
+	 * 
+	 * @param stGraph graph to be analyzed
+	 * @param highlightMistakes set true for tracking events to be highlighted/ false to fill cells with their assigned color
+	 */
 	public TrackingOverlay(SpatioTemporalGraph stGraph, Boolean highlightMistakes) {
 		super("Cell Tracking Color",stGraph);
 		
-		//Color for each lineage
+		//Color for each cell line
 		this.correspondence_color = new HashMap<Node,Color>();
 		this.stGraph = stGraph;
 		this.highlightMistakes = highlightMistakes.booleanValue();
 		
-		//Assign color to cell lineages starting from first cell
+		//Assign color to cell line starting from first cell
 		Iterator<Node> cell_it = stGraph.getFrame(0).iterator();
 		Random rand = new Random();
 		
@@ -78,16 +111,6 @@ public class TrackingOverlay extends StGraphOverlay{
 			}
 
 		}
-		
-		//define the color map for error indication
-		this.errorMap = new HashMap<Integer, Color>();
-		errorMap.put(-2, Color.red);	//missing previous
-		errorMap.put(-3, Color.yellow);	//missing next
-		errorMap.put(-4, Color.green);	//missing both
-		errorMap.put(-5, Color.blue);	//dividing in next frame
-		errorMap.put(-6, Color.magenta);//brother cell missing
-		errorMap.put(-7, Color.cyan);   //elimination
-		errorMap.put(-8, Color.lightGray); //eliminated brother
 	}
 	
 	/**
@@ -108,6 +131,7 @@ public class TrackingOverlay extends StGraphOverlay{
 		return cell_color;
 	}
 	
+	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame)
 	{
 

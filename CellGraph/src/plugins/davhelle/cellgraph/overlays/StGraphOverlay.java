@@ -20,7 +20,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
 import java.io.IOException;
-import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -33,7 +32,6 @@ import plugins.adufour.vars.gui.swing.SwingVarEditor;
 import plugins.adufour.vars.lang.VarBoolean;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.nodes.Node;
 
 /**
  * Base class for all overlays that interpret the spatio-temporal graph
@@ -49,12 +47,8 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	SpatioTemporalGraph stGraph;
 	
 	/**
-	 * Convenience data to be returned in excel format 
-	 */
-	HashMap<Node,Double> data; 
-	
-	/**
 	 * Boolean value to define whether to show the legend or not
+	 * has a listener attached to detect user changes (i.e. when placed in the option panel)
 	 */
 	private final VarBoolean  showLegend = new VarBoolean("Show Legend", true)
 	{
@@ -72,15 +66,14 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	
 	/**
 	 * Creates a new Overlay to interpret the 
-	 * to be set with spatio-temporal graph (stGraph) in input
+	 * spatio-temporal graph (stGraph) in input
 	 * 
-	 * @param name
-	 * @param stGraph
+	 * @param name Overlay name to display in the Layer menu
+	 * @param stGraph spatio-temporal graph to analyze
 	 */
 	public StGraphOverlay(String name, SpatioTemporalGraph stGraph) {
 		super(name);
 		this.stGraph = stGraph;	
-		this.data = new HashMap<Node, Double>();
 	}
 	
 	/**
@@ -183,6 +176,13 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		
 	}
 	
+	/**
+	 * Writes the desired information extracted from the frameGraph provided 
+	 * into the excel sheet.
+	 * 
+	 * @param sheet excel sheet to be written
+	 * @param frame frame from which to extract the information to write
+	 */
 	abstract void writeFrameSheet(WritableSheet sheet, FrameGraph frame);
 	
 	@Override
@@ -217,10 +217,16 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		return optionPanel;
 	}
 	
+	/**
+	 * @param state set true if legend should be shown, false if suppressed
+	 */
 	public void setLegendVisibility(boolean state){
 		showLegend.setValue(state);
 	}
 	
+	/**
+	 * @return true if the legend is visible
+	 */
 	public boolean isLegendVisible(){
 		return showLegend.getValue();
 	}

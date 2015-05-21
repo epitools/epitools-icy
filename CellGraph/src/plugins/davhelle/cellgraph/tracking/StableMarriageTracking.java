@@ -20,7 +20,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class NearestNeighborTracking extends GraphTracking{
+public class StableMarriageTracking extends GraphTracking{
 	
 	/**
 	 * Initializes Neighbor tracking
@@ -29,7 +29,7 @@ public class NearestNeighborTracking extends GraphTracking{
 	 * @param spatioTemporalGraph Spatio-temporal graph to be tracked/linked
 	 * @param linkrange the maximum no. of frames the node information is projected ahead
 	 */
-	public NearestNeighborTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, double lambda1, double lambda2) {
+	public StableMarriageTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, double lambda1, double lambda2) {
 		super(spatioTemporalGraph, linkrange, lambda1, lambda2);
 	}
 

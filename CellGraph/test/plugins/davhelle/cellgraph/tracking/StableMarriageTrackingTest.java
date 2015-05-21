@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 
-public class NearestNeighborTrackingTest {
+public class StableMarriageTrackingTest {
   @Test
   public void speedTest() {
 	  
@@ -17,7 +17,7 @@ public class NearestNeighborTrackingTest {
 	  
 	  Assert.assertEquals(st_graph.size(), time_points, "Input file not correctly loaded");
 	  
-	  TrackingAlgorithm tracker = new NearestNeighborTracking(st_graph, 5, 1, 1);
+	  TrackingAlgorithm tracker = new StableMarriageTracking(st_graph, 5, 1, 1);
 	  
 	  tracker.track();
 	  

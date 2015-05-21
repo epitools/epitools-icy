@@ -11,7 +11,7 @@ import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
-import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
+import plugins.davhelle.cellgraph.tracking.StableMarriageTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -40,7 +40,7 @@ public class LoadNeoWktFiles {
 		
 		long loadTime = System.currentTimeMillis() - startTime;		
 		
-		TrackingAlgorithm tracker = new NearestNeighborTracking(st_graph, 5, 1, 1);
+		TrackingAlgorithm tracker = new StableMarriageTracking(st_graph, 5, 1, 1);
 		tracker.track();
 		
 		long trackTime = System.currentTimeMillis() - startTime - loadTime;		

@@ -49,7 +49,7 @@ import plugins.davhelle.cellgraph.overlays.PolygonOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 import plugins.davhelle.cellgraph.tracking.HungarianTracking;
-import plugins.davhelle.cellgraph.tracking.NearestNeighborTracking;
+import plugins.davhelle.cellgraph.tracking.StableMarriageTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -552,7 +552,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 					
 			switch(varTrackingAlgorithm.getValue()){
 			case STABLE_MARRIAGE:
-				tracker = new NearestNeighborTracking(
+				tracker = new StableMarriageTracking(
 						wing_disc_movie, 
 						varLinkrange.getValue(),
 						varLambda1.getValue(),

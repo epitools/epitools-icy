@@ -33,15 +33,6 @@ import com.vividsolutions.jts.operation.distance.DistanceOp;
 public abstract class GraphTracking extends TrackingAlgorithm {
 	
 	/**
-	 * Distance method names to choose from a candidate list
-	 */
-	private enum DistanceCriteria{
-		MINIMAL_DISTANCE, AVERAGE_DISTANCE, AREA_OVERLAP	
-		//TODO Add weighted distance? decreasing in time, e.g. 1*(t-1) + 0.8*(t-2)....
-, AREA_DIFF_WITH_MIN_DISTANCE, WEIGHTED_MIN_DISTANCE, OVERLAP_WITH_MIN_DISTANCE
-	}
-
-	/**
 	 * Holds the number of frames the node information is projected ahead
 	 * @see #linkrange
 	 */

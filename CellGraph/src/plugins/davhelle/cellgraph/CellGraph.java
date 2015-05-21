@@ -50,6 +50,7 @@ import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 import plugins.davhelle.cellgraph.tracking.HungarianTracking;
 import plugins.davhelle.cellgraph.tracking.StableMarriageTracking;
+import plugins.davhelle.cellgraph.tracking.TrackingEnum;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -92,13 +93,11 @@ import com.vividsolutions.jts.geom.Geometry;
 public class CellGraph extends EzPlug implements EzStoppable
 {
 	
-	private enum TrackEnum{
-	   STABLE_MARRIAGE, HUNGARIAN, LOAD_CSV_FILE
-	}
+	
 
 	//Ezplug fields 
 
-	EzVarEnum<TrackEnum>		varTrackingAlgorithm;
+	EzVarEnum<TrackingEnum>		varTrackingAlgorithm;
 	EzVarEnum<InputType>		varInput;
 	EzVarEnum<SegmentationProgram> varTool;
 	EzVarFile					varFile;
@@ -262,7 +261,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
-		varTrackingAlgorithm = new EzVarEnum<TrackEnum>("Algorithm",TrackEnum.values(), TrackEnum.STABLE_MARRIAGE);
+		varTrackingAlgorithm = new EzVarEnum<TrackingEnum>("Algorithm",TrackingEnum.values(), TrackingEnum.STABLE_MARRIAGE);
 		varBorderEliminationNo = new EzVarInteger("Cut N border lines in 1st frame",1,0,10,1);
 		
 		varLambda1 = new EzVarDouble("Min. Distance weight", 1, 0, 10, 0.1);
@@ -287,9 +286,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varLoadFile
 				);
 		
-		varTrackingAlgorithm.addVisibilityTriggerTo(varLoadFile, TrackEnum.LOAD_CSV_FILE);
+		varTrackingAlgorithm.addVisibilityTriggerTo(varLoadFile, TrackingEnum.LOAD_CSV_FILE);
 		varTrackingAlgorithm.addVisibilityTriggerTo(groupTrackingParameters, 
-				TrackEnum.STABLE_MARRIAGE,TrackEnum.HUNGARIAN);
+				TrackingEnum.STABLE_MARRIAGE,TrackingEnum.HUNGARIAN);
 		
 		groupTrackingParameters.setVisible(false);
 		
@@ -352,7 +351,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//TODO integrate these into respective classes!
 		if(varDoTracking.getValue()){
 			
-			if(varTrackingAlgorithm.getValue() == TrackEnum.LOAD_CSV_FILE){
+			if(varTrackingAlgorithm.getValue() == TrackingEnum.LOAD_CSV_FILE){
 				if(faultyInputCheck(varLoadFile.getValue() == null,
 						"Load CSV tracking feature requires an input directory: please review!"))
 					return true;
@@ -429,7 +428,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			varFile.setValue(new File(default_dir+default_file));
 			input_file = varFile.getValue();
 			varMaxT.setValue(10);
-			varTrackingAlgorithm.setValue(TrackEnum.LOAD_CSV_FILE);
+			varTrackingAlgorithm.setValue(TrackingEnum.LOAD_CSV_FILE);
 			varLoadFile.setValue(new File(default_dir));
 			
 		}

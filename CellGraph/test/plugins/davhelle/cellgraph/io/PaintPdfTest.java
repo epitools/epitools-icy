@@ -4,7 +4,6 @@ import gnu.jpdf.PDFJob;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -13,14 +12,11 @@ import java.io.IOException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Geometry;
-
 import plugins.davhelle.cellgraph.graphs.FrameGenerator;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
-import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.awt.ShapeWriter;
 
 public class PaintPdfTest {
   @Test

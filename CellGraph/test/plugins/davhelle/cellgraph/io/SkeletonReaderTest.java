@@ -38,6 +38,7 @@ public class SkeletonReaderTest {
 		
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void assertSize(Collection collection, int size) {
 		Assert.assertEquals(collection.size(), size);
 	}

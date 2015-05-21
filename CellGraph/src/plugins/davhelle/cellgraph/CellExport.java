@@ -1,13 +1,12 @@
 package plugins.davhelle.cellgraph;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+
+import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.swing.JSeparator;
 
@@ -30,20 +29,43 @@ import plugins.davhelle.cellgraph.io.PdfPrinter;
 import plugins.davhelle.cellgraph.io.SaveFolderDialog;
 import plugins.davhelle.cellgraph.io.SkeletonWriter;
 import plugins.davhelle.cellgraph.io.WktPolygonExporter;
-import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.davhelle.cellgraph.overlays.CellColorTagOverlay;
 
+/**
+ * Plugin to export the information contained in the 
+ * spatio-temporal graph as various output formats.<br><br>
+ * 
+ * Currrently includes:<br>
+ * - Spreadsheets<br>
+ * - GraphML files<br>
+ * - PDF vector graphics of the overlays<br>
+ * - Skeleton files in WKT or TIFF format<br>
+ * - CSV tracking files
+ * 
+ * @author Davide Heller
+ *
+ */
 public class CellExport extends EzPlug {
 
+	/**
+	 * ezGUI Handle for Export format selection
+	 */
 	private EzVarEnum<ExportEnum> varExport;
+	
+	/**
+	 * ezGUI Handle for Sequence selection associated with the stGraph to export 
+	 */
 	private EzVarSequence varSequence;
+	
+	/**
+	 * ezGUI Handle for Boolean Flag whether to export only the tagged cells (see {@link CellColorTagOverlay})
+	 */
 	private EzVarBoolean varTagExport;
-//	private EzVarEnum<ExportFieldType> varExportType;
-//	private EzVarInteger varFrameNo;
 	
 	@Override
 	protected void initialize()
 	{
-		
+		//Customize GUI for Export
 		this.getUI().setRunButtonText("Export");
 		this.getUI().setParametersIOVisible(false);
 		
@@ -53,50 +75,35 @@ public class CellExport extends EzPlug {
 		//Spreadsheet option
 		varTagExport = new EzVarBoolean("Only Tagged Cells", false);
 		
-//		//GraphML expert mode [currently not used!]
-//		varExportType = new EzVarEnum<ExportFieldType>("Export", 
-//				ExportFieldType.values(), ExportFieldType.STANDARD);
-//		varFrameNo = new EzVarInteger("Frame no:",0,0,100,1);
-//		
-//		EzGroup groupGraphML = new EzGroup("GraphML export options",
-//				varExportType,
-//				varFrameNo);
-//		addEzComponent(groupGraphML);
-		
+		//Format Selection group
 		EzGroup groupFormatChoice = new EzGroup("1. CHOOSE AN EXPORT FORMAT",
 				varExport,
 				varTagExport);
 		addEzComponent(groupFormatChoice);
 		
 		varExport.addVisibilityTriggerTo(varTagExport, ExportEnum.SPREADSHEET);
-//		varExport.addVisibilityTriggerTo(groupGraphML, ExportEnum.GRAPHML_EXPORT);
 		
-		//Sequence selection
+		//Sequence Selection group
 		varSequence = new EzVarSequence("Sequence");
 		EzGroup groupSequenceDescription = new EzGroup("2. SELECT THE CONNECTED SEQUENCE",
 				varSequence);
 		addEzComponent(groupSequenceDescription);
 		
-		EzGroup groupPluginDescription = new EzGroup("3. RUN THE PLUGIN",
+		//Plugin Run group 
+		EzGroup groupPluginRun = new EzGroup("3. RUN THE PLUGIN",
 				new EzLabel("A save dialog will appear"));
-		addEzComponent(groupPluginDescription);
+		addEzComponent(groupPluginRun);
 		
-		
-		//Export format description
+		//Divide GUI in two
 		addComponent(new JSeparator(JSeparator.VERTICAL));
-		
-		//Use a list to allow multiple exports at ones?
-//		getUI().setActionPanelVisible(true);
-//		String[] data = {"one", "two", "three", "four","Five","Six","Seven","eight"};
-//		JList myList = new JList(data);
-//		addComponent(myList);
-//		addEzComponent(new EzVarFloat("A number", 5.6f, 0, 10, 0.1f));
-		
+
+		//Export format description
 		final EzLabel varExportDescription = new EzLabel(varExport.getValue().getDescription());
 		EzGroup groupDescription = new EzGroup("Format description",
 				varExportDescription);
 		addEzComponent(groupDescription);
 		
+		//Listener addition change according to selection
 		varExport.addVarChangeListener(new EzVarListener<ExportEnum>(){
 			public void variableChanged(EzVar<ExportEnum> source, ExportEnum newValue) {
 				varExportDescription.setText(newValue.getDescription());		
@@ -104,8 +111,6 @@ public class CellExport extends EzPlug {
 		});
 		
 	}    
-	
-
 
 	@Override
 	public void clean() { }
@@ -170,8 +175,8 @@ public class CellExport extends EzPlug {
 	/**
 	 * Export 8bit tiff images from the loaded stGraph
 	 * 
-	 * @param sequence
-	 * @param stGraph
+	 * @param sequence sequence on which the graph is projected
+	 * @param stGraph graph to export
 	 */
 	private void saveTiffSkeletons(Sequence sequence, SpatioTemporalGraph stGraph) {
 		

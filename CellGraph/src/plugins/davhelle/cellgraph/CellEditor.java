@@ -15,33 +15,46 @@ import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.overlays.SkeletonModifier;
 
 /**
- * Tool to apply manual modifications to skeleton files
- * use white to add and black to add or remove membrane.
+ * Plugin to apply manual modifications to skeleton files
+ * using white to add and black to add or remove membrane.<br><br>
  * 
  * Requires both the raw image (preferred) and the
- * skeleton file (must) to be open.
+ * skeleton file (must) to be open.<br><br>
  * 
- * current state: EXPERIMENTAL! 
- * WARNING: This plugin can permanently modify your
+ * <b>WARNING: This plugin can permanently modify your
  * output data. Please make sure to back it up before
- * trying this plugin!
- * 
- * TODO apply white and black default!
- * TODO avoid that painter tip is also applied to img
- * 
+ * trying this plugin!</b>
  * 
  * @author Davide Heller
  *
  */
 public class CellEditor extends EzPlug{
 	
+	/**
+	 * Sequence on which to draw
+	 */
 	private Sequence inputSequence;
 	
+	/**
+	 * EzGUI handle for input sequence
+	 */
 	private EzVarSequence				varInputSeq;
+	/**
+	 * EzGUI handle for output sequence
+	 */
 	private EzVarSequence				varOutputSeq;
+	/**
+	 * EzGUI handle for boolean flag to save changes  
+	 */
 	private EzVarBoolean				varSaveChanges;
+	/**
+	 * EzGUI handle for boolean flag to synchronize the INPUT & OUTPUT sequence
+	 */
 	private EzVarBoolean				varSync;
 	
+	/**
+	 * Overlay to apply to the input sequence that detects the user drawing
+	 */
 	private SkeletonModifier			modificationOverlay;
 	
 	@Override

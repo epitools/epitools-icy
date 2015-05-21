@@ -34,33 +34,50 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 	
 	/**
 	 * Holds the number of frames the node information is projected ahead
-	 * @see #linkrange
 	 */
 	private final int linkrange;
 
 	/**
-	 * Holds the kind of distance criteria with which to choose the best parent candidate
-	 * @see #group_criteria
+	 * Distance criteria with which to choose the best candidate
 	 */
 	private final DistanceCriteria group_criteria;
+	
+	/**
+	 * Flag whether to detect divisions
+	 */
 	private final boolean DO_DIVISION_CHECK;
+	
+	/**
+	 * Flag whether to check for track SWAPS
+	 */
 	private final boolean DO_SWAP_RESC_CHECK;
+	
+	/**
+	 * Flag to Print additional information of the tracking process
+	 */
 	protected final boolean VERBOSE;
+	
+	/**
+	 * Additional variable to VERBOSE to follow a specific cell's tracking 
+	 */
 	protected final int follow_ID;
 
 	/**
 	 * Holds the proportion of area increase that a dividing cell must have
 	 * registered to be acknowledged as division.
-	 * @see #increase_factor
 	 */
 	private final double increase_factor;
 	
 	/**
-	 * Candidate evaluation parameters
-	 * @see #lambda1
-	 * @see #lambda2
+	 * First candidate evaluation parameter:
+	 * how much does the distance between the two candidates's centroid matter
 	*/
 	private double lambda1;
+	
+	/**
+	 * Second candidate evaluation parameter:
+	 * how much does the normalized area overlap matter
+	 */
 	private double lambda2;
 	
 	/**
@@ -68,8 +85,6 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 	 * sets the percentage of overlap
 	 * between the mother and the daughter
 	 * cells
-	 * 
-	 *  @see #coverage_factor
 	 */
 	private double coverage_factor;	
 	
@@ -83,11 +98,17 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 
 	
 	/**
-	 * Initializes Neighbor tracking
-	 * 
+	 * Initializes Graph based Tracking
 	 * 
 	 * @param spatioTemporalGraph Spatio-temporal graph to be tracked/linked
 	 * @param linkrange the maximum no. of frames the node information is projected ahead
+	 */
+	/**
+	 * @param spatioTemporalGraph
+	 * @param linkrange
+	 * @param lambda1 weight for the centroid candidate to candidate distance
+	 * @param lambda2 weight for the normalized area difference
+	 * 
 	 */
 	public GraphTracking(SpatioTemporalGraph spatioTemporalGraph, int linkrange, double lambda1, double lambda2) {
 		super(spatioTemporalGraph, true);
@@ -139,10 +160,10 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 	}
 
 	/**
-	 * - review all events classified as a divisions 
-	 * - review all new entry cells
-	 * - assign permanent loss labels to permanently lost cells
-	 * - Highlight possible Segmentation mistakes
+	 * - Reviews all events classified as a divisions <br>
+	 * - Reviews all new entry cells <br>
+	 * - Assigns permanent loss labels to permanently lost cells <br>
+	 * - Highlights possible Segmentation mistakes <br>
 	 */
 	private void reviewDivisionsAndEliminations() {
 		
@@ -152,21 +173,18 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 		{
 			for(Node cell: stGraph.getFrame(time_point).vertexSet())
 			{
-				if(cell.getErrorTag() == TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code)
+				if(cell.getErrorTag() == TrackingFeedback.LOST_IN_NEXT_FRAME.numeric_code){
 					//if so, is it permanent (depends also on no. of tracked frames)?
 					if(!cell.hasNext() && !cell.onBoundary())
 					{						
 						Elimination cell_elimination = new Elimination(cell);
 						System.out.println(cell_elimination.toString());
-						
-						//temporary solution to visualize all eliminated cells
-						//TODO transform to overlay
-						//recursiveTAG(cell, TrackingFeedback.ELIMINATED_IN_NEXT_FRAME);
 					}			
+				}
 			}
 		}
 		
-		//Fixes needed:
+		//TODO more stable division revision needed:
 		//False Division event out of a segmentation creates a false elimination as well
 		//Test against it, revert division if possible.
 		
@@ -225,6 +243,7 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 						}
 					}								
 			}
+			
 			//also check in case of a division that the brother cell is present
 			if(current.hasObservedDivision())
 				if(!current.getDivision().isBrotherPresent(current)) //TODO review isBrotherPresent Method input (list would be more logic)
@@ -232,12 +251,13 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 						current.setErrorTag(TrackingFeedback.BROTHER_CELL_ELIMINATED.numeric_code);
 					else
 						current.setErrorTag(TrackingFeedback.BROTHER_CELL_NOT_FOUND.numeric_code);
-			
-			
 		}
 		
 	}
 
+	/**
+	 * Verbose output for tracking results
+	 */
 	private void reportTrackingResults() {
 		System.out.println(
 				"\nTracking completed for "+stGraph.size()+" frames:"+
@@ -249,6 +269,9 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 		}
 	}
 
+	/**
+	 * @return number of eliminations detected
+	 */
 	private int countEliminations() {
 		int tot_eliminations = 0;
 
@@ -257,6 +280,9 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 		return tot_eliminations;
 	}
 
+	/**
+	 * @return number of divisions detected
+	 */
 	private int countDivisions() {
 		int tot_divisions = 0;
 
@@ -537,6 +563,7 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 			//find likely brother & mother
 			Node untracked = unmarried_brides.pop();
 	
+			//more stringent condition to avoid FP due to segmentation problems on the boundary
 //			if(untracked.onBoundary())
 //				continue;
 
@@ -703,7 +730,8 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 			
 			List<Node> candidates = current.getParentCandidates();
 			
-			//if no candidates are given add it as "lost bride", TODO .buffer(-10.0)?
+			//if no candidates are given add it as "lost bride"
+			//could be set more stringent with frame_0_union.buffer(-10.0)
 			if(candidates.size() == 0){
 				if(frame_0_union.contains(current_cell_center) && !current.onBoundary())
 					current_map.put(current, new ArrayList<ComparableNode>());
@@ -723,13 +751,11 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 					//Check whether the cell is part of a division, if yes to 
 					//avoid that the candidate approach is biased by the mother
 					//cell 
-					//TODO rethink naming -> hasDivision (what if child node divide twice...)
 					if(voted.hasObservedDivision()){
 						Division division = voted.getDivision();
 						if(time_point > division.getTimePoint())
 							if(division.isMother(voted)){
-								//TODO might want to eliminate all mother cells at once
-								//from the candidate list
+								//TODO eliminate all mother candidates and use hasOrigin instead of time_point check
 								continue;
 						}
 					}
@@ -739,7 +765,8 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 					
 					//VIABILITY CHECK BASED ON FIRST FRAME GEOMETRY
 					//Cell could be either new (division/seg.error), 
-					//thus not associated to any first node //TODO .buffer(-10.0)?
+					//thus not associated to any first node 
+					//TODO more stringent version with frame_0_union.buffer(-10.0)?
 					if(first == null){
 						if(frame_0_union.contains(voted_centroid) && !voted.onBoundary())
 							current_map.put(current, new ArrayList<ComparableNode>());

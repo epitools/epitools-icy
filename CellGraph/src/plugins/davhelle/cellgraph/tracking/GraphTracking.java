@@ -25,9 +25,45 @@ import com.vividsolutions.jts.operation.distance.DistanceOp;
  * GraphBased Tracking Algorithm. The main idea of this type of 
  * of algorithms is to find candidates for each cell in the new
  * and in the old frame and match them by a bipartite graph
- * matching algorithm.
+ * matching algorithm.<br>
  * 
- * see track method source for a general overview
+ * Main procedure:<br>
+ * <pre>
+ * {@code
+	public void track(){
+		
+		//link time points and propagate their information
+		for(int time_point = 0; time_point < stGraph.size(); time_point++){
+			System.out.println("\n*** Linking frame "+time_point+" ***\n");
+			
+			if(time_point > 0){
+				
+				//Build two maps to store the candidates
+				Map<Node, List<ComparableNode>> grooms = new HashMap<Node, List<ComparableNode>>();
+				Map<Node, List<ComparableNode>> brides = new HashMap<Node, List<ComparableNode>>();;
+
+				//Evaluate the candidates according to a distance criteria
+				evaluateCandidates(grooms, brides, time_point);
+				
+				//Link the candidates according to a matching algorithm
+				Map<String, Stack<Node>> unmarried = linkCandidates(grooms,brides);
+				
+				//Analyze unmarried/unlinked nodes
+				analyze_unmarried(unmarried, time_point);
+			}
+			
+			//add candidates to the successive frames
+			propagateTimePoint(time_point);	
+		}
+		
+		reviewDivisionsAndEliminations();
+		
+		reportTrackingResults();
+		
+		stGraph.setTracking(true);
+	}
+ * }
+ * </pre>
  * 
  * @author Davide Heller
  *
@@ -133,24 +169,25 @@ public abstract class GraphTracking extends TrackingAlgorithm {
 		
 		//link time points and propagate their information
 		for(int time_point = 0; time_point < stGraph.size(); time_point++){
-			System.out.println("\n******************Linking frame "+time_point+"******************\n");
+			System.out.println("\n*** Linking frame "+time_point+" ***\n");
 			
 			if(time_point > 0){
 				
-				//Build two maps to store the evaluated candidates
+				//Build two maps to store the candidates
 				Map<Node, List<ComparableNode>> grooms = new HashMap<Node, List<ComparableNode>>();
 				Map<Node, List<ComparableNode>> brides = new HashMap<Node, List<ComparableNode>>();;
 
-				//Fill the candidates of each node in current time frame
+				//Evaluate the candidates according to a distance criteria
 				evaluateCandidates(grooms, brides, time_point);
 				
 				//Link the candidates according to a matching algorithm
 				Map<String, Stack<Node>> unmarried = linkCandidates(grooms,brides);
 				
-				//analyze unmarried/unlinked nodes
+				//Analyze unmarried/unlinked nodes
 				analyze_unmarried(unmarried, time_point);
 			}
 			
+			//add candidates to the successive frames
 			propagateTimePoint(time_point);	
 		}
 		

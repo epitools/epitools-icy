@@ -93,10 +93,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class CellGraph extends EzPlug implements EzStoppable
 {
 	
-	
-
 	//Ezplug fields 
-
 	EzVarEnum<TrackingEnum>		varTrackingAlgorithm;
 	EzVarEnum<InputType>		varInput;
 	EzVarEnum<SegmentationProgram> varTool;
@@ -131,7 +128,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	EzVarBoolean				varUseSwimmingPool;
 	
 	//Load Track from CSV files
-	EzVarFolder varLoadFile;
+	EzVarFolder 				varLoadFile;
 	
 	//Stop flag for advanced thread handling TODO
 	boolean						stopFlag;
@@ -144,44 +141,25 @@ public class CellGraph extends EzPlug implements EzStoppable
 	protected void initialize()
 	{
 		//Ezplug variable initialization
-		//TODO optimize file name display, suggested methods
-		//this.getUI().setMaximumSize(new Dimension(50, 150));
-		//this.getUI().setResizable(false);
-
-		//Working image and pre-existent overlays handling
-		varSequence = new EzVarSequence("Image to overlay");
 		
-		//Main Input GUI
+		//Main Input GUI: which files to use?
 		EzGroup groupInputPrameters = initializeInputGUI();
 		
-		//Tracking GUI
+		//Tracking GUI: apply tracking?
 		varDoTracking = new EzVarBoolean("    2. SELECT IF TO TRACK CELLS", false);
 		EzGroup groupTracking = initializeTrackingGUI();
-
-		//Usage of temporary ICY-memory (java object swimming pool)
-		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
-		varUpdatePainterMode = new EzVarBoolean("Remove Previous Overlays", false);
 		
+		//Output GUI: where to visualize
+		EzGroup groupVisual = initializeOutputGUI();
+
+		//Make items visible
 		super.addEzComponent(groupInputPrameters);
 		super.addEzComponent(varDoTracking);
 		super.addEzComponent(groupTracking);
-
-		//Choose where and how to visualize
-		EzGroup groupVisual = new EzGroup("3. SELECT DESTINATION",
-				varSequence,
-				varUseSwimmingPool,
-				varUpdatePainterMode);
-		
 		super.addEzComponent(groupVisual);
 
-		//set visibility according to choice
+		//set visibility trigger to TrackingGroup
 		varDoTracking.addVisibilityTriggerTo(groupTracking, true);
-		
-		//These commands should only be available when the inputType is not wkt
-		varInput.addVisibilityTriggerTo(varCutBorder,
-				InputType.SKELETON,InputType.VTK_MESH);
-		
-		varDirectInput.addVisibilityTriggerTo(varTool, true);
 		
 		this.setTimeDisplay(true);
 		
@@ -249,6 +227,12 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varInput.addVisibilityTriggerTo(varDirectInput, InputType.SKELETON);
 		varInput.addVisibilityTriggerTo(varTool, InputType.SKELETON);
 		
+		//These commands should only be available when the inputType is not wkt
+		varInput.addVisibilityTriggerTo(varCutBorder,
+				InputType.SKELETON,InputType.VTK_MESH);
+		
+		varDirectInput.addVisibilityTriggerTo(varTool, true);
+		
 		return groupInputPrameters;
 	}
 
@@ -295,6 +279,23 @@ public class CellGraph extends EzPlug implements EzStoppable
 		return groupTracking;
 	}
 
+	private EzGroup initializeOutputGUI(){
+		
+		//Working image 
+		varSequence = new EzVarSequence("Image to overlay");
+		
+		//Usage of temporary ICY-memory (java object swimming pool)
+		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
+		
+		//Pre-existent overlays handling
+		varUpdatePainterMode = new EzVarBoolean("Remove Previous Overlays", false);
+		
+		return new EzGroup("3. SELECT DESTINATION",
+				varSequence,
+				varUseSwimmingPool,
+				varUpdatePainterMode);	
+	}
+	
 	@Override
 	protected void execute()
 	{	

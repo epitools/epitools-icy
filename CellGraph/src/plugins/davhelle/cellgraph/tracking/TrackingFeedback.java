@@ -1,11 +1,10 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph.tracking;
 
 /**
+ * Enumeration of Tracking Feedback Types which have corresponding 
+ * integer values. Used in the tracking Algorithms for assigning messages
+ * to cells when the relative situation is encountered.
+ * 
  * @author Davide Heller
  *
  */

@@ -310,7 +310,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		stopFlag = false;
 
 		//Build input file names from user input
-		final String[] input_file_paths = generateInputPaths();
+		String[] input_file_paths = generateInputPaths();
 		
 		//Check for input correctness
 		if(wrongInputCheck(input_file_paths))
@@ -432,7 +432,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Check tracking files if selected
 		if(varDoTracking.getValue()){
 			
-			if(icyAlert(input_file_paths.length > 2, 
+			if(icyAlert(input_file_paths.length > 1, 
 					"Tracking requires at least two time points! Please increase time points to load"))
 				return true;
 			
@@ -479,7 +479,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			return false;
 		}
 		else{
-			new AnnounceFrame(error_message);
+			new AnnounceFrame(error_message,10);
 			return true;
 		}
 	}

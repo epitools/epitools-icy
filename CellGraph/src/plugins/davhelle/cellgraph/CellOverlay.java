@@ -309,7 +309,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		// watch if objects are already in the swimming pool:
 		//TODO time_stamp collection?
 
-		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true))
+		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true)){
 
 			for ( SwimmingObject swimmingObject : 
 				Icy.getMainInterface().getSwimmingPool().getObjects(
@@ -345,145 +345,156 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					}
 
 					//Overlay type
-
 					OverlayEnum USER_CHOICE = varPlotting.getValue();
 
-					switch (USER_CHOICE){
-					case TEST:
-						break;
-					case ELLIPSE_FIT:
-						sequence.addOverlay(
-								new EllipseFitterOverlay(wing_disc_movie,sequence));
-						break;
-					case DIVISION_ORIENTATION:
-						sequence.addOverlay(
-								new DivisionOrientationOverlay(wing_disc_movie,sequence,
-										varDoDetectionDistance.getValue(),
-										varDoDetectionLength.getValue()));
-						break;
-					case CELL_SEGMENTATION_BORDER: 
-						sequence.addOverlay(
-								new BorderOverlay(wing_disc_movie));
-						break;
-
-					case CELL_OUTLINE: 
-						cellMode(wing_disc_movie);
-						break;
-
-					case CELL_POLYGON_CLASS: 
-						boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
-						int highlight_polygonal_class = varHighlightClass.getValue();
-
-						PolygonClassOverlay pc_painter =  new PolygonClassOverlay(
-								wing_disc_movie,
-								draw_polygonal_numbers,
-								highlight_polygonal_class);
-
-						sequence.addOverlay(
-								pc_painter);
-						break;
-
-					case DIVISIONS_AND_ELIMINATIONS: 
-						divisionMode(wing_disc_movie);
-						break;
-
-					case CELL_VORONOI_DIAGRAM: 
-						voronoiMode(wing_disc_movie);
-						break;
-
-					case CELL_AREA: 
-						sequence.addOverlay(
-								new AreaGradientOverlay(
-										wing_disc_movie, 
-										varAreaThreshold));
-						break;
-
-					case TRACKING_REVIEW:
-
-						trackingMode(
-								wing_disc_movie,
-								varBooleanCellIDs.getValue(),
-								varBooleanHighlightMistakesBoolean.getValue(),
-								false);
-						break;
-					case TRACKING_DISPLACEMENT:
-						trackingMode(
-								wing_disc_movie,
-								varBooleanCellIDs.getValue(),
-								varBooleanHighlightMistakesBoolean.getValue(),
-								true);
-						break;
-					case EDGE_INTENSITY:
-
-						sequence.addOverlay(
-								new EdgeIntensityOverlay(
-										wing_disc_movie, sequence, this.getUI(),
-										varIntensitySlider,
-										varFillingCheckbox,
-										varEnvelopeBuffer2,
-										varBooleanNormalize.getValue(),
-										varIntegerChannel.getValue()));
-
-						break;
-
-					case CELL_GRAPH_VIEW:	
-						sequence.addOverlay(
-								new GraphOverlay(
-										wing_disc_movie));
-						break;
-
-					case CELL_COLOR_TAG:
-						if(sequence.hasOverlay(CellColorTagOverlay.class) || sequence.hasOverlay(EdgeColorTagOverlay.class)){
-							new AnnounceFrame("Only one marker overlay is allowed per sequence");
-							return;
-						}
-						sequence.addOverlay(
-								new CellColorTagOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
-						break;
-						
-					case EDGE_COLOR_TAG:
-						if(sequence.hasOverlay(CellColorTagOverlay.class) || sequence.hasOverlay(EdgeColorTagOverlay.class)){
-							new AnnounceFrame("Only one marker overlay is allowed per sequence");
-							return;
-						}
-						sequence.addOverlay(
-								new EdgeColorTagOverlay(wing_disc_movie,varEdgeColor,varEnvelopeBuffer,sequence));
-						break;
-
-					case TRACKING_CORRECTION_HINTS:
-						sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
-						break;
-
-					case EDGE_T1_TRANSITIONS:
-						sequence.addOverlay(new TransitionOverlay(wing_disc_movie, this));
-						break;
-
-					case EDGE_STABILITY:
-						sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
-						break;
-
-					case ELLIPSE_FIT_WRT_POINT_ROI:
-						sequence.addOverlay(
-								new EllipseFitColorOverlay(wing_disc_movie,sequence));
-						break;
-					case ELLIPSE_ELONGATION_RATIO:
-						sequence.addOverlay(
-								new ElongationRatioOverlay(wing_disc_movie,sequence));
-						break;
-					case TRACKING_STABLE_ONLY:
-						sequence.addOverlay(
-								new AlwaysTrackedCellsOverlay(wing_disc_movie));
-						break;
-					default:
-						break;
-
-					}
+					addStGraphOverlay(wing_disc_movie, USER_CHOICE);
 
 				}
 			}
+		}
 		else
 			new AnnounceFrame("No spatio temporal graph found in ICYsp, please run CellGraph plugin first!");
 		
+	}
+
+	/**
+	 * Adds the overlay selected by the user
+	 * 
+	 * @param wing_disc_movie stgraph containing the data 
+	 * @param USER_CHOICE Overlay chosen by the user
+	 */
+	private void addStGraphOverlay(SpatioTemporalGraph wing_disc_movie,
+			OverlayEnum USER_CHOICE) {
+		switch (USER_CHOICE){
+		case TEST:
+			break;
+		case ELLIPSE_FIT:
+			sequence.addOverlay(
+					new EllipseFitterOverlay(wing_disc_movie,sequence));
+			break;
+		case DIVISION_ORIENTATION:
+			sequence.addOverlay(
+					new DivisionOrientationOverlay(wing_disc_movie,sequence,
+							varDoDetectionDistance.getValue(),
+							varDoDetectionLength.getValue()));
+			break;
+		case CELL_SEGMENTATION_BORDER: 
+			sequence.addOverlay(
+					new BorderOverlay(wing_disc_movie));
+			break;
+
+		case CELL_OUTLINE: 
+			cellMode(wing_disc_movie);
+			break;
+
+		case CELL_POLYGON_CLASS: 
+			boolean draw_polygonal_numbers = varBooleanColorClass.getValue();
+			int highlight_polygonal_class = varHighlightClass.getValue();
+
+			PolygonClassOverlay pc_painter =  new PolygonClassOverlay(
+					wing_disc_movie,
+					draw_polygonal_numbers,
+					highlight_polygonal_class);
+
+			sequence.addOverlay(
+					pc_painter);
+			break;
+
+		case DIVISIONS_AND_ELIMINATIONS: 
+			divisionMode(wing_disc_movie);
+			break;
+
+		case CELL_VORONOI_DIAGRAM: 
+			voronoiMode(wing_disc_movie);
+			break;
+
+		case CELL_AREA: 
+			sequence.addOverlay(
+					new AreaGradientOverlay(
+							wing_disc_movie, 
+							varAreaThreshold));
+			break;
+
+		case TRACKING_REVIEW:
+
+			trackingMode(
+					wing_disc_movie,
+					varBooleanCellIDs.getValue(),
+					varBooleanHighlightMistakesBoolean.getValue(),
+					false);
+			break;
+		case TRACKING_DISPLACEMENT:
+			trackingMode(
+					wing_disc_movie,
+					varBooleanCellIDs.getValue(),
+					varBooleanHighlightMistakesBoolean.getValue(),
+					true);
+			break;
+		case EDGE_INTENSITY:
+
+			sequence.addOverlay(
+					new EdgeIntensityOverlay(
+							wing_disc_movie, sequence, this.getUI(),
+							varIntensitySlider,
+							varFillingCheckbox,
+							varEnvelopeBuffer2,
+							varBooleanNormalize.getValue(),
+							varIntegerChannel.getValue()));
+
+			break;
+
+		case CELL_GRAPH_VIEW:	
+			sequence.addOverlay(
+					new GraphOverlay(
+							wing_disc_movie));
+			break;
+
+		case CELL_COLOR_TAG:
+			if(sequence.hasOverlay(CellColorTagOverlay.class) || sequence.hasOverlay(EdgeColorTagOverlay.class)){
+				new AnnounceFrame("Only one marker overlay is allowed per sequence");
+				break;
+			}
+			sequence.addOverlay(
+					new CellColorTagOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
+			break;
+			
+		case EDGE_COLOR_TAG:
+			if(sequence.hasOverlay(CellColorTagOverlay.class) || sequence.hasOverlay(EdgeColorTagOverlay.class)){
+				new AnnounceFrame("Only one marker overlay is allowed per sequence");
+				return;
+			}
+			sequence.addOverlay(
+					new EdgeColorTagOverlay(wing_disc_movie,varEdgeColor,varEnvelopeBuffer,sequence));
+			break;
+
+		case TRACKING_CORRECTION_HINTS:
+			sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+			break;
+
+		case EDGE_T1_TRANSITIONS:
+			sequence.addOverlay(new TransitionOverlay(wing_disc_movie, this));
+			break;
+
+		case EDGE_STABILITY:
+			sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
+			break;
+
+		case ELLIPSE_FIT_WRT_POINT_ROI:
+			sequence.addOverlay(
+					new EllipseFitColorOverlay(wing_disc_movie,sequence));
+			break;
+		case ELLIPSE_ELONGATION_RATIO:
+			sequence.addOverlay(
+					new ElongationRatioOverlay(wing_disc_movie,sequence));
+			break;
+		case TRACKING_STABLE_ONLY:
+			sequence.addOverlay(
+					new AlwaysTrackedCellsOverlay(wing_disc_movie));
+			break;
+		default:
+			break;
+
+		}
 	}
 
 	/**

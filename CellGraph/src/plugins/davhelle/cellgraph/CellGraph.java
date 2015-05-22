@@ -15,6 +15,7 @@ import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+import icy.swimmingPool.SwimmingPool;
 
 import java.awt.Color;
 import java.io.File;
@@ -562,7 +563,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 	 * @param stGraph
 	 */
 	private void applyTracking(SpatioTemporalGraph stGraph){
-		
 			
 			this.getUI().setProgressBarMessage("Tracking Graphs...");
 			
@@ -597,6 +597,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 
 	}
 
+	/**
+	 * Add an overlay to the sequence displaying the tracking results
+	 * 
+	 * @param stGraph the graph whose tracking to display
+	 */
 	private void paintTrackingResult(SpatioTemporalGraph stGraph) {
 		if(varBooleanCellIDs.getValue()){
 			Overlay trackID = new TrackIdOverlay(stGraph);
@@ -614,25 +619,35 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 	}
 
+	/**
+	 * Add the spatio-temporal graph structure to the ICY swimming pool, the shared
+	 * memory structure that can be accessed by all plugins<br><br>
+	 * 
+	 * <b>Warning: Currently only one graph at a time is allowed in the structure</b> 
+	 * 
+	 * @param stGraph the graph to add to the swiming pool
+	 */
 	private void pushToSwimingPool(SpatioTemporalGraph stGraph) {
-		//remove all formerly present objects 
-		//TODO review, might want to hold multiple object in future
-		//also allow the user to have multiple different objects 
-		//e.g. Track Manager seems to use it!
-		Icy.getMainInterface().getSwimmingPool().removeAll();
 		
+		SwimmingPool icySP = Icy.getMainInterface().getSwimmingPool();
+		
+		//remove all formerly present stGraph objects 
+		for(SwimmingObject swimmingObject: icySP.getObjects())
+			if ( swimmingObject.getObject() instanceof SpatioTemporalGraph )
+				icySP.remove(swimmingObject);
+			
 		// Put my object in a Swimming Object
 		SwimmingObject swimmingObject = new SwimmingObject(stGraph,"stGraph");
 		
 		// add the object in the swimming pool
-		Icy.getMainInterface().getSwimmingPool().add( swimmingObject );
+		icySP.add( swimmingObject );
+		
 	}
 
 	@Override
 	public void clean()
 	{
 		// use this method to clean local variables or input streams (if any) to avoid memory leaks
-		
 	}
 	
 	@Override

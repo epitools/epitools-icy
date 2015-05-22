@@ -159,7 +159,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//Initialize visualization Parameters
 		varSequence = new EzVarSequence("Image to add overlay to");
+		varSequence.setToolTipText("Any image with same dimensions on which to add the overlay");
 		varRemovePainterFromSequence = new EzVarBoolean("Remove previous overlays", false);
+		varRemovePainterFromSequence.setToolTipText("Removes the old overlays before adding the new one");
 		
 		EzGroup groupVisualization = new EzGroup("2. SELECT DESTINATION",
 				varSequence,
@@ -179,6 +181,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		//Which painter should be shown by default
 		varPlotting = new EzVarEnum<OverlayEnum>("Overlay",
 				OverlayEnum.values(),OverlayEnum.CELL_OUTLINE);
+		varPlotting.setToolTipText("Choose the overlay to add from the dropdown list");
 		
 		//Cells Overlay
 		varBooleanPolygon = new EzVarBoolean("Polygons", true);

@@ -16,7 +16,6 @@ import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
-import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
@@ -33,8 +32,8 @@ import plugins.davhelle.cellgraph.overlays.CorrectionOverlay;
 import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOverlay;
-import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeColorTagOverlay;
+import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitterOverlay;
@@ -50,7 +49,6 @@ import plugins.davhelle.cellgraph.overlays.TransitionOverlay;
 import plugins.davhelle.cellgraph.overlays.VoronoiAreaDifferenceOverlay;
 import plugins.davhelle.cellgraph.overlays.VoronoiOverlay;
 
-
 /**
  * Plugin containing all the visualizations based
  * on a formerly created spatioTemporal graph
@@ -64,60 +62,90 @@ import plugins.davhelle.cellgraph.overlays.VoronoiOverlay;
  */
 public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	
-	EzVarBoolean				varRemovePainterFromSequence;
-	EzVarBoolean				varUpdatePainterMode;
+
+	/**
+	 * Input sequence on which to add the overlay
+	 */
+	EzVarSequence				varSequence;
 	
+	/**
+	 * Flag to remove all overlays from the input sequence
+	 */
+	EzVarBoolean				varRemovePainterFromSequence;
+	
+	/**
+	 * Main CellOverlay parameter to chose which Overlay do add 
+	 */
 	EzVarEnum<OverlayEnum> 		varPlotting;
 
+	/**
+	 * Description Label containing the information for the chosen overlay.
+	 * updated by EzVarListern on varPlotting.
+	 */
+	EzLabel varDescriptionLabel;
+	
+	/**
+	 * Internal sequence defined at each run
+	 */
+	Sequence sequence;
+	
+	//EzParameters for each overlay type:
+	
+	//Cell
 	EzVarBoolean				varBooleanPolygon;
 	EzVarBoolean				varBooleanCCenter;
+	EzVarEnum<CellColor> 		varPolygonColor;
 
+	//Voronoi
 	EzVarBoolean				varBooleanAreaDifference;
 	EzVarBoolean				varBooleanVoronoiDiagram;
-	EzVarBoolean				varBooleanWriteCenters;
-	EzVarBoolean				varBooleanWriteArea;
+
+	//PolygonNumber
+	EzVarInteger 				varHighlightClass;
+	EzVarBoolean 				varBooleanColorClass;
 	
-	//Tracking Mode
+	//Gradient
+	EzVarDouble					varAreaThreshold;
+	
+	//Division
+	EzVarBoolean 				varBooleanPlotDivisions;
+	EzVarBoolean 				varBooleanPlotEliminations;
+	EzVarBoolean 				varBooleanFillCells;
+	EzVarBoolean 				varBooleanConnectDaughterCells;
+	
+	//Tracking 
 	EzVarBoolean				varBooleanCellIDs;
 	EzVarBoolean				varBooleanHighlightMistakesBoolean;
+	
+	//Displacement 
 	EzVarInteger 				varDisplacementThreshold;
-	
-	EzVarDouble					varAreaThreshold;
-	EzVarDouble					varIntensitySlider;
-	
-	//Graph Export
-	EzVarEnum<ExportFieldType>  varExportType;
-	EzVarInteger				varFrameNo;
 	
 	//CellMarker
 	EzVarEnum<CellColor>		varCellColor;
-	
-	EzLabel varDescriptionLabel;
-	//sequence to paint on 
-	EzVarSequence				varSequence;
-	Sequence sequence;
-	
-	EzVarFile				varOutputFile;
-	
-	EzVarBoolean varBooleanPlotDivisions;
-	EzVarBoolean varBooleanPlotEliminations;
-	EzVarBoolean varBooleanFillCells;
-	EzVarBoolean varBooleanConnectDaughterCells;
-	EzVarInteger varHighlightClass;
-	EzVarBoolean varBooleanColorClass;
-	EzVarEnum<CellColor> varPolygonColor;
-	public EzVarInteger varMinimalTransitionLength;
-	public EzVarInteger varMinimalOldSurvival;
-	EzVarBoolean varFillingCheckbox;
-	EzVarBoolean varDrawColorTag;
-	EzVarInteger varDoDetectionDistance;
-	EzVarInteger varDoDetectionLength;
-	EzVarEnum<CellColor> varEdgeColor;
-	EzVarInteger varEnvelopeBuffer;
-	EzVarInteger varEnvelopeBuffer2;
-	EzVarBoolean varBooleanNormalize;
-	EzVarInteger varIntegerChannel;
+	EzVarBoolean 				varDrawColorTag;
 
+	//EdgeMarker
+	EzVarEnum<CellColor> 		varEdgeColor;
+	EzVarInteger 				varEnvelopeBuffer;
+
+	//T1 Transition
+	public EzVarInteger 		varMinimalTransitionLength;
+	public EzVarInteger 		varMinimalOldSurvival;
+
+	//Edge intensity
+	EzVarDouble					varIntensitySlider;
+	EzVarInteger 				varEnvelopeBuffer2;
+	EzVarBoolean 				varBooleanNormalize;
+	EzVarInteger 				varIntegerChannel;
+	
+	//Graph Export
+	EzVarEnum<ExportFieldType>  varExportType;
+	EzVarBoolean 				varFillingCheckbox;
+	
+	//Division orientation
+	EzVarInteger 				varDoDetectionDistance;
+	EzVarInteger 				varDoDetectionLength;
+	
 	@Override
 	protected void initialize() {
 		
@@ -147,46 +175,39 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	 * @return ezGUI group handle with all initialized overlay parameters
 	 */
 	private EzGroup initializeOverlayParameters(){
+
+		//Which painter should be shown by default
+		varPlotting = new EzVarEnum<OverlayEnum>("Overlay",
+				OverlayEnum.values(),OverlayEnum.CELL_OUTLINE);
 		
-		//Cells view
+		//Cells Overlay
 		varBooleanPolygon = new EzVarBoolean("Polygons", true);
 		varBooleanCCenter = new EzVarBoolean("Centers", true);
-		varBooleanWriteCenters = new EzVarBoolean("Write cell centers to disk",false);
 		varPolygonColor = new EzVarEnum<CellColor>("Polygon color", CellColor.values(),CellColor.RED);
 		EzGroup groupCellMap = new EzGroup("Overlay elements",
 				varBooleanPolygon,
 				varPolygonColor,
-				varBooleanCCenter,
-				varBooleanWriteCenters);
+				varBooleanCCenter);
 		
-
-		//Voronoi view
+		//Voronoi Overlay
 		varBooleanVoronoiDiagram = new EzVarBoolean("Voronoi Diagram", true);
 		varBooleanAreaDifference = new EzVarBoolean("Area difference", false);
-		
 		EzGroup groupVoronoiMap = new EzGroup("Overlay elements",
 				varBooleanAreaDifference,
 				varBooleanVoronoiDiagram);	
 		
-		//Polygon No view
-		//TODO add color code!
+		//Polygon Number Overlay
 		varBooleanColorClass = new EzVarBoolean("Draw Numbers", false);
 		varHighlightClass = new EzVarInteger("Highlight class (0=none)",0,0,10,1);
 		EzGroup groupPolygonClass = new EzGroup("Overlay elements",
 				varBooleanColorClass,
 				varHighlightClass);
 		
-		//Area Threshold View
+		//Area Threshold Overlay
 		varAreaThreshold = new EzVarDouble("Area threshold", 0.9, 0, 10, 0.1);
-		
 		EzGroup groupAreaThreshold = new EzGroup("Overlay elements",
 				varAreaThreshold);
 		
-		//Which painter should be shown by default
-		varPlotting = new EzVarEnum<OverlayEnum>("Overlay",
-				OverlayEnum.values(),OverlayEnum.CELL_OUTLINE);
-		
-
 		//Division mode
 		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions",true);
 		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations",false);
@@ -207,6 +228,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varBooleanCellIDs,
 				varBooleanHighlightMistakesBoolean);
 		
+		//Displacement mode
 		varDisplacementThreshold = new EzVarInteger("Displacement threshold [x]", 1, 100, 1);
 		EzGroup groupDisplacement = new EzGroup("Overlay elements",
 				varDisplacementThreshold);

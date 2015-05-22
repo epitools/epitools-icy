@@ -431,6 +431,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Check tracking files if selected
 		if(varDoTracking.getValue()){
 			
+			if(icyAlert(input_file_paths.length > 2, 
+					"Tracking requires at least two time points! Please increase time points to load"))
+				return true;
+			
+			
 			if(varTrackingAlgorithm.getValue() == TrackingEnum.LOAD_CSV_FILE){
 				if(icyAlert(varLoadFile.getValue() != null,
 						"Load CSV tracking feature requires an input directory: please review!"))
@@ -443,16 +448,16 @@ public class CellGraph extends EzPlug implements EzStoppable
 				
 				for(int i=0; i < varMaxT.getValue(); i++){
 					File tracking_file = new File(input_directory, String.format(CsvTrackReader.tracking_file_pattern, i));
-					if(icyAlert(tracking_file.exists(), "Missing tracking file: "+String.format(CsvTrackReader.tracking_file_pattern, i)))
+					if(icyAlert(tracking_file.exists(), "Missing tracking file: "+tracking_file.getAbsolutePath()))
 						return true;
 				}
 				
 				File division_file = new File(input_directory, CsvTrackReader.division_file_pattern);
-				if(icyAlert(division_file.exists(), "Missing division file: "+CsvTrackReader.division_file_pattern))
+				if(icyAlert(division_file.exists(), "Missing division file: "+division_file.getAbsolutePath()))
 					return true;
 				
 				File elimination_file = new File(input_directory, CsvTrackReader.elimination_file_pattern);
-				if(icyAlert(elimination_file.exists(), "Missing elimination file: "+CsvTrackReader.elimination_file_pattern))
+				if(icyAlert(elimination_file.exists(), "Missing elimination file: "+elimination_file.getAbsolutePath()))
 					return true;
 			}
 		}
@@ -557,7 +562,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	 * @param stGraph
 	 */
 	private void applyTracking(SpatioTemporalGraph stGraph){
-		if(stGraph.size() > 1){
+		
 			
 			this.getUI().setProgressBarMessage("Tracking Graphs...");
 			
@@ -589,10 +594,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			stGraph.setTracking(true);
 	
 			paintTrackingResult(stGraph);
-		}
-		else{
-			new AnnounceFrame("Tracking requires at least two time points! Please increase time points to load");
-		}
+
 	}
 
 	private void paintTrackingResult(SpatioTemporalGraph stGraph) {

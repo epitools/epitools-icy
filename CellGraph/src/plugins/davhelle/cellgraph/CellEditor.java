@@ -67,29 +67,30 @@ public class CellEditor extends EzPlug{
 		inputSequence = null;
 		
 		varInputSeq = new EzVarSequence("Input sequence");
+		varInputSeq.setToolTipText("The image to draw the corrections on");
 		varOutputSeq = new EzVarSequence("Output sequence");
+		varOutputSeq.setToolTipText("The skeleton image to save the corrections to");
 		
 		varSaveChanges = new EzVarBoolean("Save changes permanently to Output", false );
 		varSync = new EzVarBoolean("Sync [Input] and [Output] viewers",false);
 		
 		EzLabel description = new EzLabel(
-				"CellEditor allows to edit skeletons in tiff format by\n" +
-				"drawing on a reference image [Input] and applies \n" +
-				"automatically changes to the skeleton [Output]:\n\n"+
-				"INSTRUCTIONS:\n"+
-				"1. Set [Input] to the image sequence to draw on\n" +
-				"2. Set [Output] to the skeleton sequence to edit\n"+
-				"3. Run [>] to start the modification Overlay on [Input]\n\n"+
-				"   a. Click on [Input] to paint a new junction (white)\n" +
-				"   b. Press [Space-Bar] to toggle to remove (black)\n"+
+				"[Click on the triangle above to minimize this description]\n\n" +
+				"CellEditor allows to edit skeletons in tiff format by drawing\n" +
+				"on an [Input] image and applies the changes automatically to\n" +
+				"the skeleton to edit [Output].\n\n"+
+				"1.To start set [Input] & [Output] and click [>]\n\n"+
+				"   a. Click on [Input] to paint a new junction (white colour)\n" +
+				"   b. Press [Space-Bar] to toggle to remove (black colour)\n"+
 				"   c. Press [CTRL]+[Z] to undo (+[SHIFT] to redo)\n"+
 				"   d. Always modify only one frame at a time\n"+
 				"   e. Press [Enter] to apply changes on [Output]\n\n" +
-				"4. Close this plugin to remove the painter from [Input]\n\n"+
+				"2.To quit the painter on [Input] close this plugin\n\n"+
 				"PLEASE NOTE:\n" +
 				"* Before selecting [Save changes] do a test run\n"+
 				"* Backup your original skeletons before editing\n"+
-				"* Only 8-bit binary TIFFs can be edited currently\n"+
+				"* Only 8-bit binary TIFFs can be edited currently\n" +
+				"  (see CellExport for conversion)\n"+
 				"* Use [Sync] to syncronize [input]&[output] viewer\n"+
 				"* Use CorrectionOverlay from CellOverlay to visualize\n" +
 				"  potential segmentation errors.\n");

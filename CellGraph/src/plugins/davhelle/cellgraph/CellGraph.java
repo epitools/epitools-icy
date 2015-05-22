@@ -42,8 +42,7 @@ import plugins.davhelle.cellgraph.tracking.TrackingEnum;
 
 /**
  * <b>CellGraph</b> is a plugin for the bioimage analysis tool 
- * <a href="http://icy.bioimageanalysis.org">icy</a> developed at
- * Quantitative Image Analysis Unit at Institut Pasteur.<br><br>
+ * <a href="http://icy.bioimageanalysis.org">icy</a><br><br>
  * 
  * The plugin is part of EpiTools, an image analysis toolkit for
  * the epithelial growth dynamics. Find more about it 

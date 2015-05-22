@@ -5,6 +5,7 @@ import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+import icy.swimmingPool.SwimmingPool;
 
 import java.util.List;
 
@@ -309,20 +310,19 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		// watch if objects are already in the swimming pool:
 		//TODO time_stamp collection?
 
-		if(Icy.getMainInterface().getSwimmingPool().hasObjects("stGraph", true)){
+		SwimmingPool icySP = Icy.getMainInterface().getSwimmingPool();
+		if(icySP.hasObjects("stGraph", true)){
 
-			for ( SwimmingObject swimmingObject : 
-				Icy.getMainInterface().getSwimmingPool().getObjects(
-						"stGraph", true) ){
+			for (SwimmingObject swimmingObject: icySP.getObjects("stGraph", true)){
 
 				if ( swimmingObject.getObject() instanceof SpatioTemporalGraph ){
 
-					SpatioTemporalGraph wing_disc_movie = (SpatioTemporalGraph) swimmingObject.getObject();	
+					SpatioTemporalGraph stGraph = (SpatioTemporalGraph) swimmingObject.getObject();	
 
 					//Data statistics
 
-					//System.out.println("CellVisualizer: loaded stGraph with "+wing_disc_movie.size()+" frames");
-					//System.out.println("CellVisualizer:	"+wing_disc_movie.getFrame(0).size()+" cells in first frame");
+					//System.out.println("CellVisualizer: loaded stGraph with "+stGraph.size()+" frames");
+					//System.out.println("CellVisualizer:	"+stGraph.getFrame(0).size()+" cells in first frame");
 
 					//Eliminates the previous painter and runs the 
 					//the program (update mode)
@@ -347,7 +347,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					//Overlay type
 					OverlayEnum USER_CHOICE = varPlotting.getValue();
 
-					addStGraphOverlay(wing_disc_movie, USER_CHOICE);
+					addStGraphOverlay(stGraph, USER_CHOICE);
 
 				}
 			}
@@ -360,31 +360,31 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	/**
 	 * Adds the overlay selected by the user
 	 * 
-	 * @param wing_disc_movie stgraph containing the data 
+	 * @param stGraph stgraph containing the data 
 	 * @param USER_CHOICE Overlay chosen by the user
 	 */
-	private void addStGraphOverlay(SpatioTemporalGraph wing_disc_movie,
+	private void addStGraphOverlay(SpatioTemporalGraph stGraph,
 			OverlayEnum USER_CHOICE) {
 		switch (USER_CHOICE){
 		case TEST:
 			break;
 		case ELLIPSE_FIT:
 			sequence.addOverlay(
-					new EllipseFitterOverlay(wing_disc_movie,sequence));
+					new EllipseFitterOverlay(stGraph,sequence));
 			break;
 		case DIVISION_ORIENTATION:
 			sequence.addOverlay(
-					new DivisionOrientationOverlay(wing_disc_movie,sequence,
+					new DivisionOrientationOverlay(stGraph,sequence,
 							varDoDetectionDistance.getValue(),
 							varDoDetectionLength.getValue()));
 			break;
 		case CELL_SEGMENTATION_BORDER: 
 			sequence.addOverlay(
-					new BorderOverlay(wing_disc_movie));
+					new BorderOverlay(stGraph));
 			break;
 
 		case CELL_OUTLINE: 
-			cellMode(wing_disc_movie);
+			cellMode(stGraph);
 			break;
 
 		case CELL_POLYGON_CLASS: 
@@ -392,7 +392,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			int highlight_polygonal_class = varHighlightClass.getValue();
 
 			PolygonClassOverlay pc_painter =  new PolygonClassOverlay(
-					wing_disc_movie,
+					stGraph,
 					draw_polygonal_numbers,
 					highlight_polygonal_class);
 
@@ -401,31 +401,31 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			break;
 
 		case DIVISIONS_AND_ELIMINATIONS: 
-			divisionMode(wing_disc_movie);
+			divisionMode(stGraph);
 			break;
 
 		case CELL_VORONOI_DIAGRAM: 
-			voronoiMode(wing_disc_movie);
+			voronoiMode(stGraph);
 			break;
 
 		case CELL_AREA: 
 			sequence.addOverlay(
 					new AreaGradientOverlay(
-							wing_disc_movie, 
+							stGraph, 
 							varAreaThreshold));
 			break;
 
 		case TRACKING_REVIEW:
 
 			trackingMode(
-					wing_disc_movie,
+					stGraph,
 					varBooleanCellIDs.getValue(),
 					varBooleanHighlightMistakesBoolean.getValue(),
 					false);
 			break;
 		case TRACKING_DISPLACEMENT:
 			trackingMode(
-					wing_disc_movie,
+					stGraph,
 					varBooleanCellIDs.getValue(),
 					varBooleanHighlightMistakesBoolean.getValue(),
 					true);
@@ -434,7 +434,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 			sequence.addOverlay(
 					new EdgeIntensityOverlay(
-							wing_disc_movie, sequence, this.getUI(),
+							stGraph, sequence, this.getUI(),
 							varIntensitySlider,
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
@@ -446,7 +446,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		case CELL_GRAPH_VIEW:	
 			sequence.addOverlay(
 					new GraphOverlay(
-							wing_disc_movie));
+							stGraph));
 			break;
 
 		case CELL_COLOR_TAG:
@@ -455,7 +455,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				break;
 			}
 			sequence.addOverlay(
-					new CellColorTagOverlay(wing_disc_movie,varCellColor,varDrawColorTag,sequence));
+					new CellColorTagOverlay(stGraph,varCellColor,varDrawColorTag,sequence));
 			break;
 			
 		case EDGE_COLOR_TAG:
@@ -464,32 +464,32 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				return;
 			}
 			sequence.addOverlay(
-					new EdgeColorTagOverlay(wing_disc_movie,varEdgeColor,varEnvelopeBuffer,sequence));
+					new EdgeColorTagOverlay(stGraph,varEdgeColor,varEnvelopeBuffer,sequence));
 			break;
 
 		case TRACKING_CORRECTION_HINTS:
-			sequence.addOverlay(new CorrectionOverlay(wing_disc_movie));
+			sequence.addOverlay(new CorrectionOverlay(stGraph));
 			break;
 
 		case EDGE_T1_TRANSITIONS:
-			sequence.addOverlay(new TransitionOverlay(wing_disc_movie, this));
+			sequence.addOverlay(new TransitionOverlay(stGraph, this));
 			break;
 
 		case EDGE_STABILITY:
-			sequence.addOverlay(new EdgeStabilityOverlay(wing_disc_movie));
+			sequence.addOverlay(new EdgeStabilityOverlay(stGraph));
 			break;
 
 		case ELLIPSE_FIT_WRT_POINT_ROI:
 			sequence.addOverlay(
-					new EllipseFitColorOverlay(wing_disc_movie,sequence));
+					new EllipseFitColorOverlay(stGraph,sequence));
 			break;
 		case ELLIPSE_ELONGATION_RATIO:
 			sequence.addOverlay(
-					new ElongationRatioOverlay(wing_disc_movie,sequence));
+					new ElongationRatioOverlay(stGraph,sequence));
 			break;
 		case TRACKING_STABLE_ONLY:
 			sequence.addOverlay(
-					new AlwaysTrackedCellsOverlay(wing_disc_movie));
+					new AlwaysTrackedCellsOverlay(stGraph));
 			break;
 		default:
 			break;
@@ -500,29 +500,29 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	/**
 	 * Repaint the tracking
 	 * 
-	 * @param wing_disc_movie the graph from which to extract the information
+	 * @param stGraph the graph from which to extract the information
 	 * @param paint_cellID flag to draw the cell ids
 	 * @param paint_mistakes flag to draw the detected events
 	 * @param paint_displacement flag to draw the displacement of the cells
 	 */
-	private void trackingMode(SpatioTemporalGraph wing_disc_movie,
+	private void trackingMode(SpatioTemporalGraph stGraph,
 			boolean paint_cellID, boolean paint_mistakes,boolean paint_displacement) {
 		
-		if(!wing_disc_movie.hasTracking()){
+		if(!stGraph.hasTracking()){
 			new AnnounceFrame("Loaded Graph has not been tracked, cannot paint tracking!");
 			return;
 		}
 		
 		if(paint_cellID){
-			Overlay trackID = new TrackIdOverlay(wing_disc_movie);
+			Overlay trackID = new TrackIdOverlay(stGraph);
 			sequence.addOverlay(trackID);
 		}
 		
 		if(paint_displacement){
-			Overlay displacementSegments = new DisplacementOverlay(wing_disc_movie, varDisplacementThreshold.getValue());
+			Overlay displacementSegments = new DisplacementOverlay(stGraph, varDisplacementThreshold.getValue());
 			sequence.addOverlay(displacementSegments);
 		}else{
-			TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
+			TrackingOverlay correspondence = new TrackingOverlay(stGraph,varBooleanHighlightMistakesBoolean.getValue());
 			sequence.addOverlay(correspondence);
 		}
 		
@@ -532,21 +532,21 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	/**
 	 * Display voronoi diagram overlays
 	 * 
-	 * @param wing_disc_movie the graph from which to generate the overlay
+	 * @param stGraph the graph from which to generate the overlay
 	 */
-	private void voronoiMode(SpatioTemporalGraph wing_disc_movie){
-		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie,sequence);
+	private void voronoiMode(SpatioTemporalGraph stGraph){
+		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(stGraph,sequence);
 	
 		if(varBooleanVoronoiDiagram.getValue()){
 			Overlay voronoiCells = new VoronoiOverlay(
-					wing_disc_movie, 
+					stGraph, 
 					voronoiDiagram.getNodeVoroniMapping());
 			sequence.addOverlay(voronoiCells);
 		}
 	
 		if(varBooleanAreaDifference.getValue()){
 			Overlay voronoiDifference = new VoronoiAreaDifferenceOverlay(
-					wing_disc_movie, 
+					stGraph, 
 					voronoiDiagram.getAreaDifference());
 			sequence.addOverlay(voronoiDifference);	
 		}
@@ -555,17 +555,17 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	/**
 	 * Simple display of the geometry associated to each cell in the stGraph
 	 * 
-	 * @param wing_disc_movie the graph from which to extract the information
+	 * @param stGraph the graph from which to extract the information
 	 */
-	private void cellMode(SpatioTemporalGraph wing_disc_movie){
+	private void cellMode(SpatioTemporalGraph stGraph){
 		
 		if(varBooleanCCenter.getValue()){
-			Overlay centroids = new CentroidOverlay(wing_disc_movie);
+			Overlay centroids = new CentroidOverlay(stGraph);
 			sequence.addOverlay(centroids);
 		}
 		
 		if(varBooleanPolygon.getValue()){
-			Overlay polygons = new PolygonOverlay(wing_disc_movie,varPolygonColor.getValue().getColor());
+			Overlay polygons = new PolygonOverlay(stGraph,varPolygonColor.getValue().getColor());
 			sequence.addOverlay(polygons);
 		}
 		
@@ -574,12 +574,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	/**
 	 * Display information relative to the divisions in the stGraph
 	 * 
-	 * @param wing_disc_movie the graph from which to extract the information
+	 * @param stGraph the graph from which to extract the information
 	 */
-	private void divisionMode(SpatioTemporalGraph wing_disc_movie){
+	private void divisionMode(SpatioTemporalGraph stGraph){
 		
 		DivisionOverlay dividing_cells = new DivisionOverlay(
-				wing_disc_movie,
+				stGraph,
 				varBooleanPlotDivisions.getValue(),
 				varBooleanPlotEliminations.getValue(),
 				varBooleanFillCells.getValue(),

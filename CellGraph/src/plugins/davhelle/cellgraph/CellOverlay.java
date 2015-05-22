@@ -487,7 +487,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	}
 
 	/**
-	 * Repaint the tracking
+	 * Helper method to construct the tracking related overlays
 	 * 
 	 * @param stGraph the graph from which to extract the information
 	 * @param paint_cellID flag to draw the cell ids
@@ -519,7 +519,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 
 	/**
-	 * Display voronoi diagram overlays
+	 * Helper method to construct the voronoi diagram overlays
 	 * 
 	 * @param stGraph the graph from which to generate the overlay
 	 */
@@ -542,7 +542,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	}
 
 	/**
-	 * Simple display of the geometry associated to each cell in the stGraph
+	 * Helper method to construct the overlays for the geometry of each cell in the stGraph
 	 * 
 	 * @param stGraph the graph from which to extract the information
 	 */
@@ -561,7 +561,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	}
 
 	/**
-	 * Display information relative to the divisions in the stGraph
+	 * Helper method to construct the division related overlays
 	 * 
 	 * @param stGraph the graph from which to extract the information
 	 */

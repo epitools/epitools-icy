@@ -120,6 +120,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Tracking GUI: apply tracking?
 		varDoTracking = new EzVarBoolean("    2. SELECT IF TO TRACK CELLS", false);
+		varDoTracking.setToolTipText("Choose whether to link frames in time");
 		EzGroup groupTracking = initializeTrackingGUI();
 		
 		//Output GUI: where to visualize
@@ -147,19 +148,19 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//What input is given
 		varInput = new EzVarEnum<InputType>(
 				"File type",InputType.values(), InputType.SKELETON);
+		varInput.setToolTipText("Type of the file that contains the cell outlines");
 		
 		//Constraints on file, time and space
 		varFile = new EzVarFile("First file", "/Users/davide/data/");
-		varFile.setToolTipText("For a series choose the first time point, e.g. frame001.png");
+		varFile.setToolTipText("For series choose the first time point, e.g. frame001.png");
 		
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,1,100,1);
-		varMaxT.setToolTipText("For t > 1 file name pattern [base]001.[ext] is currently required");
+		varMaxT.setToolTipText("For t>1: [base]001.[ext] file pattern is required");
 		
 		
 		EzVarBoolean varUseAdvanceOptions = 
 				new EzVarBoolean("Show advanced options",false);
-		
 		
 		//Should the data be directly imported from a particular tool data structure
 		varDirectInput = new EzVarBoolean("Known source", true);
@@ -168,18 +169,17 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varTool = new EzVarEnum<SegmentationProgram>(
 				"\tSegmentation tool",SegmentationProgram.values(), SegmentationProgram.MatlabLabelOutlines);
 		varUsePackingAnalyzer = new EzVarBoolean("PackingAnalyzer files", false);
-		varUsePackingAnalyzer.setToolTipText("Select the raw image analyzed by PA and CellGraph will use " +
-				"[imageName]/handCorrected.png as skeleton");
+		varUsePackingAnalyzer.setToolTipText("CellGraph will use [imageName]/handCorrected.png as skeleton");
 
 		//Border cut
 		varCutBorder = new EzVarBoolean("Cut one border line",true);
-		varCutBorder.setToolTipText("Skip the polygons retrieved on the segmentation border");
+		varCutBorder.setToolTipText("Remove cells on the segmentation border");
 		
 		//small cell elimination
 		varRemoveSmallCells = new EzVarBoolean("Remove very small cells", true);
-		varRemoveSmallCells.setToolTipText("Remove cells below the threshold and merge their area to the biggest intersecting neighbor");
+		varRemoveSmallCells.setToolTipText("Remove cells below the threshold and merge their area");
 		varAreaThreshold = new EzVarDouble("\tThreshold area [px]", 10, 0, Double.MAX_VALUE, 0.1);
-		varAreaThreshold.setToolTipText("Area below which cells will be excluded");
+		varAreaThreshold.setToolTipText("Area below which cells will be removed");
 		varRemoveSmallCells.addVisibilityTriggerTo(varAreaThreshold, true);
 		
 		EzGroup inputTypeGroup = new EzGroup("Optional input parameters",
@@ -221,6 +221,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Track view
 		varLinkrange = new EzVarInteger(
 				"Propagation Limit [frames]", 5,1,100,1);
+		varLinkrange.setToolTipText("Limit the propagation of tracking information from one frame");
+		
 		varDisplacement = new EzVarFloat(
 				"Max. displacement (px)",5,1,20,(float)0.1);
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
@@ -228,11 +230,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		varTrackingAlgorithm = new EzVarEnum<TrackingEnum>("Algorithm",TrackingEnum.values(), TrackingEnum.STABLE_MARRIAGE);
 		varBorderEliminationNo = new EzVarInteger("Cut N border lines in 1st frame",1,0,10,1);
+		varBorderEliminationNo.setToolTipText("Restrict tracking by removing border cells in the 1st frame");
 		
 		varLambda1 = new EzVarDouble("Min. Distance weight", 1, 0, 10, 0.1);
 		varLambda2 = new EzVarDouble("Overlap Ratio weight", 1, 0, 10, 0.1);
 		
 		varLoadFile = new EzVarFolder("Select csv location", "");
+		varLoadFile.setToolTipText("Choose the folder where the CSV tracking files have been saved");
 
 		EzGroup groupTrackingParameters = new EzGroup("Algorithm parameters",
 				varLinkrange,
@@ -269,12 +273,15 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 		//Working image 
 		varSequence = new EzVarSequence("Image to overlay");
+		varSequence.setToolTipText("The image on which to display the result overlay");
 		
 		//Usage of temporary ICY-memory (java object swimming pool)
 		varUseSwimmingPool = new EzVarBoolean("Use ICY-SwimmingPool", true);
+		varUseSwimmingPool.setToolTipText("Make the results available to CellOverlay & co");
 		
 		//Pre-existent overlays handling
 		varUpdatePainterMode = new EzVarBoolean("Remove Previous Overlays", false);
+		varUpdatePainterMode.setToolTipText("Remove old overlays from the Image to overlay");
 		
 		return new EzGroup("3. SELECT DESTINATION",
 				varSequence,

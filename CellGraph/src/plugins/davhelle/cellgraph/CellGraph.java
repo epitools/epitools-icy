@@ -21,7 +21,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import plugins.adufour.ezplug.EzException;
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzStoppable;
@@ -33,10 +32,10 @@ import plugins.adufour.ezplug.EzVarFloat;
 import plugins.adufour.ezplug.EzVarFolder;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
-import plugins.davhelle.cellgraph.graphs.FrameGenerator;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
+import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
-import plugins.davhelle.cellgraph.graphs.TissueEvolution;
+import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
 import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
@@ -50,8 +49,8 @@ import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 import plugins.davhelle.cellgraph.tracking.HungarianTracking;
 import plugins.davhelle.cellgraph.tracking.StableMarriageTracking;
-import plugins.davhelle.cellgraph.tracking.TrackingEnum;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
+import plugins.davhelle.cellgraph.tracking.TrackingEnum;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -165,6 +164,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		
 	}
 
+	/**
+	 * Initializes the input EzGUI handles
+	 * 
+	 * @return a group containing the initialized input handles
+	 */
 	private EzGroup initializeInputGUI() {
 		//What input is given
 		varInput = new EzVarEnum<InputType>(
@@ -213,8 +217,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varAreaThreshold
 				);
 		
-
-		
 		EzGroup groupInputPrameters = new EzGroup("1. SELECT INPUT FILES",
 				varInput,
 				varFile, 
@@ -236,6 +238,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		return groupInputPrameters;
 	}
 
+	/**
+	 * Initializes the tracking EzGUI handles
+	 * 
+	 * @return a group containing the initialized tracking handles
+	 */
 	private EzGroup initializeTrackingGUI() {
 		//Track view
 		varLinkrange = new EzVarInteger(
@@ -279,6 +286,11 @@ public class CellGraph extends EzPlug implements EzStoppable
 		return groupTracking;
 	}
 
+	/**
+	 * Initializes the output GUI handles
+	 * 
+	 * @return a group with the initialized output handles
+	 */
 	private EzGroup initializeOutputGUI(){
 		
 		//Working image 
@@ -301,147 +313,63 @@ public class CellGraph extends EzPlug implements EzStoppable
 	{	
 		stopFlag = false;
 
-		if(wrongInputCheck())
+		//Build input file names from user input
+		final String[] input_file_paths = generateInputPaths();
+		
+		//Check for input correctness
+		if(wrongInputCheck(input_file_paths))
 			return;
-
+		
 		//Override current overlays if desired	
 		if(varUpdatePainterMode.getValue())
-			removeAllPainters();
+			removeAllOverlays();
 
 		//Create spatio temporal graph from mesh files
-		TissueEvolution wing_disc_movie = new TissueEvolution();	
-		generateSpatioTemporalGraph(wing_disc_movie);
+		SpatioTemporalGraph stGraph = generateSpatioTemporalGraph(input_file_paths);
 
 		//safety check
-		if(wing_disc_movie.size() != varMaxT.getValue())
+		if(stGraph.size() != varMaxT.getValue())
 			return;
 
 		//Border identification + discard/mark
-		applyBorderOptions(wing_disc_movie);
+		applyBorderOptions(stGraph);
 
 		//Small cell handling, executed after border options 
 		if(varRemoveSmallCells.getValue())
-			new SmallCellRemover(wing_disc_movie).removeCellsBelow(varAreaThreshold.getValue());
+			new SmallCellRemover(stGraph).removeCellsBelow(varAreaThreshold.getValue());
 
 		if(varDoTracking.getValue())
-			applyTracking(wing_disc_movie);
+			applyTracking(stGraph);
 		else
-			sequence.addOverlay(new PolygonOverlay(wing_disc_movie,Color.red));
+			sequence.addOverlay(new PolygonOverlay(stGraph,Color.red));
 
 		//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 		if(varUseSwimmingPool.getValue())
-			pushToSwimingPool(wing_disc_movie);	
+			pushToSwimingPool(stGraph);	
 	}
-
-
 
 	/**
-	 * Safety checks for wrong GUI input
+	 * Generates the absolute path for each input file
 	 * 
-	 * @return true if input is wrong
+	 * @return an array containing the absolute file path for each input file
 	 */
-	private boolean wrongInputCheck() {
-		boolean is_input_wrong = false;
+	private String[] generateInputPaths() {
 		
-		if(faultyInputCheck(varSequence.getValue() == null,
-				"Plugin requires active sequence! Please open an image on which to display results"))
-			return true;
+		int time_points_no = varMaxT.getValue();
 		
-		sequence = varSequence.getValue();
+		String[] input_file_paths = new String[time_points_no];
 		
-		//TODO integrate these into respective classes!
-		if(varDoTracking.getValue()){
-			
-			if(varTrackingAlgorithm.getValue() == TrackingEnum.LOAD_CSV_FILE){
-				if(faultyInputCheck(varLoadFile.getValue() == null,
-						"Load CSV tracking feature requires an input directory: please review!"))
-					return true;
-				
-				File input_directory = varLoadFile.getValue();
-				
-				if(faultyInputCheck(!input_directory.isDirectory(), "Input directory is not valid, please review"))
-					return true;
-				
-				for(int i=0; i < varMaxT.getValue(); i++){
-					File tracking_file = new File(input_directory, String.format(CsvTrackReader.tracking_file_pattern, i));
-					if(faultyInputCheck(!tracking_file.exists(), "Missing tracking file:"+String.format(CsvTrackReader.tracking_file_pattern, i)))
-						return true;
-				}
-				
-				File division_file = new File(input_directory, CsvTrackReader.division_file_pattern);
-				if(faultyInputCheck(!division_file.exists(), "Missing division file: "+CsvTrackReader.division_file_pattern))
-					return true;
-				
-				File elimination_file = new File(input_directory, CsvTrackReader.elimination_file_pattern);
-				if(faultyInputCheck(!elimination_file.exists(), "Missing elimination file: "+CsvTrackReader.elimination_file_pattern))
-					return true;
-			}
-		}
-
-		return is_input_wrong;
-	}
-	
-	private boolean faultyInputCheck(boolean check, String error_message) {
-		boolean faultyInput = false;
+		File input_file = varFile.getValue(false);
 		
-		if(check){
-			new AnnounceFrame(error_message);
-			faultyInput = true;
-		}
-		return faultyInput;
-	}
-
-
-	private void removeAllPainters() {
-		List<Overlay> overlays = sequence.getOverlays();
-		for (Overlay overlay : overlays) {
-			sequence.removeOverlay(overlay);
-			sequence.overlayChanged(overlay);       				
-		}
-	}
-
-	private void generateSpatioTemporalGraph(TissueEvolution wing_disc_movie) {
-		
-		//TODO replace with Factory design and possibly with Thread executors!
-		
-		File input_file = null;
-		
-		try{
-			//Set true to suppress default mechanism
-			input_file = varFile.getValue(true);
-		}
-		catch(EzException e){
-			new AnnounceFrame("Mesh file required to run plugin! Please set mesh file");
-			return;
-		}
-		
-		//Default file to use
-		if(input_file == null){
-			String default_file = "skeleton_000.wkt";
-			//"skeletons_crop_t28-68_t0000.tif";
-			//frame_000.tif";
-			//"Neo0_skeleton_001.png";
-			String default_dir = "/Users/davide/data/neo/1/crop_wkt/"; 
-			//"Users/davide/Documents/segmentation/Epitools/converted_skeleton/";
-			//"/Users/davide/Documents/segmentation/Epitools/Neo0/Skeleton/";
-			//"/Users/davide/Documents/segmentation/seedwater_analysis/2013_05_17/ManualPmCrop5h/8bit/Outlines/Outline_0_000.tif
-
-			varFile.setValue(new File(default_dir+default_file));
-			input_file = varFile.getValue();
-			varMaxT.setValue(10);
-			varTrackingAlgorithm.setValue(TrackingEnum.LOAD_CSV_FILE);
-			varLoadFile.setValue(new File(default_dir));
-			
-		}
+		if(input_file == null)
+			return null;
 		
 		if(varUsePackingAnalyzer.getValue())
 			varTool.setValue(SegmentationProgram.PackingAnalyzer);
 		
-		//Generate a FrameGraph for each time point/input file
-		int time_points_no = varMaxT.getValue();
-		
-		//Hack for single files not adopting FileNameGenerator rules
 		FileNameGenerator file_name_generator = null;
+
+		//For single files not adopting FileNameGenerator rules
 		if(time_points_no != 1 || varTool.getValue() == SegmentationProgram.PackingAnalyzer)
 			file_name_generator = new FileNameGenerator(
 					input_file,
@@ -451,80 +379,177 @@ public class CellGraph extends EzPlug implements EzStoppable
 			
 		varFile.setButtonText(input_file.getName());
 		
-		//Create FrameGenerator
-		FrameGenerator frame_generator = new FrameGenerator(
-				varInput.getValue());
-		
 		this.getUI().setProgressBarMessage("Creating Spatial Graphs...");
 
 		for(int i = 0; i< time_points_no; i++){
 			
-			//Hack for single files not adopting FileNameGenerator rules
 			String abs_path = "no_file_selected";
+			
+			//For single files not adopting FileNameGenerator rules
 			if(time_points_no == 1 && varTool.getValue() != SegmentationProgram.PackingAnalyzer)
 				abs_path = input_file.getAbsolutePath();
 			else
 				abs_path = file_name_generator.getFileName(i);
+			
+			input_file_paths[i] = abs_path;
+		}
+		
+		return input_file_paths;
+	}
 
-			//check existance
-			try{
-				File current_file = new File(abs_path);
-				if(!current_file.exists())
-					throw new SecurityException();
+	/**
+	 * Safety checks for wrong GUI input
+	 * 
+	 * @param input_file_paths array containing the absolute paths of the input files 
+	 * @return true if input is wrong
+	 */
+	private boolean wrongInputCheck(String[] input_file_paths) {
+
+		//check input sequence
+		if(icyAlert(varSequence.getValue() != null,
+				"Plugin requires active sequence! Please open an image on which to display results"))
+			return true;
+		
+		sequence = varSequence.getValue();
+
+		//Check input files
+		if(icyAlert(input_file_paths != null,
+				"Mesh file required to run plugin! Please set mesh file"))
+			return true;
+		
+		for(int i=0; i< input_file_paths.length; i++ ){
+			
+			String abs_path = input_file_paths[i];
+			File current_file = new File(abs_path);
+			if(icyAlert(current_file.exists(),"Missing skeleton file: " + abs_path))
+				return true;
+			
+			if(varInput.getValue() == InputType.WKT){
+				String export_folder = varFile.getValue().getParent();
+				File expected_wkt_file = new File(String.format("%s/border_%03d.wkt",export_folder,i));
+				if(icyAlert(expected_wkt_file.exists(),"Missing border file: " + abs_path))
+					return true;
 			}
-			catch(Exception e){
-				new AnnounceFrame("Missing time point: " + abs_path);
-				return;
+			
+		}
+		
+		//Check tracking files if selected
+		if(varDoTracking.getValue()){
+			
+			if(varTrackingAlgorithm.getValue() == TrackingEnum.LOAD_CSV_FILE){
+				if(icyAlert(varLoadFile.getValue() != null,
+						"Load CSV tracking feature requires an input directory: please review!"))
+					return true;
+				
+				File input_directory = varLoadFile.getValue();
+				
+				if(icyAlert(input_directory.isDirectory(), "Input directory is not valid, please review"))
+					return true;
+				
+				for(int i=0; i < varMaxT.getValue(); i++){
+					File tracking_file = new File(input_directory, String.format(CsvTrackReader.tracking_file_pattern, i));
+					if(icyAlert(tracking_file.exists(), "Missing tracking file:"+String.format(CsvTrackReader.tracking_file_pattern, i)))
+						return true;
+				}
+				
+				File division_file = new File(input_directory, CsvTrackReader.division_file_pattern);
+				if(icyAlert(division_file.exists(), "Missing division file: "+CsvTrackReader.division_file_pattern))
+					return true;
+				
+				File elimination_file = new File(input_directory, CsvTrackReader.elimination_file_pattern);
+				if(icyAlert(elimination_file.exists(), "Missing elimination file: "+CsvTrackReader.elimination_file_pattern))
+					return true;
 			}
+		}
+
+		return false;
+	}
+	
+	/**
+	 * Returns an ICY alert message if the condition is false
+	 * 
+	 * @param condition a boolean condition to check
+	 * @param error_message a message to display if the condition is false
+	 * @return true if the condition is wrong and alert was issued, false if condition is true
+	 */
+	private boolean icyAlert(boolean condition, String error_message) {
+		
+		if(condition){
+			return false;
+		}
+		else{
+			new AnnounceFrame(error_message);
+			return true;
+		}
+	}
+
+
+	/**
+	 * Removes all current overlays from the input sequence
+	 */
+	private void removeAllOverlays() {
+		List<Overlay> overlays = sequence.getOverlays();
+		for (Overlay overlay : overlays) {
+			sequence.removeOverlay(overlay);
+			sequence.overlayChanged(overlay);       				
+		}
+	}
+
+	/**
+	 * Generates a spatio-temporal graph (stGraph) from the input files
+	 * 
+	 * @param input_file_paths input files for the single frames of the stGraph
+	 * @return a populated spatio-temporal graph 
+	 */
+	private SpatioTemporalGraph generateSpatioTemporalGraph(String[] input_file_paths) {
+		
+		GraphType graph_type = GraphType.TISSUE_EVOLUTION;
+		InputType input_type = varInput.getValue();
+		
+		SpatioTemporalGraphGenerator stGraphGenerator = 
+				new SpatioTemporalGraphGenerator(graph_type,input_type);
+		
+		this.getUI().setProgressBarMessage("Creating Spatial Graphs...");
+
+		for(int i = 0; i< input_file_paths.length; i++){
 			
 			if(stopFlag){
 				stopFlag = false;
-				return;
+				return stGraphGenerator.getStGraph();
 			}
 			
-			System.out.println("reading frame "+i+": "+ abs_path);
+			stGraphGenerator.addFrame(i, input_file_paths[i]);
 			
-			FrameGraph frame_from_generator = null;
-			
-			long startTime = System.currentTimeMillis();
-			try{
-				frame_from_generator = frame_generator.generateFrame(i, abs_path);
-			}catch(RuntimeException macro_failure){
-				System.out.println(macro_failure.getMessage());
-				new AnnounceFrame("Re-Skeletonization failed. Please review the SegmentationTool Option!");
-				return;
-			}
-			long endTime = System.currentTimeMillis();
-			
-			System.out.printf("\t Found %d cells in %d ms\n",
-					frame_from_generator.size(), endTime - startTime);
-
-			//wing_disc_movie.setFrame(current_frame, current_file_no);
-			wing_disc_movie.addFrame(frame_from_generator);
-			
-			this.getUI().setProgressBarValue(i/(double)time_points_no);
+			this.getUI().setProgressBarValue(i/(double)input_file_paths.length);
 			
 		}
 		
 		this.getUI().setProgressBarValue(0);
 		
+		return stGraphGenerator.getStGraph();
 	}
 
-	private Geometry[] applyBorderOptions(TissueEvolution wing_disc_movie) {
+	/**
+	 * Applies the border conditions to the graph
+	 * 
+	 * @param stGraph
+	 * @return
+	 */
+	private Geometry[] applyBorderOptions(SpatioTemporalGraph stGraph) {
 		
 		this.getUI().setProgressBarMessage("Setting Boundary Conditions...");
 
-		BorderCells border = new BorderCells(wing_disc_movie);
+		BorderCells border = new BorderCells(stGraph);
 		
 		if(varInput.getValue() == InputType.WKT){
 			WktPolygonImporter wkt_importer = new WktPolygonImporter();
 			String export_folder = varFile.getValue().getParent();
 			System.out.println("Extracting wkt boundaries from:"+export_folder);
-			for(int i=0; i < wing_disc_movie.size(); i++){
+			for(int i=0; i < stGraph.size(); i++){
 				String expected_wkt_file = String.format("%s/border_%03d.wkt",export_folder,i);
 				ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
 
-				FrameGraph frame = wing_disc_movie.getFrame(i);
+				FrameGraph frame = stGraph.getFrame(i);
 				border.markBorderCells(frame, boundaries.get(0));
 			}
 		}
@@ -543,8 +568,13 @@ public class CellGraph extends EzPlug implements EzStoppable
 		return border.getBoundaries();
 	}
 
-	private void applyTracking(SpatioTemporalGraph wing_disc_movie){
-		if(wing_disc_movie.size() > 1){
+	/**
+	 * Applies a tracking algorithm to the graph
+	 * 
+	 * @param stGraph
+	 */
+	private void applyTracking(SpatioTemporalGraph stGraph){
+		if(stGraph.size() > 1){
 			
 			this.getUI().setProgressBarMessage("Tracking Graphs...");
 			
@@ -553,53 +583,53 @@ public class CellGraph extends EzPlug implements EzStoppable
 			switch(varTrackingAlgorithm.getValue()){
 			case STABLE_MARRIAGE:
 				tracker = new StableMarriageTracking(
-						wing_disc_movie, 
+						stGraph, 
 						varLinkrange.getValue(),
 						varLambda1.getValue(),
 						varLambda2.getValue());
 				break;
 			case HUNGARIAN:
 				tracker = new HungarianTracking(
-						wing_disc_movie, 
+						stGraph, 
 						varLinkrange.getValue(),
 						varLambda1.getValue(),
 						varLambda2.getValue());
 				break;
 			case LOAD_CSV_FILE:
 				String output_folder = varLoadFile.getValue().getAbsolutePath();
-				tracker = new CsvTrackReader(wing_disc_movie, output_folder);
+				tracker = new CsvTrackReader(stGraph, output_folder);
 				break;
 			}
 			
 			// TODO try&catch
 			tracker.track();
-			wing_disc_movie.setTracking(true);
+			stGraph.setTracking(true);
 	
-			paintTrackingResult(wing_disc_movie);
+			paintTrackingResult(stGraph);
 		}
 		else{
 			new AnnounceFrame("Tracking requires at least two time points! Please increase time points to load");
 		}
 	}
 
-	private void paintTrackingResult(SpatioTemporalGraph wing_disc_movie) {
+	private void paintTrackingResult(SpatioTemporalGraph stGraph) {
 		if(varBooleanCellIDs.getValue()){
-			Overlay trackID = new TrackIdOverlay(wing_disc_movie);
+			Overlay trackID = new TrackIdOverlay(stGraph);
 			sequence.addOverlay(trackID);
 		}
 		
 		if(varBooleanDrawDisplacement.getValue()){
-			Overlay displacementSegments = new DisplacementOverlay(wing_disc_movie, varDisplacement.getValue());
+			Overlay displacementSegments = new DisplacementOverlay(stGraph, varDisplacement.getValue());
 			sequence.addOverlay(displacementSegments);
 		}
 
 		//Paint corresponding cells in time
-		TrackingOverlay correspondence = new TrackingOverlay(wing_disc_movie,varBooleanHighlightMistakesBoolean.getValue());
+		TrackingOverlay correspondence = new TrackingOverlay(stGraph,varBooleanHighlightMistakesBoolean.getValue());
 		sequence.addOverlay(correspondence);
 		
 	}
 
-	private void pushToSwimingPool(TissueEvolution wing_disc_movie) {
+	private void pushToSwimingPool(SpatioTemporalGraph stGraph) {
 		//remove all formerly present objects 
 		//TODO review, might want to hold multiple object in future
 		//also allow the user to have multiple different objects 
@@ -607,7 +637,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		Icy.getMainInterface().getSwimmingPool().removeAll();
 		
 		// Put my object in a Swimming Object
-		SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie,"stGraph");
+		SwimmingObject swimmingObject = new SwimmingObject(stGraph,"stGraph");
 		
 		// add the object in the swimming pool
 		Icy.getMainInterface().getSwimmingPool().add( swimmingObject );

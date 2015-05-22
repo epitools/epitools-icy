@@ -101,6 +101,34 @@ public class SpatioTemporalGraphGenerator {
 			addFrame(i);
 			
 	}
+	
+	public SpatioTemporalGraphGenerator(GraphType type, InputType input_type){
+		switch(type){
+		case TISSUE_EVOLUTION:
+			this.stGraph = new TissueEvolution();
+		}
+		
+		this.frame_generator = new FrameGenerator(input_type);
+		
+		this.file_name_generator = null;
+	}
+	
+	/**
+	 * Add a frame at the specified to the spatiotemporal graph supplying the location
+	 * 
+	 * @param frame_no
+	 * @param frame_file_name
+	 */
+	public void addFrame(int frame_no,String frame_file_name){
+		
+		if(new File(frame_file_name).exists()){
+			FrameGraph frame = frame_generator.generateFrame(frame_no, frame_file_name);
+			stGraph.setFrame(frame, frame_no);
+		}
+		else
+			System.out.println("Input file does not exist: "+frame_file_name);
+		
+	}
 
 	/**
 	 * Checks if the file name generated for the specified time point exists

@@ -327,7 +327,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Create spatio temporal graph from mesh files
 		SpatioTemporalGraph stGraph = generateSpatioTemporalGraph(input_file_paths);
 
-		//safety check
+		//safety check, e.g. in case of user interruption
 		if(stGraph.size() != varMaxT.getValue())
 			return;
 
@@ -427,7 +427,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 			if(varInput.getValue() == InputType.WKT){
 				String export_folder = varFile.getValue().getParent();
 				File expected_wkt_file = new File(String.format("%s/border_%03d.wkt",export_folder,i));
-				if(icyAlert(expected_wkt_file.exists(),"Missing border file: " + abs_path))
+				if(icyAlert(expected_wkt_file.exists(),"Missing border file: " + expected_wkt_file))
 					return true;
 			}
 			
@@ -448,7 +448,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				
 				for(int i=0; i < varMaxT.getValue(); i++){
 					File tracking_file = new File(input_directory, String.format(CsvTrackReader.tracking_file_pattern, i));
-					if(icyAlert(tracking_file.exists(), "Missing tracking file:"+String.format(CsvTrackReader.tracking_file_pattern, i)))
+					if(icyAlert(tracking_file.exists(), "Missing tracking file: "+String.format(CsvTrackReader.tracking_file_pattern, i)))
 						return true;
 				}
 				
@@ -488,6 +488,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	 * Removes all current overlays from the input sequence
 	 */
 	private void removeAllOverlays() {
+		
 		List<Overlay> overlays = sequence.getOverlays();
 		for (Overlay overlay : overlays) {
 			sequence.removeOverlay(overlay);
@@ -510,7 +511,6 @@ public class CellGraph extends EzPlug implements EzStoppable
 				new SpatioTemporalGraphGenerator(graph_type,input_type);
 		
 		this.getUI().setProgressBarMessage("Creating Spatial Graphs...");
-
 		for(int i = 0; i< input_file_paths.length; i++){
 			
 			if(stopFlag){
@@ -519,11 +519,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 			}
 			
 			stGraphGenerator.addFrame(i, input_file_paths[i]);
-			
 			this.getUI().setProgressBarValue(i/(double)input_file_paths.length);
-			
 		}
-		
 		this.getUI().setProgressBarValue(0);
 		
 		return stGraphGenerator.getStGraph();

@@ -69,9 +69,9 @@ public class SpatioTemporalGraphGenerator {
 	/**
 	 * Generic generator with additional input file format type specification see {@link InputType}
 	 * 
-	 * @param type
-	 * @param input_file
-	 * @param time_points
+	 * @param type implementation of SpatioTemporalGraph to use
+	 * @param input_file skeleton file of the first time point
+	 * @param time_points number of time points in the graph
 	 * @param input_type input file format to use
 	 */
 	public SpatioTemporalGraphGenerator(GraphType type, File input_file, int time_points, InputType input_type) {
@@ -102,6 +102,13 @@ public class SpatioTemporalGraphGenerator {
 			
 	}
 	
+	/**
+	 * Spatio temporal graph generator that initializes only the graph type
+	 * and the input_type. Frames can be added with addFrame(i,path)
+	 * 
+	 * @param type type of graph to built
+	 * @param input_type input format of the frames
+	 */
 	public SpatioTemporalGraphGenerator(GraphType type, InputType input_type){
 		switch(type){
 		case TISSUE_EVOLUTION:

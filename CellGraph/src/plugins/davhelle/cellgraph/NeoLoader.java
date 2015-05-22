@@ -1,6 +1,3 @@
-/**
- * 
- */
 package plugins.davhelle.cellgraph;
 
 import headless.LoadNeoWktFiles;
@@ -9,6 +6,7 @@ import icy.main.Icy;
 import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+import icy.swimmingPool.SwimmingPool;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
@@ -17,14 +15,23 @@ import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 
 /**
- * Loads neo samples using wkt
+ * Helper plugin to quickly load the {@link SpatioTemporalGraph}
+ * from the samples in the neo analysis.<br><br>
+ *
+ * I.e. Loads neo samples using wkt & trackign files
  * 
  * @author Davide Heller
  *
  */
 public class NeoLoader extends EzPlug {
 
+	/**
+	 * Sequence to display the neo stGraph on 
+	 */
 	private EzVarSequence varSequence;
+	/**
+	 * Series number of neo: 0|1|2
+	 */
 	private EzVarInteger varNeo;
 
 	@Override
@@ -49,10 +56,15 @@ public class NeoLoader extends EzPlug {
 		Overlay correspondence = new TrackingOverlay(wing_disc_movie,true);
 		sequence.addOverlay(correspondence);
 		
-		//Push to swimming pool TODO: ONLY REMOVE stGraphs
-		Icy.getMainInterface().getSwimmingPool().removeAll();
+		//remove all formerly present stGraph objects 
+		SwimmingPool icySP = Icy.getMainInterface().getSwimmingPool();
+		for(SwimmingObject swimmingObject: icySP.getObjects())
+			if ( swimmingObject.getObject() instanceof SpatioTemporalGraph )
+				icySP.remove(swimmingObject);
+		
+		//Add the neo stGraph
 		SwimmingObject swimmingObject = new SwimmingObject(wing_disc_movie,"stGraph");
-		Icy.getMainInterface().getSwimmingPool().add( swimmingObject );
+		icySP.add( swimmingObject );
 	}
 
 	@Override

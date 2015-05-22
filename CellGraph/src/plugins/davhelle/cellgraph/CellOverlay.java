@@ -121,12 +121,33 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	@Override
 	protected void initialize() {
 		
+		//Customize ezGUI for CellOverlay
 		this.getUI().setRunButtonText("Add Overlay");
 		this.getUI().setParametersIOVisible(false);
 		
-		//Deprecated
-		varUpdatePainterMode = new EzVarBoolean("Update painter", false);
-
+		//Initialize overlay Parameters
+		EzGroup groupPainters = initializeOverlayParameters();
+		super.addEzComponent(groupPainters);
+		
+		//Initialize visualization Parameters
+		varSequence = new EzVarSequence("Image to add overlay to");
+		varRemovePainterFromSequence = new EzVarBoolean("Remove previous overlays", false);
+		
+		EzGroup groupVisualization = new EzGroup("2. SELECT DESTINATION",
+				varSequence,
+				varRemovePainterFromSequence);
+		
+		super.addEzComponent(groupVisualization);
+	}
+	
+	/**
+	 * Initializes all the ezGUI parameter handles for the
+	 * relative Overlays and returns the group formed by all of them.
+	 * 
+	 * @return ezGUI group handle with all initialized overlay parameters
+	 */
+	private EzGroup initializeOverlayParameters(){
+		
 		//Cells view
 		varBooleanPolygon = new EzVarBoolean("Polygons", true);
 		varBooleanCCenter = new EzVarBoolean("Centers", true);
@@ -172,14 +193,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varBooleanFillCells = new EzVarBoolean("Fill cells with color",true);
 		varBooleanConnectDaughterCells = new EzVarBoolean("Connect daughter cells with line",false);
 		EzGroup groupDivisions = new EzGroup("Overlay elements", 
-				//varBooleanReadDivisions, TODO
 				varBooleanPlotDivisions,
 				varBooleanPlotEliminations,
 				varBooleanFillCells,
 				varBooleanConnectDaughterCells
 				);
-		
-		
 		
 		//TrackingMode
 		varBooleanCellIDs = new EzVarBoolean("Write TrackIDs", true);
@@ -243,9 +261,21 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		EzGroup groupDescription = new EzGroup("Overlay summary",
 				varDescriptionLabel);
 		
-		//Painter
-		EzGroup groupPainters = new EzGroup("1. SELECT OVERLAY TO ADD",
-				//varUpdatePainterMode,
+		//Describe the visibility of each overlay parameters
+		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
+		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.CELL_POLYGON_CLASS);
+		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.CELL_VORONOI_DIAGRAM);
+		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
+		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.TRACKING_REVIEW);
+		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.TRACKING_DISPLACEMENT);
+		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
+		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
+		varPlotting.addVisibilityTriggerTo(groupEdgeMarker, OverlayEnum.EDGE_COLOR_TAG);
+		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.EDGE_T1_TRANSITIONS);
+		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
+		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
+		
+		return new EzGroup("1. SELECT OVERLAY TO ADD",
 				varPlotting,
 				groupDescription,
 				groupCellMap,
@@ -259,34 +289,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupEdgeMarker,
 				groupTransitions,
 				groupEdgeIntensity,
-				groupDivisionOrientation
-				
-		);
-		
-		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
-		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.CELL_POLYGON_CLASS);
-		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.CELL_VORONOI_DIAGRAM);
-		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
-		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.TRACKING_REVIEW);
-		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.TRACKING_DISPLACEMENT);
-		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
-		varPlotting.addVisibilityTriggerTo(groupMarker, OverlayEnum.CELL_COLOR_TAG);
-		varPlotting.addVisibilityTriggerTo(groupEdgeMarker, OverlayEnum.EDGE_COLOR_TAG);
-		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.EDGE_T1_TRANSITIONS);
-		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
-		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
-		super.addEzComponent(groupPainters);
-		
-		
-		//VISUALIZATION GROUP
-		varSequence = new EzVarSequence("Image to add overlay to");
-		varRemovePainterFromSequence = new EzVarBoolean("Remove previous overlays", false);
-		
-		EzGroup groupVisualization = new EzGroup("2. SELECT DESTINATION",
-				varSequence,
-				varRemovePainterFromSequence);
-		
-		super.addEzComponent(groupVisualization);
+				groupDivisionOrientation);
 	}
 
 	@Override

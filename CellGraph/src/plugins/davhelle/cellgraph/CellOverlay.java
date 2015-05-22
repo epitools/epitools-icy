@@ -89,11 +89,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	 */
 	EzLabel varDescriptionLabel;
 	
-	/**
-	 * Internal sequence defined at each run
-	 */
-	Sequence sequence;
-	
 	//EzParameters for each overlay type:
 	
 	//Cell
@@ -323,7 +318,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	protected void execute() {
 		
 		//Retrieve sequence on which to generate the overlay
-		sequence = varSequence.getValue();
+		Sequence sequence = varSequence.getValue();
 		if(sequence == null){
 			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
 			return;
@@ -363,7 +358,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					//Add overlay chosen by user
 					OverlayEnum USER_CHOICE = varPlotting.getValue();
-					addStGraphOverlay(stGraph, USER_CHOICE);
+					addStGraphOverlay(stGraph, USER_CHOICE, sequence);
 
 				}
 			}
@@ -374,13 +369,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	}
 
 	/**
-	 * Adds the overlay selected by the user
+	 * Adds the overlay selected by the user on to the sequence
+	 * by evaluating the stGraph in input.
 	 * 
-	 * @param stGraph stgraph containing the data 
+	 * @param stGraph spatio-temporal graph containing the data 
 	 * @param USER_CHOICE Overlay chosen by the user
+	 * @param sequence to add the overlay on
 	 */
 	private void addStGraphOverlay(SpatioTemporalGraph stGraph,
-			OverlayEnum USER_CHOICE) {
+			OverlayEnum USER_CHOICE, Sequence sequence) {
 		switch (USER_CHOICE){
 		case TEST:
 			break;
@@ -400,7 +397,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			break;
 
 		case CELL_OUTLINE: 
-			cellMode(stGraph);
+			cellMode(stGraph,sequence);
 			break;
 
 		case CELL_POLYGON_CLASS: 
@@ -417,11 +414,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			break;
 
 		case DIVISIONS_AND_ELIMINATIONS: 
-			divisionMode(stGraph);
+			divisionMode(stGraph,sequence);
 			break;
 
 		case CELL_VORONOI_DIAGRAM: 
-			voronoiMode(stGraph);
+			voronoiMode(stGraph,sequence);
 			break;
 
 		case CELL_AREA: 
@@ -434,14 +431,14 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		case TRACKING_REVIEW:
 
 			trackingMode(
-					stGraph,
+					stGraph,sequence,
 					varBooleanCellIDs.getValue(),
 					varBooleanHighlightMistakesBoolean.getValue(),
 					false);
 			break;
 		case TRACKING_DISPLACEMENT:
 			trackingMode(
-					stGraph,
+					stGraph,sequence,
 					varBooleanCellIDs.getValue(),
 					varBooleanHighlightMistakesBoolean.getValue(),
 					true);
@@ -520,8 +517,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	 * @param paint_cellID flag to draw the cell ids
 	 * @param paint_mistakes flag to draw the detected events
 	 * @param paint_displacement flag to draw the displacement of the cells
+	 * @param sequence to add the overlay on
 	 */
-	private void trackingMode(SpatioTemporalGraph stGraph,
+	private void trackingMode(SpatioTemporalGraph stGraph,Sequence sequence,
 			boolean paint_cellID, boolean paint_mistakes,boolean paint_displacement) {
 		
 		if(!stGraph.hasTracking()){
@@ -549,8 +547,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	 * Helper method to construct the voronoi diagram overlays
 	 * 
 	 * @param stGraph the graph from which to generate the overlay
+	 * @param sequence to add the overlay on
 	 */
-	private void voronoiMode(SpatioTemporalGraph stGraph){
+	private void voronoiMode(SpatioTemporalGraph stGraph, Sequence sequence){
 		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(stGraph,sequence);
 	
 		if(varBooleanVoronoiDiagram.getValue()){
@@ -572,8 +571,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	 * Helper method to construct the overlays for the geometry of each cell in the stGraph
 	 * 
 	 * @param stGraph the graph from which to extract the information
+	 * @param sequence to add the overlay on
 	 */
-	private void cellMode(SpatioTemporalGraph stGraph){
+	private void cellMode(SpatioTemporalGraph stGraph,Sequence sequence){
 		
 		if(varBooleanCCenter.getValue()){
 			Overlay centroids = new CentroidOverlay(stGraph);
@@ -591,8 +591,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	 * Helper method to construct the division related overlays
 	 * 
 	 * @param stGraph the graph from which to extract the information
+	 * @param sequence to add the overlay on
 	 */
-	private void divisionMode(SpatioTemporalGraph stGraph){
+	private void divisionMode(SpatioTemporalGraph stGraph,Sequence sequence){
 		
 		DivisionOverlay dividing_cells = new DivisionOverlay(
 				stGraph,

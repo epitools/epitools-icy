@@ -1,8 +1,3 @@
-/*=========================================================================
- *
- *  Copyright Basler Group, Institute of Molecular Life Sciences, UZH
- *
- *=========================================================================*/
 package plugins.davhelle.cellgraph;
 
 import icy.gui.frame.progress.AnnounceFrame;
@@ -81,8 +76,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarBoolean				varBooleanWriteCenters;
 	EzVarBoolean				varBooleanWriteArea;
 	
-	//EzVarBoolean				varBooleanReadDivisions;
-	
 	//Tracking Mode
 	EzVarBoolean				varBooleanCellIDs;
 	EzVarBoolean				varBooleanHighlightMistakesBoolean;
@@ -105,24 +98,24 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	
 	EzVarFile				varOutputFile;
 	
-	private EzVarBoolean varBooleanPlotDivisions;
-	private EzVarBoolean varBooleanPlotEliminations;
-	private EzVarBoolean varBooleanFillCells;
-	private EzVarBoolean varBooleanConnectDaughterCells;
-	private EzVarInteger varHighlightClass;
-	private EzVarBoolean varBooleanColorClass;
-	private EzVarEnum<CellColor> varPolygonColor;
+	EzVarBoolean varBooleanPlotDivisions;
+	EzVarBoolean varBooleanPlotEliminations;
+	EzVarBoolean varBooleanFillCells;
+	EzVarBoolean varBooleanConnectDaughterCells;
+	EzVarInteger varHighlightClass;
+	EzVarBoolean varBooleanColorClass;
+	EzVarEnum<CellColor> varPolygonColor;
 	public EzVarInteger varMinimalTransitionLength;
 	public EzVarInteger varMinimalOldSurvival;
-	private EzVarBoolean varFillingCheckbox;
-	private EzVarBoolean varDrawColorTag;
-	private EzVarInteger varDoDetectionDistance;
-	private EzVarInteger varDoDetectionLength;
-	private EzVarEnum<CellColor> varEdgeColor;
-	private EzVarInteger varEnvelopeBuffer;
-	private EzVarInteger varEnvelopeBuffer2;
-	private EzVarBoolean varBooleanNormalize;
-	private EzVarInteger varIntegerChannel;
+	EzVarBoolean varFillingCheckbox;
+	EzVarBoolean varDrawColorTag;
+	EzVarInteger varDoDetectionDistance;
+	EzVarInteger varDoDetectionLength;
+	EzVarEnum<CellColor> varEdgeColor;
+	EzVarInteger varEnvelopeBuffer;
+	EzVarInteger varEnvelopeBuffer2;
+	EzVarBoolean varBooleanNormalize;
+	EzVarInteger varIntegerChannel;
 
 	@Override
 	protected void initialize() {
@@ -273,7 +266,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.CELL_POLYGON_CLASS);
 		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.CELL_VORONOI_DIAGRAM);
 		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
-		//TODO varInput.addVisibilityTriggerTo(varBooleanDerivedPolygons, InputType.SKELETON);
 		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.TRACKING_REVIEW);
 		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.TRACKING_DISPLACEMENT);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
@@ -497,9 +489,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	/**
 	 * Repaint the tracking
 	 * 
-	 * @param wing_disc_movie
-	 * @param paint_cellID
-	 * @param paint_mistakes
+	 * @param wing_disc_movie the graph from which to extract the information
+	 * @param paint_cellID flag to draw the cell ids
+	 * @param paint_mistakes flag to draw the detected events
+	 * @param paint_displacement flag to draw the displacement of the cells
 	 */
 	private void trackingMode(SpatioTemporalGraph wing_disc_movie,
 			boolean paint_cellID, boolean paint_mistakes,boolean paint_displacement) {
@@ -525,6 +518,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	}
 
 
+	/**
+	 * Display voronoi diagram overlays
+	 * 
+	 * @param wing_disc_movie the graph from which to generate the overlay
+	 */
 	private void voronoiMode(SpatioTemporalGraph wing_disc_movie){
 		VoronoiGenerator voronoiDiagram = new VoronoiGenerator(wing_disc_movie,sequence);
 	
@@ -543,6 +541,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		}
 	}
 
+	/**
+	 * Simple display of the geometry associated to each cell in the stGraph
+	 * 
+	 * @param wing_disc_movie the graph from which to extract the information
+	 */
 	private void cellMode(SpatioTemporalGraph wing_disc_movie){
 		
 		if(varBooleanCCenter.getValue()){
@@ -557,19 +560,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 	}
 
+	/**
+	 * Display information relative to the divisions in the stGraph
+	 * 
+	 * @param wing_disc_movie the graph from which to extract the information
+	 */
 	private void divisionMode(SpatioTemporalGraph wing_disc_movie){
-		
-		//TODO review division readin
-//		if(read_divisions){
-//			try{
-//				DivisionReader division_reader = new DivisionReader(wing_disc_movie);
-//				division_reader.backtrackDivisions();
-//				sequence.addOverlay(division_reader);
-//			}
-//			catch(IOException e){
-//				System.out.println("Something went wrong in division reading");
-//			}
-//		}
 		
 		DivisionOverlay dividing_cells = new DivisionOverlay(
 				wing_disc_movie,
@@ -588,6 +584,5 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	
 	@Override
 	public void clean() {
-		// TODO Auto-generated by Icy4Eclipse
 	}
 }

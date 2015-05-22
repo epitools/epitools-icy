@@ -18,7 +18,6 @@ import icy.swimmingPool.SwimmingObject;
 
 import java.awt.Color;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import plugins.adufour.ezplug.EzGroup;
@@ -32,7 +31,6 @@ import plugins.adufour.ezplug.EzVarFloat;
 import plugins.adufour.ezplug.EzVarFolder;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarSequence;
-import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.GraphType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
@@ -40,7 +38,6 @@ import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
 import plugins.davhelle.cellgraph.io.InputType;
 import plugins.davhelle.cellgraph.io.SegmentationProgram;
-import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.misc.SmallCellRemover;
 import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
@@ -51,8 +48,6 @@ import plugins.davhelle.cellgraph.tracking.HungarianTracking;
 import plugins.davhelle.cellgraph.tracking.StableMarriageTracking;
 import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 import plugins.davhelle.cellgraph.tracking.TrackingEnum;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * <b>CellGraph</b> is a plugin for the bioimage analysis tool ICY. 
@@ -529,26 +524,18 @@ public class CellGraph extends EzPlug implements EzStoppable
 	/**
 	 * Applies the border conditions to the graph
 	 * 
-	 * @param stGraph
-	 * @return
+	 * @param stGraph the graph to be analyzed
 	 */
-	private Geometry[] applyBorderOptions(SpatioTemporalGraph stGraph) {
+	private void applyBorderOptions(SpatioTemporalGraph stGraph) {
 		
 		this.getUI().setProgressBarMessage("Setting Boundary Conditions...");
 
 		BorderCells border = new BorderCells(stGraph);
 		
 		if(varInput.getValue() == InputType.WKT){
-			WktPolygonImporter wkt_importer = new WktPolygonImporter();
+			//assumes the border files are in the same directory of the wkt skeletons
 			String export_folder = varFile.getValue().getParent();
-			System.out.println("Extracting wkt boundaries from:"+export_folder);
-			for(int i=0; i < stGraph.size(); i++){
-				String expected_wkt_file = String.format("%s/border_%03d.wkt",export_folder,i);
-				ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
-
-				FrameGraph frame = stGraph.getFrame(i);
-				border.markBorderCells(frame, boundaries.get(0));
-			}
+			border.markBorderCellsWKT(export_folder);
 		}
 		else{
 			if(varCutBorder.getValue())
@@ -561,8 +548,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				for(int i=0; i < varBorderEliminationNo.getValue();i++)
 					border.removeOneBoundaryLayerFromFrame(0);
 		}
-		
-		return border.getBoundaries();
+	
 	}
 
 	/**

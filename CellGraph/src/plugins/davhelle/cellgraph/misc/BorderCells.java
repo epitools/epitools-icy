@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -201,6 +202,25 @@ public class BorderCells{
 		}
 		
 		frame_i.setBoundary(boundary);
+	}
+	
+	/**
+	 * Mark the frames in the set stGraph with a collection 
+	 * of WKT border files in the folder supplied.<br><br>
+	 * 
+	 * Name convention: [export_folder]/border_000.wkt
+	 * 
+	 * @param export_folder location of the border files
+	 */
+	public void markBorderCellsWKT(String export_folder){
+		WktPolygonImporter wkt_importer = new WktPolygonImporter();
+		for(int i=0; i < stGraph.size(); i++){
+			String expected_wkt_file = String.format("%s/border_%03d.wkt",export_folder,i);
+			ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(expected_wkt_file);
+
+			FrameGraph frame = stGraph.getFrame(i);
+			markBorderCells(frame, boundaries.get(0));
+		}
 	}
 
 }

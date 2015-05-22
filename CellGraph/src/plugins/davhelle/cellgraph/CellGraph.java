@@ -1,13 +1,3 @@
-/*=========================================================================
- *
- *  (C) Copyright (2012-2014) Basler Group, IMLS, UZH
- *  
- *  All rights reserved.
- *	
- *  author:	Davide Heller
- *  email:	davide.heller@imls.uzh.ch
- *  
- *=========================================================================*/
 package plugins.davhelle.cellgraph;
 
 import icy.gui.frame.progress.AnnounceFrame;
@@ -51,35 +41,24 @@ import plugins.davhelle.cellgraph.tracking.TrackingAlgorithm;
 import plugins.davhelle.cellgraph.tracking.TrackingEnum;
 
 /**
- * <b>CellGraph</b> is a plugin for the bioimage analysis tool ICY. 
+ * <b>CellGraph</b> is a plugin for the bioimage analysis tool 
+ * <a href="http://icy.bioimageanalysis.org">icy</a> developed at
+ * Quantitative Image Analysis Unit at Institut Pasteur.<br><br>
  * 
- * http://icy.bioimageanalysis.org developed at
- * Quantitative Image Analysis Unit at Institut Pasteur 
+ * The plugin is part of EpiTools, an image analysis toolkit for
+ * the epithelial growth dynamics. Find more about it 
+ * our <a href="http://tiny.uzh.ch/dm">project homepage</a>.<br><br>
  * 
- * Aim is to access the segmented live imaging samples from fluorescence 
- * confocal microscopy as spatio-temporal graph. Consecutive time points
- * will be furthermore linked by a tracking algorithm.
+ * The plugin provides an interface to create {@link SpatioTemporalGraph} objects
+ * and export them in icy's swimming pool memory structure for further analysis.
+ * To create a spatio-temporal graph input files are required. We support several
+ * files of which the most prominent is the skeleton bitmap image.<br><br>
  * 
- * As the segmentation is usually not perfect the tool should also
- * allow for manual correction/experts input in the future.
- *
- * Finally a statistical analysis might also be included through an R pipeline
- * and Jchart built into ICY.
- * 
- * Current version requires as input either a skeleton (TODO definition)
- * representing the cell outline or VTK mesh and the original image/sequence to be open. 
- * 
- * Required libraries:
+ * Required libraries:<br>
  * - JTS (Java Topology Suite) for the vtkmesh to polygon transformation
- * 		and to represent the Geometrical objects, version 1.13
- * 
- * - JGraphT to represent the graph structure of a single time point, version 0.9
- * 
- * For the GUI part EzPlug by Alexandre Dufour has been used.
- * [http://icy.bioimageanalysis.org/plugin/EzPlug]
- * main implementation follow this tutorial:
- * [from tutorial:http://icy.bioimageanalysis.org/plugin/EzPlug_Tutorial]
- * 
+ * 		and to represent the Geometrical objects, version 1.13<br>
+ * - JGraphT to represent the graph structure of a single time point, version 0.9<br>
+ * - EzPlug by Alexandre Dufour for the GUI interface<br>
  * 
  * @author Davide Heller
  *
@@ -125,7 +104,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	//Load Track from CSV files
 	EzVarFolder 				varLoadFile;
 	
-	//Stop flag for advanced thread handling TODO
+	//Stop flag for advanced thread handling
 	boolean						stopFlag;
 	
 	//sequence to paint on 
@@ -334,6 +313,10 @@ public class CellGraph extends EzPlug implements EzStoppable
 		if(varRemoveSmallCells.getValue())
 			new SmallCellRemover(stGraph).removeCellsBelow(varAreaThreshold.getValue());
 
+		//Check for interruptions
+		if(stopFlag)
+			return;
+		
 		if(varDoTracking.getValue())
 			applyTracking(stGraph);
 		else
@@ -563,37 +546,37 @@ public class CellGraph extends EzPlug implements EzStoppable
 	 * @param stGraph
 	 */
 	private void applyTracking(SpatioTemporalGraph stGraph){
-			
-			this.getUI().setProgressBarMessage("Tracking Graphs...");
-			
-			TrackingAlgorithm tracker = null;
-					
-			switch(varTrackingAlgorithm.getValue()){
-			case STABLE_MARRIAGE:
-				tracker = new StableMarriageTracking(
-						stGraph, 
-						varLinkrange.getValue(),
-						varLambda1.getValue(),
-						varLambda2.getValue());
-				break;
-			case HUNGARIAN:
-				tracker = new HungarianTracking(
-						stGraph, 
-						varLinkrange.getValue(),
-						varLambda1.getValue(),
-						varLambda2.getValue());
-				break;
-			case LOAD_CSV_FILE:
-				String output_folder = varLoadFile.getValue().getAbsolutePath();
-				tracker = new CsvTrackReader(stGraph, output_folder);
-				break;
-			}
-			
-			// TODO try&catch
-			tracker.track();
-			stGraph.setTracking(true);
-	
-			paintTrackingResult(stGraph);
+
+		this.getUI().setProgressBarMessage("Tracking Graphs...");
+
+		TrackingAlgorithm tracker = null;
+
+		switch(varTrackingAlgorithm.getValue()){
+		case STABLE_MARRIAGE:
+			tracker = new StableMarriageTracking(
+					stGraph, 
+					varLinkrange.getValue(),
+					varLambda1.getValue(),
+					varLambda2.getValue());
+			break;
+		case HUNGARIAN:
+			tracker = new HungarianTracking(
+					stGraph, 
+					varLinkrange.getValue(),
+					varLambda1.getValue(),
+					varLambda2.getValue());
+			break;
+		case LOAD_CSV_FILE:
+			String output_folder = varLoadFile.getValue().getAbsolutePath();
+			tracker = new CsvTrackReader(stGraph, output_folder);
+			break;
+		}
+
+		// TODO try&catch
+		tracker.track();
+		stGraph.setTracking(true);
+
+		paintTrackingResult(stGraph);
 
 	}
 

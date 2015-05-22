@@ -1,6 +1,3 @@
-/**
- * 
- */
 package plugins.davhelle.cellgraph;
 
 import icy.file.Loader;
@@ -8,9 +5,9 @@ import icy.main.Icy;
 import icy.plugin.abstract_.PluginActionable;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
+import icy.swimmingPool.SwimmingPool;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 
@@ -19,15 +16,13 @@ import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraphGenerator;
 import plugins.davhelle.cellgraph.io.CsvTrackReader;
 import plugins.davhelle.cellgraph.io.InputType;
-import plugins.davhelle.cellgraph.io.WktPolygonImporter;
 import plugins.davhelle.cellgraph.misc.BorderCells;
 import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 /**
- * Test class to automatically load a test image and the connected graph
+ * Test plugin to automatically load a test image and the connected graph.
+ * The user will be asked to identify the location of the test files.
  * 
  * @author Davide Heller
  *
@@ -47,12 +42,13 @@ public class TestLoader extends PluginActionable {
 			return;
 		
 		final File f = dialog.getSelectedFile();
-	
 		System.out.println(f.getAbsolutePath());
 		String test_folder = f.getAbsolutePath();
 		
+		//Image on which the spatio-temporal graph (stGraph) will be generated
 		String test_file_name = test_folder+"/skeletons.tif";
 		File test_file = new File(test_file_name);
+		//First input skeleton for the stGraph object creation
 		File test_file_wkt = new File(test_folder+"/skeleton_000.wkt");
 		
 		if(!test_file.exists()){
@@ -63,33 +59,31 @@ public class TestLoader extends PluginActionable {
 		Sequence sequence = Loader.loadSequence(test_file_name, 0, false);
 		Icy.getMainInterface().addSequence(sequence);
 		
+		//create Spatio-temporal graph by using the wkt skeletons in the test folder
 		SpatioTemporalGraph test_stGraph = 
 				new SpatioTemporalGraphGenerator(
 						GraphType.TISSUE_EVOLUTION,
 						test_file_wkt, 
 						10, InputType.WKT).getStGraph();
-	
 		
+		//Apply border conditions by reading the wkt border files
+		new BorderCells(test_stGraph).markBorderCellsWKT(test_folder);
 		
-		//load border
-		WktPolygonImporter wkt_importer = new WktPolygonImporter();
-		BorderCells border = new BorderCells(test_stGraph);
-		for(int i=0; i<test_stGraph.size();i++){
-			String border_file_name = String.format("%s/border_%03d.wkt",test_folder,i);
-			ArrayList<Geometry> boundaries = wkt_importer.extractGeometries(border_file_name);
-			border.markBorderCells(test_stGraph.getFrame(i), boundaries.get(0));
-		}
-		
-		//track cells
+		//Apply tracking by reading the saved tracking information in the CSV files 
 		new CsvTrackReader(test_stGraph, test_folder).track();
 		
+		//Add the tracking overlay to the input image
 		sequence.addOverlay(new TrackIdOverlay(test_stGraph));
 		sequence.addOverlay(new TrackingOverlay(test_stGraph, true));
 		
-		//Push to swimming pool TODO: ONLY REMOVE stGraphs
-		Icy.getMainInterface().getSwimmingPool().removeAll();
+		//remove all formerly present stGraph objects 
+		SwimmingPool icySP = Icy.getMainInterface().getSwimmingPool();
+		for(SwimmingObject swimmingObject: icySP.getObjects())
+			if ( swimmingObject.getObject() instanceof SpatioTemporalGraph )
+				icySP.remove(swimmingObject);
+		
 		SwimmingObject swimmingObject = new SwimmingObject(test_stGraph,"stGraph");
-		Icy.getMainInterface().getSwimmingPool().add( swimmingObject );
+		icySP.add( swimmingObject );
 		
 	}
 

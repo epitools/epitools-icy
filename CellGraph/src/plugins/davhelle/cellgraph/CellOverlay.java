@@ -291,25 +291,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 	@Override
 	protected void execute() {
-		sequence = varSequence.getValue();
 		
+		//Retrieve sequence on which to generate the overlay
+		sequence = varSequence.getValue();
 		if(sequence == null){
 			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
 			return;
 		}
 		
-		//First boolean choice to remove previous painters
-		if(varRemovePainterFromSequence.getValue()){
-			List<Overlay> overlays = sequence.getOverlays();
-			for (Overlay overlay : overlays) {
-				sequence.removeOverlay(overlay);
-				sequence.overlayChanged(overlay);    				
-			}
-		}
-		
-		// watch if objects are already in the swimming pool:
-		//TODO time_stamp collection?
-
+		// Retrieve spatio-temporal graph object in Icy swimming pool
 		SwimmingPool icySP = Icy.getMainInterface().getSwimmingPool();
 		if(icySP.hasObjects("stGraph", true)){
 
@@ -319,14 +309,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 
 					SpatioTemporalGraph stGraph = (SpatioTemporalGraph) swimmingObject.getObject();	
 
-					//Data statistics
-
+					//Optional output data statistics
 					//System.out.println("CellVisualizer: loaded stGraph with "+stGraph.size()+" frames");
 					//System.out.println("CellVisualizer:	"+stGraph.getFrame(0).size()+" cells in first frame");
 
-					//Eliminates the previous painter and runs the 
-					//the program (update mode)
-
+					//Optional: Eliminates the previous overlays on output sequence
 					if(varRemovePainterFromSequence.getValue()){
 						List<Overlay> overlays = sequence.getOverlays();
 						for (Overlay overlay : overlays) {
@@ -335,7 +322,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						}
 					}
 					
-					//Disable previous legends
+					//Disable previous legends in order for the new legend to be displayed properly
 					List<Overlay> overlays = sequence.getOverlays();
 					for (Overlay overlay : overlays) {
 						if(overlay instanceof StGraphOverlay){
@@ -344,9 +331,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 						}
 					}
 
-					//Overlay type
+					//Add overlay chosen by user
 					OverlayEnum USER_CHOICE = varPlotting.getValue();
-
 					addStGraphOverlay(stGraph, USER_CHOICE);
 
 				}

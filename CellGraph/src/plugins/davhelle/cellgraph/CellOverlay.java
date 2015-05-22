@@ -126,8 +126,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		this.getUI().setParametersIOVisible(false);
 		
 		//Initialize overlay Parameters
-		EzGroup groupPainters = initializeOverlayParameters();
-		super.addEzComponent(groupPainters);
+		EzGroup groupOverlays = initializeOverlayParameters();
+		super.addEzComponent(groupOverlays);
 		
 		//Initialize visualization Parameters
 		varSequence = new EzVarSequence("Image to add overlay to");

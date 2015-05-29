@@ -104,9 +104,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarInteger 				varHighlightClass;
 	EzVarBoolean 				varBooleanColorClass;
 	
-	//Gradient
-	EzVarDouble					varAreaThreshold;
-	
 	//Division
 	EzVarBoolean 				varBooleanPlotDivisions;
 	EzVarBoolean 				varBooleanPlotEliminations;
@@ -206,11 +203,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varBooleanColorClass,
 				varHighlightClass);
 		
-		//Area Threshold Overlay
-		varAreaThreshold = new EzVarDouble("Area threshold", 0.9, 0, 10, 0.1);
-		EzGroup groupAreaThreshold = new EzGroup("Overlay elements",
-				varAreaThreshold);
-		
 		//Division mode
 		varBooleanPlotDivisions = new EzVarBoolean("Highlight divisions",true);
 		varBooleanPlotEliminations = new EzVarBoolean("Highlight eliminations",false);
@@ -290,7 +282,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
 		varPlotting.addVisibilityTriggerTo(groupPolygonClass, OverlayEnum.CELL_POLYGON_CLASS);
 		varPlotting.addVisibilityTriggerTo(groupVoronoiMap, OverlayEnum.CELL_VORONOI_DIAGRAM);
-		varPlotting.addVisibilityTriggerTo(groupAreaThreshold, OverlayEnum.CELL_AREA);
 		varPlotting.addVisibilityTriggerTo(groupTracking, OverlayEnum.TRACKING_REVIEW);
 		varPlotting.addVisibilityTriggerTo(groupDisplacement, OverlayEnum.TRACKING_DISPLACEMENT);
 		varPlotting.addVisibilityTriggerTo(groupDivisions, OverlayEnum.DIVISIONS_AND_ELIMINATIONS);
@@ -306,7 +297,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupCellMap,
 				groupPolygonClass,
 				groupVoronoiMap,
-				groupAreaThreshold,
 				groupDivisions,
 				groupTracking,
 				groupDisplacement,
@@ -427,8 +417,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		case CELL_AREA: 
 			sequence.addOverlay(
 					new AreaGradientOverlay(
-							stGraph, 
-							varAreaThreshold));
+							stGraph));
 			break;
 
 		case TRACKING_REVIEW:

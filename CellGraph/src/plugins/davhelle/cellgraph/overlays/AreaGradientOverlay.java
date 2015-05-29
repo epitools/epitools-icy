@@ -6,7 +6,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 import jxl.write.WritableSheet;
-import plugins.adufour.ezplug.EzVarDouble;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -23,35 +22,21 @@ public class AreaGradientOverlay extends StGraphOverlay{
 	 * Description string for GUI use
 	 */
 	public static final String DESCRIPTION = 
-			"Overlay to color cells according to their area size in a gradient fashion";
-	/**
-	 * minimum area value to fix the gradient extremes
-	 */
-	
-	private double min_area;
-	/**
-	 * maximum area value to fix the gradient extremes
-	 */
-	private double max_area;
-	
-	/**
-	 * HUE scaling factor of the gradient, dynamically passed from CellOverlay  
-	 */
-	private EzVarDouble gradientScalingFactor;
+			"Overlay to color cells according to their area size in a gradient fashion. " +
+			"Adjust the color scheme in the OptionPanel of the Layer menu.";
 	
 	/**
 	 * Overlay constructor that takes a value from the calling GUI to 
-	 * scale the color gradient dynamically
+	 * scale the color gradient dynamically from the OptionPanel
 	 * 
 	 * @param spatioTemporalGraph
-	 * @param gradientScalingFactor
 	 */
-	public AreaGradientOverlay(SpatioTemporalGraph spatioTemporalGraph, EzVarDouble gradientScalingFactor){
+	public AreaGradientOverlay(SpatioTemporalGraph spatioTemporalGraph){
 		super("Cell area",spatioTemporalGraph);
-		this.gradientScalingFactor = gradientScalingFactor; 
 	
-		min_area = Double.MAX_VALUE;
-		max_area = Double.MIN_VALUE;
+		//define the gradient color scheme
+		double min_area = Double.MAX_VALUE;
+		double max_area = Double.MIN_VALUE;
 		
 		for(int i=0; i < stGraph.size(); i++){
 			for(Node node: stGraph.getFrame(i).vertexSet()){
@@ -65,6 +50,10 @@ public class AreaGradientOverlay extends StGraphOverlay{
 		
 		super.setMaximumGradient(max_area);
 		super.setMinimumGradient(min_area);
+		
+		//default blue -> red color scheme
+		super.setScaleGradient(0.5);
+		super.setShiftGradient(0.5);
 	
 	}
 
@@ -82,14 +71,8 @@ public class AreaGradientOverlay extends StGraphOverlay{
 			else
 				h = (cell_area - super.getMinimumGradient())/(super.getMaximumGradient() - super.getMinimumGradient());
 			
-			
-			//adapt for certain color range
-			//by multiplying with factor
-			
+			//define the HUE color
 			h = h * super.getScaleGradient() + super.getShiftGradient();
-			
-			//revert
-			//h = Math.abs(h - range_factor);
 			
 			Color hsbColor = Color.getHSBColor(
 					(float)(h),
@@ -118,10 +101,13 @@ public class AreaGradientOverlay extends StGraphOverlay{
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
-		int binNo = 50;
+		int bin_no = 50;
 		
-		OverlayUtils.gradientColorLegend(g, line, 0.0,1.0, binNo,
-				super.getScaleGradient(),super.getShiftGradient());
+		String min_value = String.format("%.1f",super.getMinimumGradient());
+		String max_value = String.format("%.1f",super.getMaximumGradient());
+		
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value, 
+				bin_no,super.getScaleGradient(),super.getShiftGradient());
 		
 	}
 }

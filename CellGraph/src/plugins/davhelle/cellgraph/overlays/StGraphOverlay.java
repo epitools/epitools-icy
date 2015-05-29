@@ -12,6 +12,7 @@ import icy.util.XLSUtil;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -29,6 +30,7 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import plugins.adufour.vars.gui.swing.SwingVarEditor;
+import plugins.adufour.vars.lang.Var;
 import plugins.adufour.vars.lang.VarBoolean;
 import plugins.adufour.vars.lang.VarDouble;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -227,44 +229,16 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		JPanel optionPanel = new JPanel(new GridBagLayout());
 		
 		//Legend output
-		GridBagConstraints gbc = new GridBagConstraints();
-        
-        gbc.insets = new Insets(2, 10, 2, 5);
-        gbc.fill = GridBagConstraints.BOTH;
-        optionPanel.add(new JLabel(showLegend.getName()), gbc);
-		
-        gbc.weightx = 1;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        SwingVarEditor<?> editor = (SwingVarEditor<?>) showLegend.createVarEditor(true);
-        optionPanel.add(editor.getEditorComponent(), gbc);
+		addOptionPanelVariable(optionPanel,showLegend);
         
 		//Gradient min
-		gbc = new GridBagConstraints();
-        
-        gbc.insets = new Insets(2, 10, 2, 5);
-        gbc.fill = GridBagConstraints.BOTH;
-        optionPanel.add(new JLabel(minGradient.getName()), gbc);
-		
-        gbc.weightx = 1;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        editor = (SwingVarEditor<?>) minGradient.createVarEditor(true);
-        optionPanel.add(editor.getEditorComponent(), gbc);
+        addOptionPanelVariable(optionPanel,minGradient);
         
 		//Gradient max
-		gbc = new GridBagConstraints();
+        addOptionPanelVariable(optionPanel,maxGradient);
         
-        gbc.insets = new Insets(2, 10, 2, 5);
-        gbc.fill = GridBagConstraints.BOTH;
-        optionPanel.add(new JLabel(maxGradient.getName()), gbc);
-		
-        gbc.weightx = 1;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        editor = (SwingVarEditor<?>) maxGradient.createVarEditor(true);
-        optionPanel.add(editor.getEditorComponent(), gbc);
-        
-		//Excel output
-		gbc = new GridBagConstraints();
-        
+		//Excel output button
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.BOTH;
         optionPanel.add(new JLabel("Export data to Excel: "), gbc);
@@ -275,6 +249,26 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         
         
 		return optionPanel;
+	}
+	
+	/**
+	 * Adds the variable to the OptionPanel
+	 * 
+	 * @param optionPanel icy option panel
+	 * @param variable Var variable to add
+	 */
+	@SuppressWarnings("rawtypes")
+	private void addOptionPanelVariable(Container optionPanel, Var variable){
+		GridBagConstraints gbc = new GridBagConstraints();
+        
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        optionPanel.add(new JLabel(variable.getName()), gbc);
+		
+        gbc.weightx = 1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        SwingVarEditor<?> editor = (SwingVarEditor<?>) variable.createVarEditor(true);
+        optionPanel.add(editor.getEditorComponent(), gbc);
 	}
 	
 	/**

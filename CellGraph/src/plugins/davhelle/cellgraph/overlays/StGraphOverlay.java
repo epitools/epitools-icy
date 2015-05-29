@@ -99,6 +99,38 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 			
 		}
 	};
+
+	/**
+	 * Scale the color gradient by a given factor
+	 */
+	private VarDouble scaleGradient= new VarDouble("scale",1.0)
+	{
+		public void setValue(Double newValue)
+		{
+			if (getValue().equals(newValue)) return;
+			
+			super.setValue(newValue);
+			
+			painterChanged();
+			
+		}
+	};
+
+	/**
+	 * Shift the color gradient by a given factor
+	 */
+	private VarDouble shiftGradient = new VarDouble("shift",1.0)
+	{
+		public void setValue(Double newValue)
+		{
+			if (getValue().equals(newValue)) return;
+			
+			super.setValue(newValue);
+			
+			painterChanged();
+			
+		}
+	};
 	
 	
 	
@@ -237,6 +269,12 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		//Gradient max
         addOptionPanelVariable(optionPanel,maxGradient);
         
+        //Gradient scale
+        addOptionPanelVariable(optionPanel, scaleGradient);
+        
+        //Gradient shift
+        addOptionPanelVariable(optionPanel, shiftGradient);
+        
 		//Excel output button
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 10, 2, 5);
@@ -286,7 +324,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	}
 	
 	/**
-	 * @return
+	 * @return the maximum value of the color gradient
 	 */
 	public double getMaximumGradient(){
 		return maxGradient.getValue();
@@ -300,10 +338,38 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	}
 	
 	/**
-	 * @return
+	 * @return the minimum value of the color gradient
 	 */
 	public double getMinimumGradient(){
 		return minGradient.getValue();
+	}
+	
+	/**
+	 * @param set the scale for the color gradient
+	 */
+	public void setScaleGradient(double scale){
+		scaleGradient.setValue(scale);
+	}
+	
+	/**
+	 * @return the scale of the color gradient
+	 */
+	public double getScaleGradient(){
+		return scaleGradient.getValue();
+	}
+	
+	/**
+	 * @param the shift of the color gradient
+	 */
+	public void setShiftGradient(double shift){
+		shiftGradient.setValue(shift);
+	}
+	
+	/**
+	 * @return the shift value of the color gradient
+	 */
+	public double getShiftGradient(){
+		return shiftGradient.getValue();
 	}
 	
 	/**

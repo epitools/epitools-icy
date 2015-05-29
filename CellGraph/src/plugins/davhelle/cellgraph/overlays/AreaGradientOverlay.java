@@ -83,12 +83,10 @@ public class AreaGradientOverlay extends StGraphOverlay{
 				h = (cell_area - super.getMinimumGradient())/(super.getMaximumGradient() - super.getMinimumGradient());
 			
 			
-			
-			
 			//adapt for certain color range
 			//by multiplying with factor
 			
-			h = h * gradientScalingFactor.getValue();
+			h = h * super.getScaleGradient() + super.getShiftGradient();
 			
 			//revert
 			//h = Math.abs(h - range_factor);
@@ -121,10 +119,9 @@ public class AreaGradientOverlay extends StGraphOverlay{
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
 		int binNo = 50;
-		double shift_factor = 0;
 		
 		OverlayUtils.gradientColorLegend(g, line, 0.0,1.0, binNo,
-				gradientScalingFactor.getValue(), shift_factor);
+				super.getScaleGradient(),super.getShiftGradient());
 		
 	}
 }

@@ -62,6 +62,9 @@ public class AreaGradientOverlay extends StGraphOverlay{
 					min_area = node_area;
 			}
 		}
+		
+		super.setMaximumGradient(max_area);
+		super.setMinimumGradient(min_area);
 	
 	}
 
@@ -71,7 +74,16 @@ public class AreaGradientOverlay extends StGraphOverlay{
 			
 			double cell_area = cell.getGeometry().getArea();
 			
-			double h = (cell_area - min_area)/max_area;
+			double h = 100;
+			if(cell_area < super.getMinimumGradient())
+				h = 0.0;
+			else if(cell_area > super.getMaximumGradient())
+				h = 1.0;
+			else
+				h = (cell_area - super.getMinimumGradient())/(super.getMaximumGradient() - super.getMinimumGradient());
+			
+			
+			
 			
 			//adapt for certain color range
 			//by multiplying with factor
@@ -111,7 +123,7 @@ public class AreaGradientOverlay extends StGraphOverlay{
 		int binNo = 50;
 		double shift_factor = 0;
 		
-		OverlayUtils.gradientColorLegend(g, line, min_area, max_area, binNo,
+		OverlayUtils.gradientColorLegend(g, line, 0.0,1.0, binNo,
 				gradientScalingFactor.getValue(), shift_factor);
 		
 	}

@@ -30,6 +30,7 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import plugins.adufour.vars.gui.swing.SwingVarEditor;
 import plugins.adufour.vars.lang.VarBoolean;
+import plugins.adufour.vars.lang.VarDouble;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 
@@ -58,11 +59,46 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 			
 			super.setValue(newValue);
 			
+			painterChanged();
+			
+		}
+	};
+	
+	/**
+	 * Minimum value to define the color gradient
+	 * has a listener attached to detect user changes (i.e. when placed in the option panel)
+	 */
+	private final VarDouble minGradient = new VarDouble("min",0.0)
+	{
+		public void setValue(Double newValue)
+		{
+			if (getValue().equals(newValue)) return;
+			
+			super.setValue(newValue);
 			
 			painterChanged();
 			
 		}
 	};
+	
+	/**
+	 * Maximum value to define the color gradient
+	 * has a listener attached to detect user changes (i.e. when placed in the option panel)
+	 */
+	private final VarDouble maxGradient = new VarDouble("max",1.0)
+	{
+		public void setValue(Double newValue)
+		{
+			if (getValue().equals(newValue)) return;
+			
+			super.setValue(newValue);
+			
+			painterChanged();
+			
+		}
+	};
+	
+	
 	
 	/**
 	 * Creates a new Overlay to interpret the 
@@ -202,6 +238,30 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
         SwingVarEditor<?> editor = (SwingVarEditor<?>) showLegend.createVarEditor(true);
         optionPanel.add(editor.getEditorComponent(), gbc);
         
+		//Gradient min
+		gbc = new GridBagConstraints();
+        
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        optionPanel.add(new JLabel(minGradient.getName()), gbc);
+		
+        gbc.weightx = 1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        editor = (SwingVarEditor<?>) minGradient.createVarEditor(true);
+        optionPanel.add(editor.getEditorComponent(), gbc);
+        
+		//Gradient max
+		gbc = new GridBagConstraints();
+        
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        optionPanel.add(new JLabel(maxGradient.getName()), gbc);
+		
+        gbc.weightx = 1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        editor = (SwingVarEditor<?>) maxGradient.createVarEditor(true);
+        optionPanel.add(editor.getEditorComponent(), gbc);
+        
 		//Excel output
 		gbc = new GridBagConstraints();
         
@@ -222,6 +282,34 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	 */
 	public void setLegendVisibility(boolean state){
 		showLegend.setValue(state);
+	}
+	
+	/**
+	 * @param max maximum value for color gradient
+	 */
+	public void setMaximumGradient(double max){
+		maxGradient.setValue(max);
+	}
+	
+	/**
+	 * @return
+	 */
+	public double getMaximumGradient(){
+		return maxGradient.getValue();
+	}
+	
+	/**
+	 * @param min minimum value for the color gradient
+	 */
+	public void setMinimumGradient(double min){
+		minGradient.setValue(min);
+	}
+	
+	/**
+	 * @return
+	 */
+	public double getMinimumGradient(){
+		return minGradient.getValue();
 	}
 	
 	/**

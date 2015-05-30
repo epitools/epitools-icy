@@ -152,8 +152,9 @@ public class CsvTrackReader extends TrackingAlgorithm{
 			    			}
 			    		
 			    		if(matching_cell == null){
-			    			System.out.printf("Could not find matching cell for:%d [%.2f,%.2f]\n",
+			    			System.out.printf("Could not find matching cell for:%d [%d,%.2f,%.2f]\n",
 			    					cell_id,
+			    					frame.getFrameNo(),
 			    					cell_x,
 			    					cell_y);
 			    			continue;

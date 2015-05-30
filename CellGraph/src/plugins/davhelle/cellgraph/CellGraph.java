@@ -331,6 +331,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Load the created stGraph into ICY's shared memory, i.e. the swimmingPool
 		if(varUseSwimmingPool.getValue())
 			pushToSwimingPool(stGraph);	
+		
+		this.getUI().setProgressBarValue(0);
+		this.getUI().setProgressBarMessage("Creation Completed!");
 	}
 
 	/**

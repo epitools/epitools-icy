@@ -172,7 +172,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varUsePackingAnalyzer.setToolTipText("CellGraph will use [imageName]/handCorrected.png as skeleton");
 
 		//Border cut
-		varCutBorder = new EzVarBoolean("Cut one border line",true);
+		varCutBorder = new EzVarBoolean("Cut one border line",false);
 		varCutBorder.setToolTipText("Remove cells on the segmentation border");
 		
 		//small cell elimination
@@ -539,7 +539,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 				border.markOnly();
 
 			//removing outer layers of first frame to ensure more accurate tracking
-			if(varDoTracking.getValue())
+			if(varDoTracking.getValue() && 
+					varTrackingAlgorithm.getValue() != TrackingEnum.LOAD_CSV_FILE)
 				for(int i=0; i < varBorderEliminationNo.getValue();i++)
 					border.removeOneBoundaryLayerFromFrame(0);
 		}

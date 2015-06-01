@@ -71,6 +71,12 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 		division_orientation = 
 				new DivisionOrientationFinder(stGraph, fittedEllipses, detection_distance, detection_length).run();
 		
+		super.setGradientMaximum(90);
+		super.setGradientMinimum(0);
+		//set green to red scale
+		super.setGradientScale(-0.3);
+		super.setGradientShift(0.3);
+		super.setGradientControlsVisibility(true);
 	}
 	
 	@Override
@@ -97,8 +103,8 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 					//if(angle > 30)
 					//	continue;
 					
-					double normalized_angle = Math.abs(1 - angle/90);
-					normalized_angle = normalized_angle * 0.3;
+					double normalized_angle = (angle - super.getGradientMinimum())/(super.getGradientMaximum() - super.getGradientMinimum());
+					normalized_angle = normalized_angle * super.getGradientScale() + super.getGradientShift();
 
 					Color hsbColor = Color.getHSBColor(
 							(float)(normalized_angle),
@@ -198,10 +204,11 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
 		int binNo = 50;
-		double shift_factor = 0;
+		String max = String.format("%.0f\u00b0",super.getGradientMaximum());
+		String min = String.format("%.0f\u00b0",super.getGradientMinimum());
 
-		OverlayUtils.gradientColorLegend_ZeroOne(g, line,"90\u00b0","0\u00b0",
-				binNo, 0.3, shift_factor);
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line,min,max,
+				binNo, super.getGradientScale(), super.getGradientShift());
 		
 	}
 	

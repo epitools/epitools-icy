@@ -243,11 +243,6 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			normalizedEdgeIntensity.put(e,normalized_value);
 
 		}
-		
-		if(normalize_intensities){
-			min = 0;
-			max = 1;
-		}
 			
 	}
 	
@@ -463,7 +458,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		String max_value = String.format("%.1f",super.getGradientMaximum());
 		
 		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value, binNo,
-				super.getGradientScale(), super.getGradientMaximum());
+				super.getGradientScale(), super.getGradientShift());
 		
 	}
 	

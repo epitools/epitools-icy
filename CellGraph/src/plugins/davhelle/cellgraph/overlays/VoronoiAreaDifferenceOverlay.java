@@ -25,26 +25,13 @@ public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 	 * Difference between voronoi tile and orignal tile for each cell
 	 */
 	private Map<Node, Double> area_difference_map;
-
-	/**
-	 * Scaling factor for color gradient
-	 */
-	double scaling_factor = 0.6;
-	
-	/**
-	 * Shift factor for color gradient
-	 */
-	double shift_factor = 0.4;
-
-	private double min;
-	private double max;
 	
 	public VoronoiAreaDifferenceOverlay(SpatioTemporalGraph stGraph, Map<Node,Double> area_difference_map) {
 		super("Voronoi Area Difference",stGraph);
 		this.area_difference_map = area_difference_map;
 
-		this.min = Double.MAX_VALUE;
-		this.max = Double.MIN_VALUE;
+		double min = Double.MAX_VALUE;
+		double max = Double.MIN_VALUE;
 		
 		for(Node n: area_difference_map.keySet()){
 			if(!n.onBoundary()){
@@ -57,6 +44,12 @@ public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 					min = area_difference;
 			}
 		}
+		
+		super.setGradientMaximum(max);
+		super.setGradientMinimum(min);
+		super.setGradientScale(0.6);
+		super.setGradientShift(0.4);
+		super.setGradientControlsVisibility(true);
 	}
 	
 	@Override
@@ -64,20 +57,13 @@ public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 		
 		int fontSize = 3;
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-
+		
 		for(Node n: frame_i.vertexSet()){
 			if(!n.onBoundary()){
 				if(area_difference_map.containsKey(n)){
 					double area_difference = area_difference_map.get(n);
-
-					double normalized_ratio = (area_difference - min)/(max - min);
-
-					Color hsbColor = Color.getHSBColor(
-							(float)(normalized_ratio*scaling_factor + shift_factor),
-							1f,
-							1f);
 					
-					g.setColor(hsbColor);
+					g.setColor(super.getScaledColor(area_difference));
 					g.fill((n.toShape()));
 
 					g.setColor(Color.black);
@@ -121,10 +107,11 @@ public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
-		String min_value = String.format("%.0f", min);
-		String max_value = String.format("%.0f", max);
+		String min_value = String.format("%.0f", super.getGradientMinimum());
+		String max_value = String.format("%.0f", super.getGradientMaximum());
 		
-		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value, 50, scaling_factor, shift_factor);
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value,
+				50, super.getGradientScale(), super.getGradientShift());
 	}
 }
 

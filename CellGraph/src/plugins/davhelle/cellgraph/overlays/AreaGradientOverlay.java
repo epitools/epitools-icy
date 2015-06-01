@@ -2,7 +2,6 @@ package plugins.davhelle.cellgraph.overlays;
 
 import icy.util.XLSUtil;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 
 import jxl.write.WritableSheet;
@@ -64,23 +63,8 @@ public class AreaGradientOverlay extends StGraphOverlay{
 			
 			double cell_area = cell.getGeometry().getArea();
 			
-			double h = 100;
-			if(cell_area < super.getGradientMinimum())
-				h = 0.0;
-			else if(cell_area > super.getGradientMaximum())
-				h = 1.0;
-			else
-				h = (cell_area - super.getGradientMinimum())/(super.getGradientMaximum() - super.getGradientMinimum());
+			g.setColor(super.getScaledColor(cell_area));
 			
-			//define the HUE color
-			h = h * super.getGradientScale() + super.getGradientShift();
-			
-			Color hsbColor = Color.getHSBColor(
-					(float)(h),
-					1f,
-					1f);
-			
-			g.setColor(hsbColor);
 			g.fill((cell.toShape()));
 		}
 	}

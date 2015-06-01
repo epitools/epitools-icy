@@ -390,5 +390,34 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	public void setGradientControlsVisibility(boolean is_visible){
 		showGradientControls = is_visible;
 	}
+	
+	/**
+	 * Compute HSB Color for normalized or limited double value
+	 * 
+	 * @param value value to compute the HSB color for
+	 * @return HSB Color associated with normalized value
+	 */
+	public Color getScaledColor(
+			double value){
+		
+		double h = 0.5;
+		
+		if(value < getGradientMinimum())
+			h = 0.0;
+		else if(value > getGradientMaximum())
+			h = 1.0;
+		else
+			h = (value - getGradientMinimum())/(getGradientMaximum() - getGradientMinimum());
+		
+		//define the HUE color
+		h = h * getGradientScale() + getGradientShift();
+		
+		Color hsbColor = Color.getHSBColor(
+				(float)(h),
+				1f,
+				1f);
+		
+		return hsbColor;
+	}
 
 }

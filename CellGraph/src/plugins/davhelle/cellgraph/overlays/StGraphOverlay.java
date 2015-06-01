@@ -131,6 +131,8 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 			
 		}
 	};
+
+	private boolean showGradientControls;
 	
 	
 	
@@ -144,6 +146,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	public StGraphOverlay(String name, SpatioTemporalGraph stGraph) {
 		super(name);
 		this.stGraph = stGraph;	
+		this.showGradientControls = false;
 	}
 	
 	/**
@@ -263,17 +266,19 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		//Legend output
 		addOptionPanelVariable(optionPanel,showLegend);
         
-		//Gradient min
-        addOptionPanelVariable(optionPanel,minGradient);
-        
-		//Gradient max
-        addOptionPanelVariable(optionPanel,maxGradient);
-        
-        //Gradient scale
-        addOptionPanelVariable(optionPanel, scaleGradient);
-        
-        //Gradient shift
-        addOptionPanelVariable(optionPanel, shiftGradient);
+		if(showGradientControls){
+			//Gradient min
+	        addOptionPanelVariable(optionPanel,minGradient);
+	        
+			//Gradient max
+	        addOptionPanelVariable(optionPanel,maxGradient);
+	        
+	        //Gradient scale
+	        addOptionPanelVariable(optionPanel, scaleGradient);
+	        
+	        //Gradient shift
+	        addOptionPanelVariable(optionPanel, shiftGradient);
+		}
         
 		//Excel output button
         GridBagConstraints gbc = new GridBagConstraints();
@@ -377,6 +382,13 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	 */
 	public boolean isLegendVisible(){
 		return showLegend.getValue();
+	}
+	
+	/**
+	 * @param is_visible set true if the gradient controls in the OptionsPanel should be visible
+	 */
+	public void setGradientControlsVisibility(boolean is_visible){
+		showGradientControls = is_visible;
 	}
 
 }

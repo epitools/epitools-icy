@@ -55,6 +55,7 @@ public class AreaGradientOverlay extends StGraphOverlay{
 		super.setScaleGradient(0.5);
 		super.setShiftGradient(0.5);
 	
+		super.setGradientControlsVisibility(true);
 	}
 
 	@Override

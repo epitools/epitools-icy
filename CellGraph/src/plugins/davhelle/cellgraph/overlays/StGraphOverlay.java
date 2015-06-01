@@ -322,66 +322,66 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	}
 	
 	/**
+	 * @return true if the legend is visible
+	 */
+	public boolean isLegendVisible(){
+		return showLegend.getValue();
+	}
+	
+	/**
 	 * @param max maximum value for color gradient
 	 */
-	public void setMaximumGradient(double max){
+	public void setGradientMaximum(double max){
 		maxGradient.setValue(max);
 	}
 	
 	/**
 	 * @return the maximum value of the color gradient
 	 */
-	public double getMaximumGradient(){
+	public double getGradientMaximum(){
 		return maxGradient.getValue();
 	}
 	
 	/**
 	 * @param min minimum value for the color gradient
 	 */
-	public void setMinimumGradient(double min){
+	public void setGradientMinimum(double min){
 		minGradient.setValue(min);
 	}
 	
 	/**
 	 * @return the minimum value of the color gradient
 	 */
-	public double getMinimumGradient(){
+	public double getGradientMinimum(){
 		return minGradient.getValue();
 	}
 	
 	/**
 	 * @param set the scale for the color gradient
 	 */
-	public void setScaleGradient(double scale){
+	public void setGradientScale(double scale){
 		scaleGradient.setValue(scale);
 	}
 	
 	/**
 	 * @return the scale of the color gradient
 	 */
-	public double getScaleGradient(){
+	public double getGradientScale(){
 		return scaleGradient.getValue();
 	}
 	
 	/**
 	 * @param the shift of the color gradient
 	 */
-	public void setShiftGradient(double shift){
+	public void setGradientShift(double shift){
 		shiftGradient.setValue(shift);
 	}
 	
 	/**
 	 * @return the shift value of the color gradient
 	 */
-	public double getShiftGradient(){
+	public double getGradientShift(){
 		return shiftGradient.getValue();
-	}
-	
-	/**
-	 * @return true if the legend is visible
-	 */
-	public boolean isLegendVisible(){
-		return showLegend.getValue();
 	}
 	
 	/**

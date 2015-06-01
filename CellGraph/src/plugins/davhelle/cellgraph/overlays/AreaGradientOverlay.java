@@ -48,12 +48,12 @@ public class AreaGradientOverlay extends StGraphOverlay{
 			}
 		}
 		
-		super.setMaximumGradient(max_area);
-		super.setMinimumGradient(min_area);
+		super.setGradientMaximum(max_area);
+		super.setGradientMinimum(min_area);
 		
 		//default blue -> red color scheme
-		super.setScaleGradient(0.5);
-		super.setShiftGradient(0.5);
+		super.setGradientScale(0.5);
+		super.setGradientShift(0.5);
 	
 		super.setGradientControlsVisibility(true);
 	}
@@ -65,15 +65,15 @@ public class AreaGradientOverlay extends StGraphOverlay{
 			double cell_area = cell.getGeometry().getArea();
 			
 			double h = 100;
-			if(cell_area < super.getMinimumGradient())
+			if(cell_area < super.getGradientMinimum())
 				h = 0.0;
-			else if(cell_area > super.getMaximumGradient())
+			else if(cell_area > super.getGradientMaximum())
 				h = 1.0;
 			else
-				h = (cell_area - super.getMinimumGradient())/(super.getMaximumGradient() - super.getMinimumGradient());
+				h = (cell_area - super.getGradientMinimum())/(super.getGradientMaximum() - super.getGradientMinimum());
 			
 			//define the HUE color
-			h = h * super.getScaleGradient() + super.getShiftGradient();
+			h = h * super.getGradientScale() + super.getGradientShift();
 			
 			Color hsbColor = Color.getHSBColor(
 					(float)(h),
@@ -104,11 +104,11 @@ public class AreaGradientOverlay extends StGraphOverlay{
 		
 		int bin_no = 50;
 		
-		String min_value = String.format("%.1f",super.getMinimumGradient());
-		String max_value = String.format("%.1f",super.getMaximumGradient());
+		String min_value = String.format("%.1f",super.getGradientMinimum());
+		String max_value = String.format("%.1f",super.getGradientMaximum());
 		
 		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value, 
-				bin_no,super.getScaleGradient(),super.getShiftGradient());
+				bin_no,super.getGradientScale(),super.getGradientShift());
 		
 	}
 }

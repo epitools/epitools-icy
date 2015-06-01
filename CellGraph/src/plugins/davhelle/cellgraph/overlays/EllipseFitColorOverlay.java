@@ -60,6 +60,12 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 		this.sequence = sequence; 
 		//initialize empty
 		roi_coor = null;
+		
+		super.setGradientMaximum(90);
+		super.setGradientMinimum(0);
+		super.setGradientScale(-0.3);
+		super.setGradientShift(0.3);
+		super.setGradientControlsVisibility(true);
 	
 	}
 
@@ -144,11 +150,10 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 						n);
 				
 				
-				double normalized_angle = Math.abs(1 - angle_difference/Angle.PI_OVER_2);
-				normalized_angle = normalized_angle * 0.3;
+				double normalized_angle = angle_difference/Angle.PI_OVER_2;
 
 				Color hsbColor = Color.getHSBColor(
-						(float)(normalized_angle),
+						(float)(normalized_angle * super.getGradientScale() + super.getGradientShift()),
 						1f,
 						1f);
 				
@@ -209,10 +214,9 @@ public class EllipseFitColorOverlay extends StGraphOverlay{
 		
 		if(sequence.hasROI()){
 			int binNo = 50;
-			double shift_factor = 0;
 
-			OverlayUtils.gradientColorLegend_ZeroOne(g, line,"90\u00b0","0\u00b0",
-					binNo, 0.3, shift_factor);
+			OverlayUtils.gradientColorLegend_ZeroOne(g, line,"0\u00b0","90\u00b0",
+					binNo, super.getGradientScale(), super.getGradientShift());
 
 		} else {
 

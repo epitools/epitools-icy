@@ -131,12 +131,12 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 					double mx1 = cX - Math.cos(longestMotherAxisOrientation) * 5;
 			        double my1 = cY - Math.sin(longestMotherAxisOrientation) * 5;
 			        
-			        //Draw new Junction
-			        g.setColor(newJunctionAngleColor);
-					g.draw(new Line2D.Double(x0, y0,x1,y1));
-					
-					//Draw chosen Mother orientation
 					if(DEBUG_FLAG){
+						//Draw new Junction
+						g.setColor(newJunctionAngleColor);
+						g.draw(new Line2D.Double(x0, y0,x1,y1));
+						
+						//Draw chosen Mother orientation
 						g.setColor(longestAxisOrientationColor);
 						g.draw(new Line2D.Double(mx0, my0,mx1,my1));
 					}

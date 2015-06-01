@@ -154,6 +154,9 @@ public class DivisionOrientationFinder {
 
 			Coordinate[] new_junction_ends = computeChildrenIntersection(child1,
 				child2);
+			
+			if(d.getNewJunctionOrientation() == 0.0)
+				d.setNewJunctionOrientation(Angle.angle(new_junction_ends[0], new_junction_ends[1]));
 
 			angle_diff_sum += findSmallestInteriorAngle(
 				longest_axis_angle_rad, new_junction_ends);

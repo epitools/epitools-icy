@@ -33,27 +33,19 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 	 * Elongation ratio for each node
 	 */
 	private Map<Node, java.lang.Double> elongationRatios;
-	
-	/**
-	 * Maximum elongation ratio found
-	 */
-	private double min;
-	/**
-	 * Minimal elongation ratio found
-	 */
-	private double max;
 
 	/**
 	 * @param spatioTemporalGraph graph to be analyzed
 	 * @param sequence image to be used for ellipse estimation
 	 */
-	public ElongationRatioOverlay(SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
+	public ElongationRatioOverlay(
+			SpatioTemporalGraph spatioTemporalGraph, Sequence sequence) {
 		super("EllipseRatio Coloring",spatioTemporalGraph);
 
 		Map<Node, EllipseFitter> fittedEllipses = new EllipseFitGenerator(stGraph,sequence).getFittedEllipses();
 	
-		this.min = java.lang.Double.MAX_VALUE;
-		this.max = java.lang.Double.MIN_VALUE;
+		double min = java.lang.Double.MAX_VALUE;
+		double max = java.lang.Double.MIN_VALUE;
 		
 		this.elongationRatios = new HashMap<Node, java.lang.Double>();
 		
@@ -68,6 +60,12 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 			else if(elongation_ratio < min)
 				min = elongation_ratio;
 		}
+		
+		super.setGradientMaximum(max);
+		super.setGradientMinimum(min);
+		super.setGradientScale(0.4);
+		super.setGradientShift(0.4);
+		super.setGradientControlsVisibility(true);
 
 	}
 
@@ -79,7 +77,10 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 		boolean show_only_divsion=false;
 
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-
+		
+		double min = super.getGradientMinimum();
+		double max = super.getGradientMaximum();
+		
 		for(Node n: frame_i.vertexSet()){
 
 			if(show_only_divsion)
@@ -88,10 +89,10 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 
 			double elongation_ratio = elongationRatios.get(n);
 
-			double normalized_ratio = (elongation_ratio - min)/max;
+			double normalized_ratio = (elongation_ratio - min)/(max - min);
 
 			Color hsbColor = Color.getHSBColor(
-					(float)(normalized_ratio*0.9 + 0.4),
+					(float)(normalized_ratio*super.getGradientScale() + super.getGradientShift()),
 					1f,
 					1f);
 
@@ -141,11 +142,14 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
-		int binNo = 50;
-		double scaling_factor = 0.9;
-		double shift_factor = 0.4;
+		int bin_no = 50;
+		double scaling_factor = super.getGradientScale();
+		double shift_factor = super.getGradientShift();
 		
-		OverlayUtils.gradientColorLegend_1Digit(g, line, min, max, binNo,
-				scaling_factor, shift_factor);
+		String min_value = String.format("%.1f",super.getGradientMinimum());
+		String max_value = String.format("%.1f",super.getGradientMaximum());
+		
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line,
+				min_value, max_value, bin_no, scaling_factor, shift_factor);
 	}
 }

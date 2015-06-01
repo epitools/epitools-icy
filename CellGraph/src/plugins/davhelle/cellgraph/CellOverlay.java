@@ -14,7 +14,6 @@ import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
-import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
@@ -130,7 +129,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	public EzVarInteger 		varMinimalOldSurvival;
 
 	//Edge intensity
-	EzVarDouble					varIntensitySlider;
 	EzVarInteger 				varEnvelopeBuffer2;
 	EzVarBoolean 				varBooleanNormalize;
 	EzVarInteger 				varIntegerChannel;
@@ -250,8 +248,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varMinimalOldSurvival);
 		
 		//Edge Intensity
-		varIntensitySlider = new EzVarDouble("Color Scaling", 
-				0.5, 0.1, 1.0, 0.05);//, RangeEditorType.SLIDER,new HashMap<Double,String>());
 		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
 		varEnvelopeBuffer2 = new EzVarInteger("Intensity Buffer [px]", 3, 1, 10, 1);
 		varBooleanNormalize = new EzVarBoolean("Normalize intensity",true);
@@ -260,7 +256,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varEnvelopeBuffer2,
 				varIntegerChannel,
 				varBooleanNormalize,
-				varIntensitySlider,
 				varFillingCheckbox
 				);
 		
@@ -440,7 +435,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			sequence.addOverlay(
 					new EdgeIntensityOverlay(
 							stGraph, sequence, this.getUI(),
-							varIntensitySlider,
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
 							varBooleanNormalize.getValue(),

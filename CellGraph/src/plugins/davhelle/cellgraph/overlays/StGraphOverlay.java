@@ -402,15 +402,20 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 		
 		double h = 0.5;
 		
-		if(value < getGradientMinimum())
+		double min = getGradientMinimum();
+		double max = getGradientMaximum();
+		double scale = getGradientScale();
+		double shift = getGradientShift();
+		
+		if(value < min)
 			h = 0.0;
-		else if(value > getGradientMaximum())
+		else if(value > max)
 			h = 1.0;
 		else
-			h = (value - getGradientMinimum())/(getGradientMaximum() - getGradientMinimum());
+			h = (value - min)/(max - min);
 		
 		//define the HUE color
-		h = h * getGradientScale() + getGradientShift();
+		h = h * scale + shift;
 		
 		Color hsbColor = Color.getHSBColor(
 				(float)(h),

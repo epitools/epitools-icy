@@ -15,7 +15,6 @@ import java.util.HashSet;
 import jxl.write.WritableSheet;
 import plugins.adufour.ezplug.EzGUI;
 import plugins.adufour.ezplug.EzVarBoolean;
-import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -68,10 +67,6 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Connected GUI for Progress and Parameter retrieval
 	 */
 	private EzGUI gui;
-	/**
-	 * Visualization parameter for scaling the color gradient reflecting the intensity values
-	 */
-	private EzVarDouble slider;
 	/**
 	 * Visualization flag for filling or drawing the edge envelope
 	 */
@@ -137,14 +132,13 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * @param channelNumber image channel to measure
 	 */
 	public EdgeIntensityOverlay(SpatioTemporalGraph stGraph, Sequence sequence,
-			EzGUI gui, EzVarDouble varIntensitySlider, EzVarBoolean varFillingCheckbox,
+			EzGUI gui, EzVarBoolean varFillingCheckbox,
 			EzVarInteger varBufferWidth,
 			boolean normalize_intensities,
 			int channelNumber) {
 		super("Edge Intensities",stGraph);
 		
 		this.gui = gui;
-		this.slider = varIntensitySlider;
 		this.fillEdgeCheckbox = varFillingCheckbox;
 		this.writer = new ShapeWriter();
 		this.buffer_shape = new	HashMap<Edge, Shape>();
@@ -163,6 +157,12 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			FrameGraph frame_i = stGraph.getFrame(i);
 			computeFrameIntensities(frame_i);
 		}
+		
+		super.setGradientMaximum(max);
+		super.setGradientMinimum(min);
+		super.setGradientScale(-0.4);
+		super.setGradientShift(0.8);
+		super.setGradientControlsVisibility(true);
 	}
 
 	/**
@@ -209,7 +209,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 
 			for(Edge e: frame_i.edgeSet()){
 
-				double rel_value = normalizeEdgeIntensity(e,frame_i);
+				double rel_value = computeRelativeEdgeIntensity(e,frame_i);
 				relativeEdgeIntensity.put(e, rel_value);
 
 				if(rel_value > max)
@@ -239,7 +239,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		for(Edge e: frame_i.edgeSet()){
 			//update from relative to normalized
 			double rel_value = relativeEdgeIntensity.get(e);
-			double normalized_value = (rel_value - min)/max;
+			double normalized_value = (rel_value - min)/(max - min);
 			normalizedEdgeIntensity.put(e,normalized_value);
 
 		}
@@ -353,13 +353,13 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * 
 	 * adapted from Zallen et al.
 	 * 
-	 * normalizedInt = (edgeInt - 1stOrderNBgInt)/(1stOrderNEdgeInt - 1stOrderNCellBgInt)
+	 * relativeInt = (edgeInt - 1stOrderNBgInt)/(1stOrderNEdgeInt - 1stOrderNCellBgInt)
 	 * 
-	 * @param e
-	 * @param frame
+	 * @param e edge to be normalized
+	 * @param frame frame from which to measure intensities for the normalization
 	 * @return
 	 */
-	private double normalizeEdgeIntensity(Edge e, FrameGraph frame){
+	private double computeRelativeEdgeIntensity(Edge e, FrameGraph frame){
 		
 		Node source = frame.getEdgeSource(e);
 		Node target = frame.getEdgeTarget(e);
@@ -399,9 +399,6 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		
 		g.setColor(Color.blue);
 		
-		double scaling_factor = - slider.getValue();
-		double shift_factor = 0.8;
-
 		//paint all the edges of the graph
 		for(Edge edge: frame_i.edgeSet()){
 
@@ -409,11 +406,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 
 			Shape egde_shape = buffer_shape.get(edge);
 
-
-			Color hsbColor = Color.getHSBColor(
-					(float)(normalizedEdgeIntensity.get(edge) * scaling_factor + shift_factor),
-					1f,
-					1f);
+			Color hsbColor = super.getScaledColor(relativeEdgeIntensity.get(edge));
 
 			g.setColor(hsbColor);
 
@@ -465,11 +458,12 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
 		
 		int binNo = 50;
-		double scaling_factor = - slider.getValue();
-		double shift_factor = 0.8;
 		
-		OverlayUtils.gradientColorLegend(g, line, min, max, binNo,
-				scaling_factor, shift_factor);
+		String min_value = String.format("%.1f",super.getGradientMinimum());
+		String max_value = String.format("%.1f",super.getGradientMaximum());
+		
+		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value, binNo,
+				super.getGradientScale(), super.getGradientMaximum());
 		
 	}
 	

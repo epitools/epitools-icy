@@ -103,13 +103,7 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 					//if(angle > 30)
 					//	continue;
 					
-					double normalized_angle = (angle - super.getGradientMinimum())/(super.getGradientMaximum() - super.getGradientMinimum());
-					normalized_angle = normalized_angle * super.getGradientScale() + super.getGradientShift();
-
-					Color hsbColor = Color.getHSBColor(
-							(float)(normalized_angle),
-							1f,
-							1f);
+					Color hsbColor = super.getScaledColor(angle);
 
 					g.setColor(hsbColor);
 					g.fill((n.toShape()));

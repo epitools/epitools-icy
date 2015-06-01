@@ -78,9 +78,6 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 		
-		double min = super.getGradientMinimum();
-		double max = super.getGradientMaximum();
-		
 		for(Node n: frame_i.vertexSet()){
 
 			if(show_only_divsion)
@@ -89,12 +86,7 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 
 			double elongation_ratio = elongationRatios.get(n);
 
-			double normalized_ratio = (elongation_ratio - min)/(max - min);
-
-			Color hsbColor = Color.getHSBColor(
-					(float)(normalized_ratio*super.getGradientScale() + super.getGradientShift()),
-					1f,
-					1f);
+			Color hsbColor = super.getScaledColor(elongation_ratio);
 
 			g.setColor(hsbColor);
 

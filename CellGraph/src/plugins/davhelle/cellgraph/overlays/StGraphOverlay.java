@@ -70,7 +70,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	 * Minimum value to define the color gradient
 	 * has a listener attached to detect user changes (i.e. when placed in the option panel)
 	 */
-	private final VarDouble minGradient = new VarDouble("min",0.0)
+	private final VarDouble minGradient = new VarDouble("Gradient minimum",0.0)
 	{
 		public void setValue(Double newValue)
 		{
@@ -87,7 +87,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	 * Maximum value to define the color gradient
 	 * has a listener attached to detect user changes (i.e. when placed in the option panel)
 	 */
-	private final VarDouble maxGradient = new VarDouble("max",1.0)
+	private final VarDouble maxGradient = new VarDouble("Gradient maximum",1.0)
 	{
 		public void setValue(Double newValue)
 		{
@@ -103,7 +103,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	/**
 	 * Scale the color gradient by a given factor
 	 */
-	private VarDouble scaleGradient= new VarDouble("scale",1.0)
+	private VarDouble scaleGradient= new VarDouble("Gradient scale [*]",1.0)
 	{
 		public void setValue(Double newValue)
 		{
@@ -119,7 +119,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	/**
 	 * Shift the color gradient by a given factor
 	 */
-	private VarDouble shiftGradient = new VarDouble("shift",1.0)
+	private VarDouble shiftGradient = new VarDouble("Gradient shift [+]",1.0)
 	{
 		public void setValue(Double newValue)
 		{

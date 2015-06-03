@@ -340,7 +340,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 				XLSUtil.setCellNumber(sheet, c++, r, n.getTrackID());
 				XLSUtil.setCellNumber(sheet, c++, r, n.getGeometry().getArea());
 				double cell_orientation = computeAngle(cellOrientation.get(n));
-				XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",cell_orientation));
+				//XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",cell_orientation));
+				XLSUtil.setCellNumber(sheet, c++, r, cell_orientation);
 				
 				//write edge statistics
 				Edge e = frame.getEdge(n, neighbor);
@@ -348,7 +349,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 				XLSUtil.setCellNumber(sheet, c++, r, frame.getEdgeWeight(e));
 				XLSUtil.setCellNumber(sheet, c++, r, computeEdgeIntensity(e, frame));
 				double edge_orientation = computeAngle(edgeOrientations.get(e));
-				XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",edge_orientation));
+				//XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",edge_orientation));
+				XLSUtil.setCellNumber(sheet, c++, r, edge_orientation);
 				
 			}
 		}

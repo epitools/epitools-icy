@@ -53,6 +53,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 	
 	private HashMap<Node,PolygonalCellTile> tiles;
 	private HashMap<Edge,Line2D.Double> edgeOrientations;
+	private HashMap<Edge,Shape> edgeShapes; 
 	private Map<Node, Line2D.Double> fittedEllipses;
 	
 	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin) {
@@ -63,8 +64,40 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 		this.fittedEllipses = efg.getLongestAxes();
 		this.edgeOrientations = computeEdgeOrientations();
 		
+		this.bufferWidth = 3;
+		this.writer = new ShapeWriter();
+		this.edgeShapes = new HashMap<Edge, Shape>();
+		computeEdgeShapes();
+		initializeTrackingIds();
+
+		
+		
+		
 	}
 	
+	private void initializeTrackingIds(){
+		FrameGraph frame = stGraph.getFrame(0);
+		
+		if(!stGraph.hasTracking()){
+			int cell_id = 0;
+			for(Node n: frame.vertexSet())
+				n.setTrackID(cell_id++);
+		}
+		
+		for(Edge e: frame.edgeSet()){
+			e.setTrackId(e.getPairCode(frame));
+		}
+	}
+	
+	private void computeEdgeShapes() {
+		
+		for(Edge e: stGraph.getFrame(0).edgeSet()){
+			Geometry g = e.getGeometry();
+			Shape s = writer.toShape(g.buffer(bufferWidth));
+			edgeShapes.put(e, s);
+		}
+	}
+
 	private HashMap<Edge, Line2D.Double> computeEdgeOrientations(){
 		HashMap<Edge,Line2D.Double> edgeOrientations = new HashMap<Edge, Line2D.Double>();
 		
@@ -137,9 +170,11 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 		for(Edge e: frame_i.edgeSet()){
 			Line2D.Double line1 = edgeOrientations.get(e);
 			g.draw(line1);
-			g.drawString(String.format("%.0f",computeAngle(line1)),
-					(int)e.getGeometry().getCentroid().getX(), 
-					(int)e.getGeometry().getCentroid().getY());
+			Geometry geometry = e.getGeometry();
+			g.draw(edgeShapes.get(e));
+			g.drawString(String.format("e%d:%.0f",e.getTrackId(),computeAngle(line1)),
+					(int)geometry.getCentroid().getX(), 
+					(int)geometry.getCentroid().getY());
 		}
 		
 		g.setColor(Color.green);
@@ -147,7 +182,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 		for(Node n: frame_i.vertexSet()){
 			Line2D.Double line2 = fittedEllipses.get(n);
 			g.draw(line2);
-			g.drawString(String.format("%.0f",computeAngle(line2)),
+			g.drawString(String.format("c%d:%.0f",n.getTrackID(),computeAngle(line2)),
 					(int)n.getCentroid().getX(), 
 					(int)n.getCentroid().getY());
 		}

@@ -2,7 +2,7 @@ package plugins.davhelle.cellgraph.overlays;
 
 import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
-import ij.process.EllipseFitter;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -14,15 +14,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vividsolutions.jts.algorithm.Angle;
-import com.vividsolutions.jts.algorithm.MinimumBoundingCircle;
-import com.vividsolutions.jts.awt.ShapeWriter;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
-
 import jxl.write.WritableSheet;
-import plugins.adufour.ezplug.EzDialog;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarDouble;
@@ -30,11 +22,17 @@ import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
-import plugins.davhelle.cellgraph.misc.PolygonalCellTile;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.ShapeRoi;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
+
+import com.vividsolutions.jts.algorithm.Angle;
+import com.vividsolutions.jts.algorithm.MinimumBoundingCircle;
+import com.vividsolutions.jts.awt.ShapeWriter;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * EdgeOrientation overlay measures the orientation of the edges
@@ -57,7 +55,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	private int channelNumber;
 	private Sequence sequence;
 	
-	private HashMap<Node,PolygonalCellTile> tiles;
+	//private HashMap<Node,PolygonalCellTile> tiles;
 	private HashMap<Edge,Line2D.Double> edgeOrientations;
 	private HashMap<Edge,Shape> edgeShapes; 
 	private Map<Node, Line2D.Double> fittedEllipses;
@@ -65,17 +63,20 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin, EzVarDouble buffer) {
 		super("Edge Orientation", stGraph);
 		this.sequence = sequence;
-		this.tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
+		this.bufferWidth = buffer;
+		this.channelNumber = 0;
+				
+		PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
 		EllipseFitGenerator efg = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight());
 		this.fittedEllipses = efg.getLongestAxes();
 		this.edgeOrientations = computeEdgeOrientations();
 		
-		this.bufferWidth = buffer;
 		bufferWidth.addVarChangeListener(this);
 		this.writer = new ShapeWriter();
 		this.edgeShapes = new HashMap<Edge, Shape>();
 		computeEdgeShapes();
 		initializeTrackingIds();
+		
 		
 	}
 	
@@ -158,13 +159,14 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 						edge_roi,
 						z, t, c);
 
-		e.setValue(mean_intensity);
-		
 		return mean_intensity;
 	}
 
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
+		
+		if(frame_i.getFrameNo() != 0)
+			return;
 		
 		int fontSize = 2;
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
@@ -267,8 +269,41 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		// cell number, Cell Size (area), Orientation (relative to x-axis in degrees), edge number, 
-		// edge intensity, edge orientation (relative to x-axis in degree)
+		
+		if(frame.getFrameNo() != 0)
+			return;
+
+		int c = 0;
+		int r = 0;
+		XLSUtil.setCellString(sheet, c++, r, "Cell number");
+		XLSUtil.setCellString(sheet, c++, r, "Cell Size (area)");
+		XLSUtil.setCellString(sheet, c++, r, "Cell Orientation");
+		XLSUtil.setCellString(sheet, c++, r, "Edge number");
+		XLSUtil.setCellString(sheet, c++, r, "Edge Size (length)");
+		XLSUtil.setCellString(sheet, c++, r, "Edge intensity");
+		XLSUtil.setCellString(sheet, c++, r, "Edge orientation");
+		
+		
+		for(Node n: frame.vertexSet()){
+			for(Node neighbor: n.getNeighbors()){
+				//reset column and increment row
+				c=0;
+				r++;
+
+				//write cell statistics
+				XLSUtil.setCellNumber(sheet, c++, r, n.getTrackID());
+				XLSUtil.setCellNumber(sheet, c++, r, n.getGeometry().getArea());
+				XLSUtil.setCellNumber(sheet, c++, r, computeAngle(fittedEllipses.get(n)));
+				
+				//write edge statistics
+				Edge e = frame.getEdge(n, neighbor);
+				XLSUtil.setCellNumber(sheet, c++, r, e.getTrackId());
+				XLSUtil.setCellNumber(sheet, c++, r, frame.getEdgeWeight(e));
+				XLSUtil.setCellNumber(sheet, c++, r, computeEdgeIntensity(e, frame));
+				XLSUtil.setCellNumber(sheet, c++, r, computeAngle(edgeOrientations.get(e)));
+				
+			}
+		}
 	}
 
 	@Override

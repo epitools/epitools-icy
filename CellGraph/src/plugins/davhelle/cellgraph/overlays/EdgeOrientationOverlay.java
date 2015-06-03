@@ -44,7 +44,8 @@ import com.vividsolutions.jts.geom.Point;
 public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListener<Double> {
 
 	public static final String DESCRIPTION = "compute edge orientation based on" +
-			"MinimumBoundingCircle method from JTS library";
+			"MinimumBoundingCircle method from JTS library; Currently only working on" +
+			"single time points and only measuring intensities from the first channel";
 
 	/**
 	 * JTS to AWT shape writer
@@ -200,7 +201,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			
 			int x = (int)geometry.getCentroid().getX();
 			int y = (int)geometry.getCentroid().getY();
-			String str = String.format("[e%d:%.0f]",e.getTrackId(),computeAngle(line1));
+			String str = String.format("[e%d:%.0f\u00b0]",e.getTrackId(),computeAngle(line1));
 			
 			drawTextWithBackground(g, x, y, str, Color.red, Color.black);
 		}
@@ -210,7 +211,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			
 			int x = (int)n.getCentroid().getX();
 			int y = (int)n.getCentroid().getY();
-			String str = String.format("[c%d:%.0f]",n.getTrackID(),computeAngle(line2));
+			String str = String.format("[c%d:%.0f\u00b0]",n.getTrackID(),computeAngle(line2));
 			
 			drawTextWithBackground(g, x, y, str, Color.green, Color.black);
 		}
@@ -293,14 +294,16 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 				//write cell statistics
 				XLSUtil.setCellNumber(sheet, c++, r, n.getTrackID());
 				XLSUtil.setCellNumber(sheet, c++, r, n.getGeometry().getArea());
-				XLSUtil.setCellNumber(sheet, c++, r, computeAngle(fittedEllipses.get(n)));
+				double cell_orientation = computeAngle(fittedEllipses.get(n));
+				XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",cell_orientation));
 				
 				//write edge statistics
 				Edge e = frame.getEdge(n, neighbor);
 				XLSUtil.setCellNumber(sheet, c++, r, e.getTrackId());
 				XLSUtil.setCellNumber(sheet, c++, r, frame.getEdgeWeight(e));
 				XLSUtil.setCellNumber(sheet, c++, r, computeEdgeIntensity(e, frame));
-				XLSUtil.setCellNumber(sheet, c++, r, computeAngle(edgeOrientations.get(e)));
+				double edge_orientation = computeAngle(edgeOrientations.get(e));
+				XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",edge_orientation));
 				
 			}
 		}

@@ -33,6 +33,7 @@ import plugins.davhelle.cellgraph.overlays.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeColorTagOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
+import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitterOverlay;
@@ -477,7 +478,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		case EDGE_STABILITY:
 			sequence.addOverlay(new EdgeStabilityOverlay(stGraph));
 			break;
-
+			
+		case EDGE_ORIENTATION:
+			sequence.addOverlay(new EdgeOrientationOverlay(stGraph, sequence, this));
+			break;
+			
 		case ELLIPSE_FIT_WRT_POINT_ROI:
 			sequence.addOverlay(
 					new EllipseFitColorOverlay(stGraph,sequence));

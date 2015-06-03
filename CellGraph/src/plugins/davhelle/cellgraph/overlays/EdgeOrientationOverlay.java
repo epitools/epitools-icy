@@ -36,7 +36,10 @@ import com.vividsolutions.jts.geom.Point;
 
 /**
  * EdgeOrientation overlay measures the orientation of the edges
- * and the orientation of the cell as well as the divisions
+ * and the orientation of the cells and additionally retrieves
+ * the underlying intensity using a buffer geometry of the edge.
+ * <br><br>
+ * Custom overlay for experiment, main output is excel sheet.
  * 
  * @author Davide Heller
  *
@@ -52,15 +55,43 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	 */
 	private ShapeWriter writer;
 	
+	/**
+	 * Width of the buffer geometry to retrieve intensity, can be interactively changed from EzGUI 
+	 */
 	private EzVarDouble bufferWidth;
+	
+	/**
+	 * Channel from which to measure the intensity 
+	 */
 	private int channelNumber;
+	
+	/**
+	 * Sequence used for the ellipse fit generation 
+	 */
 	private Sequence sequence;
 	
 	//private HashMap<Node,PolygonalCellTile> tiles;
+	/**
+	 * Container for 2D line representing the orientation of edges
+	 */
 	private HashMap<Edge,Line2D.Double> edgeOrientations;
+	
+	/**
+	 * Container for containing the buffer shape for the edge measurement
+	 */
 	private HashMap<Edge,Shape> edgeShapes; 
+	
+	/**
+	 * Container for 2D line representing the orientation of cells 
+	 */
 	private Map<Node, Line2D.Double> cellOrientation;
 	
+	/**
+	 * @param stGraph graph to be analyzed
+	 * @param sequence sequence connected to the overlay
+	 * @param plugin Ezplugin from which the overlay was launced
+	 * @param buffer Width for the edge geometry used to measure the intensity
+	 */
 	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin, EzVarDouble buffer) {
 		super("Edge Orientation", stGraph);
 		this.sequence = sequence;
@@ -81,6 +112,10 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		
 	}
 	
+	/**
+	 * initializes the tracking ids of both nodes and edges,
+	 * i.e. increasing integers for nodes and long cantor pairing of vertices for edges
+	 */
 	private void initializeTrackingIds(){
 		FrameGraph frame = stGraph.getFrame(0);
 		
@@ -95,6 +130,9 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		}
 	}
 	
+	/**
+	 * computes the buffer geometries for all edges. See {@link Geometry} for specific buffer computation
+	 */
 	private void computeEdgeShapes() {
 		
 		for(Edge e: stGraph.getFrame(0).edgeSet()){
@@ -104,6 +142,12 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		}
 	}
 
+	/**
+	 * Computes the Orientation of edges using the {@link MinimumBoundingCircle} class from JTS.
+	 * Edges orientation is approximated as the line connecting the two extreme points of the edge.
+	 * 
+	 * @return a map containing a 2D line for each edge representing it's orientation
+	 */
 	private HashMap<Edge, Line2D.Double> computeEdgeOrientations(){
 		HashMap<Edge,Line2D.Double> edgeOrientations = new HashMap<Edge, Line2D.Double>();
 		
@@ -219,13 +263,14 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	}
 
 	/**
-	 * @param g
-	 * @param fm
-	 * @param x
-	 * @param y
-	 * @param str
-	 * @param bgColor
-	 * @param textColor
+	 * draws a label with a background color 
+	 * 
+	 * @param g graphics handle
+	 * @param x x coordinate to start drawing
+	 * @param y y coordinate to start drawing
+	 * @param str string to print in foreground color
+	 * @param bgColor background color
+	 * @param textColor color of the text
 	 */
 	private void drawTextWithBackground(Graphics2D g, int x,
 			int y, String str, Color bgColor, Color textColor) {

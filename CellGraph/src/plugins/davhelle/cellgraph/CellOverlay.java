@@ -14,6 +14,7 @@ import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
+import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
@@ -142,6 +143,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarInteger 				varDoDetectionDistance;
 	EzVarInteger 				varDoDetectionLength;
 	
+	//Edge Orientation
+	EzVarDouble					varEdgeOrientationBuffer;
+	
 	@Override
 	protected void initialize() {
 		
@@ -260,6 +264,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varFillingCheckbox
 				);
 		
+		//Edge Orientation
+		varEdgeOrientationBuffer = new EzVarDouble("Edge buffer for intensity",3.0,1.0,10.0,1.0);
+		EzGroup groupEdgeOrientation = new EzGroup("Overlay elements",
+				varEdgeOrientationBuffer);
+		
 		//Division orientation variable
 		varDoDetectionDistance = new EzVarInteger("Detection start",11,1,100,1);
 		varDoDetectionLength = new EzVarInteger("Detection length",5,1,100,1);
@@ -286,6 +295,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupTransitions, OverlayEnum.EDGE_T1_TRANSITIONS);
 		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
 		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
+		varPlotting.addVisibilityTriggerTo(groupEdgeOrientation, OverlayEnum.EDGE_ORIENTATION);
 		
 		return new EzGroup("1. SELECT OVERLAY TO ADD",
 				varPlotting,
@@ -300,7 +310,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupEdgeMarker,
 				groupTransitions,
 				groupEdgeIntensity,
-				groupDivisionOrientation);
+				groupDivisionOrientation,
+				groupEdgeOrientation);
 	}
 
 	@Override
@@ -480,7 +491,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			break;
 			
 		case EDGE_ORIENTATION:
-			sequence.addOverlay(new EdgeOrientationOverlay(stGraph, sequence, this));
+			sequence.addOverlay(new EdgeOrientationOverlay(stGraph, sequence, this, varEdgeOrientationBuffer));
 			break;
 			
 		case ELLIPSE_FIT_WRT_POINT_ROI:

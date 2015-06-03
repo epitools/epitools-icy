@@ -22,7 +22,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 import jxl.write.WritableSheet;
+import plugins.adufour.ezplug.EzDialog;
 import plugins.adufour.ezplug.EzPlug;
+import plugins.adufour.ezplug.EzVar;
+import plugins.adufour.ezplug.EzVarDouble;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
@@ -39,7 +43,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
  * @author Davide Heller
  *
  */
-public class EdgeOrientationOverlay extends StGraphOverlay {
+public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListener<Double> {
 
 	public static final String DESCRIPTION = "compute edge orientation based on" +
 			"MinimumBoundingCircle method from JTS library";
@@ -49,7 +53,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 	 */
 	private ShapeWriter writer;
 	
-	private double bufferWidth;
+	private EzVarDouble bufferWidth;
 	private int channelNumber;
 	private Sequence sequence;
 	
@@ -58,7 +62,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 	private HashMap<Edge,Shape> edgeShapes; 
 	private Map<Node, Line2D.Double> fittedEllipses;
 	
-	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin) {
+	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin, EzVarDouble buffer) {
 		super("Edge Orientation", stGraph);
 		this.sequence = sequence;
 		this.tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
@@ -66,14 +70,12 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 		this.fittedEllipses = efg.getLongestAxes();
 		this.edgeOrientations = computeEdgeOrientations();
 		
-		this.bufferWidth = 3;
+		this.bufferWidth = buffer;
+		bufferWidth.addVarChangeListener(this);
 		this.writer = new ShapeWriter();
 		this.edgeShapes = new HashMap<Edge, Shape>();
 		computeEdgeShapes();
 		initializeTrackingIds();
-
-		
-		
 		
 	}
 	
@@ -95,7 +97,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 		
 		for(Edge e: stGraph.getFrame(0).edgeSet()){
 			Geometry g = e.getGeometry();
-			Shape s = writer.toShape(g.buffer(bufferWidth));
+			Shape s = writer.toShape(g.buffer(bufferWidth.getValue()));
 			edgeShapes.put(e, s);
 		}
 	}
@@ -131,7 +133,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 		
 		Geometry edge_geo = e.getGeometry();
 		
-		Geometry edge_buffer = edge_geo.buffer(bufferWidth);
+		Geometry edge_buffer = edge_geo.buffer(bufferWidth.getValue());
 		
 		Shape egde_shape = writer.toShape(edge_buffer);
 		
@@ -267,8 +269,12 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		// cell number, Cell Size (area), Orientation (relative to x-axis in degrees), edge number, 
 		// edge intensity, edge orientation (relative to x-axis in degree)
+	}
 
-		
+	@Override
+	public void variableChanged(EzVar<Double> source, Double newValue) {
+		computeEdgeShapes();
+		painterChanged();
 	}
 
 }

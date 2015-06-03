@@ -10,6 +10,8 @@ import ij.process.EllipseFitter;
 import ij.process.ImageProcessor;
 
 import java.awt.Shape;
+import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Double;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,6 +130,31 @@ public class EllipseFitGenerator {
 	 */
 	public Map<Node, EllipseFitter> getFittedEllipses(){
 		return fittedElipses;
+	}
+
+	public Map<Node, Line2D.Double> getLongestAxes() {
+		
+		HashMap<Node, Line2D.Double> longestAxis = new HashMap<Node, Line2D.Double>();
+		
+		for(Node n: fittedElipses.keySet()){
+			
+			EllipseFitter ef = fittedElipses.get(n);
+			
+			double cX = n.getGeometry().getCentroid().getX();
+			double cY = n.getGeometry().getCentroid().getY();
+			double length = ef.major / 2.0;
+			if(length > 10)
+				length -= 5;
+			
+			double x0 = cX - Math.cos(ef.theta) * length;
+	        double y0 = cY + Math.sin(ef.theta) * length;
+	        double x1 = cX + Math.cos(ef.theta) * length;
+	        double y1 = cY - Math.sin(ef.theta) * length;
+			
+			longestAxis.put(n, new Line2D.Double(x0, y0, x1, y1));
+		}
+		
+		return longestAxis;
 	}
 
 }

@@ -5,6 +5,7 @@ import icy.sequence.Sequence;
 import ij.process.EllipseFitter;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
@@ -52,13 +53,14 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 	
 	private HashMap<Node,PolygonalCellTile> tiles;
 	private HashMap<Edge,Line2D.Double> edgeOrientations;
-	private Map<Node, EllipseFitter> fittedEllipses;
+	private Map<Node, Line2D.Double> fittedEllipses;
 	
 	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin) {
 		super("Edge Orientation", stGraph);
 		this.sequence = sequence;
 		this.tiles = PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
-		this.fittedEllipses = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight()).getFittedEllipses();
+		EllipseFitGenerator efg = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight());
+		this.fittedEllipses = efg.getLongestAxes();
 		this.edgeOrientations = computeEdgeOrientations();
 		
 	}
@@ -127,29 +129,33 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		
+		int fontSize = 3;
+		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
+		
 		g.setColor(Color.red);
 		
 		for(Edge e: frame_i.edgeSet()){
-			Line2D.Double l = edgeOrientations.get(e);
-			g.draw(l);
+			Line2D.Double line1 = edgeOrientations.get(e);
+			g.draw(line1);
+			double angle1 = Math.atan2(line1.getY1() - line1.getY2(),
+                    line1.getX1() - line1.getX2());
+			g.drawString(String.format("%.0f",Angle.toDegrees(angle1)),
+					(int)e.getGeometry().getCentroid().getX(), 
+					(int)e.getGeometry().getCentroid().getY());
 		}
 		
 		g.setColor(Color.green);
+		
 		for(Node n: frame_i.vertexSet()){
-			EllipseFitter ef = fittedEllipses.get(n);
-			double cX = n.getGeometry().getCentroid().getX();
-			double cY = n.getGeometry().getCentroid().getY();
-			double length = ef.major / 2.0;
-			if(length > 10)
-				length -= 5;
-			
-			double x0 = cX - Math.cos(ef.theta) * length;
-	        double y0 = cY + Math.sin(ef.theta) * length;
-	        double x1 = cX + Math.cos(ef.theta) * length;
-	        double y1 = cY - Math.sin(ef.theta) * length;
-			
-			g.draw(new Line2D.Double(x0, y0, x1, y1));
+			Line2D.Double line2 = fittedEllipses.get(n);
+			g.draw(line2);
+			double angle2 = Math.atan2(line2.getY1() - line2.getY2(),
+                    line2.getX1() - line2.getX2());
+			g.drawString(String.format("%.0f",Angle.toDegrees(angle2)),
+					(int)n.getCentroid().getX(), 
+					(int)n.getCentroid().getY());
 		}
+		
 	}
 
 	@Override

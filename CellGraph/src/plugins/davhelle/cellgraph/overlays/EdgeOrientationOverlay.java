@@ -6,9 +6,11 @@ import ij.process.EllipseFitter;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -162,31 +164,77 @@ public class EdgeOrientationOverlay extends StGraphOverlay {
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		
-		int fontSize = 3;
+		int fontSize = 2;
 		g.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
 		
-		g.setColor(Color.red);
+		//Draw orientation lines
 		
 		for(Edge e: frame_i.edgeSet()){
 			Line2D.Double line1 = edgeOrientations.get(e);
+
+			g.setColor(Color.red);
 			g.draw(line1);
-			Geometry geometry = e.getGeometry();
-			g.draw(edgeShapes.get(e));
-			g.drawString(String.format("e%d:%.0f",e.getTrackId(),computeAngle(line1)),
-					(int)geometry.getCentroid().getX(), 
-					(int)geometry.getCentroid().getY());
+			
+			g.setColor(new Color(1.0f, 0.0f, 0.0f, 0.5f));
+			g.fill(edgeShapes.get(e));
 		}
 		
-		g.setColor(Color.green);
 		
 		for(Node n: frame_i.vertexSet()){
 			Line2D.Double line2 = fittedEllipses.get(n);
+
+			g.setColor(Color.green);
 			g.draw(line2);
-			g.drawString(String.format("c%d:%.0f",n.getTrackID(),computeAngle(line2)),
-					(int)n.getCentroid().getX(), 
-					(int)n.getCentroid().getY());
+
 		}
 		
+		//add labels in foreground
+		
+		for(Edge e: frame_i.edgeSet()){
+			Line2D.Double line1 = edgeOrientations.get(e);
+			Geometry geometry = e.getGeometry();
+			
+			int x = (int)geometry.getCentroid().getX();
+			int y = (int)geometry.getCentroid().getY();
+			String str = String.format("[e%d:%.0f]",e.getTrackId(),computeAngle(line1));
+			
+			drawTextWithBackground(g, x, y, str, Color.red, Color.black);
+		}
+		
+		for(Node n: frame_i.vertexSet()){
+			Line2D.Double line2 = fittedEllipses.get(n);
+			
+			int x = (int)n.getCentroid().getX();
+			int y = (int)n.getCentroid().getY();
+			String str = String.format("[c%d:%.0f]",n.getTrackID(),computeAngle(line2));
+			
+			drawTextWithBackground(g, x, y, str, Color.green, Color.black);
+		}
+		
+	}
+
+	/**
+	 * @param g
+	 * @param fm
+	 * @param x
+	 * @param y
+	 * @param str
+	 * @param bgColor
+	 * @param textColor
+	 */
+	private void drawTextWithBackground(Graphics2D g, int x,
+			int y, String str, Color bgColor, Color textColor) {
+		
+		FontMetrics fm = g.getFontMetrics();
+		Rectangle2D rect = fm.getStringBounds(str, g);
+		
+		g.setColor(bgColor);
+		g.fillRect(x,
+		           y - fm.getAscent(),
+		           (int) rect.getWidth(),
+		           (int) rect.getHeight());
+		g.setColor(textColor);
+		g.drawString(str, x, y);
 	}
 
 	/**

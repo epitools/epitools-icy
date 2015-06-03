@@ -59,7 +59,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	//private HashMap<Node,PolygonalCellTile> tiles;
 	private HashMap<Edge,Line2D.Double> edgeOrientations;
 	private HashMap<Edge,Shape> edgeShapes; 
-	private Map<Node, Line2D.Double> fittedEllipses;
+	private Map<Node, Line2D.Double> cellOrientation;
 	
 	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin, EzVarDouble buffer) {
 		super("Edge Orientation", stGraph);
@@ -69,7 +69,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 				
 		PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
 		EllipseFitGenerator efg = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight());
-		this.fittedEllipses = efg.getLongestAxes();
+		this.cellOrientation = efg.getLongestAxes();
 		this.edgeOrientations = computeEdgeOrientations();
 		
 		bufferWidth.addVarChangeListener(this);
@@ -186,7 +186,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		
 		
 		for(Node n: frame_i.vertexSet()){
-			Line2D.Double line2 = fittedEllipses.get(n);
+			Line2D.Double line2 = cellOrientation.get(n);
 
 			g.setColor(Color.green);
 			g.draw(line2);
@@ -207,7 +207,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		}
 		
 		for(Node n: frame_i.vertexSet()){
-			Line2D.Double line2 = fittedEllipses.get(n);
+			Line2D.Double line2 = cellOrientation.get(n);
 			
 			int x = (int)n.getCentroid().getX();
 			int y = (int)n.getCentroid().getY();
@@ -294,7 +294,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 				//write cell statistics
 				XLSUtil.setCellNumber(sheet, c++, r, n.getTrackID());
 				XLSUtil.setCellNumber(sheet, c++, r, n.getGeometry().getArea());
-				double cell_orientation = computeAngle(fittedEllipses.get(n));
+				double cell_orientation = computeAngle(cellOrientation.get(n));
 				XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",cell_orientation));
 				
 				//write edge statistics

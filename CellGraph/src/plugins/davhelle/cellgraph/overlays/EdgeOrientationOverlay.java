@@ -156,12 +156,23 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			MinimumBoundingCircle mbc = new MinimumBoundingCircle(e.getGeometry());
 			Coordinate[] edge_vertices = mbc.getExtremalPoints();
 			
-			Coordinate p0 = edge_vertices[0];
-			Coordinate p1 = edge_vertices[1];
-			double edge_orientation = Angle.angle(p0, p1);
+			if(edge_vertices.length > 1){
+				Coordinate p0 = edge_vertices[0];
+				Coordinate p1 = edge_vertices[1];
+				double edge_orientation = Angle.angle(p0, p1);
+
+				e.setValue(edge_orientation);
+				edgeOrientations.put(e, new Line2D.Double(p0.x, p0.y, p1.x, p1.y));
+			} else { 
+				Coordinate p0 = edge_vertices[0];
+				Coordinate p1 = new Coordinate(p0.x + 1, p0.y + 1);
+				double edge_orientation = Angle.angle(p0, p1);
+
+				e.setValue(edge_orientation);
+				edgeOrientations.put(e, new Line2D.Double(p0.x, p0.y, p1.x, p1.y));
+			}
+				
 			
-			e.setValue(edge_orientation);
-			edgeOrientations.put(e, new Line2D.Double(p0.x, p0.y, p1.x, p1.y));
 		}
 		
 		return edgeOrientations;

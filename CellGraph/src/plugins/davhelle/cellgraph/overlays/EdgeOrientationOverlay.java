@@ -1,7 +1,11 @@
 package plugins.davhelle.cellgraph.overlays;
 
+import icy.roi.BooleanMask2D;
+import icy.roi.ROI;
+import plugins.kernel.roi.roi2d.ROI2DArea;
 import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
+import icy.type.collection.array.Array1DUtil;
 import icy.util.XLSUtil;
 
 import java.awt.Color;
@@ -85,6 +89,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	 * Container for 2D line representing the orientation of cells 
 	 */
 	private Map<Node, Line2D.Double> cellOrientation;
+
+	private ROI2DArea nanAreaRoi;
 	
 	/**
 	 * @param stGraph graph to be analyzed
@@ -103,13 +109,34 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		this.cellOrientation = efg.getLongestAxes();
 		this.edgeOrientations = computeEdgeOrientations();
 		
+		computeNanAreaROI(sequence);
+		
 		bufferWidth.addVarChangeListener(this);
 		this.writer = new ShapeWriter();
 		this.edgeShapes = new HashMap<Edge, Shape>();
 		computeEdgeShapes();
 		initializeTrackingIds();
 		
+	}
+
+	/**
+	 * @param sequence
+	 */
+	private void computeNanAreaROI(Sequence sequence) {
+		//from icy's tutorials
+
+		// consider first image and first channel only here
+		double[] doubleArray = Array1DUtil.arrayToDoubleArray(
+		     sequence.getDataXY(0, 0, 0), sequence.isSignedDataType());
+		boolean[] mask = new boolean[doubleArray.length];
 		
+		double threshold = 0.0;
+		
+		for (int i = 0; i < doubleArray.length; i++)
+		     mask[i] = (doubleArray[i] >= threshold);
+		BooleanMask2D mask2d = new BooleanMask2D(sequence.getBounds2D(), mask); 
+		
+		nanAreaRoi = new ROI2DArea(mask2d);
 	}
 	
 	/**
@@ -204,6 +231,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			return 0.0;
 		}
 		
+		ROI edge_wo_nan = ROIUtil.subtract(edge_roi, nanAreaRoi);
+		
 		int z=0;
 		int t=frame_i.getFrameNo();
 		int c=channelNumber;
@@ -212,7 +241,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		double mean_intensity = 
 				ROIUtil.getMeanIntensity(
 						sequence,
-						edge_roi,
+						edge_wo_nan,
 						z, t, c);
 
 		return mean_intensity;

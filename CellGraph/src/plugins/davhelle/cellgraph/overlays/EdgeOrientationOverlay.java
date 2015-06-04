@@ -83,7 +83,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	/**
 	 * Container for containing the buffer shape for the edge measurement
 	 */
-	private HashMap<Edge,Shape> edgeShapes; 
+	private HashMap<Edge,ROI> edgeShapes; 
 	
 	/**
 	 * Container for 2D line representing the orientation of cells 
@@ -113,7 +113,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		
 		bufferWidth.addVarChangeListener(this);
 		this.writer = new ShapeWriter();
-		this.edgeShapes = new HashMap<Edge, Shape>();
+		this.edgeShapes = new HashMap<Edge, ROI>();
 		computeEdgeShapes();
 		initializeTrackingIds();
 		
@@ -133,7 +133,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		double threshold = 0.0;
 		
 		for (int i = 0; i < doubleArray.length; i++)
-		     mask[i] = (doubleArray[i] >= threshold);
+		     mask[i] = !(doubleArray[i] > threshold);
 		BooleanMask2D mask2d = new BooleanMask2D(sequence.getBounds2D(), mask); 
 		
 		nanAreaRoi = new ROI2DArea(mask2d);
@@ -165,7 +165,19 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		for(Edge e: stGraph.getFrame(0).edgeSet()){
 			Geometry g = e.getGeometry();
 			Shape s = writer.toShape(g.buffer(bufferWidth.getValue()));
-			edgeShapes.put(e, s);
+			
+			//TODO possibly add a direct ROI field to edge class
+			ShapeRoi edge_roi = null;
+			try{
+				edge_roi = new ShapeRoi(s);
+			}catch(Exception ex){
+				Point centroid = e.getGeometry().getCentroid();
+				System.out.printf("Problems at %.2f %.2f",centroid.getX(),centroid.getY());
+			}
+			
+			ROI edge_wo_nan = ROIUtil.subtract(edge_roi, nanAreaRoi);
+			
+			edgeShapes.put(e, edge_wo_nan);
 		}
 	}
 
@@ -215,23 +227,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	 */
 	private double computeEdgeIntensity(Edge e, FrameGraph frame_i){
 		
-		Geometry edge_geo = e.getGeometry();
-		
-		Geometry edge_buffer = edge_geo.buffer(bufferWidth.getValue());
-		
-		Shape egde_shape = writer.toShape(edge_buffer);
-		
-		//TODO possibly add a direct ROI field to edge class
-		ShapeRoi edge_roi = null;
-		try{
-			edge_roi = new ShapeRoi(egde_shape);
-		}catch(Exception ex){
-			Point centroid = e.getGeometry().getCentroid();
-			System.out.printf("Problems at %.2f %.2f",centroid.getX(),centroid.getY());
-			return 0.0;
-		}
-		
-		ROI edge_wo_nan = ROIUtil.subtract(edge_roi, nanAreaRoi);
+		ROI edge_wo_nan = edgeShapes.get(e);
 		
 		int z=0;
 		int t=frame_i.getFrameNo();
@@ -245,6 +241,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 						z, t, c);
 
 		return mean_intensity;
+		
 	}
 
 	@Override
@@ -265,7 +262,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			g.draw(line1);
 			
 			g.setColor(new Color(1.0f, 0.0f, 0.0f, 0.5f));
-			g.fill(edgeShapes.get(e));
+			//g.fill(edgeShapes.get(e));
+			sequence.addROI(edgeShapes.get(e));
 		}
 		
 		

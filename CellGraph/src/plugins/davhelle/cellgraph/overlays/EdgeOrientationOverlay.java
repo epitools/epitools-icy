@@ -83,7 +83,12 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	/**
 	 * Container for containing the buffer shape for the edge measurement
 	 */
-	private HashMap<Edge,ROI> edgeShapes; 
+	private HashMap<Edge,ROI> edgeROIs; 
+	
+	/**
+	 * Container for containing the buffer shape for the edge measurement
+	 */
+	private HashMap<Edge,Shape> edgeShapes; 
 	
 	/**
 	 * Container for 2D line representing the orientation of cells 
@@ -113,7 +118,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		
 		bufferWidth.addVarChangeListener(this);
 		this.writer = new ShapeWriter();
-		this.edgeShapes = new HashMap<Edge, ROI>();
+		this.edgeROIs = new HashMap<Edge, ROI>();
+		this.edgeShapes = new HashMap<Edge, Shape>();
 		computeEdgeShapes();
 		initializeTrackingIds();
 		
@@ -166,6 +172,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			Geometry g = e.getGeometry();
 			Shape s = writer.toShape(g.buffer(bufferWidth.getValue()));
 			
+			edgeShapes.put(e, s);
+			
 			//TODO possibly add a direct ROI field to edge class
 			ShapeRoi edge_roi = null;
 			try{
@@ -177,7 +185,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			
 			ROI edge_wo_nan = ROIUtil.subtract(edge_roi, nanAreaRoi);
 			
-			edgeShapes.put(e, edge_wo_nan);
+			edgeROIs.put(e, edge_wo_nan);
 		}
 	}
 
@@ -227,7 +235,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	 */
 	private double computeEdgeIntensity(Edge e, FrameGraph frame_i){
 		
-		ROI edge_wo_nan = edgeShapes.get(e);
+		ROI edge_wo_nan = edgeROIs.get(e);
 		
 		int z=0;
 		int t=frame_i.getFrameNo();
@@ -262,8 +270,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 			g.draw(line1);
 			
 			g.setColor(new Color(1.0f, 0.0f, 0.0f, 0.5f));
-			//g.fill(edgeShapes.get(e));
-			sequence.addROI(edgeShapes.get(e));
+			g.fill(edgeShapes.get(e));
+			//sequence.addROI(edgeROIs.get(e)); //debug only
 		}
 		
 		

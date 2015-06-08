@@ -35,4 +35,5 @@ CellGraph is a plugin collection for the bioimaging framework [icy](http://icy.b
 ## Support
 
 * In case of bugs or improvement for CellGraph feel free to write to:
+* Create an Issue in this code repository
 * Write to [Davide Heller](mailto:davide.heller@imls.uzh.ch?Subject=EpiTools)

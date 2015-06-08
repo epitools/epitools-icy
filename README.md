@@ -1,7 +1,7 @@
-# Welcome to Epitools
+# Welcome to CellGraph
 ---
 
-Here we present an open source image analysis toolkit for quantifying epithelial growth dynamics. To know more about the project please visit our project website or code repositories:
+CellGraph is a plugin collection for the bioimaging framework [icy](http://icy.bioimageanalysis.org) and part of the EpiTools project. EpiTools is an open source image analysis toolkit for quantifying epithelial growth dynamics. To know more about the project please visit our project website or code repositories:
 
 * EpiTools homepage: [http://imls-bg-arthemis.uzh.ch/epitools](http://imls-bg-arthemis.uzh.ch/epitools)
 * Matlab App repository: [https://bitbucket.org/davideheller/epitools](https://bitbucket.org/davideheller/epitools)
@@ -34,6 +34,5 @@ Here we present an open source image analysis toolkit for quantifying epithelial
 ---------------------------------------
 ## Support
 
-* In case of bugs or improvement suggestions feel free to:
-* File an issue from the project homepage clicking on the lower right corner *[Create a new issue]* .
+* In case of bugs or improvement for CellGraph feel free to write to:
 * Write to [Davide Heller](mailto:davide.heller@imls.uzh.ch?Subject=EpiTools)

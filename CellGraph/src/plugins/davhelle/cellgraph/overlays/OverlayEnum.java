@@ -33,6 +33,7 @@ public enum OverlayEnum{
 	EDGE_T1_TRANSITIONS(TransitionOverlay.DESCRIPTION), 
 	EDGE_STABILITY(EdgeStabilityOverlay.DESCRIPTION),
 	EDGE_INTENSITY(EdgeIntensityOverlay.DESCRIPTION),
+	EDGE_ORIENTATION(EdgeOrientationOverlay.DESCRIPTION),
 	
 	ELLIPSE_FIT(EllipseFitterOverlay.DESCRIPTION),
 	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),

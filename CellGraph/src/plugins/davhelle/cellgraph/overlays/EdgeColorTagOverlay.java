@@ -87,6 +87,11 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	private boolean tags_exist;
 	
 	/**
+	 * Intensity Summary type
+	 */
+	EzVarEnum<IntensitySummaryType> summary_type;
+	
+	/**
 	 * @param stGraph graph to analyze
 	 * @param varEdgeColor color choice EzGUI handle
 	 * @param varEnvelopeBuffer envelope width EzGUI handle
@@ -94,7 +99,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 */
 	public EdgeColorTagOverlay(SpatioTemporalGraph stGraph,
 			EzVarEnum<CellColor> varEdgeColor,
-			EzVarInteger varEnvelopeBuffer, Sequence sequence) {
+			EzVarInteger varEnvelopeBuffer, Sequence sequence,
+			EzVarEnum<IntensitySummaryType> intensitySummaryType) {
 		super("Edge Color Tag", stGraph);
 	
 		this.tag_color = varEdgeColor;
@@ -102,6 +108,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
 		this.sequence = sequence;
+		this.summary_type = intensitySummaryType;
 		
 		this.tags_exist = false;
 		for(Edge edge: stGraph.getFrame(0).edgeSet()){
@@ -357,7 +364,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		String sheetName = String.format("Edge Length");
 		WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
 		
-		String intensitySheetName = "Edge Intensity";
+		String intensitySheetName = String.format("Edge %s Intensity",summary_type.getValue().getDescription());
 		WritableSheet intensitySheet = XLSUtil.createNewPage(wb, intensitySheetName);
 		
 		int col_no = 0;
@@ -430,7 +437,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		int t=edge.getFrame().getFrameNo();
 		int c=0;
 		double envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
-				sequence, edgeEnvelopeRoi, z, t, c, IntensitySummaryType.Mean);
+				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
 
 		return envelopeMeanIntenisty;
 		

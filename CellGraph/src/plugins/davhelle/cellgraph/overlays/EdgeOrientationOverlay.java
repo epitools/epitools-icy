@@ -22,6 +22,7 @@ import jxl.write.WritableSheet;
 import plugins.adufour.ezplug.EzPlug;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarDouble;
+import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -100,16 +101,26 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	private ROI2DArea nanAreaRoi;
 	
 	/**
+	 * Intensity Summary type
+	 */
+	EzVarEnum<IntensitySummaryType> summary_type;
+	
+	/**
 	 * @param stGraph graph to be analyzed
 	 * @param sequence sequence connected to the overlay
 	 * @param plugin Ezplugin from which the overlay was launced
 	 * @param buffer Width for the edge geometry used to measure the intensity
+	 * @param varIntensityMeasure_EO 
 	 */
-	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph, Sequence sequence, EzPlug plugin, EzVarDouble buffer) {
+	public EdgeOrientationOverlay(SpatioTemporalGraph stGraph,
+			Sequence sequence, EzPlug plugin, EzVarDouble buffer,
+			EzVarEnum<IntensitySummaryType> varIntensityMeasure_EO) {
+		
 		super("Edge Orientation", stGraph);
 		this.sequence = sequence;
 		this.bufferWidth = buffer;
 		this.channelNumber = 0;
+		this.summary_type = varIntensityMeasure_EO;
 				
 		PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
 		EllipseFitGenerator efg = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight());
@@ -246,7 +257,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		//TODO possibly use getIntensityInfo here
 		double mean_intensity = 
 				IntensityReader.measureRoiIntensity(
-						sequence, edge_wo_nan, z, t, c, IntensitySummaryType.Mean);
+						sequence, edge_wo_nan, z, t, c, summary_type.getValue());
 
 		return mean_intensity;
 		
@@ -372,7 +383,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		XLSUtil.setCellString(sheet, c++, r, "Cell Orientation");
 		XLSUtil.setCellString(sheet, c++, r, "Edge number");
 		XLSUtil.setCellString(sheet, c++, r, "Edge Size (length)");
-		XLSUtil.setCellString(sheet, c++, r, "Edge intensity");
+		XLSUtil.setCellString(sheet, c++, r, String.format(
+				"Edge intensity (%s)",summary_type.getValue().getDescription()));
 		XLSUtil.setCellString(sheet, c++, r, "Edge orientation");
 		
 		

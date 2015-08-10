@@ -21,6 +21,7 @@ import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
 import plugins.davhelle.cellgraph.export.ExportFieldType;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.IntensitySummaryType;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.overlays.AlwaysTrackedCellsOverlay;
@@ -125,6 +126,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//EdgeMarker
 	EzVarEnum<CellColor> 		varEdgeColor;
 	EzVarInteger 				varEnvelopeBuffer;
+	EzVarEnum<IntensitySummaryType> varIntensityMeasure_ECT;
 
 	//T1 Transition
 	public EzVarInteger 		varMinimalTransitionLength;
@@ -134,6 +136,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarInteger 				varEnvelopeBuffer2;
 	EzVarBoolean 				varBooleanNormalize;
 	EzVarInteger 				varIntegerChannel;
+	EzVarEnum<IntensitySummaryType>	varIntensityMeasure_EI;
 	
 	//Graph Export
 	EzVarEnum<ExportFieldType>  varExportType;
@@ -145,6 +148,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	
 	//Edge Orientation
 	EzVarDouble					varEdgeOrientationBuffer;
+	EzVarEnum<IntensitySummaryType> varIntensityMeasure_EO;
+
 	
 	@Override
 	protected void initialize() {
@@ -241,9 +246,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		//EdgeMarker mode
 		varEdgeColor = new EzVarEnum<CellColor>("Edge color", CellColor.values(), CellColor.CYAN);
 		varEnvelopeBuffer = new EzVarInteger("Intensity Buffer [px]", 1, 10, 1);
+		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(
+				"Intensity Measurement", IntensitySummaryType.values(), IntensitySummaryType.Mean);
 		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
 				varEdgeColor,
-				varEnvelopeBuffer);
+				varEnvelopeBuffer,
+				varIntensityMeasure_ECT);
 
 		//Save transitions
 		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
@@ -257,17 +265,23 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varEnvelopeBuffer2 = new EzVarInteger("Intensity Buffer [px]", 3, 1, 10, 1);
 		varBooleanNormalize = new EzVarBoolean("Normalize intensity",true);
 		varIntegerChannel = new EzVarInteger("Channel to measure",0,0,3,1);
+		varIntensityMeasure_EI = new EzVarEnum<IntensitySummaryType>(
+				"Intensity Measure", IntensitySummaryType.values(), IntensitySummaryType.Mean);
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varEnvelopeBuffer2,
 				varIntegerChannel,
+				varIntensityMeasure_EI,
 				varBooleanNormalize,
 				varFillingCheckbox
 				);
 		
 		//Edge Orientation
 		varEdgeOrientationBuffer = new EzVarDouble("Edge buffer for intensity",3.0,1.0,10.0,1.0);
+		varIntensityMeasure_EO = new EzVarEnum<IntensitySummaryType>(
+				"Intensity Measure", IntensitySummaryType.values(), IntensitySummaryType.Mean);
 		EzGroup groupEdgeOrientation = new EzGroup("Overlay elements",
-				varEdgeOrientationBuffer);
+				varEdgeOrientationBuffer,
+				varIntensityMeasure_EO);
 		
 		//Division orientation variable
 		varDoDetectionDistance = new EzVarInteger("Detection start",11,1,100,1);
@@ -449,6 +463,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 							stGraph, sequence, this.getUI(),
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
+							varIntensityMeasure_EI,
 							varBooleanNormalize.getValue(),
 							varIntegerChannel.getValue()));
 
@@ -475,7 +490,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				return;
 			}
 			sequence.addOverlay(
-					new EdgeColorTagOverlay(stGraph,varEdgeColor,varEnvelopeBuffer,sequence));
+					new EdgeColorTagOverlay(
+							stGraph,varEdgeColor,varEnvelopeBuffer,
+							sequence,varIntensityMeasure_ECT));
 			break;
 
 		case TRACKING_CORRECTION_HINTS:
@@ -491,7 +508,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			break;
 			
 		case EDGE_ORIENTATION:
-			sequence.addOverlay(new EdgeOrientationOverlay(stGraph, sequence, this, varEdgeOrientationBuffer));
+			sequence.addOverlay(new EdgeOrientationOverlay(
+					stGraph, sequence, this, 
+					varEdgeOrientationBuffer,
+					varIntensityMeasure_EO));
 			break;
 			
 		case ELLIPSE_FIT_WRT_POINT_ROI:

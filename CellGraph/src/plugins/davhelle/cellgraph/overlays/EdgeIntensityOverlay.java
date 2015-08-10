@@ -15,6 +15,7 @@ import java.util.HashSet;
 import jxl.write.WritableSheet;
 import plugins.adufour.ezplug.EzGUI;
 import plugins.adufour.ezplug.EzVarBoolean;
+import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
@@ -124,6 +125,11 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	private int channelNumber;
 	
 	/**
+	 * Intensity Summary type
+	 */
+	EzVarEnum<IntensitySummaryType> summary_type;
+	
+	/**
 	 * @param stGraph graph to display
 	 * @param sequence image from which to measure the intensities
 	 * @param gui connected GUI
@@ -136,6 +142,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	public EdgeIntensityOverlay(SpatioTemporalGraph stGraph, Sequence sequence,
 			EzGUI gui, EzVarBoolean varFillingCheckbox,
 			EzVarInteger varBufferWidth,
+			EzVarEnum<IntensitySummaryType> intensitySummaryType,
 			boolean normalize_intensities,
 			int channelNumber) {
 		super("Edge Intensities",stGraph);
@@ -153,7 +160,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.bufferWidth = varBufferWidth.getValue();
 		this.normalize_intensities = normalize_intensities;
 		this.channelNumber = channelNumber;
-		
+		this.summary_type = intensitySummaryType;
 		
 		for(int i = 0; i < 1; i++){
 			FrameGraph frame_i = stGraph.getFrame(i);
@@ -285,7 +292,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		//TODO possibly use getIntensityInfo here
 		double mean_intensity = 
 				IntensityReader.measureRoiIntensity(
-						sequence, edge_roi, z, t, c, IntensitySummaryType.Mean);
+						sequence, edge_roi, z, t, c, summary_type.getValue());
 
 		e.setValue(mean_intensity);
 		
@@ -328,9 +335,9 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		int t=frame.getFrameNo();
 		int c=channelNumber;
 		double s_mean = IntensityReader.measureRoiIntensity(
-				sequence, s_minimal, z, t, c, IntensitySummaryType.Mean);
+				sequence, s_minimal, z, t, c, summary_type.getValue());
 		double mean_edge_intensity = IntensityReader.measureRoiIntensity(
-				sequence, edge_union, z, t, c, IntensitySummaryType.Mean);
+				sequence, edge_union, z, t, c, summary_type.getValue());
 
 		//Save results
 		cell_background.put(s,s_mean);
@@ -425,7 +432,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		XLSUtil.setCellString(sheet, 0, 0, "Edge id");
 		XLSUtil.setCellString(sheet, 1, 0, "Edge x");
 		XLSUtil.setCellString(sheet, 2, 0, "Edge y");
-		XLSUtil.setCellString(sheet, 3, 0, "Mean Edge intensity");
+		XLSUtil.setCellString(sheet, 3, 0, String.format("%s Edge Intensity",summary_type.getValue().getDescription()));
 		XLSUtil.setCellString(sheet, 4, 0, "Relative Edge intensity");
 		XLSUtil.setCellString(sheet, 5, 0, "Normalized Edge intensity");
 

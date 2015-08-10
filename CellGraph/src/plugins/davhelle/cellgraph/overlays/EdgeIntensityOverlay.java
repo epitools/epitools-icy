@@ -18,6 +18,8 @@ import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.IntensityReader;
+import plugins.davhelle.cellgraph.io.IntensitySummaryType;
 import plugins.davhelle.cellgraph.misc.ShapeRoi;
 import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
@@ -282,10 +284,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		
 		//TODO possibly use getIntensityInfo here
 		double mean_intensity = 
-				ROIUtil.getMeanIntensity(
-						sequence,
-						edge_roi,
-						z, t, c);
+				IntensityReader.measureRoiIntensity(
+						sequence, edge_roi, z, t, c, IntensitySummaryType.Mean);
 
 		e.setValue(mean_intensity);
 		
@@ -327,8 +327,10 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		int z=0;
 		int t=frame.getFrameNo();
 		int c=channelNumber;
-		double s_mean = ROIUtil.getMeanIntensity(sequence, s_minimal, z, t, c);
-		double mean_edge_intensity = ROIUtil.getMeanIntensity(sequence, edge_union, z, t, c);
+		double s_mean = IntensityReader.measureRoiIntensity(
+				sequence, s_minimal, z, t, c, IntensitySummaryType.Mean);
+		double mean_edge_intensity = IntensityReader.measureRoiIntensity(
+				sequence, edge_union, z, t, c, IntensitySummaryType.Mean);
 
 		//Save results
 		cell_background.put(s,s_mean);

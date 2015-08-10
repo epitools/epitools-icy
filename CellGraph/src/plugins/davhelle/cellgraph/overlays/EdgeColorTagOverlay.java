@@ -3,7 +3,6 @@ package plugins.davhelle.cellgraph.overlays;
 import icy.canvas.IcyCanvas;
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
-import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
@@ -24,6 +23,8 @@ import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.IntensityReader;
+import plugins.davhelle.cellgraph.io.IntensitySummaryType;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.ShapeRoi;
 import plugins.davhelle.cellgraph.nodes.Division;
@@ -428,7 +429,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		int z=0;
 		int t=edge.getFrame().getFrameNo();
 		int c=0;
-		double envelopeMeanIntenisty = ROIUtil.getMeanIntensity(sequence, edgeEnvelopeRoi, z, t, c);
+		double envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
+				sequence, edgeEnvelopeRoi, z, t, c, IntensitySummaryType.Mean);
 
 		return envelopeMeanIntenisty;
 		

@@ -25,6 +25,8 @@ import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.IntensityReader;
+import plugins.davhelle.cellgraph.io.IntensitySummaryType;
 import plugins.davhelle.cellgraph.misc.EllipseFitGenerator;
 import plugins.davhelle.cellgraph.misc.PolygonalCellTileGenerator;
 import plugins.davhelle.cellgraph.misc.ShapeRoi;
@@ -243,10 +245,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		
 		//TODO possibly use getIntensityInfo here
 		double mean_intensity = 
-				ROIUtil.getMeanIntensity(
-						sequence,
-						edge_wo_nan,
-						z, t, c);
+				IntensityReader.measureRoiIntensity(
+						sequence, edge_wo_nan, z, t, c, IntensitySummaryType.Mean);
 
 		return mean_intensity;
 		

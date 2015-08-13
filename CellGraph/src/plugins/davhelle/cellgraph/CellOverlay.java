@@ -37,6 +37,7 @@ import plugins.davhelle.cellgraph.overlays.EdgeColorTagOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeStabilityOverlay;
+import plugins.davhelle.cellgraph.overlays.EdgeVertexIntersectionOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.overlays.ElongationRatioOverlay;
@@ -149,6 +150,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//Edge Orientation
 	EzVarDouble					varEdgeOrientationBuffer;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_EO;
+
+	private EzVarBoolean varBooleanVertexExtract;
 
 	
 	@Override
@@ -267,9 +270,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varIntegerChannel = new EzVarInteger("Channel to measure",0,0,3,1);
 		varIntensityMeasure_EI = new EzVarEnum<IntensitySummaryType>(
 				"Intensity Measure", IntensitySummaryType.values(), IntensitySummaryType.Mean);
+		varBooleanVertexExtract = new EzVarBoolean("Extract [/Exclude] Tricellular Junction",false);
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varEnvelopeBuffer2,
 				varIntegerChannel,
+				varBooleanVertexExtract,
 				varIntensityMeasure_EI,
 				varBooleanNormalize,
 				varFillingCheckbox
@@ -459,13 +464,21 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		case EDGE_INTENSITY:
 
 			sequence.addOverlay(
-					new EdgeIntensityOverlay(
-							stGraph, sequence, this.getUI(),
+					new EdgeVertexIntersectionOverlay(stGraph, sequence, this.getUI(),
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
 							varIntensityMeasure_EI,
 							varBooleanNormalize.getValue(),
-							varIntegerChannel.getValue()));
+							varIntegerChannel.getValue(),
+							varBooleanVertexExtract.getValue()));
+					
+//					new EdgeIntensityOverlay(
+//							stGraph, sequence, this.getUI(),
+//							varFillingCheckbox,
+//							varEnvelopeBuffer2,
+//							varIntensityMeasure_EI,
+//							varBooleanNormalize.getValue(),
+//							varIntegerChannel.getValue()));
 
 			break;
 

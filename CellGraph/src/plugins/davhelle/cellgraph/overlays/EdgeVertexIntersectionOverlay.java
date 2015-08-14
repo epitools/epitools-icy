@@ -446,10 +446,11 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 
 		//paint all the edges of the graph
 		for(Edge edge: frame_i.edgeSet()){
-
-			if(frame_i.getEdgeSource(edge).onBoundary() && 
+			
+			if(excludeVertex)
+				if(frame_i.getEdgeSource(edge).onBoundary() && 
 					frame_i.getEdgeTarget(edge).onBoundary())
-				continue;
+					continue;
 			
 			assert(buffer_shape.containsKey(edge));
 

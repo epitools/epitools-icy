@@ -34,7 +34,7 @@ import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeColorTagOverlay;
-import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
+//import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeStabilityOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeVertexIntersectionOverlay;
@@ -270,7 +270,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varIntegerChannel = new EzVarInteger("Channel to measure",0,0,3,1);
 		varIntensityMeasure_EI = new EzVarEnum<IntensitySummaryType>(
 				"Intensity Measure", IntensitySummaryType.values(), IntensitySummaryType.Mean);
-		varBooleanVertexExtract = new EzVarBoolean("Extract [/Exclude] Tricellular Junction",false);
+		varBooleanVertexExtract = new EzVarBoolean("Exclude Junction Intersections",false);
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varEnvelopeBuffer2,
 				varIntegerChannel,

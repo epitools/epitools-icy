@@ -129,7 +129,7 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 	 */
 	EzVarEnum<IntensitySummaryType> summary_type;
 	
-	private boolean selectVertex;
+	private boolean excludeVertex;
 
 	/**
 	 * @param stGraph graph to display
@@ -165,7 +165,7 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 		this.channelNumber = channelNumber;
 		this.summary_type = intensitySummaryType;
 		
-		this.selectVertex = extract_tricellular_junction;
+		this.excludeVertex = extract_tricellular_junction;
 
 		for(int i = 0; i < 1; i++){
 			FrameGraph frame_i = stGraph.getFrame(i);
@@ -209,62 +209,62 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
 		}
 
-//		gui.setProgressBarValue(0);
-//		gui_counter = 0;
-//		gui.setProgressBarMessage("Computing Cell Intensities...");
-//		for(Node n: frame_i.vertexSet()){
-//			computeCellIntensity(n);
-//			gui.setProgressBarValue(gui_counter++/(double)frame_i.vertexSet().size());
-//		}
+		gui.setProgressBarValue(0);
+		gui_counter = 0;
+		gui.setProgressBarMessage("Computing Cell Intensities...");
+		for(Node n: frame_i.vertexSet()){
+			computeCellIntensity(n);
+			gui.setProgressBarValue(gui_counter++/(double)frame_i.vertexSet().size());
+		}
 
-//		//normalization should be done through
-//		//cell intensity (see zallen paper)
-//
-//		this.min = Double.MAX_VALUE;
-//		this.max = Double.MIN_VALUE;
-//
-//
-//		if(normalize_intensities){
-//			gui.setProgressBarValue(0);
-//			gui_counter = 0;
-//			gui.setProgressBarMessage("Normalizing Intensities...");
-//
-//			for(Edge e: frame_i.edgeSet()){
-//
-//				double rel_value = computeRelativeEdgeIntensity(e,frame_i);
-//				relativeEdgeIntensity.put(e, rel_value);
-//
-//				if(rel_value > max)
-//					max = rel_value;
-//				else if(rel_value < min)
-//					min = rel_value;
-//
-//				gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
-//
-//			}
-//		}
-//		else{
-//			for(Edge e: frame_i.edgeSet()){
-//
-//				double rel_value = e.getValue();
-//				//put same raw values in data fieds
-//				relativeEdgeIntensity.put(e, rel_value);
-//
-//				if(rel_value > max)
-//					max = rel_value;
-//				else if(rel_value < min)
-//					min = rel_value;
-//			}
-//		}
-//
-//		//Normalize
-//		for(Edge e: frame_i.edgeSet()){
-//			//update from relative to normalized
-//			double rel_value = relativeEdgeIntensity.get(e);
-//			double normalized_value = (rel_value - min)/(max - min);
-//			normalizedEdgeIntensity.put(e,normalized_value);
-//
-//		}
+		//normalization should be done through
+		//cell intensity (see zallen paper)
+
+		this.min = Double.MAX_VALUE;
+		this.max = Double.MIN_VALUE;
+
+
+		if(normalize_intensities){
+			gui.setProgressBarValue(0);
+			gui_counter = 0;
+			gui.setProgressBarMessage("Normalizing Intensities...");
+
+			for(Edge e: frame_i.edgeSet()){
+
+				double rel_value = computeRelativeEdgeIntensity(e,frame_i);
+				relativeEdgeIntensity.put(e, rel_value);
+
+				if(rel_value > max)
+					max = rel_value;
+				else if(rel_value < min)
+					min = rel_value;
+
+				gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
+
+			}
+		}
+		else{
+			for(Edge e: frame_i.edgeSet()){
+
+				double rel_value = e.getValue();
+				//put same raw values in data fieds
+				relativeEdgeIntensity.put(e, rel_value);
+
+				if(rel_value > max)
+					max = rel_value;
+				else if(rel_value < min)
+					min = rel_value;
+			}
+		}
+
+		//Normalize
+		for(Edge e: frame_i.edgeSet()){
+			//update from relative to normalized
+			double rel_value = relativeEdgeIntensity.get(e);
+			double normalized_value = (rel_value - min)/(max - min);
+			normalizedEdgeIntensity.put(e,normalized_value);
+
+		}
 
 	}
 
@@ -282,23 +282,24 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 
 		Geometry edge_buffer = edge_geo.buffer(bufferWidth);
 
-		Node s = frame_i.getEdgeSource(e);
-		
-		for(Node t: frame_i.getNeighborsOf(s)){
-			Edge e2 = frame_i.getEdge(s, t);
-			
-			if(e2 == e)
-				continue;
-			
-			Geometry edge_geo2 = e2.getGeometry();
-			
-			Geometry edge_buffer2 = edge_geo2.buffer(bufferWidth);
-			
-			if(edge_buffer2.intersects(edge_buffer))
-				if(selectVertex)
-					edge_buffer = edge_buffer.intersection(edge_buffer2).buffer(-0.2);
-				else
+		if(excludeVertex){
+			Node s = frame_i.getEdgeSource(e);
+
+			for(Node t: frame_i.getNeighborsOf(s)){
+				Edge e2 = frame_i.getEdge(s, t);
+
+				if(e2 == e)
+					continue;
+
+				Geometry edge_geo2 = e2.getGeometry();
+
+				Geometry edge_buffer2 = edge_geo2.buffer(bufferWidth);
+
+				if(edge_buffer2.intersects(edge_buffer))
+					//					edge_buffer = edge_buffer.intersection(edge_buffer2).buffer(-0.2);
+					//				else
 					edge_buffer = edge_buffer.difference(edge_buffer2).buffer(-0.2);
+			}
 		}
 		
 		Shape egde_shape = writer.toShape(edge_buffer);
@@ -321,10 +322,18 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 		int t=frame_i.getFrameNo();
 		int c=channelNumber;
 
+		double mean_intensity = -1.0;
+		
 		//TODO possibly use getIntensityInfo here
-		double mean_intensity = 2;
-//				IntensityReader.measureRoiIntensity(
-//						sequence, edge_roi, z, t, c, summary_type.getValue());
+		try{
+			mean_intensity = IntensityReader.measureRoiIntensity(
+						sequence, edge_roi, z, t, c, summary_type.getValue());
+		} catch (Exception exception){
+			System.out.printf("Unable to compute intenisty for [%.0f,%.0f]: %.2f\n",
+					e.getGeometry().getCentroid().getX(),
+					e.getGeometry().getCentroid().getY(),
+					e.getGeometry().getArea());
+		}
 
 		e.setValue(mean_intensity);
 
@@ -435,7 +444,6 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 
 		g.setColor(Color.blue);
 
-		int i = 0;
 		//paint all the edges of the graph
 		for(Edge edge: frame_i.edgeSet()){
 
@@ -446,22 +454,26 @@ public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
 			assert(buffer_shape.containsKey(edge));
 
 			Shape egde_shape = buffer_shape.get(edge);
-
-			//Color hsbColor = super.getScaledColor(relativeEdgeIntensity.get(edge));
 			
-			//g.setColor(hsbColor);
-			if(selectVertex)
-				g.setColor(Color.blue);
-			else
-				g.setColor(Color.red);
+			double intensity_measure = relativeEdgeIntensity.get(edge);
+			if(intensity_measure == -1.0)
+				continue;
+//				g.setColor(Color.red);
+//			else{	
+//				continue;
+//				
+			Color hsbColor = super.getScaledColor(intensity_measure);
+			g.setColor(hsbColor);
+//			}
+//			if(excludeVertex)
+//				g.setColor(Color.blue);
+//			else
+//				g.setColor(Color.red);
 			
 			if(fillEdgeCheckbox.getValue())
 				g.fill(egde_shape);
 			else
 				g.draw(egde_shape);
-
-//			if(i++ == 10)
-//				break;
 
 		}
 

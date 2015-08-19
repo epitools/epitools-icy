@@ -539,7 +539,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	private double computeIntensity(Edge edge){
 		
-		Geometry envelope = edge.getGeometry().buffer(envelope_buffer.getValue());
+		Geometry envelope = measurement_geometries.get(edge);
 		
 		ShapeRoi edgeEnvelopeRoi = new ShapeRoi(writer.toShape(envelope));
 		

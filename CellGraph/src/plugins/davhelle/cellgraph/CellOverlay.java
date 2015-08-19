@@ -127,6 +127,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//EdgeMarker
 	EzVarEnum<CellColor> 		varEdgeColor;
 	EzVarInteger 				varEnvelopeBuffer;
+	EzVarInteger					varEnvelopeVertex;
+	EzVarInteger					varVertexMode;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_ECT;
 
 	//T1 Transition
@@ -248,12 +250,18 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//EdgeMarker mode
 		varEdgeColor = new EzVarEnum<CellColor>("Edge color", CellColor.values(), CellColor.CYAN);
-		varEnvelopeBuffer = new EzVarInteger("Intensity Buffer [px]", 1, 10, 1);
+		varEnvelopeBuffer = new EzVarInteger("Edge Intensity Buffer [px]", 1, 10, 1);
+		varEnvelopeVertex = new EzVarInteger("Vertex Intensity Buffer [px]", 1, 10, 1);
+		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 2, 1);
+		varVertexMode.setToolTipText("0=[include],1=[exclude],2=[vertex only]");
+		
 		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(
 				"Intensity Measurement", IntensitySummaryType.values(), IntensitySummaryType.Mean);
 		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
 				varEdgeColor,
 				varEnvelopeBuffer,
+				varEnvelopeVertex,
+				varVertexMode,
 				varIntensityMeasure_ECT);
 
 		//Save transitions
@@ -504,7 +512,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			}
 			sequence.addOverlay(
 					new EdgeColorTagOverlay(
-							stGraph,varEdgeColor,varEnvelopeBuffer,
+							stGraph,varEdgeColor,
+							varEnvelopeBuffer,varEnvelopeVertex,varVertexMode,
 							sequence,varIntensityMeasure_ECT));
 			break;
 

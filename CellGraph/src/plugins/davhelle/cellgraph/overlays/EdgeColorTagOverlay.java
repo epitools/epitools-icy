@@ -102,7 +102,12 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	/**
 	 * Exclude vertex geometry 
 	 */
-	private boolean exclude_vertex = true;
+	private EzVarInteger exclude_vertex;
+	
+	/**
+	 * Exclude vertex geometry 
+	 */
+	private EzVarInteger envelope_vertex_buffer;
 	
 	
 	/**
@@ -113,13 +118,26 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	public EdgeColorTagOverlay(SpatioTemporalGraph stGraph,
 			EzVarEnum<CellColor> varEdgeColor,
-			EzVarInteger varEnvelopeBuffer, Sequence sequence,
+			EzVarInteger varEnvelopeBuffer,
+			EzVarInteger varVertexBuffer,
+			EzVarInteger varVertexMode,
+			Sequence sequence,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType) {
 		super("Edge Color Tag", stGraph);
 	
 		this.tag_color = varEdgeColor;
+		
 		this.envelope_buffer = varEnvelopeBuffer;
 		this.envelope_buffer.addVarChangeListener(this);
+		
+		this.exclude_vertex = varVertexMode;
+		this.exclude_vertex.addVarChangeListener(this);
+		
+		this.envelope_vertex_buffer = varVertexBuffer;
+		this.envelope_vertex_buffer.addVarChangeListener(this);
+		
+		
+		
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
 		this.sequence = sequence;
@@ -233,10 +251,18 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	private Geometry computeMeasurementGeometry(Edge e, FrameGraph frame_i) {
 		
-		Geometry e_geo = e.getGeometry();
-		Geometry edge_buffer = null;
+		if(!e.hasGeometry())
+			e.computeGeometry(frame_i);
 		
-		if(exclude_vertex){
+		Geometry e_geo = e.getGeometry();
+		Geometry edge_buffer = e_geo.buffer(envelope_buffer.getValue());
+		
+		if(exclude_vertex.getValue() == 0)
+			return edge_buffer;
+		else
+		{
+			
+			
 			Node s = frame_i.getEdgeSource(e);
 
 			for(Node t: frame_i.getNeighborsOf(s)){
@@ -252,12 +278,20 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 
 				if(e_geo2.intersects(e_geo)){
 					Geometry e_vertexGeo = e_geo.intersection(e_geo2);
-					edge_buffer = e_vertexGeo.buffer(envelope_buffer.getValue());
+					
+					Geometry vertex_buffer = e_vertexGeo.buffer(
+							envelope_vertex_buffer.getValue());
+					
+					if(exclude_vertex.getValue() == 2)
+						return vertex_buffer;
+					
+					edge_buffer = edge_buffer.difference(vertex_buffer);
 				}
 			}
+			
+			return edge_buffer;
 		}
 		
-		return edge_buffer;
 	}
 
 	/**

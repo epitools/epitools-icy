@@ -107,8 +107,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	/**
 	 * Exclude vertex geometry 
 	 */
-	private EzVarInteger envelope_vertex_buffer;
-	
+	private EzVarInteger envelope_vertex_buffer;	
 	
 	/**
 	 * @param stGraph graph to analyze
@@ -262,9 +261,11 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		else
 		{
 			
-			
 			Node s = frame_i.getEdgeSource(e);
 
+			double final_vertex_x = java.lang.Double.MAX_VALUE;
+			Geometry final_vertex_geo = null;
+			
 			for(Node t: frame_i.getNeighborsOf(s)){
 				Edge e2 = frame_i.getEdge(s, t);
 
@@ -275,21 +276,29 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 					e2.computeGeometry(frame_i);
 				
 				Geometry e_geo2 = e2.getGeometry();
-
+				
 				if(e_geo2.intersects(e_geo)){
 					Geometry e_vertexGeo = e_geo.intersection(e_geo2);
+					
+					double vertex_x = e_vertexGeo.getCentroid().getX();
 					
 					Geometry vertex_buffer = e_vertexGeo.buffer(
 							envelope_vertex_buffer.getValue());
 					
 					if(exclude_vertex.getValue() == 2)
-						return vertex_buffer;
+						if(vertex_x < final_vertex_x){
+							final_vertex_x = vertex_x;
+							final_vertex_geo = vertex_buffer;
+						}
 					
 					edge_buffer = edge_buffer.difference(vertex_buffer);
 				}
 			}
 			
-			return edge_buffer;
+			if(exclude_vertex.getValue() == 2)
+				return final_vertex_geo;
+			else
+				return edge_buffer;
 		}
 		
 	}
@@ -584,6 +593,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 				if(stGraph.getFrame(i).containsEdge(e))
 					measurement_geometries.put(e, 
 							computeMeasurementGeometry(e,stGraph.getFrame(i)));
+		
+		painterChanged();
 		
 	}
 

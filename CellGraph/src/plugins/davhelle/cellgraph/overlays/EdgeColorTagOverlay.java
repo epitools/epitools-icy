@@ -20,8 +20,10 @@ import java.util.HashMap;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.IntensityReader;
@@ -46,7 +48,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class EdgeColorTagOverlay extends StGraphOverlay {
+public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener<Integer> {
 
 	/**
 	 * Description String for GUI
@@ -117,6 +119,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	
 		this.tag_color = varEdgeColor;
 		this.envelope_buffer = varEnvelopeBuffer;
+		this.envelope_buffer.addVarChangeListener(this);
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
 		this.sequence = sequence;
@@ -154,9 +157,15 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 * @param color color of the envelope
 	 */
 	public void drawEdge(Graphics2D g, Edge e, Color color){
-		g.setColor(color);
-		Geometry measurement_geometry = measurement_geometries.get(e);
-		g.draw(writer.toShape(measurement_geometry));
+		
+		if(measurement_geometries.containsKey(e)){
+			g.setColor(color);
+			Geometry measurement_geometry = measurement_geometries.get(e);
+			g.draw(writer.toShape(measurement_geometry));
+		}
+		else{
+			propagateTag(e,null);
+		}
 	}
 	
 	@Override
@@ -224,7 +233,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 */
 	private Geometry computeMeasurementGeometry(Edge e, FrameGraph frame_i) {
 		
-		Geometry edge_buffer = e.getGeometry().buffer(envelope_buffer.getValue());
+		Geometry e_geo = e.getGeometry();
+		Geometry edge_buffer = null;
 		
 		if(exclude_vertex){
 			Node s = frame_i.getEdgeSource(e);
@@ -238,14 +248,12 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 				if(!e2.hasGeometry())
 					e2.computeGeometry(frame_i);
 				
-				Geometry edge_geo2 = e2.getGeometry();
+				Geometry e_geo2 = e2.getGeometry();
 
-				Geometry edge_buffer2 = edge_geo2.buffer(envelope_buffer.getValue());
-
-				if(edge_buffer2.intersects(edge_buffer))
-					//					edge_buffer = edge_buffer.intersection(edge_buffer2).buffer(-0.2);
-					//				else
-					edge_buffer = edge_buffer.difference(edge_buffer2).buffer(-0.2);
+				if(e_geo2.intersects(e_geo)){
+					Geometry e_vertexGeo = e_geo.intersection(e_geo2);
+					edge_buffer = e_vertexGeo.buffer(envelope_buffer.getValue());
+				}
 			}
 		}
 		
@@ -532,6 +540,17 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 
 			OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		}
+	}
+
+	@Override
+	public void variableChanged(EzVar<Integer> source, Integer newValue) {
+		
+		for(Edge e: measurement_geometries.keySet())
+			for(int i=0; i<stGraph.size(); i++)
+				if(stGraph.getFrame(i).containsEdge(e))
+					measurement_geometries.put(e, 
+							computeMeasurementGeometry(e,stGraph.getFrame(i)));
+		
 	}
 
 }

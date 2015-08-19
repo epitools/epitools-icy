@@ -15,6 +15,7 @@ import java.awt.geom.Line2D.Double;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
@@ -92,6 +93,17 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	EzVarEnum<IntensitySummaryType> summary_type;
 	
 	/**
+	 * Geometries used to measure the image intensity
+	 */
+	private HashMap<Edge,Geometry> measurement_geometries;
+	
+	/**
+	 * Exclude vertex geometry 
+	 */
+	private boolean exclude_vertex = true;
+	
+	
+	/**
 	 * @param stGraph graph to analyze
 	 * @param varEdgeColor color choice EzGUI handle
 	 * @param varEnvelopeBuffer envelope width EzGUI handle
@@ -109,6 +121,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 		this.factory = new GeometryFactory();
 		this.sequence = sequence;
 		this.summary_type = intensitySummaryType;
+		this.measurement_geometries = new HashMap<Edge, Geometry>();
 		
 		this.tags_exist = false;
 		for(Edge edge: stGraph.getFrame(0).edgeSet()){
@@ -142,7 +155,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 */
 	public void drawEdge(Graphics2D g, Edge e, Color color){
 		g.setColor(color);
-		g.draw(writer.toShape(e.getGeometry().buffer(envelope_buffer.getValue())));
+		Geometry measurement_geometry = measurement_geometries.get(e);
+		g.draw(writer.toShape(measurement_geometry));
 	}
 	
 	@Override
@@ -171,7 +185,13 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 			 			//get edge geometry
 			 			if(!edge.hasGeometry())
 			 				edge.computeGeometry(frame_i);
-			 			Geometry intersection = edge.getGeometry();
+			 				
+			 			if(!measurement_geometries.containsKey(edge)){
+			 				Geometry measurement_geometry = computeMeasurementGeometry(edge,frame_i);
+			 				measurement_geometries.put(edge, measurement_geometry);
+			 			}
+			 			
+			 			Geometry intersection = measurement_geometries.get(edge);
 			 			Geometry envelope = intersection.buffer(CLICK_BUFFER_WIDTH);
 			 			
 			 			//check if click falls into envelope
@@ -191,6 +211,45 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 			 	}
 			}
 		}
+	}
+
+	/**
+	 * Computes the geometry that will be used to measure the intensity
+	 * in the underlying image. According to user decision [envelope_buffer]
+	 * and [excludeVertex] the geometry will be differently shaped.
+	 * 
+	 * @param e Edge to compute the geometry of
+	 * @param frame_i Frame Graph of the edge
+	 * @return
+	 */
+	private Geometry computeMeasurementGeometry(Edge e, FrameGraph frame_i) {
+		
+		Geometry edge_buffer = e.getGeometry().buffer(envelope_buffer.getValue());
+		
+		if(exclude_vertex){
+			Node s = frame_i.getEdgeSource(e);
+
+			for(Node t: frame_i.getNeighborsOf(s)){
+				Edge e2 = frame_i.getEdge(s, t);
+
+				if(e2 == e)
+					continue;
+				
+				if(!e2.hasGeometry())
+					e2.computeGeometry(frame_i);
+				
+				Geometry edge_geo2 = e2.getGeometry();
+
+				Geometry edge_buffer2 = edge_geo2.buffer(envelope_buffer.getValue());
+
+				if(edge_buffer2.intersects(edge_buffer))
+					//					edge_buffer = edge_buffer.intersection(edge_buffer2).buffer(-0.2);
+					//				else
+					edge_buffer = edge_buffer.difference(edge_buffer2).buffer(-0.2);
+			}
+		}
+		
+		return edge_buffer;
 	}
 
 	/**

@@ -36,27 +36,27 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class EdgeIntensityOverlay extends StGraphOverlay{
-	
+public class EdgeVertexIntersectionOverlay extends StGraphOverlay{
+
 	/**
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
 			"Transforms the edge geometries into ROIs and displays " +
-			"the underlying intensity (I) of the first frame." +
-			"(Current method limitation)\n\n" +
-					
-			"1. The mean I is computed from a 5px area buffer" +
-			" of the edge geometry\n\n" +
-			
-			"2. The relative I is computed by correcting for" +
-			" the avg cell background(bg) and the avg intensity" +
-			" of the neighbor edges(ne) in the 1st order" +
-			" neighborhood:\n" +
-			"    rel_I = (edge_I - bg_I) / (ne_I - bg_I)\n\n" +
-			
-			"3. The noralized I is computed considering the" +
-			" maximum and minimun relative I in the frame.";
+					"the underlying intensity (I) of the first frame." +
+					"(Current method limitation)\n\n" +
+
+				"1. The mean I is computed from a 5px area buffer" +
+				" of the edge geometry\n\n" +
+
+				"2. The relative I is computed by correcting for" +
+				" the avg cell background(bg) and the avg intensity" +
+				" of the neighbor edges(ne) in the 1st order" +
+				" neighborhood:\n" +
+				"    rel_I = (edge_I - bg_I) / (ne_I - bg_I)\n\n" +
+
+				"3. The noralized I is computed considering the" +
+				" maximum and minimun relative I in the frame.";
 
 	/**
 	 * JTS to AWT shape writer
@@ -74,7 +74,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Visualization flag for filling or drawing the edge envelope
 	 */
 	private EzVarBoolean fillEdgeCheckbox;
-	
+
 	//Containers
 	/**
 	 * ROI representation for each edge
@@ -100,7 +100,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Mean Edge Intensities for every cell 
 	 */
 	private HashMap<Node,Double> cell_edges;
-	
+
 	/**
 	 * Minimal displayed edge intensity
 	 */
@@ -123,12 +123,14 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Image channel from which to retrieve the intensities
 	 */
 	private int channelNumber;
-	
+
 	/**
 	 * Intensity Summary type
 	 */
 	EzVarEnum<IntensitySummaryType> summary_type;
 	
+	private boolean excludeVertex;
+
 	/**
 	 * @param stGraph graph to display
 	 * @param sequence image from which to measure the intensities
@@ -139,14 +141,15 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * @param normalize_intensities flag to normalize or not the intensities
 	 * @param channelNumber image channel to measure
 	 */
-	public EdgeIntensityOverlay(SpatioTemporalGraph stGraph, Sequence sequence,
+	public EdgeVertexIntersectionOverlay(SpatioTemporalGraph stGraph, Sequence sequence,
 			EzGUI gui, EzVarBoolean varFillingCheckbox,
 			EzVarInteger varBufferWidth,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType,
 			boolean normalize_intensities,
-			int channelNumber) {
+			int channelNumber,
+			boolean extract_tricellular_junction) {
 		super("Edge Intensities",stGraph);
-		
+
 		this.gui = gui;
 		this.fillEdgeCheckbox = varFillingCheckbox;
 		this.writer = new ShapeWriter();
@@ -162,11 +165,13 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.channelNumber = channelNumber;
 		this.summary_type = intensitySummaryType;
 		
+		this.excludeVertex = extract_tricellular_junction;
+
 		for(int i = 0; i < 1; i++){
 			FrameGraph frame_i = stGraph.getFrame(i);
 			computeFrameIntensities(frame_i);
 		}
-		
+
 		super.setGradientMaximum(max);
 		super.setGradientMinimum(min);
 		super.setGradientScale(-0.4);
@@ -180,16 +185,24 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * @param frame_i frame to measure
 	 */
 	private void computeFrameIntensities(FrameGraph frame_i) {
-		
+
 		//double sum_mean_cell_background = 0;
 		int gui_counter = 0;
-		
+
 		//Compute individual edge intensities
-		gui.setProgressBarMessage("Computing Edge Intensities...");
+		gui.setProgressBarMessage("Computing Edge Geometries...");
 		for(Edge e: frame_i.edgeSet()){
 			if(!e.hasGeometry())
 				e.computeGeometry(frame_i);
-			
+
+			//double edge_intensity = computeEdgeIntensity(e,frame_i);
+			//sum_mean_cell_background += edge_intensity;
+			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
+		}
+		
+		gui_counter = 0;
+		gui.setProgressBarMessage("Computing Edge Intensities...");
+		for(Edge e: frame_i.edgeSet()){
 			computeEdgeIntensity(e,frame_i);
 			//double edge_intensity = computeEdgeIntensity(e,frame_i);
 			//sum_mean_cell_background += edge_intensity;
@@ -210,7 +223,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.min = Double.MAX_VALUE;
 		this.max = Double.MIN_VALUE;
 
-		
+
 		if(normalize_intensities){
 			gui.setProgressBarValue(0);
 			gui_counter = 0;
@@ -243,7 +256,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 					min = rel_value;
 			}
 		}
-		
+
 		//Normalize
 		for(Edge e: frame_i.edgeSet()){
 			//update from relative to normalized
@@ -252,9 +265,9 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			normalizedEdgeIntensity.put(e,normalized_value);
 
 		}
-			
+
 	}
-	
+
 	/**
 	 * Compute underlying intensity for edge using a ROI corresponding
 	 * to the edge envelope (specified by bufferWidth)
@@ -264,15 +277,35 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * @return mean intensity value of pixels within the edge envelope
 	 */
 	private double computeEdgeIntensity(Edge e, FrameGraph frame_i){
-		
+
 		Geometry edge_geo = e.getGeometry();
-		
+
 		Geometry edge_buffer = edge_geo.buffer(bufferWidth);
+
+		if(excludeVertex){
+			Node s = frame_i.getEdgeSource(e);
+
+			for(Node t: frame_i.getNeighborsOf(s)){
+				Edge e2 = frame_i.getEdge(s, t);
+
+				if(e2 == e)
+					continue;
+
+				Geometry edge_geo2 = e2.getGeometry();
+
+				Geometry edge_buffer2 = edge_geo2.buffer(bufferWidth);
+
+				if(edge_buffer2.intersects(edge_buffer))
+					//					edge_buffer = edge_buffer.intersection(edge_buffer2).buffer(-0.2);
+					//				else
+					edge_buffer = edge_buffer.difference(edge_buffer2).buffer(-0.2);
+			}
+		}
 		
 		Shape egde_shape = writer.toShape(edge_buffer);
-		
+
 		this.buffer_shape.put(e, egde_shape);
-		
+
 		//TODO possibly add a direct ROI field to edge class
 		ShapeRoi edge_roi = null;
 		try{
@@ -282,23 +315,31 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			System.out.printf("Problems at %.2f %.2f",centroid.getX(),centroid.getY());
 			return 0.0;
 		}
-		
+
 		buffer_roi.put(e, edge_roi);
-		
+
 		int z=0;
 		int t=frame_i.getFrameNo();
 		int c=channelNumber;
+
+		double mean_intensity = -1.0;
 		
 		//TODO possibly use getIntensityInfo here
-		double mean_intensity = 
-				IntensityReader.measureRoiIntensity(
+		try{
+			mean_intensity = IntensityReader.measureRoiIntensity(
 						sequence, edge_roi, z, t, c, summary_type.getValue());
+		} catch (Exception exception){
+			System.out.printf("Unable to compute intenisty for [%.0f,%.0f]: %.2f\n",
+					e.getGeometry().getCentroid().getX(),
+					e.getGeometry().getCentroid().getY(),
+					e.getGeometry().getArea());
+		}
 
 		e.setValue(mean_intensity);
-		
+
 		return mean_intensity;
 	}
-	
+
 	/**
 	 * Split the cell geometry in two between edges and inside
 	 * and compute the separate intensity. 
@@ -308,28 +349,28 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * @param s cell to be computed
 	 */
 	private void computeCellIntensity(Node s){
-		
+
 		//who are the flanking cells?
 		FrameGraph frame = s.getBelongingFrame();
-		
+
 		if(s.getNeighbors().isEmpty())
 			return;
-		
+
 		//combine edge rois
 		ArrayList<ROI> rois = new ArrayList<ROI>();
 		for(Node t: frame.getNeighborsOf(s)){
 			Edge e = frame.getEdge(s, t);
 			rois.add(buffer_roi.get(e));
 		}
-		
+
 		//Define Edge Roi region
 		ROI edge_union = ROIUtil.getUnion(rois);
-		
+
 		//Define Interior Roi region
 		ROI ring =	ROIUtil.getIntersection(rois);
 		ShapeRoi s_roi = new ShapeRoi(writer.toShape(s.getGeometry()));
 		ROI s_minimal = ROIUtil.subtract(s_roi, ring);
-		
+
 		//Compute intensities
 		int z=0;
 		int t=frame.getFrameNo();
@@ -343,7 +384,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		cell_background.put(s,s_mean);
 		cell_edges.put(s, mean_edge_intensity);
 	}
-	
+
 	/**
 	 * Every edge is normalized by taking into account the first order neighborhood
 	 * 
@@ -364,64 +405,76 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * @return
 	 */
 	private double computeRelativeEdgeIntensity(Edge e, FrameGraph frame){
-		
+
 		Node source = frame.getEdgeSource(e);
 		Node target = frame.getEdgeTarget(e);
-		
+
 		//dubious definition
 		//what about including 1 order of neigborhood?
 		//i.e. 
-		
+
 		HashSet<Node> firstOrderNeighbors = new HashSet<Node>();
 		firstOrderNeighbors.addAll(source.getNeighbors());
 		firstOrderNeighbors.addAll(target.getNeighbors());
-		
+
 		double sum_cell_background = 0;
 		double sum_cell_edges = 0;
-		
+
 		for(Node n: firstOrderNeighbors){
 			sum_cell_background += cell_background.get(n);
 			sum_cell_edges += cell_edges.get(n);
 		}
-		
+
 		double mean_cell_background = sum_cell_background/firstOrderNeighbors.size();
 		double mean_cell_edges = sum_cell_edges/firstOrderNeighbors.size();
-		
+
 		double rel_edge_value = e.getValue() - mean_cell_background;
 		double rel_neighborEdge_value = mean_cell_edges	 - mean_cell_background;
-		
+
 		double normalized_value = rel_edge_value / rel_neighborEdge_value;
-		
+
 		return normalized_value;
 	}
 
 	@Override
-    public void paintFrame(Graphics2D g, FrameGraph frame_i){
-		
+	public void paintFrame(Graphics2D g, FrameGraph frame_i){
+
 		if(frame_i.getFrameNo() != 0)
 			return;
-		
+
 		g.setColor(Color.blue);
-		
-		int i = 0;
+
 		//paint all the edges of the graph
 		for(Edge edge: frame_i.edgeSet()){
-
+			
+			if(excludeVertex)
+				if(frame_i.getEdgeSource(edge).onBoundary() && 
+					frame_i.getEdgeTarget(edge).onBoundary())
+					continue;
+			
 			assert(buffer_shape.containsKey(edge));
 
 			Shape egde_shape = buffer_shape.get(edge);
-
-			Color hsbColor = super.getScaledColor(relativeEdgeIntensity.get(edge));
-
+			
+			double intensity_measure = relativeEdgeIntensity.get(edge);
+			if(intensity_measure == -1.0)
+				continue;
+//				g.setColor(Color.red);
+//			else{	
+//				continue;
+//				
+			Color hsbColor = super.getScaledColor(intensity_measure);
 			g.setColor(hsbColor);
-
+//			}
+//			if(excludeVertex)
+//				g.setColor(Color.blue);
+//			else
+//				g.setColor(Color.red);
+			
 			if(fillEdgeCheckbox.getValue())
 				g.fill(egde_shape);
 			else
 				g.draw(egde_shape);
-			
-			if(i++ == 10)
-				break;
 
 		}
 
@@ -429,10 +482,10 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		
+
 		if(frame.getFrameNo() != 0)
 			return;
-		
+
 		XLSUtil.setCellString(sheet, 0, 0, "Edge id");
 		XLSUtil.setCellString(sheet, 1, 0, "Edge x");
 		XLSUtil.setCellString(sheet, 2, 0, "Edge y");
@@ -443,10 +496,10 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		int row_no = 1;
 
 		for(Edge e: frame.edgeSet()){
-			
+
 			Point centroid = e.getGeometry().getCentroid();
 			long edge_id = e.getPairCode(frame);
-			
+
 			double relative_value = relativeEdgeIntensity.get(e);
 			double normalized_value = normalizedEdgeIntensity.get(e);
 
@@ -464,16 +517,16 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 
 	@Override
 	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
-		
+
 		int binNo = 50;
-		
+
 		String min_value = String.format("%.1f",super.getGradientMinimum());
 		String max_value = String.format("%.1f",super.getGradientMaximum());
-		
+
 		OverlayUtils.gradientColorLegend_ZeroOne(g, line, min_value, max_value, binNo,
 				super.getGradientScale(), super.getGradientShift());
-		
+
 	}
-	
-	
+
+
 }

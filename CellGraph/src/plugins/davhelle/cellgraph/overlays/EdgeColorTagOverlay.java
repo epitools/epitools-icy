@@ -15,12 +15,15 @@ import java.awt.geom.Line2D.Double;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.IntensityReader;
@@ -45,7 +48,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class EdgeColorTagOverlay extends StGraphOverlay {
+public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener<Integer> {
 
 	/**
 	 * Description String for GUI
@@ -92,6 +95,21 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	EzVarEnum<IntensitySummaryType> summary_type;
 	
 	/**
+	 * Geometries used to measure the image intensity
+	 */
+	private HashMap<Edge,Geometry> measurement_geometries;
+	
+	/**
+	 * Exclude vertex geometry 
+	 */
+	private EzVarInteger exclude_vertex;
+	
+	/**
+	 * Exclude vertex geometry 
+	 */
+	private EzVarInteger envelope_vertex_buffer;	
+	
+	/**
 	 * @param stGraph graph to analyze
 	 * @param varEdgeColor color choice EzGUI handle
 	 * @param varEnvelopeBuffer envelope width EzGUI handle
@@ -99,16 +117,31 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 */
 	public EdgeColorTagOverlay(SpatioTemporalGraph stGraph,
 			EzVarEnum<CellColor> varEdgeColor,
-			EzVarInteger varEnvelopeBuffer, Sequence sequence,
+			EzVarInteger varEnvelopeBuffer,
+			EzVarInteger varVertexBuffer,
+			EzVarInteger varVertexMode,
+			Sequence sequence,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType) {
 		super("Edge Color Tag", stGraph);
 	
 		this.tag_color = varEdgeColor;
+		
 		this.envelope_buffer = varEnvelopeBuffer;
+		this.envelope_buffer.addVarChangeListener(this);
+		
+		this.exclude_vertex = varVertexMode;
+		this.exclude_vertex.addVarChangeListener(this);
+		
+		this.envelope_vertex_buffer = varVertexBuffer;
+		this.envelope_vertex_buffer.addVarChangeListener(this);
+		
+		
+		
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
 		this.sequence = sequence;
 		this.summary_type = intensitySummaryType;
+		this.measurement_geometries = new HashMap<Edge, Geometry>();
 		
 		this.tags_exist = false;
 		for(Edge edge: stGraph.getFrame(0).edgeSet()){
@@ -141,8 +174,15 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 * @param color color of the envelope
 	 */
 	public void drawEdge(Graphics2D g, Edge e, Color color){
-		g.setColor(color);
-		g.draw(writer.toShape(e.getGeometry().buffer(envelope_buffer.getValue())));
+		
+		if(measurement_geometries.containsKey(e)){
+			g.setColor(color);
+			Geometry measurement_geometry = measurement_geometries.get(e);
+			g.draw(writer.toShape(measurement_geometry));
+		}
+		else{
+			propagateTag(e,null);
+		}
 	}
 	
 	@Override
@@ -171,7 +211,13 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 			 			//get edge geometry
 			 			if(!edge.hasGeometry())
 			 				edge.computeGeometry(frame_i);
-			 			Geometry intersection = edge.getGeometry();
+			 				
+			 			if(!measurement_geometries.containsKey(edge)){
+			 				Geometry measurement_geometry = computeMeasurementGeometry(edge,frame_i);
+			 				measurement_geometries.put(edge, measurement_geometry);
+			 			}
+			 			
+			 			Geometry intersection = measurement_geometries.get(edge);
 			 			Geometry envelope = intersection.buffer(CLICK_BUFFER_WIDTH);
 			 			
 			 			//check if click falls into envelope
@@ -191,6 +237,70 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 			 	}
 			}
 		}
+	}
+
+	/**
+	 * Computes the geometry that will be used to measure the intensity
+	 * in the underlying image. According to user decision [envelope_buffer]
+	 * and [excludeVertex] the geometry will be differently shaped.
+	 * 
+	 * @param e Edge to compute the geometry of
+	 * @param frame_i Frame Graph of the edge
+	 * @return
+	 */
+	private Geometry computeMeasurementGeometry(Edge e, FrameGraph frame_i) {
+		
+		if(!e.hasGeometry())
+			e.computeGeometry(frame_i);
+		
+		Geometry e_geo = e.getGeometry();
+		Geometry edge_buffer = e_geo.buffer(envelope_buffer.getValue());
+		
+		if(exclude_vertex.getValue() == 0)
+			return edge_buffer;
+		else
+		{
+			
+			Node s = frame_i.getEdgeSource(e);
+
+			double final_vertex_x = java.lang.Double.MAX_VALUE;
+			Geometry final_vertex_geo = null;
+			
+			for(Node t: frame_i.getNeighborsOf(s)){
+				Edge e2 = frame_i.getEdge(s, t);
+
+				if(e2 == e)
+					continue;
+				
+				if(!e2.hasGeometry())
+					e2.computeGeometry(frame_i);
+				
+				Geometry e_geo2 = e2.getGeometry();
+				
+				if(e_geo2.intersects(e_geo)){
+					Geometry e_vertexGeo = e_geo.intersection(e_geo2);
+					
+					double vertex_x = e_vertexGeo.getCentroid().getX();
+					
+					Geometry vertex_buffer = e_vertexGeo.buffer(
+							envelope_vertex_buffer.getValue());
+					
+					if(exclude_vertex.getValue() == 2)
+						if(vertex_x < final_vertex_x){
+							final_vertex_x = vertex_x;
+							final_vertex_geo = vertex_buffer;
+						}
+					
+					edge_buffer = edge_buffer.difference(vertex_buffer);
+				}
+			}
+			
+			if(exclude_vertex.getValue() == 2)
+				return final_vertex_geo;
+			else
+				return edge_buffer;
+		}
+		
 	}
 
 	/**
@@ -429,7 +539,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 	 */
 	private double computeIntensity(Edge edge){
 		
-		Geometry envelope = edge.getGeometry().buffer(envelope_buffer.getValue());
+		Geometry envelope = measurement_geometries.get(edge);
 		
 		ShapeRoi edgeEnvelopeRoi = new ShapeRoi(writer.toShape(envelope));
 		
@@ -473,6 +583,19 @@ public class EdgeColorTagOverlay extends StGraphOverlay {
 
 			OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		}
+	}
+
+	@Override
+	public void variableChanged(EzVar<Integer> source, Integer newValue) {
+		
+		for(Edge e: measurement_geometries.keySet())
+			for(int i=0; i<stGraph.size(); i++)
+				if(stGraph.getFrame(i).containsEdge(e))
+					measurement_geometries.put(e, 
+							computeMeasurementGeometry(e,stGraph.getFrame(i)));
+		
+		painterChanged();
+		
 	}
 
 }

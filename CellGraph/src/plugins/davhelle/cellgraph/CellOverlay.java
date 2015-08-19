@@ -34,9 +34,10 @@ import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeColorTagOverlay;
-import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
+//import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeStabilityOverlay;
+import plugins.davhelle.cellgraph.overlays.EdgeVertexIntersectionOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.overlays.ElongationRatioOverlay;
@@ -126,6 +127,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//EdgeMarker
 	EzVarEnum<CellColor> 		varEdgeColor;
 	EzVarInteger 				varEnvelopeBuffer;
+	EzVarInteger					varEnvelopeVertex;
+	EzVarInteger					varVertexMode;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_ECT;
 
 	//T1 Transition
@@ -149,6 +152,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//Edge Orientation
 	EzVarDouble					varEdgeOrientationBuffer;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_EO;
+
+	private EzVarBoolean varBooleanVertexExtract;
 
 	
 	@Override
@@ -245,12 +250,18 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//EdgeMarker mode
 		varEdgeColor = new EzVarEnum<CellColor>("Edge color", CellColor.values(), CellColor.CYAN);
-		varEnvelopeBuffer = new EzVarInteger("Intensity Buffer [px]", 1, 10, 1);
+		varEnvelopeBuffer = new EzVarInteger("Edge Intensity Buffer [px]", 1, 10, 1);
+		varEnvelopeVertex = new EzVarInteger("Vertex Intensity Buffer [px]", 1, 10, 1);
+		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 2, 1);
+		varVertexMode.setToolTipText("junction vertex: 0=[include],1=[exclude],2=[only]");
+		
 		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(
 				"Intensity Measurement", IntensitySummaryType.values(), IntensitySummaryType.Mean);
 		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
 				varEdgeColor,
 				varEnvelopeBuffer,
+				varEnvelopeVertex,
+				varVertexMode,
 				varIntensityMeasure_ECT);
 
 		//Save transitions
@@ -267,9 +278,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varIntegerChannel = new EzVarInteger("Channel to measure",0,0,3,1);
 		varIntensityMeasure_EI = new EzVarEnum<IntensitySummaryType>(
 				"Intensity Measure", IntensitySummaryType.values(), IntensitySummaryType.Mean);
+		varBooleanVertexExtract = new EzVarBoolean("Exclude Junction Intersections",false);
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varEnvelopeBuffer2,
 				varIntegerChannel,
+				varBooleanVertexExtract,
 				varIntensityMeasure_EI,
 				varBooleanNormalize,
 				varFillingCheckbox
@@ -459,13 +472,21 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		case EDGE_INTENSITY:
 
 			sequence.addOverlay(
-					new EdgeIntensityOverlay(
-							stGraph, sequence, this.getUI(),
+					new EdgeVertexIntersectionOverlay(stGraph, sequence, this.getUI(),
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
 							varIntensityMeasure_EI,
 							varBooleanNormalize.getValue(),
-							varIntegerChannel.getValue()));
+							varIntegerChannel.getValue(),
+							varBooleanVertexExtract.getValue()));
+					
+//					new EdgeIntensityOverlay(
+//							stGraph, sequence, this.getUI(),
+//							varFillingCheckbox,
+//							varEnvelopeBuffer2,
+//							varIntensityMeasure_EI,
+//							varBooleanNormalize.getValue(),
+//							varIntegerChannel.getValue()));
 
 			break;
 
@@ -491,7 +512,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			}
 			sequence.addOverlay(
 					new EdgeColorTagOverlay(
-							stGraph,varEdgeColor,varEnvelopeBuffer,
+							stGraph,varEdgeColor,
+							varEnvelopeBuffer,varEnvelopeVertex,varVertexMode,
 							sequence,varIntensityMeasure_ECT));
 			break;
 

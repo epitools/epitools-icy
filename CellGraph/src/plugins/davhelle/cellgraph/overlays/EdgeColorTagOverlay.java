@@ -55,13 +55,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	public static final String DESCRIPTION = "Interactive overlay to mark edges/junctions" +
 			" in the graph and follow them over time. See CELL_COLOR_TAG for usage help.\n\n" +
-			" [color]  = color to tag the edge with\n" +
-			" [buffer] = width for intensity measurement\n" +
-			" both options can be changed at runtime.\n\n" +
-			" The XLS export option in the layer panel saves" +
-			" for every selected edge the length over time in the first sheet and the mean" +
-			" intensity of the image underneath the expanded edge geometry. The column" +
-			" header provides a identification for the edge:\n\n" +
+			" All parameters are interactive and can be changed when the overlay is added\n\n" +
+			" Header in the Export XLS identifies the edge:\n\n" +
 			" [colorString] [tStart,xStart,yStart]";
 	
 	/**
@@ -483,6 +478,9 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		String sheetName = String.format("Edge Length");
 		WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
 		
+		String roiLengthSheetName = String.format("Edge ROI Length");
+		WritableSheet roi_sheet = XLSUtil.createNewPage(wb, roiLengthSheetName);
+		
 		String intensitySheetName = String.format("Edge %s Intensity",summary_type.getValue().getDescription());
 		WritableSheet intensitySheet = XLSUtil.createNewPage(wb, intensitySheetName);
 		
@@ -509,13 +507,17 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 							xStart,
 							yStart);
 					XLSUtil.setCellString(sheet, col_no, row_no, header);
+					XLSUtil.setCellString(roi_sheet, col_no, row_no, header);
 					XLSUtil.setCellString(intensitySheet, col_no, row_no, header);
 
 					//For every row write the length of a tagged edge
 					//leave an empty row for a time point where the edge is not present
 					row_no = tStart + 1;
 					XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
-
+					
+					Geometry roi = measurement_geometries.get(edge);
+					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, roi.getLength());
+					
 					double meanIntensity = computeIntensity(edge);
 					XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
 					

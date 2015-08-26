@@ -129,6 +129,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarInteger 				varEnvelopeBuffer;
 	EzVarInteger					varEnvelopeVertex;
 	EzVarInteger					varVertexMode;
+	EzVarInteger 				varEdgeChannel;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_ECT;
 
 	//T1 Transition
@@ -254,7 +255,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varEnvelopeVertex = new EzVarInteger("Vertex Intensity Buffer [px]", 1, 10, 1);
 		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 2, 1);
 		varVertexMode.setToolTipText("junction vertex: 0=[include],1=[exclude],2=[only]");
-		
+		varEdgeChannel = new EzVarInteger("Color Channel",0,0,10,1);
 		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(
 				"Intensity Measurement", IntensitySummaryType.values(), IntensitySummaryType.Mean);
 		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
@@ -262,6 +263,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varEnvelopeBuffer,
 				varEnvelopeVertex,
 				varVertexMode,
+				varEdgeChannel,
 				varIntensityMeasure_ECT);
 
 		//Save transitions
@@ -514,7 +516,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					new EdgeColorTagOverlay(
 							stGraph,varEdgeColor,
 							varEnvelopeBuffer,varEnvelopeVertex,varVertexMode,
-							sequence,varIntensityMeasure_ECT));
+							sequence,varIntensityMeasure_ECT,
+							varEdgeChannel));
 			break;
 
 		case TRACKING_CORRECTION_HINTS:

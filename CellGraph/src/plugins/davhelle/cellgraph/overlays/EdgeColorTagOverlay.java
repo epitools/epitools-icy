@@ -110,10 +110,17 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	private EzVarInteger envelope_vertex_buffer;	
 	
 	/**
+	 * Intensity channel to measure
+	 */
+	private EzVarInteger intensity_channel;
+	
+	
+	/**
 	 * @param stGraph graph to analyze
 	 * @param varEdgeColor color choice EzGUI handle
 	 * @param varEnvelopeBuffer envelope width EzGUI handle
 	 * @param sequence image from which to retrieve the intensities for export
+	 * @param varEdgeChannel 
 	 */
 	public EdgeColorTagOverlay(SpatioTemporalGraph stGraph,
 			EzVarEnum<CellColor> varEdgeColor,
@@ -121,7 +128,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 			EzVarInteger varVertexBuffer,
 			EzVarInteger varVertexMode,
 			Sequence sequence,
-			EzVarEnum<IntensitySummaryType> intensitySummaryType) {
+			EzVarEnum<IntensitySummaryType> intensitySummaryType, 
+			EzVarInteger varEdgeChannel) {
 		super("Edge Color Tag", stGraph);
 	
 		this.tag_color = varEdgeColor;
@@ -135,6 +143,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		this.envelope_vertex_buffer = varVertexBuffer;
 		this.envelope_vertex_buffer.addVarChangeListener(this);
 		
+		this.intensity_channel = varEdgeChannel;
 		
 		
 		this.writer = new ShapeWriter();
@@ -545,7 +554,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		
 		int z=0;
 		int t=edge.getFrame().getFrameNo();
-		int c=0;
+		int c=intensity_channel.getValue();
 		double envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
 				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
 

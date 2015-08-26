@@ -555,11 +555,31 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		int z=0;
 		int t=edge.getFrame().getFrameNo();
 		int c=intensity_channel.getValue();
-		double envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
-				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
-
-		return envelopeMeanIntenisty;
 		
+		double envelopeMeanIntenisty = 0;
+		try{
+			envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
+				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
+			
+			if(java.lang.Double.isNaN(envelopeMeanIntenisty)){
+				envelopeMeanIntenisty = -1;
+				System.out.printf(
+						"Edge intensity @[%.0f,%.0f] N.A.(-1) because area too small: %.2f\n",
+						edge.getGeometry().getCentroid().getX(),
+						edge.getGeometry().getCentroid().getY(),
+						envelope.getArea());
+			}
+		}
+		catch(java.lang.UnsupportedOperationException e){
+			System.out.printf(
+					"Edge intensity @[%.0f,%.0f] N.A.(-1) because area too small: %.2f\n",
+					edge.getGeometry().getCentroid().getX(),
+					edge.getGeometry().getCentroid().getY(),
+					envelope.getArea());
+			envelopeMeanIntenisty = -1;
+		}
+		
+		return envelopeMeanIntenisty;
 	}
 	
 	/**

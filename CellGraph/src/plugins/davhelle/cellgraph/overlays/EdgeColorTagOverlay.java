@@ -513,7 +513,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 					//For every row write the length of a tagged edge
 					//leave an empty row for a time point where the edge is not present
 					row_no = tStart + 1;
-					XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
+					Geometry edgeBuffer = edge.getGeometry().buffer(envelope_buffer.getValue());
+					XLSUtil.setCellNumber(sheet, col_no, row_no, edgeBuffer.getLength());
 					
 					Geometry roi = measurement_geometries.get(edge);
 					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, roi.getLength());

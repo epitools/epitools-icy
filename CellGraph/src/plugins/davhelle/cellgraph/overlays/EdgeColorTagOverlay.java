@@ -97,7 +97,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	/**
 	 * Exclude vertex geometry 
 	 */
-	private EzVarInteger exclude_vertex;
+	private EzVarInteger roi_mode;
 	
 	/**
 	 * Exclude vertex geometry 
@@ -132,8 +132,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		this.envelope_buffer = varEnvelopeBuffer;
 		this.envelope_buffer.addVarChangeListener(this);
 		
-		this.exclude_vertex = varVertexMode;
-		this.exclude_vertex.addVarChangeListener(this);
+		this.roi_mode = varVertexMode;
+		this.roi_mode.addVarChangeListener(this);
 		
 		this.envelope_vertex_buffer = varVertexBuffer;
 		this.envelope_vertex_buffer.addVarChangeListener(this);
@@ -260,7 +260,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		Geometry e_geo = e.getGeometry();
 		Geometry edge_buffer = e_geo.buffer(envelope_buffer.getValue());
 		
-		if(exclude_vertex.getValue() == 0)
+		if(roi_mode.getValue() == 0)
 			return edge_buffer;
 		else
 		{
@@ -289,7 +289,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 					Geometry vertex_buffer = e_vertexGeo.buffer(
 							envelope_vertex_buffer.getValue());
 					
-					if(exclude_vertex.getValue() == 2)
+					if(roi_mode.getValue() == 2)
 						if(vertex_x < final_vertex_x){
 							final_vertex_x = vertex_x;
 							final_vertex_geo = vertex_buffer;
@@ -299,7 +299,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 				}
 			}
 			
-			if(exclude_vertex.getValue() == 2)
+			if(roi_mode.getValue() == 2)
 				return final_vertex_geo;
 			else
 				return edge_buffer;
@@ -484,11 +484,18 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 * @param wb workbook into which to write the edges 
 	 */
 	private void writeEdges(WritableWorkbook wb) {
-		String sheetName = String.format("Edge Length");
-		WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
 		
-		String roiLengthSheetName = String.format("Edge ROI Length");
+		WritableSheet sheet = null; 
+		if(roi_mode.getValue() != 0)
+			sheet = XLSUtil.createNewPage(wb, "Edge ROI0 Length");
+		
+		String roiLengthSheetName = String.format("Edge ROI%d Length",
+				roi_mode.getValue());
 		WritableSheet roi_sheet = XLSUtil.createNewPage(wb, roiLengthSheetName);
+		
+		String roiAreaSheetName = String.format("Edge ROI%d Area",
+				roi_mode.getValue());
+		WritableSheet area_sheet = XLSUtil.createNewPage(wb, roiAreaSheetName);
 		
 		String intensitySheetName = String.format("Edge %s Intensity",summary_type.getValue().getDescription());
 		WritableSheet intensitySheet = XLSUtil.createNewPage(wb, intensitySheetName);
@@ -515,18 +522,27 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 							tStart,
 							xStart,
 							yStart);
-					XLSUtil.setCellString(sheet, col_no, row_no, header);
+					
+					if(roi_mode.getValue() != 0)
+						XLSUtil.setCellString(sheet, col_no, row_no, header);
+					
 					XLSUtil.setCellString(roi_sheet, col_no, row_no, header);
+					XLSUtil.setCellString(area_sheet, col_no, row_no, header);
 					XLSUtil.setCellString(intensitySheet, col_no, row_no, header);
 
 					//For every row write the length of a tagged edge
 					//leave an empty row for a time point where the edge is not present
 					row_no = tStart + 1;
-					Geometry edgeBuffer = edge.getGeometry().buffer(envelope_buffer.getValue());
-					XLSUtil.setCellNumber(sheet, col_no, row_no, edgeBuffer.getLength());
+					
+					if(roi_mode.getValue() != 0){
+						Geometry edgeBuffer = edge.getGeometry().buffer(envelope_buffer.getValue());
+						XLSUtil.setCellNumber(sheet, col_no, row_no, edgeBuffer.getLength());
+					}
 					
 					Geometry edgeRoi = measurement_geometries.get(edge);
 					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, edgeRoi.getLength());
+					
+					XLSUtil.setCellNumber(area_sheet, col_no, row_no, edgeRoi.getArea());
 					
 					double meanIntensity = computeIntensity(edge);
 					XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
@@ -538,12 +554,15 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 						next = next.getNext();
 						row_no = next.getFrame().getFrameNo() + 1;
 						
-						Geometry nextBuffer = next.getGeometry().buffer(envelope_buffer.getValue());
-						XLSUtil.setCellNumber(sheet, col_no, row_no, nextBuffer.getLength());
+						if(roi_mode.getValue() != 0){
+							Geometry nextBuffer = next.getGeometry().buffer(envelope_buffer.getValue());
+							XLSUtil.setCellNumber(sheet, col_no, row_no, nextBuffer.getLength());
+						}
 						
 						Geometry nextRoi = measurement_geometries.get(next);
 						XLSUtil.setCellNumber(roi_sheet, col_no, row_no, nextRoi.getLength());
-						
+						XLSUtil.setCellNumber(area_sheet, col_no, row_no, nextRoi.getArea());
+
 						meanIntensity = computeIntensity(next);
 						XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
 						

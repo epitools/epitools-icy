@@ -391,6 +391,15 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 				futureEdge.computeGeometry(futureFrame);
 				futureEdge.setColorTag(colorTag);
 				
+				//add the measurement shape if not yet present
+				if(!measurement_geometries.containsKey(futureEdge)){
+	 				Geometry measurement_geometry = 
+	 						computeMeasurementGeometry(
+	 								futureEdge,futureFrame);
+	 				measurement_geometries.put(
+	 						futureEdge, measurement_geometry);
+	 			}
+				
 				//link
 				futureEdge.setPrevious(oldEdge);
 				oldEdge.setNext(futureEdge);
@@ -516,8 +525,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 					Geometry edgeBuffer = edge.getGeometry().buffer(envelope_buffer.getValue());
 					XLSUtil.setCellNumber(sheet, col_no, row_no, edgeBuffer.getLength());
 					
-					Geometry roi = measurement_geometries.get(edge);
-					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, roi.getLength());
+					Geometry edgeRoi = measurement_geometries.get(edge);
+					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, edgeRoi.getLength());
 					
 					double meanIntensity = computeIntensity(edge);
 					XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
@@ -528,7 +537,12 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 						
 						next = next.getNext();
 						row_no = next.getFrame().getFrameNo() + 1;
-						XLSUtil.setCellNumber(sheet, col_no, row_no, next.getGeometry().getLength());
+						
+						Geometry nextBuffer = next.getGeometry().buffer(envelope_buffer.getValue());
+						XLSUtil.setCellNumber(sheet, col_no, row_no, nextBuffer.getLength());
+						
+						Geometry nextRoi = measurement_geometries.get(next);
+						XLSUtil.setCellNumber(roi_sheet, col_no, row_no, nextRoi.getLength());
 						
 						meanIntensity = computeIntensity(next);
 						XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
@@ -567,17 +581,19 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 			if(java.lang.Double.isNaN(envelopeMeanIntenisty)){
 				envelopeMeanIntenisty = -1;
 				System.out.printf(
-						"Edge intensity @[%.0f,%.0f] N.A.(-1) because area too small: %.2f\n",
+						"Edge intensity @[%.0f,%.0f,%d] N.A.(-1) because area too small: %.2f\n",
 						edge.getGeometry().getCentroid().getX(),
 						edge.getGeometry().getCentroid().getY(),
+						t,
 						envelope.getArea());
 			}
 		}
 		catch(java.lang.UnsupportedOperationException e){
 			System.out.printf(
-					"Edge intensity @[%.0f,%.0f] N.A.(-1) because area too small: %.2f\n",
+					"Edge intensity @[%.0f,%.0f,%d] N.A.(-1) because area too small: %.2f\n",
 					edge.getGeometry().getCentroid().getX(),
 					edge.getGeometry().getCentroid().getY(),
+					t,
 					envelope.getArea());
 			envelopeMeanIntenisty = -1;
 		}

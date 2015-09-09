@@ -7,6 +7,7 @@ import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
 import icy.type.collection.array.Array1DUtil;
 import icy.util.XLSUtil;
+import ij.process.EllipseFitter;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -104,6 +105,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	 * Intensity Summary type
 	 */
 	EzVarEnum<IntensitySummaryType> summary_type;
+
+	private Map<Node, EllipseFitter> cell_ellipses;
 	
 	/**
 	 * @param stGraph graph to be analyzed
@@ -123,8 +126,11 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		this.summary_type = varIntensityMeasure_EO;
 				
 		PolygonalCellTileGenerator.createPolygonalTiles(stGraph,plugin);
-		EllipseFitGenerator efg = new EllipseFitGenerator(stGraph,sequence.getWidth(),sequence.getHeight());
+		EllipseFitGenerator efg = new EllipseFitGenerator(stGraph,
+				sequence.getWidth(),sequence.getHeight());
 		this.cellOrientation = efg.getLongestAxes();
+		this.cell_ellipses = efg.getFittedEllipses();
+		
 		this.edgeOrientations = computeEdgeOrientations();
 		
 		computeNanAreaROI(sequence);
@@ -381,6 +387,9 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		XLSUtil.setCellString(sheet, c++, r, "Cell number");
 		XLSUtil.setCellString(sheet, c++, r, "Cell Size (area)");
 		XLSUtil.setCellString(sheet, c++, r, "Cell Orientation");
+		XLSUtil.setCellString(sheet, c++, r, "Cell Long Axis (length)");
+		XLSUtil.setCellString(sheet, c++, r, "Cell Short Axis (length)");
+		
 		XLSUtil.setCellString(sheet, c++, r, "Edge number");
 		XLSUtil.setCellString(sheet, c++, r, "Edge Size (length)");
 		XLSUtil.setCellString(sheet, c++, r, String.format(
@@ -393,13 +402,18 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 				//reset column and increment row
 				c=0;
 				r++;
-
+				
 				//write cell statistics
 				XLSUtil.setCellNumber(sheet, c++, r, n.getTrackID());
 				XLSUtil.setCellNumber(sheet, c++, r, n.getGeometry().getArea());
 				double cell_orientation = computeAngle(cellOrientation.get(n));
 				//XLSUtil.setCellString(sheet, c++, r, String.format("%.2f",cell_orientation));
 				XLSUtil.setCellNumber(sheet, c++, r, cell_orientation);
+				
+				double long_axis = this.cell_ellipses.get(n).major;
+				double short_axis = this.cell_ellipses.get(n).minor;
+				XLSUtil.setCellNumber(sheet, c++, r, long_axis);
+				XLSUtil.setCellNumber(sheet, c++, r, short_axis);
 				
 				//write edge statistics
 				Edge e = frame.getEdge(n, neighbor);

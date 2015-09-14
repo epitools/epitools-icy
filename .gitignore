@@ -1,8 +1,6 @@
 .DS_Store
 *.class
 .svn
-.classpath
-.project
 .settings
 CellGraph/test-output
 CellGraph/bin

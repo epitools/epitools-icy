@@ -189,7 +189,8 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		
 		for(Edge e: stGraph.getFrame(0).edgeSet()){
 			Geometry g = e.getGeometry();
-			Shape s = writer.toShape(g.buffer(bufferWidth.getValue()));
+			Geometry buffer = g.buffer(bufferWidth.getValue());
+			Shape s = writer.toShape(buffer);
 			
 			edgeShapes.put(e, s);
 			
@@ -202,7 +203,16 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 				System.out.printf("Problems at %.2f %.2f",centroid.getX(),centroid.getY());
 			}
 			
-			ROI edge_wo_nan = ROIUtil.subtract(edge_roi, nanAreaRoi);
+			ROI edge_wo_nan = null;
+			try{
+				edge_wo_nan = ROIUtil.subtract(edge_roi, nanAreaRoi);
+			}catch(UnsupportedOperationException ex){
+				Point centroid = e.getGeometry().getCentroid();
+	
+				System.out.printf("Problems at %.2f %.2f: EdgeRoi area %.2f but intersection not available\n",
+						centroid.getX(),centroid.getY(),
+						buffer.getArea());
+			}
 			
 			edgeROIs.put(e, edge_wo_nan);
 		}
@@ -255,6 +265,13 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	private double computeEdgeIntensity(Edge e, FrameGraph frame_i){
 		
 		ROI edge_wo_nan = edgeROIs.get(e);
+		
+		if(edge_wo_nan == null){
+			Point centroid = e.getGeometry().getCentroid();
+			System.out.printf("Could not compute intensity for edge @[%.2f,%.2f]\n",
+					centroid.getX(),centroid.getY());
+			return -1;
+		}
 		
 		int z=0;
 		int t=frame_i.getFrameNo();

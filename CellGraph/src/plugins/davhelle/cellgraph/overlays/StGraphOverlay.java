@@ -9,6 +9,7 @@ import icy.painter.Overlay;
 import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
+import plugins.kernel.canvas.VtkCanvas;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -160,6 +161,9 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	@Override
     public void paint(Graphics2D g, Sequence sequence, IcyCanvas canvas)
     {
+		if (canvas instanceof VtkCanvas)
+			return;
+		
 		int time_point = Icy.getMainInterface().getFirstViewer(sequence).getPositionT();
 
 		if(time_point < stGraph.size()){

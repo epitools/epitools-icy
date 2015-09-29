@@ -143,6 +143,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			EzGUI gui, EzVarBoolean varFillingCheckbox,
 			EzVarInteger varBufferWidth,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType,
+			EzVarBoolean varMeasureAllFrames,
 			boolean normalize_intensities,
 			int channelNumber) {
 		super("Edge Intensities",stGraph);
@@ -162,7 +163,12 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.channelNumber = channelNumber;
 		this.summary_type = intensitySummaryType;
 		
-		for(int i = 0; i < 1; i++){
+		int frame_no = 1;
+		
+		if(varMeasureAllFrames.getValue())
+			frame_no = stGraph.size();
+		
+		for(int i = 0; i < frame_no; i++){
 			FrameGraph frame_i = stGraph.getFrame(i);
 			computeFrameIntensities(frame_i);
 		}

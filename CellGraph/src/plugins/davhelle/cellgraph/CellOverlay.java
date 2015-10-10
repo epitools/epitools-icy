@@ -253,7 +253,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varEdgeColor = new EzVarEnum<CellColor>("Edge color", CellColor.values(), CellColor.CYAN);
 		varEnvelopeBuffer = new EzVarInteger("Edge Intensity Buffer [px]", 1, 10, 1);
 		varEnvelopeVertex = new EzVarInteger("Vertex Intensity Buffer [px]", 1, 10, 1);
-		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 2, 1);
+		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 3, 1);
 		varVertexMode.setToolTipText("junction vertex: 0=[include],1=[exclude],2=[only]");
 		varEdgeChannel = new EzVarInteger("Color Channel",0,0,10,1);
 		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(

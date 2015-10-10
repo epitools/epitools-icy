@@ -38,7 +38,10 @@ import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
 /**
  * Interactive overlay to mark individual edges by clicking actions.
@@ -248,6 +251,14 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 * in the underlying image. According to user decision [envelope_buffer]
 	 * and [excludeVertex] the geometry will be differently shaped.
 	 * 
+	 * roi_modes:
+	 * 0 - CAP_ROUND: normal round cap buffer around the edge geometry
+	 * 1 - inner edge by intersecting the vertex geoemtry
+	 * 2 - vertex geometry
+	 * 3 - CAP_FLAT by computing the lineString of all elements in the edge_geo
+	 * 
+	 * Warning: Intersection 3 is still unstable
+	 * 
 	 * @param e Edge to compute the geometry of
 	 * @param frame_i Frame Graph of the edge
 	 * @return
@@ -258,52 +269,73 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 			e.computeGeometry(frame_i);
 		
 		Geometry e_geo = e.getGeometry();
-		Geometry edge_buffer = e_geo.buffer(envelope_buffer.getValue());
 		
+		Geometry edge_buffer = e_geo.buffer(envelope_buffer.getValue());
+		//Mode 0: Round cap
 		if(roi_mode.getValue() == 0)
 			return edge_buffer;
-		else
-		{
+		
+		//Mode 3: Flat cap
+		if(roi_mode.getValue() == 3){
 			
-			Node s = frame_i.getEdgeSource(e);
+			int quadrantSegments = 2;
+			int capGeometry = BufferParameters.CAP_FLAT;
+		
+			//transformation to coordinate array to combine all line segments
+			//to produce a single line string geometry
+			//http://stackoverflow.com/a/27815428
+			Coordinate list[] = e_geo.getCoordinates();
+			CoordinateArraySequence cas = new CoordinateArraySequence(list);
+		
+			LineString ls = new LineString(cas, factory);
+		
+			//Possibly interesting for future geometry applications
+			//Geometry edge_buffer = DouglasPeuckerSimplifier.simplify(ls,0.0001);		
 
-			double final_vertex_x = java.lang.Double.MAX_VALUE;
-			Geometry final_vertex_geo = null;
-			
-			for(Node t: frame_i.getNeighborsOf(s)){
-				Edge e2 = frame_i.getEdge(s, t);
-
-				if(e2 == e)
-					continue;
-				
-				if(!e2.hasGeometry())
-					e2.computeGeometry(frame_i);
-				
-				Geometry e_geo2 = e2.getGeometry();
-				
-				if(e_geo2.intersects(e_geo)){
-					Geometry e_vertexGeo = e_geo.intersection(e_geo2);
-					
-					double vertex_x = e_vertexGeo.getCentroid().getX();
-					
-					Geometry vertex_buffer = e_vertexGeo.buffer(
-							envelope_vertex_buffer.getValue());
-					
-					if(roi_mode.getValue() == 2)
-						if(vertex_x < final_vertex_x){
-							final_vertex_x = vertex_x;
-							final_vertex_geo = vertex_buffer;
-						}
-					
-					edge_buffer = edge_buffer.difference(vertex_buffer);
-				}
-			}
-			
-			if(roi_mode.getValue() == 2)
-				return final_vertex_geo;
-			else
-				return edge_buffer;
+			return ls.buffer(envelope_buffer.getValue(),
+				quadrantSegments,capGeometry);
 		}
+		
+		//Mode 1 & 2: Inner edge or vertex intersection
+		Node s = frame_i.getEdgeSource(e);
+
+		double final_vertex_x = java.lang.Double.MAX_VALUE;
+		Geometry final_vertex_geo = null;
+		
+		for(Node t: frame_i.getNeighborsOf(s)){
+			Edge e2 = frame_i.getEdge(s, t);
+
+			if(e2 == e)
+				continue;
+			
+			if(!e2.hasGeometry())
+				e2.computeGeometry(frame_i);
+			
+			Geometry e_geo2 = e2.getGeometry();
+			
+			if(e_geo2.intersects(e_geo)){
+				Geometry e_vertexGeo = e_geo.intersection(e_geo2);
+				
+				double vertex_x = e_vertexGeo.getCentroid().getX();
+				
+				Geometry vertex_buffer = e_vertexGeo.buffer(
+						envelope_vertex_buffer.getValue());
+				
+				if(roi_mode.getValue() == 2)
+					if(vertex_x < final_vertex_x){
+						final_vertex_x = vertex_x;
+						final_vertex_geo = vertex_buffer;
+					}
+				
+				edge_buffer = edge_buffer.difference(vertex_buffer);
+			}
+		}
+			
+		if(roi_mode.getValue() == 2)
+			return final_vertex_geo;
+		else
+			return edge_buffer;
+		
 		
 	}
 

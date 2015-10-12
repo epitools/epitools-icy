@@ -2,7 +2,6 @@
 *.class
 .svn
 .classpath
-.project
 .settings
 CellGraph/test-output
 CellGraph/bin

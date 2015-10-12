@@ -34,10 +34,9 @@ import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.DivisionOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeColorTagOverlay;
-//import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
+import plugins.davhelle.cellgraph.overlays.EdgeIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.overlays.EdgeStabilityOverlay;
-import plugins.davhelle.cellgraph.overlays.EdgeVertexIntersectionOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitColorOverlay;
 import plugins.davhelle.cellgraph.overlays.EllipseFitterOverlay;
 import plugins.davhelle.cellgraph.overlays.ElongationRatioOverlay;
@@ -154,7 +153,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarDouble					varEdgeOrientationBuffer;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_EO;
 
-	private EzVarBoolean varBooleanVertexExtract;
+	private EzVarBoolean varBooleanMeasureAll;
 
 	
 	@Override
@@ -253,7 +252,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varEdgeColor = new EzVarEnum<CellColor>("Edge color", CellColor.values(), CellColor.CYAN);
 		varEnvelopeBuffer = new EzVarInteger("Edge Intensity Buffer [px]", 1, 10, 1);
 		varEnvelopeVertex = new EzVarInteger("Vertex Intensity Buffer [px]", 1, 10, 1);
-		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 2, 1);
+		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 3, 1);
 		varVertexMode.setToolTipText("junction vertex: 0=[include],1=[exclude],2=[only]");
 		varEdgeChannel = new EzVarInteger("Color Channel",0,0,10,1);
 		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(
@@ -274,18 +273,18 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varMinimalOldSurvival);
 		
 		//Edge Intensity
-		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
 		varEnvelopeBuffer2 = new EzVarInteger("Intensity Buffer [px]", 3, 1, 10, 1);
-		varBooleanNormalize = new EzVarBoolean("Normalize intensity",true);
-		varIntegerChannel = new EzVarInteger("Channel to measure",0,0,3,1);
+		varIntegerChannel = new EzVarInteger("Measure Channel",0,0,3,1);
 		varIntensityMeasure_EI = new EzVarEnum<IntensitySummaryType>(
-				"Intensity Measure", IntensitySummaryType.values(), IntensitySummaryType.Mean);
-		varBooleanVertexExtract = new EzVarBoolean("Exclude Junction Intersections",false);
+				"Measure summary", IntensitySummaryType.values(), IntensitySummaryType.Mean);
+		varBooleanMeasureAll = new EzVarBoolean("Measure all frames",false);
+		varBooleanNormalize = new EzVarBoolean("Measure relative intensity",false);
+		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varEnvelopeBuffer2,
 				varIntegerChannel,
-				varBooleanVertexExtract,
 				varIntensityMeasure_EI,
+				varBooleanMeasureAll,
 				varBooleanNormalize,
 				varFillingCheckbox
 				);
@@ -472,24 +471,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 					true);
 			break;
 		case EDGE_INTENSITY:
-
 			sequence.addOverlay(
-					new EdgeVertexIntersectionOverlay(stGraph, sequence, this.getUI(),
+					new EdgeIntensityOverlay(
+							stGraph, sequence, this.getUI(),
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
 							varIntensityMeasure_EI,
+							varBooleanMeasureAll.getValue(),
 							varBooleanNormalize.getValue(),
-							varIntegerChannel.getValue(),
-							varBooleanVertexExtract.getValue()));
-					
-//					new EdgeIntensityOverlay(
-//							stGraph, sequence, this.getUI(),
-//							varFillingCheckbox,
-//							varEnvelopeBuffer2,
-//							varIntensityMeasure_EI,
-//							varBooleanNormalize.getValue(),
-//							varIntegerChannel.getValue()));
-
+							varIntegerChannel.getValue()));
 			break;
 
 		case CELL_GRAPH_VIEW:	

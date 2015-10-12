@@ -38,7 +38,10 @@ import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
 /**
  * Interactive overlay to mark individual edges by clicking actions.
@@ -55,13 +58,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	public static final String DESCRIPTION = "Interactive overlay to mark edges/junctions" +
 			" in the graph and follow them over time. See CELL_COLOR_TAG for usage help.\n\n" +
-			" [color]  = color to tag the edge with\n" +
-			" [buffer] = width for intensity measurement\n" +
-			" both options can be changed at runtime.\n\n" +
-			" The XLS export option in the layer panel saves" +
-			" for every selected edge the length over time in the first sheet and the mean" +
-			" intensity of the image underneath the expanded edge geometry. The column" +
-			" header provides a identification for the edge:\n\n" +
+			" All parameters are interactive and can be changed when the overlay is added\n\n" +
+			" Header in the Export XLS identifies the edge:\n\n" +
 			" [colorString] [tStart,xStart,yStart]";
 	
 	/**
@@ -102,7 +100,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	/**
 	 * Exclude vertex geometry 
 	 */
-	private EzVarInteger exclude_vertex;
+	private EzVarInteger roi_mode;
 	
 	/**
 	 * Exclude vertex geometry 
@@ -137,8 +135,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		this.envelope_buffer = varEnvelopeBuffer;
 		this.envelope_buffer.addVarChangeListener(this);
 		
-		this.exclude_vertex = varVertexMode;
-		this.exclude_vertex.addVarChangeListener(this);
+		this.roi_mode = varVertexMode;
+		this.roi_mode.addVarChangeListener(this);
 		
 		this.envelope_vertex_buffer = varVertexBuffer;
 		this.envelope_vertex_buffer.addVarChangeListener(this);
@@ -253,6 +251,14 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 * in the underlying image. According to user decision [envelope_buffer]
 	 * and [excludeVertex] the geometry will be differently shaped.
 	 * 
+	 * roi_modes:
+	 * 0 - CAP_ROUND: normal round cap buffer around the edge geometry
+	 * 1 - inner edge by intersecting the vertex geoemtry
+	 * 2 - vertex geometry
+	 * 3 - CAP_FLAT by computing the lineString of all elements in the edge_geo
+	 * 
+	 * Warning: Intersection 3 is still unstable
+	 * 
 	 * @param e Edge to compute the geometry of
 	 * @param frame_i Frame Graph of the edge
 	 * @return
@@ -263,52 +269,73 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 			e.computeGeometry(frame_i);
 		
 		Geometry e_geo = e.getGeometry();
-		Geometry edge_buffer = e_geo.buffer(envelope_buffer.getValue());
 		
-		if(exclude_vertex.getValue() == 0)
+		Geometry edge_buffer = e_geo.buffer(envelope_buffer.getValue());
+		//Mode 0: Round cap
+		if(roi_mode.getValue() == 0)
 			return edge_buffer;
-		else
-		{
+		
+		//Mode 3: Flat cap
+		if(roi_mode.getValue() == 3){
 			
-			Node s = frame_i.getEdgeSource(e);
+			int quadrantSegments = 2;
+			int capGeometry = BufferParameters.CAP_FLAT;
+		
+			//transformation to coordinate array to combine all line segments
+			//to produce a single line string geometry
+			//http://stackoverflow.com/a/27815428
+			Coordinate list[] = e_geo.getCoordinates();
+			CoordinateArraySequence cas = new CoordinateArraySequence(list);
+		
+			LineString ls = new LineString(cas, factory);
+		
+			//Possibly interesting for future geometry applications
+			//Geometry edge_buffer = DouglasPeuckerSimplifier.simplify(ls,0.0001);		
 
-			double final_vertex_x = java.lang.Double.MAX_VALUE;
-			Geometry final_vertex_geo = null;
-			
-			for(Node t: frame_i.getNeighborsOf(s)){
-				Edge e2 = frame_i.getEdge(s, t);
-
-				if(e2 == e)
-					continue;
-				
-				if(!e2.hasGeometry())
-					e2.computeGeometry(frame_i);
-				
-				Geometry e_geo2 = e2.getGeometry();
-				
-				if(e_geo2.intersects(e_geo)){
-					Geometry e_vertexGeo = e_geo.intersection(e_geo2);
-					
-					double vertex_x = e_vertexGeo.getCentroid().getX();
-					
-					Geometry vertex_buffer = e_vertexGeo.buffer(
-							envelope_vertex_buffer.getValue());
-					
-					if(exclude_vertex.getValue() == 2)
-						if(vertex_x < final_vertex_x){
-							final_vertex_x = vertex_x;
-							final_vertex_geo = vertex_buffer;
-						}
-					
-					edge_buffer = edge_buffer.difference(vertex_buffer);
-				}
-			}
-			
-			if(exclude_vertex.getValue() == 2)
-				return final_vertex_geo;
-			else
-				return edge_buffer;
+			return ls.buffer(envelope_buffer.getValue(),
+				quadrantSegments,capGeometry);
 		}
+		
+		//Mode 1 & 2: Inner edge or vertex intersection
+		Node s = frame_i.getEdgeSource(e);
+
+		double final_vertex_x = java.lang.Double.MAX_VALUE;
+		Geometry final_vertex_geo = null;
+		
+		for(Node t: frame_i.getNeighborsOf(s)){
+			Edge e2 = frame_i.getEdge(s, t);
+
+			if(e2 == e)
+				continue;
+			
+			if(!e2.hasGeometry())
+				e2.computeGeometry(frame_i);
+			
+			Geometry e_geo2 = e2.getGeometry();
+			
+			if(e_geo2.intersects(e_geo)){
+				Geometry e_vertexGeo = e_geo.intersection(e_geo2);
+				
+				double vertex_x = e_vertexGeo.getCentroid().getX();
+				
+				Geometry vertex_buffer = e_vertexGeo.buffer(
+						envelope_vertex_buffer.getValue());
+				
+				if(roi_mode.getValue() == 2)
+					if(vertex_x < final_vertex_x){
+						final_vertex_x = vertex_x;
+						final_vertex_geo = vertex_buffer;
+					}
+				
+				edge_buffer = edge_buffer.difference(vertex_buffer);
+			}
+		}
+			
+		if(roi_mode.getValue() == 2)
+			return final_vertex_geo;
+		else
+			return edge_buffer;
+		
 		
 	}
 
@@ -396,6 +423,15 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 				futureEdge.computeGeometry(futureFrame);
 				futureEdge.setColorTag(colorTag);
 				
+				//add the measurement shape if not yet present
+				if(!measurement_geometries.containsKey(futureEdge)){
+	 				Geometry measurement_geometry = 
+	 						computeMeasurementGeometry(
+	 								futureEdge,futureFrame);
+	 				measurement_geometries.put(
+	 						futureEdge, measurement_geometry);
+	 			}
+				
 				//link
 				futureEdge.setPrevious(oldEdge);
 				oldEdge.setNext(futureEdge);
@@ -480,8 +516,18 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 * @param wb workbook into which to write the edges 
 	 */
 	private void writeEdges(WritableWorkbook wb) {
-		String sheetName = String.format("Edge Length");
-		WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
+		
+		WritableSheet sheet = null; 
+		if(roi_mode.getValue() != 0)
+			sheet = XLSUtil.createNewPage(wb, "Edge ROI0 Length");
+		
+		String roiLengthSheetName = String.format("Edge ROI%d Length",
+				roi_mode.getValue());
+		WritableSheet roi_sheet = XLSUtil.createNewPage(wb, roiLengthSheetName);
+		
+		String roiAreaSheetName = String.format("Edge ROI%d Area",
+				roi_mode.getValue());
+		WritableSheet area_sheet = XLSUtil.createNewPage(wb, roiAreaSheetName);
 		
 		String intensitySheetName = String.format("Edge %s Intensity",summary_type.getValue().getDescription());
 		WritableSheet intensitySheet = XLSUtil.createNewPage(wb, intensitySheetName);
@@ -508,14 +554,28 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 							tStart,
 							xStart,
 							yStart);
-					XLSUtil.setCellString(sheet, col_no, row_no, header);
+					
+					if(roi_mode.getValue() != 0)
+						XLSUtil.setCellString(sheet, col_no, row_no, header);
+					
+					XLSUtil.setCellString(roi_sheet, col_no, row_no, header);
+					XLSUtil.setCellString(area_sheet, col_no, row_no, header);
 					XLSUtil.setCellString(intensitySheet, col_no, row_no, header);
 
 					//For every row write the length of a tagged edge
 					//leave an empty row for a time point where the edge is not present
 					row_no = tStart + 1;
-					XLSUtil.setCellNumber(sheet, col_no, row_no, edge.getGeometry().getLength());
-
+					
+					if(roi_mode.getValue() != 0){
+						Geometry edgeBuffer = edge.getGeometry().buffer(envelope_buffer.getValue());
+						XLSUtil.setCellNumber(sheet, col_no, row_no, edgeBuffer.getLength());
+					}
+					
+					Geometry edgeRoi = measurement_geometries.get(edge);
+					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, edgeRoi.getLength());
+					
+					XLSUtil.setCellNumber(area_sheet, col_no, row_no, edgeRoi.getArea());
+					
 					double meanIntensity = computeIntensity(edge);
 					XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
 					
@@ -525,8 +585,16 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 						
 						next = next.getNext();
 						row_no = next.getFrame().getFrameNo() + 1;
-						XLSUtil.setCellNumber(sheet, col_no, row_no, next.getGeometry().getLength());
 						
+						if(roi_mode.getValue() != 0){
+							Geometry nextBuffer = next.getGeometry().buffer(envelope_buffer.getValue());
+							XLSUtil.setCellNumber(sheet, col_no, row_no, nextBuffer.getLength());
+						}
+						
+						Geometry nextRoi = measurement_geometries.get(next);
+						XLSUtil.setCellNumber(roi_sheet, col_no, row_no, nextRoi.getLength());
+						XLSUtil.setCellNumber(area_sheet, col_no, row_no, nextRoi.getArea());
+
 						meanIntensity = computeIntensity(next);
 						XLSUtil.setCellNumber(intensitySheet, col_no, row_no, meanIntensity);
 						
@@ -555,11 +623,33 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		int z=0;
 		int t=edge.getFrame().getFrameNo();
 		int c=intensity_channel.getValue();
-		double envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
-				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
-
-		return envelopeMeanIntenisty;
 		
+		double envelopeMeanIntenisty = 0;
+		try{
+			envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
+				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
+			
+			if(java.lang.Double.isNaN(envelopeMeanIntenisty)){
+				envelopeMeanIntenisty = -1;
+				System.out.printf(
+						"Edge intensity @[%.0f,%.0f,%d] N.A.(-1) because area too small: %.2f\n",
+						edge.getGeometry().getCentroid().getX(),
+						edge.getGeometry().getCentroid().getY(),
+						t,
+						envelope.getArea());
+			}
+		}
+		catch(java.lang.UnsupportedOperationException e){
+			System.out.printf(
+					"Edge intensity @[%.0f,%.0f,%d] N.A.(-1) because area too small: %.2f\n",
+					edge.getGeometry().getCentroid().getX(),
+					edge.getGeometry().getCentroid().getY(),
+					t,
+					envelope.getArea());
+			envelopeMeanIntenisty = -1;
+		}
+		
+		return envelopeMeanIntenisty;
 	}
 	
 	/**

@@ -3,6 +3,7 @@ package plugins.davhelle.cellgraph.io;
 import icy.roi.ROI;
 import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
+import icy.type.point.Point5D;
 
 /**
  * Utility class for image intensity methods
@@ -35,24 +36,32 @@ public class IntensityReader {
 		
 		double intensity_readout = -1.0;
 		
-		switch (summaryType) {
-		case Max:
-			intensity_readout = ROIUtil.getMaxIntensity(sequence, roi, z, t, c);
-			break;
-		case Mean:
-			intensity_readout = ROIUtil.getMeanIntensity(sequence, roi, z, t, c);
-			break;
-		case Min:
-			intensity_readout = ROIUtil.getMinIntensity(sequence, roi, z, t, c);
-			break;
-		case StandardDeviation:
-			intensity_readout = ROIUtil.getStandardDeviation(sequence, roi, z, t, c);
-			break;
-		case Sum:
-			intensity_readout = ROIUtil.getSumIntensity(sequence, roi, z, t, c);
-			break;
-		default:
-			System.out.println("Unknown Image Summary Method");
+		try{
+			switch (summaryType) {
+			case Max:
+				intensity_readout = ROIUtil.getMaxIntensity(sequence, roi, z, t, c);
+				break;
+			case Mean:
+				intensity_readout = ROIUtil.getMeanIntensity(sequence, roi, z, t, c);
+				break;
+			case Min:
+				intensity_readout = ROIUtil.getMinIntensity(sequence, roi, z, t, c);
+				break;
+			case StandardDeviation:
+				intensity_readout = ROIUtil.getStandardDeviation(sequence, roi, z, t, c);
+				break;
+			case Sum:
+				intensity_readout = ROIUtil.getSumIntensity(sequence, roi, z, t, c);
+				break;
+			default:
+				System.out.println("Unknown Image Summary Method");
+			}
+		}
+		catch(java.lang.UnsupportedOperationException exp){
+			Point5D position5d = roi.getPosition5D();
+			System.out.printf(
+					"Could not compute intensity for roi: [%.2f,%.2f,%d,%d]\n",
+					position5d.getX(),position5d.getY(),z,t);
 		}
 		
 		return intensity_readout;

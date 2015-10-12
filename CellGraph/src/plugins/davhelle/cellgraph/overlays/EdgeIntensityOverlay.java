@@ -42,21 +42,20 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Transforms the edge geometries into ROIs and displays " +
-			"the underlying intensity (I) of the first frame." +
-			"(Current method limitation)\n\n" +
-					
-			"1. The mean I is computed from a 5px area buffer" +
-			" of the edge geometry\n\n" +
+			"Transforms the edge geometries into ROIs and displays" +
+			" the underlying intensity (I). Save the intensities via" +
+			" the layer option menu as XLS.\n\n" +
 			
-			"2. The relative I is computed by correcting for" +
-			" the avg cell background(bg) and the avg intensity" +
-			" of the neighbor edges(ne) in the 1st order" +
-			" neighborhood:\n" +
-			"    rel_I = (edge_I - bg_I) / (ne_I - bg_I)\n\n" +
+			"(i) [Measure relative intensity] computes a ratio by" +
+			" dividing the original value through intensities of" +
+			" neighboring edges and cells:\n\n" +
+			"  relative_edge_intensity = \n" +
+			"    (edge - avg_cell_background) / \n" +
+			"    (avg_neighbor_edges - avg_cell_background)\n\n" +
 			
-			"3. The noralized I is computed considering the" +
-			" maximum and minimun relative I in the frame.";
+			"(i) The color gradient is normalized by frame.\n\n" + 
+			
+			"(w) [Measure all frames] can take very long! ";
 
 	/**
 	 * JTS to AWT shape writer
@@ -104,11 +103,11 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	/**
 	 * Minimal displayed edge intensity
 	 */
-	private double min;
+	private double[] min;
 	/**
 	 * Maximal displayed edge intensity
 	 */
-	private double max;
+	private double[] max;
 
 	/**
 	 * Buffer width of the edge envelope with which to retrieve the intensities
@@ -117,12 +116,19 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 
 	/**
 	 * Flag whether to normalize the intensities
+	 * with the method inspired by 
+	 * Fernandez-Gonzalez et al. Dev.Cell (2009)
 	 */
-	private boolean normalize_intensities;
+	private boolean zallen_normalization;
 	/**
 	 * Image channel from which to retrieve the intensities
 	 */
 	private int channelNumber;
+	
+	/**
+	 * Flag whether to analyze all frames or just one
+	 */
+	private boolean analyzeAllFrames;
 	
 	/**
 	 * Intensity Summary type
@@ -143,6 +149,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			EzGUI gui, EzVarBoolean varFillingCheckbox,
 			EzVarInteger varBufferWidth,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType,
+			boolean varMeasureAllFrames,
 			boolean normalize_intensities,
 			int channelNumber) {
 		super("Edge Intensities",stGraph);
@@ -158,17 +165,23 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.cell_edges = new HashMap<Node, Double>();
 		this.sequence = sequence;
 		this.bufferWidth = varBufferWidth.getValue();
-		this.normalize_intensities = normalize_intensities;
+		this.zallen_normalization = normalize_intensities;
 		this.channelNumber = channelNumber;
 		this.summary_type = intensitySummaryType;
+		this.analyzeAllFrames = varMeasureAllFrames;
+		int frame_no = 1;
 		
-		for(int i = 0; i < 1; i++){
+		if(analyzeAllFrames)
+			frame_no = stGraph.size();
+		
+		min = new double[frame_no];
+		max = new double[frame_no];
+		
+		for(int i = 0; i < frame_no; i++){
 			FrameGraph frame_i = stGraph.getFrame(i);
 			computeFrameIntensities(frame_i);
 		}
 		
-		super.setGradientMaximum(max);
-		super.setGradientMinimum(min);
 		super.setGradientScale(-0.4);
 		super.setGradientShift(0.8);
 		super.setGradientControlsVisibility(true);
@@ -181,66 +194,70 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 */
 	private void computeFrameIntensities(FrameGraph frame_i) {
 		
-		//double sum_mean_cell_background = 0;
+		//Initialize Progress bar
+		gui.setProgressBarValue(0.01);
 		int gui_counter = 0;
 		
+		double total_count = 2 * frame_i.edgeSet().size();
+		if(zallen_normalization)
+			total_count += frame_i.vertexSet().size();
+		
+		int frameNo = frame_i.getFrameNo();
+		String frame_str = String.format(" in frame %d...",
+				frameNo);
+		
 		//Compute individual edge intensities
-		gui.setProgressBarMessage("Computing Edge Intensities...");
+		gui.setProgressBarMessage("Computing Edge Geometries"+frame_str);
 		for(Edge e: frame_i.edgeSet()){
 			if(!e.hasGeometry())
 				e.computeGeometry(frame_i);
-			
-			computeEdgeIntensity(e,frame_i);
-			//double edge_intensity = computeEdgeIntensity(e,frame_i);
-			//sum_mean_cell_background += edge_intensity;
-			gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
+			gui.setProgressBarValue(gui_counter++/total_count);
 		}
-
-		gui.setProgressBarValue(0);
-		gui_counter = 0;
-		gui.setProgressBarMessage("Computing Cell Intensities...");
-		for(Node n: frame_i.vertexSet()){
-			computeCellIntensity(n);
-			gui.setProgressBarValue(gui_counter++/(double)frame_i.vertexSet().size());
-		}
-
-		//normalization should be done through
-		//cell intensity (see zallen paper)
-
-		this.min = Double.MAX_VALUE;
-		this.max = Double.MIN_VALUE;
-
 		
-		if(normalize_intensities){
-			gui.setProgressBarValue(0);
-			gui_counter = 0;
-			gui.setProgressBarMessage("Normalizing Intensities...");
+		gui.setProgressBarMessage("Computing Edge Intensities"+frame_str);
+		for(Edge e: frame_i.edgeSet()){
+			computeEdgeIntensity(e,frame_i);
+			gui.setProgressBarValue(gui_counter++/total_count);
+		}
+
+		//Edge Normalization and limit identification
+		
+		this.min[frameNo] = Double.MAX_VALUE;
+		this.max[frameNo] = Double.MIN_VALUE;
+
+		if(zallen_normalization){
+			
+			//normalization through nearby
+			//cell intensities (see zallen paper)
+			
+			gui.setProgressBarMessage("Computing Cell Intensities"+frame_str);
+			for(Node n: frame_i.vertexSet()){
+				computeCellIntensity(n);
+				gui.setProgressBarValue(gui_counter++/total_count);
+			}
 
 			for(Edge e: frame_i.edgeSet()){
 
 				double rel_value = computeRelativeEdgeIntensity(e,frame_i);
 				relativeEdgeIntensity.put(e, rel_value);
 
-				if(rel_value > max)
-					max = rel_value;
-				else if(rel_value < min)
-					min = rel_value;
-
-				gui.setProgressBarValue(gui_counter++/(double)frame_i.edgeSet().size());
-
+				if(rel_value > max[frameNo])
+					max[frameNo] = rel_value;
+				else if(rel_value < min[frameNo])
+					min[frameNo] = rel_value;
 			}
 		}
 		else{
 			for(Edge e: frame_i.edgeSet()){
 
 				double rel_value = e.getValue();
-				//put same raw values in data fieds
+				//put same raw values in data fields
 				relativeEdgeIntensity.put(e, rel_value);
 
-				if(rel_value > max)
-					max = rel_value;
-				else if(rel_value < min)
-					min = rel_value;
+				if(rel_value > max[frameNo])
+					max[frameNo] = rel_value;
+				else if(rel_value < min[frameNo])
+					min[frameNo] = rel_value;
 			}
 		}
 		
@@ -248,7 +265,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		for(Edge e: frame_i.edgeSet()){
 			//update from relative to normalized
 			double rel_value = relativeEdgeIntensity.get(e);
-			double normalized_value = (rel_value - min)/(max - min);
+			double normalized_value = 
+					(rel_value - min[frameNo])/(max[frameNo] - min[frameNo]);
 			normalizedEdgeIntensity.put(e,normalized_value);
 
 		}
@@ -273,6 +291,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		
 		this.buffer_shape.put(e, egde_shape);
 		
+		
 		//TODO possibly add a direct ROI field to edge class
 		ShapeRoi edge_roi = null;
 		try{
@@ -280,7 +299,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		}catch(Exception ex){
 			Point centroid = e.getGeometry().getCentroid();
 			System.out.printf("Problems at %.2f %.2f",centroid.getX(),centroid.getY());
-			return 0.0;
+			return -1.0;
 		}
 		
 		buffer_roi.put(e, edge_roi);
@@ -290,6 +309,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		int c=channelNumber;
 		
 		//TODO possibly use getIntensityInfo here
+		
 		double mean_intensity = 
 				IntensityReader.measureRoiIntensity(
 						sequence, edge_roi, z, t, c, summary_type.getValue());
@@ -398,30 +418,35 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	@Override
     public void paintFrame(Graphics2D g, FrameGraph frame_i){
 		
-		if(frame_i.getFrameNo() != 0)
+		int frameNo = frame_i.getFrameNo();
+		
+		if(frameNo > 0 && !analyzeAllFrames)
 			return;
+		
+		super.setGradientMaximum(max[frameNo]);
+		super.setGradientMinimum(min[frameNo]);
 		
 		g.setColor(Color.blue);
 		
-		int i = 0;
 		//paint all the edges of the graph
 		for(Edge edge: frame_i.edgeSet()){
 
 			assert(buffer_shape.containsKey(edge));
 
 			Shape egde_shape = buffer_shape.get(edge);
-
-			Color hsbColor = super.getScaledColor(relativeEdgeIntensity.get(edge));
-
+			
+			double intensity_measure = relativeEdgeIntensity.get(edge);
+			
+			if(intensity_measure < 0.0)
+				continue;
+	
+			Color hsbColor = super.getScaledColor(intensity_measure);
 			g.setColor(hsbColor);
 
 			if(fillEdgeCheckbox.getValue())
 				g.fill(egde_shape);
 			else
 				g.draw(egde_shape);
-			
-			if(i++ == 10)
-				break;
 
 		}
 
@@ -430,34 +455,45 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		
-		if(frame.getFrameNo() != 0)
+		if(frame.getFrameNo() != 1 && !analyzeAllFrames)
 			return;
 		
-		XLSUtil.setCellString(sheet, 0, 0, "Edge id");
-		XLSUtil.setCellString(sheet, 1, 0, "Edge x");
-		XLSUtil.setCellString(sheet, 2, 0, "Edge y");
-		XLSUtil.setCellString(sheet, 3, 0, String.format("%s Edge Intensity",summary_type.getValue().getDescription()));
-		XLSUtil.setCellString(sheet, 4, 0, "Relative Edge intensity");
-		XLSUtil.setCellString(sheet, 5, 0, "Normalized Edge intensity");
-
-		int row_no = 1;
+		int c = 0;
+		int r = 0;
+		
+		XLSUtil.setCellString(sheet, c++, r, "Edge id");
+		XLSUtil.setCellString(sheet, c++, r, "Edge x");
+		XLSUtil.setCellString(sheet, c++, r, "Edge y");
+		XLSUtil.setCellString(sheet, c++, r, "Cell 1");
+		XLSUtil.setCellString(sheet, c++, r, "Cell 2");
+		XLSUtil.setCellString(sheet, c++, r, String.format("%s Edge Intensity",summary_type.getValue().getDescription()));
+		XLSUtil.setCellString(sheet, c++, r, "Relative Edge intensity");
+		XLSUtil.setCellString(sheet, c++, r, "Normalized Edge intensity");
 
 		for(Edge e: frame.edgeSet()){
+			
+			//reset column and increment row
+			c=0;
+			r++;
 			
 			Point centroid = e.getGeometry().getCentroid();
 			long edge_id = e.getPairCode(frame);
 			
+			int target = frame.getEdgeTarget(e).getTrackID();
+			int source = frame.getEdgeSource(e).getTrackID();
+			
 			double relative_value = relativeEdgeIntensity.get(e);
 			double normalized_value = normalizedEdgeIntensity.get(e);
 
-			XLSUtil.setCellNumber(sheet, 0, row_no, edge_id);
-			XLSUtil.setCellNumber(sheet, 1, row_no, centroid.getX());
-			XLSUtil.setCellNumber(sheet, 2, row_no, centroid.getY());
-			XLSUtil.setCellNumber(sheet, 3, row_no, e.getValue());
-			XLSUtil.setCellNumber(sheet, 4, row_no, relative_value);
-			XLSUtil.setCellNumber(sheet, 5, row_no, normalized_value);
+			XLSUtil.setCellNumber(sheet, c++, r, edge_id);
+			XLSUtil.setCellNumber(sheet, c++, r, centroid.getX());
+			XLSUtil.setCellNumber(sheet, c++, r, centroid.getY());
+			XLSUtil.setCellNumber(sheet, c++, r, target);
+			XLSUtil.setCellNumber(sheet, c++, r, source);
+			XLSUtil.setCellNumber(sheet, c++, r, e.getValue());
+			XLSUtil.setCellNumber(sheet, c++, r, relative_value);
+			XLSUtil.setCellNumber(sheet, c++, r, normalized_value);
 
-			row_no++;
 		}
 
 	}

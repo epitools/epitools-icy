@@ -24,6 +24,7 @@ import vtk.vtkSimplePointsReader;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.math.Vector3D;
 
 /**
  * Test Overlay to try out new ideas
@@ -125,6 +126,9 @@ public class TestOverlay extends StGraphOverlay {
 	private void computeAreaRatio(Node cell, IcyBufferedImage height_image) {
 		Geometry geo = cell.getGeometry();
 		
+		
+		Coordinate scale = new Coordinate(0.103, 0.103, 0.22);
+		
 		//Compute normal
 		Coordinate n = new Coordinate(0, 0, 0);
 		
@@ -136,15 +140,19 @@ public class TestOverlay extends StGraphOverlay {
 
 			current.z = height_image.getData((int)current.y,(int)current.x,0);
 			
-			current.x *= 0.103;
-			current.y *= 0.103;
-			current.z *= 0.22;
+			current.x *= scale.x;
+			current.y *= scale.y;
+			current.z *= scale.z;
+			
+			//current = Vector3D.normalize(current);
 			
 			next.z = height_image.getData((int)next.y,(int)next.x,0);
 			
-			next.x *= 0.103;
-			next.y *= 0.103;
-			next.z *= 0.22;
+			next.x *= scale.x;
+			next.y *= scale.y;
+			next.z *= scale.z;
+			
+			//next = Vector3D.normalize(next);
 			
 			n.x = n.x + ((current.y - next.y) * (current.z + next.z));
 			n.y = n.y + ((current.z - next.z) * (current.x + next.x));
@@ -152,16 +160,9 @@ public class TestOverlay extends StGraphOverlay {
 		}
 		
 		//normalize vector
-		double length = Math.sqrt(
-				(n.x * n.x) + 
-				(n.y * n.y) + 
-				(n.z * n.z) );
+		n = Vector3D.normalize(n);
 		
-		n.x = n.x / length;
-		n.y = n.y / length;
-		n.z = n.z / length;
-		
-		double conversionXY = 0.103 * 0.103;
+		double conversionXY = scale.x * scale.y;
 		
 		double area2D = geo.getArea() * conversionXY;
 		double area3D = area2D / Math.abs(n.z);

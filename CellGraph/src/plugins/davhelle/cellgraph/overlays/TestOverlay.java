@@ -6,6 +6,7 @@ import icy.image.IcyBufferedImage;
 import icy.sequence.Sequence;
 import icy.type.DataType;
 import icy.type.collection.array.Array1DUtil;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -39,8 +40,9 @@ public class TestOverlay extends StGraphOverlay {
 			"Modify cellgraph.overlays.TestOverlay.java" +
 			"to work with this";
 	
-	HashMap<Node,java.lang.Double> ratio_map = new HashMap<Node,java.lang.Double>();
-			
+	HashMap<Node,java.lang.Double> normalZ_map = new HashMap<Node,java.lang.Double>();
+	HashMap<Node,java.lang.Double> area_map = new HashMap<Node,java.lang.Double>();
+		
 	/**
 	 * @param stGraph graph object for which to create the overlay
 	 * @param sequence sequence on which the overlay will be added
@@ -98,8 +100,8 @@ public class TestOverlay extends StGraphOverlay {
 		double min = 2;
 		double max = -1;
 		
-		for(Node n: ratio_map.keySet()){
-			double ratio = ratio_map.get(n);
+		for(Node n: normalZ_map.keySet()){
+			double ratio = normalZ_map.get(n);
 			
 			if(ratio < min)
 				min = ratio;
@@ -173,13 +175,14 @@ public class TestOverlay extends StGraphOverlay {
 		//System.out.printf("Projected area in 2Dz:\t%f\n", area2D );
 		//System.out.printf("Area normalized in 3D:\t%f\n", area3D );
 		//System.out.printf("Ratio: %.3f\n", );
-		String outputString = String.format("[%.0f,%.0f]\t%.2f\t%.2f\t%.2f",
-				cell.getCentroid().getX(),cell.getCentroid().getY(),
-				area2D,area3D,percent);
-		
-		System.out.println(outputString);
+//		String outputString = String.format("[%.0f,%.0f]\t%.2f\t%.2f\t%.2f",
+//				cell.getCentroid().getX(),cell.getCentroid().getY(),
+//				area2D,area3D,percent);
+//		
+//		System.out.println(outputString);
 		//ratio_map.put(cell, ratio);
-		ratio_map.put(cell, Math.abs(n.z));
+		normalZ_map.put(cell, Math.abs(n.z));
+		area_map.put(cell, area2D);
 	}
 
 	/* (non-Javadoc)
@@ -191,9 +194,9 @@ public class TestOverlay extends StGraphOverlay {
     		g.setFont(new Font("Arial", Font.PLAIN, fontSize));
 		
 		for(Node cell: frame_i.vertexSet()){
-			if(ratio_map.containsKey(cell)){
+			if(normalZ_map.containsKey(cell)){
 				
-				double ratio = ratio_map.get(cell);
+				double ratio = normalZ_map.get(cell);
 				
 				Color c = super.getScaledColor(ratio);
 				
@@ -225,7 +228,31 @@ public class TestOverlay extends StGraphOverlay {
 	 */
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
+		
+		if(frame.getFrameNo() != 0)
+			return;
+		
+		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
+		XLSUtil.setCellString(sheet, 1, 0, "Cell area");
+		XLSUtil.setCellString(sheet, 2, 0, "Projection bias");
+		XLSUtil.setCellString(sheet, 3, 0, "Position");
 
+		int row_no = 1;
+		for(Node node: frame.vertexSet()){
+			String position = "inner";
+			
+			
+			XLSUtil.setCellNumber(sheet, 0, row_no, node.getTrackID());
+			XLSUtil.setCellNumber(sheet, 1, row_no, area_map.get(node));
+			XLSUtil.setCellNumber(sheet, 2, row_no, normalZ_map.get(node));
+			
+			if(node.onBoundary())
+				position = "border";
+			
+			XLSUtil.setCellString(sheet, 3, row_no, position);
+			
+			row_no++;
+		}
 	}
 
 }

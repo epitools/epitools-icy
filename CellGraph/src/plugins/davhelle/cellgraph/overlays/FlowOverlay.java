@@ -1,15 +1,21 @@
 package plugins.davhelle.cellgraph.overlays;
 
+import icy.util.XMLUtil;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Line2D.Double;
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import jxl.write.WritableSheet;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.misc.CatmullRom;
@@ -85,7 +91,7 @@ public class FlowOverlay extends StGraphOverlay {
             		smoothFlow.put(n, smooth_path);
             }
             
-            	
+            saveXML(new File("/Users/davide/Desktop/flowTrack.xml"));
 		}
 		
 	
@@ -120,6 +126,72 @@ public class FlowOverlay extends StGraphOverlay {
 		}
 			
 
+	}
+	
+	/**
+	 * save the particleArrayList in XML.
+	 * adapted from plugins.fab.trackgenerator.BenchmarkSequence
+	 * 
+	 * @param XMLFile
+	 */
+	public void saveXML( File XMLFile )
+	{
+
+		Document document = XMLUtil.createDocument( true );
+		Element documentElement = document.getDocumentElement();
+		
+		Element versionElement = XMLUtil.addElement( 
+				documentElement , "trackfile" ); 
+		versionElement.setAttribute("version", "1");
+
+		Element trackGroupElement = XMLUtil.addElement( 
+				documentElement , "trackgroup" );
+		
+		for(Node n: stGraph.getFrame(0).vertexSet()){
+			
+			if(!n.hasNext())
+				continue;
+			
+			Element trackElement = XMLUtil.addElement( 
+					trackGroupElement , "track" );				
+			XMLUtil.setAttributeIntValue( 
+					trackElement , "id" , n.getTrackID() );
+			
+			//Add initial position
+			addDetection(n, trackElement, document);
+			
+			while(n.hasNext()){
+				n = n.getNext();
+				addDetection(n, trackElement, document);
+			}
+		}
+		
+		XMLUtil.saveDocument( document , XMLFile );
+	}
+
+	/**
+	 * @param n
+	 * @param track
+	 * @param document
+	 */
+	private void addDetection(Node n, Element track, Document document) {
+		Element detection = document.createElement("detection");
+		track.appendChild( detection );
+
+		Coordinate centroid = n.getCentroid().getCoordinate();
+		double x = roundDecimals2(centroid.x);
+		double y = roundDecimals2(centroid.y);
+		int t = n.getBelongingFrame().getFrameNo();
+		
+		XMLUtil.setAttributeDoubleValue( detection , "x" , x );
+		XMLUtil.setAttributeDoubleValue( detection , "y" , y );
+		XMLUtil.setAttributeIntValue( detection , "t" , t );
+	}
+	
+	private double roundDecimals2(double value) {
+		value = value * 1000d;
+		value = Math.round(value);
+		return value/1000d;		
 	}
 
 	@Override

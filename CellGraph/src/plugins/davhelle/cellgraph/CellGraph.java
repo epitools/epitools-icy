@@ -405,6 +405,9 @@ public class CellGraph extends EzPlug implements EzStoppable
 				"Mesh file required to run plugin! Please set mesh file"))
 			return true;
 		
+		if(input_file_paths[0].endsWith(".wkt"))
+			varInput.setValue(InputType.WKT);
+		
 		for(int i=0; i< input_file_paths.length; i++ ){
 			
 			String abs_path = input_file_paths[i];

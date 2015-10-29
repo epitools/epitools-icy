@@ -33,6 +33,7 @@ public class FlowOverlay extends StGraphOverlay {
 	HashMap<Node,LineString> flow = new HashMap<Node,LineString>();
 	HashMap<Node,Geometry> simpleFlow = new HashMap<Node, Geometry>();
 	HashMap<Node,LineString> smoothFlow = new HashMap<Node, LineString>();
+	private int smooth_interval = 10;
 	
 	ShapeWriter writer = new ShapeWriter();
 
@@ -69,7 +70,7 @@ public class FlowOverlay extends StGraphOverlay {
             
             List<Coordinate> raw = new ArrayList<Coordinate>();
             
-            for(int j=0; j < list.size()-1; j+=15){
+            for(int j=0; j < list.size()-1; j+=smooth_interval){
             		raw.add(list.get(j));
             }
             
@@ -79,7 +80,7 @@ public class FlowOverlay extends StGraphOverlay {
             List<Coordinate> spline = new ArrayList<Coordinate>(); 
             
             try {
-				spline = CatmullRom.interpolate(raw, 20);
+				spline = CatmullRom.interpolate(raw, smooth_interval + 1);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -130,13 +131,17 @@ public class FlowOverlay extends StGraphOverlay {
 	
 	/**
 	 * save the particleArrayList in XML.
-	 * adapted from plugins.fab.trackgenerator.BenchmarkSequence
+	 * adapted from 
+	 *  - plugins.fab.trackgenerator.BenchmarkSequence
+	 *  - plugins.fab.trackmanager.TrackManager
 	 * 
 	 * @param XMLFile
 	 */
 	public void saveXML( File XMLFile )
 	{
 
+		boolean export_smooth = true;
+		
 		Document document = XMLUtil.createDocument( true );
 		Element documentElement = document.getDocumentElement();
 		
@@ -149,20 +154,50 @@ public class FlowOverlay extends StGraphOverlay {
 		
 		for(Node n: stGraph.getFrame(0).vertexSet()){
 			
-			if(!n.hasNext())
-				continue;
-			
-			Element trackElement = XMLUtil.addElement( 
-					trackGroupElement , "track" );				
-			XMLUtil.setAttributeIntValue( 
-					trackElement , "id" , n.getTrackID() );
-			
-			//Add initial position
-			addDetection(n, trackElement, document);
-			
-			while(n.hasNext()){
-				n = n.getNext();
+			if(export_smooth){
+				if(!smoothFlow.containsKey(n))
+					continue;
+				
+				Element trackElement = XMLUtil.addElement( 
+						trackGroupElement , "track" );				
+				XMLUtil.setAttributeIntValue( 
+						trackElement , "id" , n.getTrackID() );
+				
+				Coordinate[] smooth_track = smoothFlow.get(n).getCoordinates();
+				int smooth_length = smooth_track.length;
+				
+				for(int i=0; i < smooth_length; i++){
+						
+					Element detection = document.createElement("detection");
+					trackElement.appendChild( detection );
+
+					Coordinate centroid = smooth_track[i];
+					double x = roundDecimals2(centroid.x);
+					double y = roundDecimals2(centroid.y);
+					
+					XMLUtil.setAttributeDoubleValue( detection , "x" , x );
+					XMLUtil.setAttributeDoubleValue( detection , "y" , y );
+					XMLUtil.setAttributeIntValue( detection , "t" , i );
+					
+				}
+				
+			}
+			else{
+				if(!n.hasNext())
+					continue;
+				
+				Element trackElement = XMLUtil.addElement( 
+						trackGroupElement , "track" );				
+				XMLUtil.setAttributeIntValue( 
+						trackElement , "id" , n.getTrackID() );
+				
+				//Add initial position
 				addDetection(n, trackElement, document);
+				
+				while(n.hasNext()){
+					n = n.getNext();
+					addDetection(n, trackElement, document);
+				}
 			}
 		}
 		
@@ -188,6 +223,11 @@ public class FlowOverlay extends StGraphOverlay {
 		XMLUtil.setAttributeIntValue( detection , "t" , t );
 	}
 	
+	/**
+	 * from plugins.fab.trackgenerator.BenchmarkSequence
+	 * @param value
+	 * @return
+	 */
 	private double roundDecimals2(double value) {
 		value = value * 1000d;
 		value = Math.round(value);

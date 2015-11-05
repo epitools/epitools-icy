@@ -33,7 +33,7 @@ import com.vividsolutions.jts.math.Vector3D;
  * @author Davide Heller
  *
  */
-public class TestOverlay extends StGraphOverlay {
+public class ProjectionOverlay extends StGraphOverlay {
 	
 	public static final String DESCRIPTION = 
 			"Test overlay to try out new ideas. " +
@@ -47,7 +47,7 @@ public class TestOverlay extends StGraphOverlay {
 	 * @param stGraph graph object for which to create the overlay
 	 * @param sequence sequence on which the overlay will be added
 	 */
-	public TestOverlay(SpatioTemporalGraph stGraph, Sequence sequence) {
+	public ProjectionOverlay(SpatioTemporalGraph stGraph, Sequence sequence) {
 		super("Test Overlay", stGraph);
 
 		//Default action. Just displays a welcome message

@@ -42,6 +42,8 @@ public class ProjectionOverlay extends StGraphOverlay {
 	
 	HashMap<Node,java.lang.Double> normalZ_map = new HashMap<Node,java.lang.Double>();
 	HashMap<Node,java.lang.Double> area_map = new HashMap<Node,java.lang.Double>();
+
+	private Coordinate pixel_size;
 		
 	/**
 	 * @param stGraph graph object for which to create the overlay
@@ -49,6 +51,12 @@ public class ProjectionOverlay extends StGraphOverlay {
 	 */
 	public ProjectionOverlay(SpatioTemporalGraph stGraph, Sequence sequence) {
 		super("Test Overlay", stGraph);
+
+		//use data from sequence window to input pixel size
+		pixel_size = new Coordinate(
+				sequence.getPixelSizeX(), 
+				sequence.getPixelSizeY(), 
+				sequence.getPixelSizeZ());
 
 		//Default action. Just displays a welcome message
 		new AnnounceFrame("Executed cellgraph.overlays.TestOverlay successfully!",5);
@@ -120,17 +128,27 @@ public class ProjectionOverlay extends StGraphOverlay {
 		super.setGradientControlsVisibility(true);
 
 	}
+	
+	/**
+	 * Utility to scale coordinate by a scaling factor
+	 * 
+	 * @param c coordinate to scale
+	 * @param scale scaling values in coordinate form
+	 */
+	private void scaleCoordinate(Coordinate c, Coordinate scale){
+		c.x *= scale.x;
+		c.y *= scale.y;
+		c.z *= scale.z;
+	}
 
 	/**
+	 * 
 	 * @param cell
 	 * @param height_image
 	 */
 	private void computeAreaRatio(Node cell, IcyBufferedImage height_image) {
 		Geometry geo = cell.getGeometry();
-		
-		
-		Coordinate scale = new Coordinate(0.103, 0.103, 0.22);
-		
+
 		//Compute normal
 		Coordinate n = new Coordinate(0, 0, 0);
 		
@@ -141,18 +159,12 @@ public class ProjectionOverlay extends StGraphOverlay {
 			Coordinate next = new Coordinate(vertices[i + 1]);
 
 			current.z = height_image.getData((int)current.y,(int)current.x,0);
-			
-			current.x *= scale.x;
-			current.y *= scale.y;
-			current.z *= scale.z;
+			scaleCoordinate(current, pixel_size);
 			
 			//current = Vector3D.normalize(current);
 			
 			next.z = height_image.getData((int)next.y,(int)next.x,0);
-			
-			next.x *= scale.x;
-			next.y *= scale.y;
-			next.z *= scale.z;
+			scaleCoordinate(next, pixel_size);
 			
 			//next = Vector3D.normalize(next);
 			
@@ -164,7 +176,7 @@ public class ProjectionOverlay extends StGraphOverlay {
 		//normalize vector
 		n = Vector3D.normalize(n);
 		
-		double conversionXY = scale.x * scale.y;
+		double conversionXY = pixel_size.x * pixel_size.y;
 		
 		double area2D = geo.getArea() * conversionXY;
 		double area3D = area2D / Math.abs(n.z);

@@ -297,6 +297,8 @@ public class ProjectionOverlay extends StGraphOverlay {
 		XLSUtil.setCellString(sheet, 3, 0, "Unit n.y");
 		XLSUtil.setCellString(sheet, 4, 0, "Unit n.z");
 		XLSUtil.setCellString(sheet, 5, 0, "Position");
+		XLSUtil.setCellString(sheet, 6, 0, "Centroid x");
+		XLSUtil.setCellString(sheet, 7, 0, "Centroid y");
 		
 		int row_no = 1;
 		for(Node node: frame.vertexSet()){
@@ -315,6 +317,8 @@ public class ProjectionOverlay extends StGraphOverlay {
 				position = "border";
 			
 			XLSUtil.setCellString(sheet, 5, row_no, position);
+			XLSUtil.setCellNumber(sheet, 6, row_no, node.getCentroid().getX());
+			XLSUtil.setCellNumber(sheet, 7, row_no, node.getCentroid().getY());
 			
 			row_no++;
 		}

@@ -28,12 +28,28 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
+/**
+ * Generate smooth view of the off cell center path.
+ * 
+ * Automatically exports path to XML format compatible with TrackManager.
+ * 
+ * [STILL IN TEST PHASE, NOT ACCESSIBLE THROUGH MAIN GUI!]
+ * 
+ * @author Davide Heller
+ *
+ */
 public class FlowOverlay extends StGraphOverlay {
+	
+	public static final String DESCRIPTION =
+			"Overlay representing the tracking positions of cell centers" +
+			"as smooth line";
 	
 	HashMap<Node,LineString> flow = new HashMap<Node,LineString>();
 	HashMap<Node,Geometry> simpleFlow = new HashMap<Node, Geometry>();
 	HashMap<Node,LineString> smoothFlow = new HashMap<Node, LineString>();
+	
 	private int smooth_interval = 10;
+	private int flow_paint_style = 0;
 	
 	ShapeWriter writer = new ShapeWriter();
 
@@ -92,9 +108,9 @@ public class FlowOverlay extends StGraphOverlay {
             		smoothFlow.put(n, smooth_path);
             }
             
-            saveXML(new File("/Users/davide/Desktop/flowTrack.xml"));
 		}
 		
+		saveXML(new File("/Users/davide/Desktop/flowTrack.xml"));
 	
 	}
 
@@ -102,27 +118,37 @@ public class FlowOverlay extends StGraphOverlay {
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		
 		for(Node n: frame_i.vertexSet()){
-			
+
 			n=n.getFirst();
-			if(flow.containsKey(n)){
-				LineString s = flow.get(n);
-				Shape flow = writer.toShape(s);
-				g.setColor(Color.cyan);
-				//g.draw(flow);
-			}
-			
-			if(smoothFlow.containsKey(n)){
-				LineString s = smoothFlow.get(n);
-				Shape flow = writer.toShape(s);
-				g.setColor(Color.blue);
-				g.draw(flow);
-			}
-			
-			if(simpleFlow.containsKey(n)){
-				Geometry s = simpleFlow.get(n);
-				Shape flow = writer.toShape(s);
-				g.setColor(Color.green);
-				//g.draw(flow);
+
+			switch( flow_paint_style ){
+
+			case 0:
+				if(flow.containsKey(n)){
+					LineString s = flow.get(n);
+					Shape flow = writer.toShape(s);
+					g.setColor(Color.cyan);
+					g.draw(flow);
+				}
+				break;
+			case 1:
+				if(smoothFlow.containsKey(n)){
+					LineString s = smoothFlow.get(n);
+					Shape flow = writer.toShape(s);
+					g.setColor(Color.blue);
+					g.draw(flow);
+				}
+				break;
+			case 3:
+				if(simpleFlow.containsKey(n)){
+					Geometry s = simpleFlow.get(n);
+					Shape flow = writer.toShape(s);
+					g.setColor(Color.green);
+					g.draw(flow);
+				}
+				break;
+			default:
+				continue;
 			}
 		}
 			

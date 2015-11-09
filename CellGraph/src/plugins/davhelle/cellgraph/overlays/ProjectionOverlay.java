@@ -49,7 +49,7 @@ public class ProjectionOverlay extends StGraphOverlay {
 			" in EpiTools for Matlab.\n\n" +
 			"[Please verify the pixel size in the sequence properties to ensure correct scaling!]";
 	
-	HashMap<Node,java.lang.Double> normalZ_map = new HashMap<Node,java.lang.Double>();
+	HashMap<Node,Coordinate> normal_map = new HashMap<Node,Coordinate>();
 
 	private Coordinate pixel_size;
 	private Sequence sequence;
@@ -138,8 +138,8 @@ public class ProjectionOverlay extends StGraphOverlay {
 		double min = super.getGradientMinimum();
 		double max = super.getGradientMaximum();
 		
-		for(Node n: normalZ_map.keySet()){
-			double ratio = normalZ_map.get(n);
+		for(Node n: normal_map.keySet()){
+			double ratio = Math.abs(normal_map.get(n).z);
 			
 			if(ratio < min)
 				min = ratio;
@@ -240,7 +240,7 @@ public class ProjectionOverlay extends StGraphOverlay {
 		//normalize vector
 		n = Vector3D.normalize(n);
 
-		normalZ_map.put(cell, Math.abs(n.z));
+		normal_map.put(cell, n);
 	}
 
 	/* (non-Javadoc)
@@ -250,9 +250,9 @@ public class ProjectionOverlay extends StGraphOverlay {
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		
 		for(Node cell: frame_i.vertexSet()){
-			if(normalZ_map.containsKey(cell)){
+			if(normal_map.containsKey(cell)){
 				
-				double ratio = normalZ_map.get(cell);
+				double ratio = Math.abs(normal_map.get(cell).z);
 				
 				Color c = super.getScaledColor(ratio);
 				
@@ -290,8 +290,10 @@ public class ProjectionOverlay extends StGraphOverlay {
 		
 		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
 		XLSUtil.setCellString(sheet, 1, 0, "Projection area");
-		XLSUtil.setCellString(sheet, 2, 0, "Projection bias");
-		XLSUtil.setCellString(sheet, 3, 0, "Position");
+		XLSUtil.setCellString(sheet, 2, 0, "Unit Normal x");
+		XLSUtil.setCellString(sheet, 3, 0, "Unit Normal y");
+		XLSUtil.setCellString(sheet, 4, 0, "Unit Normal z");
+		XLSUtil.setCellString(sheet, 5, 0, "Position");
 		
 		int row_no = 1;
 		for(Node node: frame.vertexSet()){
@@ -302,12 +304,14 @@ public class ProjectionOverlay extends StGraphOverlay {
 			double area2D = node.getGeometry().getArea() * pixel_size.x * pixel_size.y;
 			XLSUtil.setCellNumber(sheet, 1, row_no, area2D);
 			
-			XLSUtil.setCellNumber(sheet, 2, row_no, normalZ_map.get(node));
+			XLSUtil.setCellNumber(sheet, 2, row_no, normal_map.get(node).x);
+			XLSUtil.setCellNumber(sheet, 3, row_no, normal_map.get(node).y);
+			XLSUtil.setCellNumber(sheet, 4, row_no, normal_map.get(node).z);
 			
 			if(node.onBoundary())
 				position = "border";
 			
-			XLSUtil.setCellString(sheet, 3, row_no, position);
+			XLSUtil.setCellString(sheet, 5, row_no, position);
 			
 			row_no++;
 		}

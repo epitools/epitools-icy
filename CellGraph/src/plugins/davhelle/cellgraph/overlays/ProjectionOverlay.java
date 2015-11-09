@@ -53,6 +53,7 @@ public class ProjectionOverlay extends StGraphOverlay {
 
 	private Coordinate pixel_size;
 	private Sequence sequence;
+	private boolean analyzeAllFrames;
 		
 	/**
 	 * @param stGraph graph object for which to create the overlay
@@ -66,10 +67,12 @@ public class ProjectionOverlay extends StGraphOverlay {
 		super("Projection overlay", stGraph);
 
 		//use data from sequence window to input pixel size
-		pixel_size = new Coordinate(
+		this.pixel_size = new Coordinate(
 				sequence.getPixelSizeX(), 
 				sequence.getPixelSizeY(), 
 				sequence.getPixelSizeZ());
+		
+		this.analyzeAllFrames = analyzeAllFrames;
 		
 		//initialize gradient parameters
 		super.setGradientMaximum(-1);
@@ -139,13 +142,13 @@ public class ProjectionOverlay extends StGraphOverlay {
 		double max = super.getGradientMaximum();
 		
 		for(Node n: normal_map.keySet()){
-			double ratio = Math.abs(normal_map.get(n).z);
+			double z = Math.abs(normal_map.get(n).z);
 			
-			if(ratio < min)
-				min = ratio;
+			if(z < min)
+				min = z;
 			
-			if(ratio > max)
-				max = ratio;
+			if(z > max)
+				max = z;
 		}
 		
 		super.setGradientMaximum(max);
@@ -285,14 +288,14 @@ public class ProjectionOverlay extends StGraphOverlay {
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		
-		if(frame.getFrameNo() != 0)
+		if(frame.getFrameNo() != 0 && !analyzeAllFrames)
 			return;
 		
 		XLSUtil.setCellString(sheet, 0, 0, "Cell id");
 		XLSUtil.setCellString(sheet, 1, 0, "Projection area");
-		XLSUtil.setCellString(sheet, 2, 0, "Unit Normal x");
-		XLSUtil.setCellString(sheet, 3, 0, "Unit Normal y");
-		XLSUtil.setCellString(sheet, 4, 0, "Unit Normal z");
+		XLSUtil.setCellString(sheet, 2, 0, "Unit n.x");
+		XLSUtil.setCellString(sheet, 3, 0, "Unit n.y");
+		XLSUtil.setCellString(sheet, 4, 0, "Unit n.z");
 		XLSUtil.setCellString(sheet, 5, 0, "Position");
 		
 		int row_no = 1;

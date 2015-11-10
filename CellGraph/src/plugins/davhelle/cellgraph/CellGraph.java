@@ -158,7 +158,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,1,100,1);
 		varMaxT.setToolTipText("For t>1: [base]001.[ext] file pattern is required");
-		varAllT = new EzVarBoolean("Load all frames", false);
+		varAllT = new EzVarBoolean("Load all time points", false);
 		varAllT.setToolTipText("Reads the time points number from the output sequence");
 		
 		EzVarBoolean varUseAdvanceOptions = 

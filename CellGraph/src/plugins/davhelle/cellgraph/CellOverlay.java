@@ -47,6 +47,7 @@ import plugins.davhelle.cellgraph.overlays.PolygonClassOverlay;
 import plugins.davhelle.cellgraph.overlays.PolygonOverlay;
 import plugins.davhelle.cellgraph.overlays.ProjectionOverlay;
 import plugins.davhelle.cellgraph.overlays.StGraphOverlay;
+import plugins.davhelle.cellgraph.overlays.TestOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
 import plugins.davhelle.cellgraph.overlays.TransitionOverlay;
@@ -424,7 +425,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			OverlayEnum USER_CHOICE, Sequence sequence) {
 		switch (USER_CHOICE){
 		case TEST:
-			//new TestOverlay(stGraph,sequence)
+			sequence.addOverlay(new TestOverlay(stGraph,sequence));
 			break;
 		case CELL_PROJECTION:
 			if(varSurfaceFile.getValue(false) == null){

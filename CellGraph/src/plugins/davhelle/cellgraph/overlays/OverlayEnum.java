@@ -18,11 +18,13 @@ public enum OverlayEnum{
 	CELL_VORONOI_DIAGRAM(VoronoiOverlay.DESCRIPTION), 
 	CELL_POLYGON_CLASS(PolygonClassOverlay.DESCRIPTION),
 	CELL_GRAPH_VIEW(GraphOverlay.DESCRIPTION),
+	CELL_PROJECTION(ProjectionOverlay.DESCRIPTION), 
 	
 	TRACKING_REVIEW(TrackingOverlay.DESCRIPTION),
 	TRACKING_DISPLACEMENT(DisplacementOverlay.DESCRIPTION),
 	TRACKING_STABLE_ONLY(AlwaysTrackedCellsOverlay.DESCRIPTION),
 	TRACKING_CORRECTION_HINTS(CorrectionOverlay.DESCRIPTION),
+	//TRACKING_FLOW(FlowOverlay.DESCRIPTION),
 	
 	DIVISIONS_AND_ELIMINATIONS(DivisionOverlay.DESCRIPTION),
 	DIVISION_ORIENTATION(DivisionOrientationOverlay.DESCRIPTION),
@@ -37,7 +39,7 @@ public enum OverlayEnum{
 	
 	ELLIPSE_FIT(EllipseFitterOverlay.DESCRIPTION),
 	ELLIPSE_FIT_WRT_POINT_ROI(EllipseFitColorOverlay.DESCRIPTION),
-	ELLIPSE_ELONGATION_RATIO(ElongationRatioOverlay.DESCRIPTION);
+	ELLIPSE_ELONGATION_RATIO(ElongationRatioOverlay.DESCRIPTION); 
 	
 	/**
 	 * Description String visualized by the {@link CellOverlay} plugin

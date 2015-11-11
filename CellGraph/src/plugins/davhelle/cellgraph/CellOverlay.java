@@ -16,6 +16,7 @@ import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
+import plugins.adufour.ezplug.EzVarFile;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
 import plugins.adufour.ezplug.EzVarSequence;
@@ -44,6 +45,7 @@ import plugins.davhelle.cellgraph.overlays.GraphOverlay;
 import plugins.davhelle.cellgraph.overlays.OverlayEnum;
 import plugins.davhelle.cellgraph.overlays.PolygonClassOverlay;
 import plugins.davhelle.cellgraph.overlays.PolygonOverlay;
+import plugins.davhelle.cellgraph.overlays.ProjectionOverlay;
 import plugins.davhelle.cellgraph.overlays.StGraphOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackIdOverlay;
 import plugins.davhelle.cellgraph.overlays.TrackingOverlay;
@@ -140,6 +142,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarBoolean 				varBooleanNormalize;
 	EzVarInteger 				varIntegerChannel;
 	EzVarEnum<IntensitySummaryType>	varIntensityMeasure_EI;
+	private EzVarBoolean varBooleanMeasureAll;
 	
 	//Graph Export
 	EzVarEnum<ExportFieldType>  varExportType;
@@ -153,7 +156,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarDouble					varEdgeOrientationBuffer;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_EO;
 
-	private EzVarBoolean varBooleanMeasureAll;
+	//Cell Projection
+	EzVarFile					varSurfaceFile;
+	EzVarBoolean					varLoadAllSurfaceFiles;
 
 	
 	@Override
@@ -304,6 +309,15 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varDoDetectionDistance,	
 				varDoDetectionLength);
 		
+		//Cell Projection
+		varSurfaceFile = new EzVarFile("First Surface file (.vtk)","");
+		varSurfaceFile.setToolTipText("Simple coordinate file by EpiTools: x,y,z");
+		varLoadAllSurfaceFiles = new EzVarBoolean("Overlay all frames?",false);
+		varLoadAllSurfaceFiles.setToolTipText("Requires surface files for every frame!");
+		EzGroup groupCellProjection = new EzGroup("Overlay elements",
+				varSurfaceFile,
+				varLoadAllSurfaceFiles);
+		
 		
 		//Description label
 		varPlotting.addVarChangeListener(this);
@@ -324,6 +338,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupEdgeIntensity, OverlayEnum.EDGE_INTENSITY);
 		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
 		varPlotting.addVisibilityTriggerTo(groupEdgeOrientation, OverlayEnum.EDGE_ORIENTATION);
+		varPlotting.addVisibilityTriggerTo(groupCellProjection, OverlayEnum.CELL_PROJECTION);
 		
 		return new EzGroup("1. SELECT OVERLAY TO ADD",
 				varPlotting,
@@ -339,7 +354,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupTransitions,
 				groupEdgeIntensity,
 				groupDivisionOrientation,
-				groupEdgeOrientation);
+				groupEdgeOrientation,
+				groupCellProjection);
 	}
 
 	@Override
@@ -408,7 +424,24 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			OverlayEnum USER_CHOICE, Sequence sequence) {
 		switch (USER_CHOICE){
 		case TEST:
+			//new TestOverlay(stGraph,sequence)
 			break;
+		case CELL_PROJECTION:
+			if(varSurfaceFile.getValue(false) == null){
+				new AnnounceFrame("Surface file required, please choose one!");
+				return;
+			}
+			
+			sequence.addOverlay(
+					new ProjectionOverlay(
+							stGraph,
+							sequence,
+							varSurfaceFile.getValue().getAbsolutePath(),
+							varLoadAllSurfaceFiles.getValue()));
+			break;
+//		case TRACKING_FLOW:
+//			sequence.addOverlay(new FlowOverlay(stGraph));
+//			break;
 		case ELLIPSE_FIT:
 			sequence.addOverlay(
 					new EllipseFitterOverlay(stGraph,sequence));

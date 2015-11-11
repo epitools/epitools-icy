@@ -77,6 +77,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	//Input limitation
 	EzVarInteger				varMaxZ;
 	EzVarInteger				varMaxT;
+	EzVarBoolean				varAllT;
 	EzVarInteger				varBorderEliminationNo;
 	
 	//EzPlug options
@@ -157,7 +158,8 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//varMaxZ = new EzVarInteger("Max z height (0 all)",0,0, 50, 1);
 		varMaxT = new EzVarInteger("Time points to load:",1,1,100,1);
 		varMaxT.setToolTipText("For t>1: [base]001.[ext] file pattern is required");
-		
+		varAllT = new EzVarBoolean("Load all time points", false);
+		varAllT.setToolTipText("Reads the time points number from the output sequence");
 		
 		EzVarBoolean varUseAdvanceOptions = 
 				new EzVarBoolean("Show advanced options",false);
@@ -195,6 +197,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 				varInput,
 				varFile, 
 				varMaxT,
+				varAllT,
 				varUseAdvanceOptions,
 				inputTypeGroup
 				);
@@ -293,7 +296,19 @@ public class CellGraph extends EzPlug implements EzStoppable
 	protected void execute()
 	{	
 		stopFlag = false;
-
+		
+		//check input sequence
+		if(icyAssert(varSequence.getValue() != null,
+				"Plugin requires active sequence! " +
+				"Please open an image on which to display results"))
+			return;
+		
+		sequence = varSequence.getValue();
+		
+		//Check for user choice regarding time points
+		if(varAllT.getValue())
+			varMaxT.setValue(sequence.getSizeT());
+		
 		//Build input file names from user input
 		String[] input_file_paths = generateInputPaths();
 		
@@ -393,29 +408,25 @@ public class CellGraph extends EzPlug implements EzStoppable
 	 */
 	private boolean wrongInputCheck(String[] input_file_paths) {
 
-		//check input sequence
-		if(icyAlert(varSequence.getValue() != null,
-				"Plugin requires active sequence! Please open an image on which to display results"))
-			return true;
-		
-		sequence = varSequence.getValue();
-
 		//Check input files
-		if(icyAlert(input_file_paths != null,
+		if(icyAssert(input_file_paths != null,
 				"Mesh file required to run plugin! Please set mesh file"))
 			return true;
+		
+		if(input_file_paths[0].endsWith(".wkt"))
+			varInput.setValue(InputType.WKT);
 		
 		for(int i=0; i< input_file_paths.length; i++ ){
 			
 			String abs_path = input_file_paths[i];
 			File current_file = new File(abs_path);
-			if(icyAlert(current_file.exists(),"Missing skeleton file: " + abs_path))
+			if(icyAssert(current_file.exists(),"Missing skeleton file: " + abs_path))
 				return true;
 			
 			if(varInput.getValue() == InputType.WKT){
 				String export_folder = varFile.getValue().getParent();
 				File expected_wkt_file = new File(String.format("%s/border_%03d.wkt",export_folder,i));
-				if(icyAlert(expected_wkt_file.exists(),"Missing border file: " + expected_wkt_file))
+				if(icyAssert(expected_wkt_file.exists(),"Missing border file: " + expected_wkt_file))
 					return true;
 			}
 			
@@ -424,33 +435,33 @@ public class CellGraph extends EzPlug implements EzStoppable
 		//Check tracking files if selected
 		if(varDoTracking.getValue()){
 			
-			if(icyAlert(input_file_paths.length > 1, 
+			if(icyAssert(input_file_paths.length > 1, 
 					"Tracking requires at least two time points! Please increase time points to load"))
 				return true;
 			
 			
 			if(varTrackingAlgorithm.getValue() == TrackingEnum.LOAD_CSV_FILE){
-				if(icyAlert(varLoadFile.getValue() != null,
+				if(icyAssert(varLoadFile.getValue() != null,
 						"Load CSV tracking feature requires an input directory: please review!"))
 					return true;
 				
 				File input_directory = varLoadFile.getValue();
 				
-				if(icyAlert(input_directory.isDirectory(), "Input directory is not valid, please review"))
+				if(icyAssert(input_directory.isDirectory(), "Input directory is not valid, please review"))
 					return true;
 				
 				for(int i=0; i < varMaxT.getValue(); i++){
 					File tracking_file = new File(input_directory, String.format(CsvTrackReader.tracking_file_pattern, i));
-					if(icyAlert(tracking_file.exists(), "Missing tracking file: "+tracking_file.getAbsolutePath()))
+					if(icyAssert(tracking_file.exists(), "Missing tracking file: "+tracking_file.getAbsolutePath()))
 						return true;
 				}
 				
 				File division_file = new File(input_directory, CsvTrackReader.division_file_pattern);
-				if(icyAlert(division_file.exists(), "Missing division file: "+division_file.getAbsolutePath()))
+				if(icyAssert(division_file.exists(), "Missing division file: "+division_file.getAbsolutePath()))
 					return true;
 				
 				File elimination_file = new File(input_directory, CsvTrackReader.elimination_file_pattern);
-				if(icyAlert(elimination_file.exists(), "Missing elimination file: "+elimination_file.getAbsolutePath()))
+				if(icyAssert(elimination_file.exists(), "Missing elimination file: "+elimination_file.getAbsolutePath()))
 					return true;
 			}
 		}
@@ -465,7 +476,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 	 * @param error_message a message to display if the condition is false
 	 * @return true if the condition is wrong and alert was issued, false if condition is true
 	 */
-	private boolean icyAlert(boolean condition, String error_message) {
+	private boolean icyAssert(boolean condition, String error_message) {
 		
 		if(condition){
 			return false;

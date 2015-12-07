@@ -10,7 +10,7 @@ import plugins.davhelle.cellgraph.CellOverlay;
  */
 public enum OverlayEnum{
 	
-	TEST("Test Overlay"),
+	TEST(TestOverlay.DESCRIPTION),
 	CELL_OUTLINE(PolygonOverlay.DESCRIPTION),
 	CELL_AREA(AreaGradientOverlay.DESCRIPTION),
 	CELL_SEGMENTATION_BORDER(BorderOverlay.DESCRIPTION), 

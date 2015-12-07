@@ -455,7 +455,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
 		
-		if(frame.getFrameNo() != 1 && !analyzeAllFrames)
+		if(frame.getFrameNo() != 0 && !analyzeAllFrames)
 			return;
 		
 		int c = 0;

@@ -1,5 +1,7 @@
 package plugins.davhelle.cellgraph.misc;
 
+import icy.roi.ROI;
+
 import java.awt.Shape;
 
 import plugins.kernel.roi.roi2d.ROI2DShape;
@@ -11,12 +13,18 @@ import plugins.kernel.roi.roi2d.ROI2DShape;
  *
  */
 public class ShapeRoi extends ROI2DShape {
-
+	
 	/**
 	 * @param Takes a input shape and creates an icy ROI
 	 */
 	public ShapeRoi(Shape shape) {
 		super(shape);
+	}
+	
+	public ROI getCopy(){
+		//Temporary fix for missing implementation
+		//Only use for 1-TIME-ROI objects !!!
+		return this; 
 	}
 
 }

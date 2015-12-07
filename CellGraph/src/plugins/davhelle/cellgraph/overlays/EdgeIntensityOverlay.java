@@ -346,9 +346,11 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		ROI edge_union = ROIUtil.getUnion(rois);
 		
 		//Define Interior Roi region
-		ROI ring =	ROIUtil.getIntersection(rois);
 		ShapeRoi s_roi = new ShapeRoi(writer.toShape(s.getGeometry()));
-		ROI s_minimal = ROIUtil.subtract(s_roi, ring);
+		s_roi.setC(0);
+		s_roi.setT(0);
+		s_roi.setZ(0);
+		ROI s_minimal = ROIUtil.subtract(s_roi, edge_union);
 		
 		//Compute intensities
 		int z=0;

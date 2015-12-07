@@ -1,5 +1,7 @@
 package plugins.davhelle.cellgraph;
 
+import java.io.File;
+
 import headless.LoadNeoWktFiles;
 import icy.file.Loader;
 import icy.gui.frame.progress.AnnounceFrame;
@@ -48,10 +50,14 @@ public class NeoLoader extends EzPlug {
 			String test_file_name = String.format(
 					"/Users/davide/data/neo/%d/neo%d_RegIm_Clahe_8bit.tif",
 					varNeo.getValue(),varNeo.getValue());
-			sequence = Loader.loadSequence(test_file_name, 0, true);
-			Icy.getMainInterface().addSequence(sequence);
-//			new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
-//			return;
+			File test_file_path = new File(test_file_name);
+			if(test_file_path.exists()){
+				sequence = Loader.loadSequence(test_file_name, 0, true);
+				Icy.getMainInterface().addSequence(sequence);
+			}else{
+				new AnnounceFrame("Plugin requires active sequence! Please open an image on which to display results");
+				return;
+			}
 		}
 		
 		//Load stGraph

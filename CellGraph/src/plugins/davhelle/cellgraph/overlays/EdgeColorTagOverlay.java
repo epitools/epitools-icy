@@ -21,6 +21,8 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import plugins.adufour.ezplug.EzVar;
+import plugins.adufour.ezplug.EzVarBoolean;
+import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
@@ -112,6 +114,10 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	private EzVarInteger intensity_channel;
 	
+	private EzVarDouble top_percent;
+	
+	private EzVarBoolean add_roi;
+	
 	
 	/**
 	 * @param stGraph graph to analyze
@@ -127,7 +133,9 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 			EzVarInteger varVertexMode,
 			Sequence sequence,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType, 
-			EzVarInteger varEdgeChannel) {
+			EzVarInteger varEdgeChannel,
+			EzVarDouble varTopPercent,
+			EzVarBoolean varAddRoi) {
 		super("Edge Color Tag", stGraph);
 	
 		this.tag_color = varEdgeColor;
@@ -143,6 +151,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		
 		this.intensity_channel = varEdgeChannel;
 		
+		this.top_percent = varTopPercent;
+		this.add_roi = varAddRoi;
 		
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
@@ -627,7 +637,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		double envelopeMeanIntenisty = 0;
 		try{
 			envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
-				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
+				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue(),
+				top_percent.getValue(),add_roi.getValue());
 			
 			if(java.lang.Double.isNaN(envelopeMeanIntenisty)){
 				envelopeMeanIntenisty = -1;

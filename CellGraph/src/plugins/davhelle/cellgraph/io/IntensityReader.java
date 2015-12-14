@@ -1,9 +1,13 @@
 package plugins.davhelle.cellgraph.io;
 
+import icy.roi.BooleanMask2D;
 import icy.roi.ROI;
 import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
+import icy.sequence.SequenceDataIterator;
+import icy.type.collection.array.Array1DUtil;
 import icy.type.point.Point5D;
+import plugins.kernel.roi.roi2d.ROI2DArea;
 
 /**
  * Utility class for image intensity methods
@@ -65,6 +69,84 @@ public class IntensityReader {
 		}
 		
 		return intensity_readout;
+	}
+	
+	/**
+	 * Method adds two more parameters with which to prune the
+	 * pixels taken into account for the measurement.
+	 * 
+	 * @param sequence
+	 * @param roi
+	 * @param z
+	 * @param t
+	 * @param c
+	 * @param summaryType
+	 * @param topPercent Percentage that should be retained for measurement (e.g. 0.2 = 20 top-most percent)
+	 * @param addROItoSequence Flag whether to add or not the pruned ROI to the sequence
+	 * @return
+	 */
+	public static double measureRoiIntensity(
+			Sequence sequence,
+			ROI roi,
+			int z,
+			int t,
+			int c,
+			IntensitySummaryType summaryType,
+			double topPercent, boolean addROItoSequence){
+		
+		// Initialize an array to contain the top-percentage highest values 
+		
+		double numPixels = roi.getNumberOfPoints();
+        int top_size = (int) Math.round(numPixels * topPercent);
+        double[] topIntensities = new double[top_size];
+
+        // Iterate through the pixels of the rois and only keep the top most
+        SequenceDataIterator it = new 
+        		SequenceDataIterator(sequence, roi, false, z, t, c);
+        
+        while (!it.done())
+        {
+            final double value = it.get();
+
+            if(value > topIntensities[0]){
+	        
+            		//index to substitute
+            		int subIdx=0;
+            	
+            		//find highest compatible value
+            		for(int i=1; i < top_size; i++)
+	            		if(value > topIntensities[i])
+	            			subIdx++;
+	            		else
+	            			break;
+            		
+            		//shift values below (first is always eliminated)
+	            	for(int i=1; i < subIdx; i++)
+	            		topIntensities[i-1] = topIntensities[i];
+	            	
+	            	//insert value into array
+	            	topIntensities[subIdx] = value;
+	            	
+            }
+
+            it.next();
+        }
+
+        double threshold = topIntensities[0];
+        
+		double[] doubleArray = Array1DUtil.arrayToDoubleArray(
+			     sequence.getDataXY(0, 0, 0), sequence.isSignedDataType());
+		boolean[] mask = new boolean[doubleArray.length];
+        
+		for (int i = 0; i < doubleArray.length; i++)
+		     mask[i] = !(doubleArray[i] > threshold);
+		BooleanMask2D mask2d = new BooleanMask2D(sequence.getBounds2D(), mask); 
+		
+		ROI topROI = ROIUtil.subtract(roi, new ROI2DArea(mask2d));
+		if(addROItoSequence)
+			sequence.addROI(topROI);
+		
+        return measureRoiIntensity(sequence, topROI, z, t, c, summaryType);
 	}
 	
 	

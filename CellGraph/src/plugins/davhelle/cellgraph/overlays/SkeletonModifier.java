@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import loci.formats.FormatException;

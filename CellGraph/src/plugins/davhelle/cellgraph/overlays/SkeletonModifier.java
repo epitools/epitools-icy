@@ -17,8 +17,13 @@ import ij.ImagePlus;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -26,6 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import loci.formats.FormatException;
 import plugins.davhelle.cellgraph.io.FileNameGenerator;
@@ -46,7 +55,7 @@ import plugins.davhelle.cellgraph.io.SegmentationProgram;
  * @author Davide Heller
  *
  */
-public class SkeletonModifier extends Overlay {
+public class SkeletonModifier extends Overlay implements ActionListener{
 
 	/**
 	 * Painting Shapes added to the sequence
@@ -245,27 +254,34 @@ public class SkeletonModifier extends Overlay {
 		}
 		
 		if(e.getKeyCode() == KeyEvent.VK_ENTER){
-			if(!shapes.isEmpty()){
-				
-				//suppress the paint method from drawing the tip
-				painterLockFree = false;
-				
-				IcyBufferedImage img = applyModifications();
-				if(saveSkeletonImage){
-					String savedFileName = saveModifications(img);
-					System.out.println("Updated skeleton file: "+savedFileName);
-				}
-				
-				shapes.clear();
-				undo.clear();
-				
-				painterChanged();
-				
-				painterLockFree = true;
+			enter_modifications();
+		}
+	}
+
+	/**
+	 * Sequence of commands to execute when [ENTER] key or [Apply Modifications] button is pressed
+	 */
+	private void enter_modifications() {
+		if(!shapes.isEmpty()){
+			
+			//suppress the paint method from drawing the tip
+			painterLockFree = false;
+			
+			IcyBufferedImage img = applyModifications();
+			if(saveSkeletonImage){
+				String savedFileName = saveModifications(img);
+				System.out.println("Updated skeleton file: "+savedFileName);
 			}
-			else{
-				new AnnounceFrame("No modifications detected. Please draw first!");
-			}
+			
+			shapes.clear();
+			undo.clear();
+			
+			painterChanged();
+			
+			painterLockFree = true;
+		}
+		else{
+			new AnnounceFrame("No modifications detected. Please draw first!");
 		}
 	}
 
@@ -415,6 +431,27 @@ public class SkeletonModifier extends Overlay {
 		}
 
 		g2.dispose();
+	}
+	
+	@Override
+	public JPanel getOptionsPanel() {
+		JPanel optionPanel = new JPanel(new GridBagLayout());
+		
+		//Excel output button
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        
+        JButton OKButton = new JButton("Apply modifications");
+        OKButton.addActionListener(this);
+        optionPanel.add(OKButton,gbc);
+        
+		return optionPanel;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		enter_modifications();
 	}
 
 

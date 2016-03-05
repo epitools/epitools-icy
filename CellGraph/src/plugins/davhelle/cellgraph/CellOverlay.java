@@ -133,6 +133,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarInteger					varVertexMode;
 	EzVarInteger 				varEdgeChannel;
 	EzVarEnum<IntensitySummaryType> varIntensityMeasure_ECT;
+	EzVarDouble 					varTopPercent;
+	EzVarBoolean 				varAddRoi;
 
 	//T1 Transition
 	public EzVarInteger 		varMinimalTransitionLength;
@@ -160,6 +162,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//Cell Projection
 	EzVarFile					varSurfaceFile;
 	EzVarBoolean					varLoadAllSurfaceFiles;
+
 
 	
 	@Override
@@ -260,16 +263,32 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varEnvelopeVertex = new EzVarInteger("Vertex Intensity Buffer [px]", 1, 10, 1);
 		varVertexMode = new EzVarInteger("Selection mode", 0, 0, 3, 1);
 		varVertexMode.setToolTipText("junction vertex: 0=[include],1=[exclude],2=[only]");
+		
+		EzGroup groupEdgeShape = new EzGroup("Shape parameters",				
+				varEnvelopeBuffer,
+				varEnvelopeVertex,
+				varVertexMode);
+		
+		varTopPercent = new EzVarDouble("Use only top % intensity",1.0,0.01,1.0,0.01);
+		varAddRoi = new EzVarBoolean("Visualize cropped ROI on sequence",false);
+		
+		EzGroup groupEdgeTop = new EzGroup("Additional limitations",
+				varTopPercent,
+				varAddRoi);
+
 		varEdgeChannel = new EzVarInteger("Color Channel",0,0,10,1);
 		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(
 				"Intensity Measurement", IntensitySummaryType.values(), IntensitySummaryType.Mean);
-		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
-				varEdgeColor,
-				varEnvelopeBuffer,
-				varEnvelopeVertex,
-				varVertexMode,
+		
+		EzGroup groupEdgeMeasure = new EzGroup("Measurement parameters",
 				varEdgeChannel,
 				varIntensityMeasure_ECT);
+		
+		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
+				varEdgeColor,
+				groupEdgeShape,
+				groupEdgeMeasure,
+				groupEdgeTop);
 
 		//Save transitions
 		varMinimalTransitionLength = new EzVarInteger("Minimal transition length [frames]",5,1,100,1);
@@ -541,7 +560,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 							stGraph,varEdgeColor,
 							varEnvelopeBuffer,varEnvelopeVertex,varVertexMode,
 							sequence,varIntensityMeasure_ECT,
-							varEdgeChannel));
+							varEdgeChannel,
+							varTopPercent,
+							varAddRoi));
 			break;
 
 		case TRACKING_CORRECTION_HINTS:

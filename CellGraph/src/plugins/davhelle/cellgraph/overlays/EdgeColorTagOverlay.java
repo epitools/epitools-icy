@@ -21,6 +21,8 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import plugins.adufour.ezplug.EzVar;
+import plugins.adufour.ezplug.EzVarBoolean;
+import plugins.adufour.ezplug.EzVarDouble;
 import plugins.adufour.ezplug.EzVarEnum;
 import plugins.adufour.ezplug.EzVarInteger;
 import plugins.adufour.ezplug.EzVarListener;
@@ -112,6 +114,10 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	private EzVarInteger intensity_channel;
 	
+	private EzVarDouble top_percent;
+	
+	private EzVarBoolean add_roi;
+	
 	
 	/**
 	 * @param stGraph graph to analyze
@@ -127,7 +133,9 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 			EzVarInteger varVertexMode,
 			Sequence sequence,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType, 
-			EzVarInteger varEdgeChannel) {
+			EzVarInteger varEdgeChannel,
+			EzVarDouble varTopPercent,
+			EzVarBoolean varAddRoi) {
 		super("Edge Color Tag", stGraph);
 	
 		this.tag_color = varEdgeColor;
@@ -143,6 +151,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		
 		this.intensity_channel = varEdgeChannel;
 		
+		this.top_percent = varTopPercent;
+		this.add_roi = varAddRoi;
 		
 		this.writer = new ShapeWriter();
 		this.factory = new GeometryFactory();
@@ -519,17 +529,19 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		
 		WritableSheet sheet = null; 
 		if(roi_mode.getValue() != 0)
-			sheet = XLSUtil.createNewPage(wb, "Edge ROI0 Length");
+			sheet = XLSUtil.createNewPage(wb, "Edge ROI Length Mode=0");
 		
-		String roiLengthSheetName = String.format("Edge ROI%d Length",
+		String roiLengthSheetName = String.format("Edge ROI Length Mode=%d",
 				roi_mode.getValue());
 		WritableSheet roi_sheet = XLSUtil.createNewPage(wb, roiLengthSheetName);
 		
-		String roiAreaSheetName = String.format("Edge ROI%d Area",
+		String roiAreaSheetName = String.format("Edge ROI Area Mode=%d",
 				roi_mode.getValue());
 		WritableSheet area_sheet = XLSUtil.createNewPage(wb, roiAreaSheetName);
 		
-		String intensitySheetName = String.format("Edge %s Intensity",summary_type.getValue().getDescription());
+		String intensitySheetName = String.format("Edge %s Intensity Top=%.2f",
+				summary_type.getValue().getDescription(),
+				top_percent.getValue());
 		WritableSheet intensitySheet = XLSUtil.createNewPage(wb, intensitySheetName);
 		
 		int col_no = 0;
@@ -627,7 +639,8 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		double envelopeMeanIntenisty = 0;
 		try{
 			envelopeMeanIntenisty = IntensityReader.measureRoiIntensity(
-				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue());
+				sequence, edgeEnvelopeRoi, z, t, c, summary_type.getValue(),
+				top_percent.getValue(),add_roi.getValue());
 			
 			if(java.lang.Double.isNaN(envelopeMeanIntenisty)){
 				envelopeMeanIntenisty = -1;

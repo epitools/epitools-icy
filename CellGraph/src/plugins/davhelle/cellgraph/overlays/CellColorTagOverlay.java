@@ -1,18 +1,26 @@
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.canvas.IcyCanvas;
+import icy.roi.ROI;
 import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D.Double;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import jxl.write.WritableSheet;
 import plugins.adufour.ezplug.EzVarBoolean;
@@ -134,6 +142,8 @@ public class CellColorTagOverlay extends StGraphOverlay {
 			 				propagateTag(cell,new_tag);
 			 		} else 
 			 			propagateTag(cell,new_tag);
+			 		
+			 		painterChanged();
 			 	}
 			
 		}
@@ -186,8 +196,38 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		BigXlsExporter xlsExport = new BigXlsExporter(stGraph, true, sequence);
-		xlsExport.writeXLSFile();
+		
+		String cmd_string =e.getActionCommand(); 
+		
+		if(cmd_string == "Choose File"){
+			BigXlsExporter xlsExport = new BigXlsExporter(stGraph, true, sequence);
+			xlsExport.writeXLSFile();
+		}else{
+			if(sequence.hasROI()){
+				if(sequence.getROIs().size() == 1 ){
+					ROI roi = sequence.getROIs().get(0);
+					
+					for(Node n: super.stGraph.getFrame(0).vertexSet()){
+						Point p = n.getCentroid();
+						
+				 		Color new_tag = tag_color.getValue().getColor();
+						
+				 		double x = p.getX();
+				 		double y = p.getY(); 
+				 		double z,t,c;
+				 		z = t = c = 0.0;
+				 		
+						if(roi.contains(x,y,z,t,c))
+							propagateTag(n,new_tag);
+						
+					}
+					
+					painterChanged();
+				}
+			}
+			else
+				System.out.println("No ROI found");
+		}
 	}
 	
 	@Override
@@ -248,6 +288,40 @@ public class CellColorTagOverlay extends StGraphOverlay {
 
 			OverlayUtils.stringColorLegend(g, line, s, c, offset);
 		}
+		
+	}
+	
+	@Override
+	public JPanel getOptionsPanel() {
+		
+		JPanel optionPanel = new JPanel(new GridBagLayout());
+		
+		//Excel output button
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        optionPanel.add(new JLabel("Tag cells with ROI: "), gbc);
+        
+        gbc.weightx = 1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        
+        JButton Roi_Button = new JButton("Use current ROI");
+        Roi_Button.addActionListener(this);
+        optionPanel.add(Roi_Button,gbc);
+		
+        gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        optionPanel.add(new JLabel("Export data to Excel: "), gbc);
+        
+        gbc.weightx = 1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        
+        JButton OKButton = new JButton("Choose File");
+        OKButton.addActionListener(this);
+        optionPanel.add(OKButton,gbc);
+        
+        return optionPanel;
 		
 	}
 	

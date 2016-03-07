@@ -1,9 +1,9 @@
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.canvas.IcyCanvas;
+import icy.gui.dialog.ConfirmDialog;
 import icy.gui.dialog.OpenDialog;
 import icy.gui.frame.progress.AnnounceFrame;
-import icy.gui.frame.progress.ProgressFrame;
 import icy.roi.ROI;
 import icy.sequence.Sequence;
 import icy.util.XLSUtil;
@@ -218,7 +218,10 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		}else if (cmd_string.equals(CONVERT_ROI)){
 			convertROI();
 		}else if (cmd_string.equals(ERASE_TAGS)){
-			eraseTags();
+			boolean answer = ConfirmDialog.confirm(
+					"Please confirm", "Do you really want to remove all tags?");
+			if(answer)
+				eraseTags();
 		}else if (cmd_string.equals(IMPORT_FILE)){
 			importTags();
 		}
@@ -226,15 +229,15 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	
 	private void importTags(){
 		String file_name = OpenDialog.chooseFile();
+		
+		if(file_name == null)
+			return;
+		
 		File import_file = new File(file_name);
 		
-		ProgressFrame pf = new ProgressFrame("Loading xls");
-		pf.setLength(stGraph.size());
-		pf.setPosition(0.0);
-		
-		pf.setMessage("Converting to tags");
-		
-		pf.run();
+		//TODO progress frame for xls import
+//		ProgressFrame pf = new ProgressFrame("Loading xls");
+//		pf.notifyProgress(0.0, stGraph.size());
 		
 		if(!import_file.exists())
 			System.out.printf("File unknown: %s\n",file_name);
@@ -244,16 +247,18 @@ public class CellColorTagOverlay extends StGraphOverlay {
 			
 			Workbook wb = XLSUtil.loadWorkbookForRead(import_file);
 			
-			//TODO need to check that xls matches! i.e. stGraph.size == sheets_no
+			//Check that xls matches! i.e. stGraph.size == sheets_no
+			if(wb.getNumberOfSheets() != stGraph.size()){
+				new AnnounceFrame("Imported file has a different number of frames!");
+				return;
+			}
 			
 			for(int i=0; i<wb.getNumberOfSheets(); i++){
 				Sheet s = wb.getSheet(i);
 				FrameGraph frame = stGraph.getFrame(i);
 				
-				pf.incPosition();
+//				pf.notifyProgress((double)i+1, stGraph.size());
 				
-				new AnnounceFrame(String.format("Loading sheet %d",i),1);
-
 				final int COLOR_COL = 0;
 				final int X_COL = 2;
 				final int Y_COL = 3;
@@ -284,8 +289,8 @@ public class CellColorTagOverlay extends StGraphOverlay {
 
 			}
 			
-			pf.close();
-		
+//			pf.close();
+			
 			painterChanged();
 			
 		} catch (BiffException e) {

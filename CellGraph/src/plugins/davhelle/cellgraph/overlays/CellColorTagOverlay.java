@@ -235,17 +235,17 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		
 		File import_file = new File(file_name);
 		
-		//TODO progress frame for xls import
-//		ProgressFrame pf = new ProgressFrame("Loading xls");
-//		pf.notifyProgress(0.0, stGraph.size());
-		
 		if(!import_file.exists())
 			System.out.printf("File unknown: %s\n",file_name);
 		try {
+			System.out.printf("Importing file: %s\n",file_name);
 			
 			GeometryFactory gf = new GeometryFactory();
 			
+			long f1 = System.currentTimeMillis();
 			Workbook wb = XLSUtil.loadWorkbookForRead(import_file);
+			f1 = System.currentTimeMillis() - f1;
+			System.out.printf("Importing workbook file:\t%d ms\n",f1);
 			
 			//Check that xls matches! i.e. stGraph.size == sheets_no
 			if(wb.getNumberOfSheets() != stGraph.size()){
@@ -253,21 +253,37 @@ public class CellColorTagOverlay extends StGraphOverlay {
 				return;
 			}
 			
+			long f4 = System.currentTimeMillis();
+			Sheet[] sheets = wb.getSheets();
+			f4 = System.currentTimeMillis() - f4;
+			System.out.printf("Importing all frame sheets:\t%d ms\n",f4);
+			
 			for(int i=0; i<wb.getNumberOfSheets(); i++){
-				Sheet s = wb.getSheet(i);
-				FrameGraph frame = stGraph.getFrame(i);
+				Sheet s = sheets[i];
 				
-//				pf.notifyProgress((double)i+1, stGraph.size());
+				FrameGraph frame = stGraph.getFrame(i);
 				
 				final int COLOR_COL = 0;
 				final int X_COL = 2;
 				final int Y_COL = 3;
+				
+				long search_sum = 0;
+				
+				long f2 = System.currentTimeMillis();
+				Cell[] colors = s.getColumn(COLOR_COL);
+				Cell[] x_cells = s.getColumn(X_COL);
+				Cell[] y_cells = s.getColumn(Y_COL);
+				f2 = System.currentTimeMillis() - f2;
+				System.out.printf("Reading sheet %d:\t%d ms\n",i,f2);
+				
+				int row_no=1;
+				for(; row_no < colors.length; row_no++){
 
-				for(int row_no=1; row_no < s.getRows(); row_no++){
-
-					Cell color_cell  = s.getCell(COLOR_COL,row_no);
-					Cell x_cell = s.getCell(X_COL,row_no);
-					Cell y_cell = s.getCell(Y_COL,row_no);
+					long f3 = System.currentTimeMillis();
+					
+					Cell color_cell  = colors[row_no];
+					Cell x_cell = x_cells[row_no];
+					Cell y_cell = y_cells[row_no];
 
 					CellColor cell_color = getCellColor(color_cell.getContents());
 
@@ -279,17 +295,22 @@ public class CellColorTagOverlay extends StGraphOverlay {
 
 					Point point = gf.createPoint(new Coordinate( x, y ));
 					for(Node cell: frame.vertexSet()){
-						if(cell.getGeometry().contains(point)){
+						//if(cell.getGeometry().contains(point)){
+						if(point.within(cell.getGeometry())){
 							cell.setColorTag(cell_color.getColor());
 							tags_exist = true;
 							break;
 						}
 					}
+					
+					f3 = System.currentTimeMillis() - f3;
+					search_sum += f3;
 				}
-
+				
+				//double avg_search_time = (double)search_sum/row_no;
+				System.out.printf("Tagging frame %d:\t%d ms\n\n",i,search_sum);
+				
 			}
-			
-//			pf.close();
 			
 			painterChanged();
 			

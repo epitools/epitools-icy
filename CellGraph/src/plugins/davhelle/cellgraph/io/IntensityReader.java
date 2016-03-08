@@ -30,6 +30,7 @@ public class IntensityReader {
 	 * @param type
 	 * @return intensity readout
 	 */
+	@SuppressWarnings("deprecation")
 	public static double measureRoiIntensity(
 			Sequence sequence,
 			ROI roi,

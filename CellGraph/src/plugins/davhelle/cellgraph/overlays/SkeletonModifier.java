@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import loci.formats.FormatException;
@@ -56,6 +57,11 @@ import plugins.davhelle.cellgraph.io.SegmentationProgram;
  */
 public class SkeletonModifier extends Overlay implements ActionListener{
 
+	private static final String REDO_STROKE = "Redo";
+	private static final String UNDO_STROKE = "Undo";
+	private static final String REMOVE_CHANGES = "Remove changes";
+	private static final String SWITCH_MODE = "Switch mode";
+	private static final String APPLY_MODS = "Apply modifications";
 	/**
 	 * Painting Shapes added to the sequence
 	 */
@@ -209,52 +215,77 @@ public class SkeletonModifier extends Overlay implements ActionListener{
 	{
 		
         if (EventUtil.isControlDown(e))
-        {
             if (e.getKeyCode() == KeyEvent.VK_Z)
-            {
                 if (EventUtil.isShiftDown(e))
-                {
-                	SkeletonShape s = undo.pollFirst();
-                    if (s != null)
-                    {
-                        shapes.add(s);
-                        painterChanged();
-                    }
-                }
+                		redoModification();
                 else
-                {
-                    SkeletonShape s = shapes.pollLast();
-                    if (s != null)
-                    {
-                        undo.addFirst(s);
-                        painterChanged();
-                    }
-                }
-            }
-        }
-		if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
-		{
-			startPoint = null;
-			currentPoint = null;
-			if (currentShape != null)
-			{
-				currentShape.setEditable(false);
-				currentShape = null;
-			}
-		}
+                    undoModification();
+
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+			removeModifications();
 		
-		if (e.getKeyCode() == KeyEvent.VK_SPACE){
-			if (currentColor == Color.WHITE)
-				currentColor = Color.BLACK;
-			else
-				currentColor = Color.WHITE;
-			
-			painterChanged();
-		}
+		if (e.getKeyCode() == KeyEvent.VK_SPACE)
+			changeColor();
 		
-		if(e.getKeyCode() == KeyEvent.VK_ENTER){
+		if(e.getKeyCode() == KeyEvent.VK_ENTER)
 			enter_modifications();
+		
+	}
+
+	/**
+	 * Undo last stroke painted 
+	 */
+	private void undoModification() {
+		SkeletonShape s = shapes.pollLast();
+		if (s != null)
+		{
+		    undo.addFirst(s);
+		    painterChanged();
 		}
+	}
+
+	/**
+	 * Re-add last undone stroke
+	 */
+	private void redoModification() {
+		SkeletonShape s = undo.pollFirst();
+		if (s != null)
+		{
+		    shapes.add(s);
+		    painterChanged();
+		}
+	}
+
+	/**
+	 * Remove all stroke currently added
+	 */
+	private void removeModifications() {
+		startPoint = null;
+		currentPoint = null;
+		if (currentShape != null)
+		{
+			currentShape.setEditable(false);
+			currentShape = null;
+		}
+		
+		while(!shapes.isEmpty())
+			undoModification();
+		
+		painterChanged();
+		
+	}
+
+	/**
+	 * Change stroke color of painter
+	 * (white == add, black == remove) 
+	 */
+	private void changeColor() {
+		if (currentColor == Color.WHITE)
+			currentColor = Color.BLACK;
+		else
+			currentColor = Color.WHITE;
+		
+		painterChanged();
 	}
 
 	/**
@@ -436,22 +467,53 @@ public class SkeletonModifier extends Overlay implements ActionListener{
 	public JPanel getOptionsPanel() {
 		JPanel optionPanel = new JPanel(new GridBagLayout());
 		
-		//Excel output button
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 10, 2, 5);
-        gbc.fill = GridBagConstraints.BOTH;
-        
-        JButton OKButton = new JButton("Apply modifications");
-        OKButton.addActionListener(this);
-        optionPanel.add(OKButton,gbc);
+		addOptionButton(optionPanel, UNDO_STROKE, "Remove last stroke");
+		addOptionButton(optionPanel, REDO_STROKE, "Re-add last stroke");
+		
+		addOptionButton(optionPanel, SWITCH_MODE, "Switch between add/remove");
+		addOptionButton(optionPanel, REMOVE_CHANGES, "Remove all changes made");
+		addOptionButton(optionPanel, APPLY_MODS, "Apply to changes to [output]");
         
 		return optionPanel;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		enter_modifications();
+		
+		String cmd_string =e.getActionCommand(); 
+		
+		if(cmd_string.equals(SWITCH_MODE)){
+			changeColor();
+		}else if(cmd_string.equals(APPLY_MODS)){
+			enter_modifications();
+		}else if(cmd_string.equals(REMOVE_CHANGES)){
+			removeModifications();
+		}else if(cmd_string.equals(UNDO_STROKE)){
+			undoModification();
+		}else if(cmd_string.equals(REDO_STROKE)){
+			redoModification();
+		}
 	}
 
-
+	/**
+	 * @param optionPanel
+	 * @param button_text
+	 * @param button_description
+	 */
+	private void addOptionButton(JPanel optionPanel, 
+			String button_text,
+			String button_description) {
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+		optionPanel.add(new JLabel(button_description), gbc);
+        
+        gbc.weightx = 1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        
+		JButton Roi_Button = new JButton(button_text);
+        Roi_Button.addActionListener(this);
+        optionPanel.add(Roi_Button,gbc);
+	}
 }

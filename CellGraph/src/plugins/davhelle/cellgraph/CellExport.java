@@ -1,15 +1,12 @@
 package plugins.davhelle.cellgraph;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.main.Icy;
 import icy.sequence.Sequence;
 import icy.swimmingPool.SwimmingObject;
-
-import java.io.FileWriter;
-import java.io.IOException;
-
-import javax.swing.JSeparator;
-
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
 import plugins.adufour.ezplug.EzPlug;
@@ -95,7 +92,7 @@ public class CellExport extends EzPlug {
 		addEzComponent(groupPluginRun);
 		
 		//Divide GUI in two
-		addComponent(new JSeparator(JSeparator.VERTICAL));
+		//addComponent(new JSeparator(JSeparator.VERTICAL));
 
 		//Export format description
 		final EzLabel varExportDescription = new EzLabel(varExport.getValue().getDescription());

@@ -305,13 +305,16 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varBooleanMeasureAll = new EzVarBoolean("Measure all frames",false);
 		varBooleanNormalize = new EzVarBoolean("Measure relative intensity",false);
 		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
+		varAddRoi = new EzVarBoolean("Change to ring mode",false);
+		
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varEnvelopeBuffer2,
 				varIntegerChannel,
 				varIntensityMeasure_EI,
 				varBooleanMeasureAll,
 				varBooleanNormalize,
-				varFillingCheckbox
+				varFillingCheckbox,
+				varAddRoi
 				);
 		
 		//Edge Orientation
@@ -530,7 +533,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
 							varIntensityMeasure_EI,
-							varBooleanMeasureAll.getValue(),
+							varAddRoi, varBooleanMeasureAll.getValue(),
 							varBooleanNormalize.getValue(),
 							varIntegerChannel.getValue()));
 			break;

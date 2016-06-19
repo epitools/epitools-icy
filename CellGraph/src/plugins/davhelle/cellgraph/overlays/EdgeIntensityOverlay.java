@@ -101,6 +101,11 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	private HashMap<Node,Double> cell_edges;
 	
 	/**
+	 * Mean Edge Intensities for every cell 
+	 */
+	private HashMap<Node,ROI> cell_rings;
+	
+	/**
 	 * Minimal displayed edge intensity
 	 */
 	private double[] min;
@@ -134,6 +139,11 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Intensity Summary type
 	 */
 	EzVarEnum<IntensitySummaryType> summary_type;
+
+	/**
+	 * Edge mode vs Cell ring mode (cell's edges union)
+	 */
+	private EzVarBoolean ring_mode;
 	
 	/**
 	 * @param stGraph graph to display
@@ -149,6 +159,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			EzGUI gui, EzVarBoolean varFillingCheckbox,
 			EzVarInteger varBufferWidth,
 			EzVarEnum<IntensitySummaryType> intensitySummaryType,
+			EzVarBoolean varRingMode,
 			boolean varMeasureAllFrames,
 			boolean normalize_intensities,
 			int channelNumber) {
@@ -169,6 +180,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.channelNumber = channelNumber;
 		this.summary_type = intensitySummaryType;
 		this.analyzeAllFrames = varMeasureAllFrames;
+		this.cell_rings = new HashMap<Node, ROI>();
+		this.ring_mode = varRingMode;
 		int frame_no = 1;
 		
 		if(analyzeAllFrames)
@@ -270,6 +283,12 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			normalizedEdgeIntensity.put(e,normalized_value);
 
 		}
+		
+		//ring intensity
+		for(Node n: frame_i.vertexSet()){
+			ROI cell_ring = computeEdgeRing(n, frame_i);
+			cell_rings.put(n, cell_ring);
+		}
 			
 	}
 	
@@ -335,15 +354,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		if(s.getNeighbors().isEmpty())
 			return;
 		
-		//combine edge rois
-		ArrayList<ROI> rois = new ArrayList<ROI>();
-		for(Node t: frame.getNeighborsOf(s)){
-			Edge e = frame.getEdge(s, t);
-			rois.add(buffer_roi.get(e));
-		}
-		
-		//Define Edge Roi region
-		ROI edge_union = ROIUtil.getUnion(rois);
+		ROI edge_union = computeEdgeRing(s, frame);
 		
 		//Define Interior Roi region
 		ShapeRoi s_roi = new ShapeRoi(writer.toShape(s.getGeometry()));
@@ -364,6 +375,26 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		//Save results
 		cell_background.put(s,s_mean);
 		cell_edges.put(s, mean_edge_intensity);
+	}
+
+	/**
+	 * Computes the union geometries of all edges of a cell
+	 * 
+	 * @param s
+	 * @param frame
+	 * @return
+	 */
+	private ROI computeEdgeRing(Node s, FrameGraph frame) {
+		//combine edge rois
+		ArrayList<ROI> rois = new ArrayList<ROI>();
+		for(Node t: frame.getNeighborsOf(s)){
+			Edge e = frame.getEdge(s, t);
+			rois.add(buffer_roi.get(e));
+		}
+		
+		//Define Edge Roi region
+		ROI edge_union = ROIUtil.getUnion(rois);
+		return edge_union;
 	}
 	
 	/**
@@ -431,25 +462,48 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		g.setColor(Color.blue);
 		
 		//paint all the edges of the graph
-		for(Edge edge: frame_i.edgeSet()){
-
-			assert(buffer_shape.containsKey(edge));
-
-			Shape egde_shape = buffer_shape.get(edge);
-			
-			double intensity_measure = relativeEdgeIntensity.get(edge);
-			
-			if(intensity_measure < 0.0)
-				continue;
+		if(ring_mode.getValue()){
+			for(Node cell: frame_i.vertexSet()){
+				if(cell_rings.containsKey(cell)){
+					int x = sequence.getSizeX();
+					int y = sequence.getSizeY();
+					float cell_x = (float)cell.getCentroid().getX();
+					float cell_y = (float)cell.getCentroid().getY();
+					float h = ((cell_x + cell_y) % 400) / (x + y);
+					Color hsbColor = Color.getHSBColor(h, 1.0f, 1.0f);
+					g.setColor(hsbColor);
+					for(Node neighbor: cell.getNeighbors()){
+						Edge e = frame_i.getEdge(cell, neighbor);
+						Shape egde_shape = buffer_shape.get(e);
+						g.fill(egde_shape);
+					}
+					
+//					ROI ring_roi = cell_rings.get(cell);
+//					if(!sequence.contains(ring_roi))
+//						sequence.addROI(ring_roi);
+				}
+			}
+		}else{
+			for(Edge edge: frame_i.edgeSet()){
 	
-			Color hsbColor = super.getScaledColor(intensity_measure);
-			g.setColor(hsbColor);
-
-			if(fillEdgeCheckbox.getValue())
-				g.fill(egde_shape);
-			else
-				g.draw(egde_shape);
-
+				assert(buffer_shape.containsKey(edge));
+	
+				Shape egde_shape = buffer_shape.get(edge);
+				
+				double intensity_measure = relativeEdgeIntensity.get(edge);
+				
+				if(intensity_measure < 0.0)
+					continue;
+		
+				Color hsbColor = super.getScaledColor(intensity_measure);
+				g.setColor(hsbColor);
+	
+				if(fillEdgeCheckbox.getValue())
+					g.fill(egde_shape);
+				else
+					g.draw(egde_shape);
+	
+			}
 		}
 
 	}

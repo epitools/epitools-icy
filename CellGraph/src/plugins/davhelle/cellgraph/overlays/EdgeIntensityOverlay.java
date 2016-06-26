@@ -28,6 +28,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 /**
  * Class to visualize the intensity underlying the edges of the
@@ -83,6 +84,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * AWT Shape representation for each edge 
 	 */
 	private HashMap<Edge,Shape> buffer_shape;
+	
+	private HashMap<Edge,Geometry> buffer_geo;
 	/**
 	 * Relative intensity value for each edge
 	 */
@@ -104,6 +107,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Mean Edge Intensities for every cell 
 	 */
 	private HashMap<Node,ROI> cell_rings;
+	
+	private HashMap<Node,Shape> cell_buffer_shape;
 	
 	/**
 	 * Minimal displayed edge intensity
@@ -144,6 +149,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Edge mode vs Cell ring mode (cell's edges union)
 	 */
 	private EzVarBoolean ring_mode;
+
+	private HashMap<Node, Double> cell_intensity;
 	
 	/**
 	 * @param stGraph graph to display
@@ -170,6 +177,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.writer = new ShapeWriter();
 		this.buffer_shape = new	HashMap<Edge, Shape>();
 		this.buffer_roi = new HashMap<Edge, ROI>();
+		this.buffer_geo = new HashMap<Edge, Geometry>();
 		this.normalizedEdgeIntensity = new HashMap<Edge, Double>();
 		this.relativeEdgeIntensity = new HashMap<Edge, Double>();
 		this.cell_background = new HashMap<Node, Double>();
@@ -181,6 +189,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		this.summary_type = intensitySummaryType;
 		this.analyzeAllFrames = varMeasureAllFrames;
 		this.cell_rings = new HashMap<Node, ROI>();
+		this.cell_intensity = new HashMap<Node, Double>();
+		this.cell_buffer_shape = new HashMap<Node, Shape>();
 		this.ring_mode = varRingMode;
 		int frame_no = 1;
 		
@@ -288,6 +298,23 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		for(Node n: frame_i.vertexSet()){
 			ROI cell_ring = computeEdgeRing(n, frame_i);
 			cell_rings.put(n, cell_ring);
+			double intensity = computeRingIntensity(n,frame_i);
+			cell_intensity.put(n, intensity);
+			
+			Geometry geo = n.getGeometry();
+			ArrayList<Geometry> boundaries = new ArrayList<Geometry>();
+			for(Node neighbor: frame_i.vertexSet()){
+				Edge e = frame_i.getEdge(n, neighbor);
+				if(buffer_geo.containsKey(e)){
+					Geometry buffer = buffer_geo.get(e);
+					Geometry intersection = buffer.intersection(geo);
+					boundaries.add(intersection);
+				}
+			}
+			Geometry union = CascadedPolygonUnion.union(boundaries);
+			Shape cell_buffer = writer.toShape(union);
+			cell_buffer_shape.put(n,cell_buffer);
+			
 		}
 			
 	}
@@ -305,6 +332,8 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		Geometry edge_geo = e.getGeometry();
 		
 		Geometry edge_buffer = edge_geo.buffer(bufferWidth);
+		
+		this.buffer_geo.put(e, edge_buffer);
 		
 		Shape egde_shape = writer.toShape(edge_buffer);
 		
@@ -397,6 +426,22 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		return edge_union;
 	}
 	
+	private double computeRingIntensity(Node s,FrameGraph frame){
+		if(cell_rings.containsKey(s)){
+			ROI s_ring = cell_rings.get(s); 
+			//Compute intensities
+			int z=0;
+			int t=frame.getFrameNo();
+			int c=channelNumber;
+			double s_mean = IntensityReader.measureRoiIntensity(
+					sequence, s_ring, z, t, c, summary_type.getValue());
+			return s_mean;
+		}
+		else{
+			return -1.0;
+		}
+	}
+	
 	/**
 	 * Every edge is normalized by taking into account the first order neighborhood
 	 * 
@@ -465,18 +510,19 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		if(ring_mode.getValue()){
 			for(Node cell: frame_i.vertexSet()){
 				if(cell_rings.containsKey(cell)){
-					int x = sequence.getSizeX();
-					int y = sequence.getSizeY();
-					float cell_x = (float)cell.getCentroid().getX();
-					float cell_y = (float)cell.getCentroid().getY();
-					float h = ((cell_x + cell_y) % 400) / (x + y);
-					Color hsbColor = Color.getHSBColor(h, 1.0f, 1.0f);
+
+					double intensity_measure = cell_intensity.get(cell);
+					
+					if(intensity_measure < 0.0)
+						continue;
+			
+					Color hsbColor = super.getScaledColor(intensity_measure);
 					g.setColor(hsbColor);
-					for(Node neighbor: cell.getNeighbors()){
-						Edge e = frame_i.getEdge(cell, neighbor);
-						Shape egde_shape = buffer_shape.get(e);
-						g.fill(egde_shape);
-					}
+					
+					g.setColor(hsbColor);
+					Shape cell_buffer = cell_buffer_shape.get(cell);
+					
+					g.fill(cell_buffer);
 					
 //					ROI ring_roi = cell_rings.get(cell);
 //					if(!sequence.contains(ring_roi))
@@ -517,39 +563,62 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 		int c = 0;
 		int r = 0;
 		
-		XLSUtil.setCellString(sheet, c++, r, "Edge id");
-		XLSUtil.setCellString(sheet, c++, r, "Edge x");
-		XLSUtil.setCellString(sheet, c++, r, "Edge y");
-		XLSUtil.setCellString(sheet, c++, r, "Cell 1");
-		XLSUtil.setCellString(sheet, c++, r, "Cell 2");
-		XLSUtil.setCellString(sheet, c++, r, String.format("%s Edge Intensity",summary_type.getValue().getDescription()));
-		XLSUtil.setCellString(sheet, c++, r, "Relative Edge intensity");
-		XLSUtil.setCellString(sheet, c++, r, "Normalized Edge intensity");
+		if(ring_mode.getValue()){
+			XLSUtil.setCellString(sheet, c++, r, "Cell id");
+			XLSUtil.setCellString(sheet, c++, r, "Cell x");
+			XLSUtil.setCellString(sheet, c++, r, "Cell y");
+			XLSUtil.setCellString(sheet, c++, r, String.format("%s Cell Ring Intensity",summary_type.getValue().getDescription()));
+		
+			for(Node n: frame.vertexSet()){
+				c=0;
+				r++;
+				
+				int id = n.getTrackID();
+				double x = n.getCentroid().getX();
+				double y = n.getCentroid().getY();
+				double intensity = cell_intensity.get(n);
+				
+				XLSUtil.setCellNumber(sheet, c++, r, id);
+				XLSUtil.setCellNumber(sheet, c++, r, x);
+				XLSUtil.setCellNumber(sheet, c++, r, y);
+				XLSUtil.setCellNumber(sheet, c++, r, intensity);
+			}
+		}
+		else{
+			XLSUtil.setCellString(sheet, c++, r, "Edge id");
+			XLSUtil.setCellString(sheet, c++, r, "Edge x");
+			XLSUtil.setCellString(sheet, c++, r, "Edge y");
+			XLSUtil.setCellString(sheet, c++, r, "Cell 1");
+			XLSUtil.setCellString(sheet, c++, r, "Cell 2");
+			XLSUtil.setCellString(sheet, c++, r, String.format("%s Edge Intensity",summary_type.getValue().getDescription()));
+			XLSUtil.setCellString(sheet, c++, r, "Relative Edge intensity");
+			XLSUtil.setCellString(sheet, c++, r, "Normalized Edge intensity");
 
-		for(Edge e: frame.edgeSet()){
-			
-			//reset column and increment row
-			c=0;
-			r++;
-			
-			Point centroid = e.getGeometry().getCentroid();
-			long edge_id = e.getPairCode(frame);
-			
-			int target = frame.getEdgeTarget(e).getTrackID();
-			int source = frame.getEdgeSource(e).getTrackID();
-			
-			double relative_value = relativeEdgeIntensity.get(e);
-			double normalized_value = normalizedEdgeIntensity.get(e);
+			for(Edge e: frame.edgeSet()){
 
-			XLSUtil.setCellNumber(sheet, c++, r, edge_id);
-			XLSUtil.setCellNumber(sheet, c++, r, centroid.getX());
-			XLSUtil.setCellNumber(sheet, c++, r, centroid.getY());
-			XLSUtil.setCellNumber(sheet, c++, r, target);
-			XLSUtil.setCellNumber(sheet, c++, r, source);
-			XLSUtil.setCellNumber(sheet, c++, r, e.getValue());
-			XLSUtil.setCellNumber(sheet, c++, r, relative_value);
-			XLSUtil.setCellNumber(sheet, c++, r, normalized_value);
+				//reset column and increment row
+				c=0;
+				r++;
 
+				Point centroid = e.getGeometry().getCentroid();
+				long edge_id = e.getPairCode(frame);
+
+				int target = frame.getEdgeTarget(e).getTrackID();
+				int source = frame.getEdgeSource(e).getTrackID();
+
+				double relative_value = relativeEdgeIntensity.get(e);
+				double normalized_value = normalizedEdgeIntensity.get(e);
+
+				XLSUtil.setCellNumber(sheet, c++, r, edge_id);
+				XLSUtil.setCellNumber(sheet, c++, r, centroid.getX());
+				XLSUtil.setCellNumber(sheet, c++, r, centroid.getY());
+				XLSUtil.setCellNumber(sheet, c++, r, target);
+				XLSUtil.setCellNumber(sheet, c++, r, source);
+				XLSUtil.setCellNumber(sheet, c++, r, e.getValue());
+				XLSUtil.setCellNumber(sheet, c++, r, relative_value);
+				XLSUtil.setCellNumber(sheet, c++, r, normalized_value);
+
+			}
 		}
 
 	}

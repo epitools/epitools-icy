@@ -14,6 +14,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D.Double;
@@ -32,17 +33,23 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.WritableSheet;
+import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
+import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.IntensitySummaryType;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.nodes.Division;
+import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
@@ -58,7 +65,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class CellColorTagOverlay extends StGraphOverlay {
+public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener<Integer>{
 	
 	private static final String EXPORT_FILE = "Export File";
 	private static final String CONVERT_ROI = "Convert ROI";
@@ -90,6 +97,15 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	private boolean tags_exist;
 	
 	/**
+	 * Mean Edge Intensities for every cell 
+	 */
+	private EzVarInteger bufferWidth;
+	private EzVarInteger channelNumber;
+	private EzVarBoolean showIntensity;
+	private EzVarEnum<IntensitySummaryType> summary_type;
+	private HashMap<Node,Shape> cell_rings;
+	
+	/**
 	 * Description string for GUI use
 	 */
 	public static final String DESCRIPTION = 
@@ -112,13 +128,23 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	 */
 	public CellColorTagOverlay(SpatioTemporalGraph stGraph, 
 			EzVarEnum<CellColor> varCellColor,
-			EzVarBoolean drawColorTag, Sequence sequence) {
+			EzVarBoolean drawColorTag, Sequence sequence,
+			EzVarBoolean varShowIntensity,
+			EzVarInteger varBufferWidth,
+			EzVarEnum<IntensitySummaryType> varIntensitySummaryType,
+			EzVarInteger varIntensityChannel) {
 		super("Cell Color Tag",stGraph);
 		this.factory = new GeometryFactory();
 		this.tag_color = varCellColor;
 		this.writer = new ShapeWriter();
 		this.sequence = sequence;
 		this.drawColorTag = drawColorTag;
+		
+		this.cell_rings = new HashMap<Node, Shape>();
+		this.showIntensity = varShowIntensity; 
+		this.bufferWidth = varBufferWidth;
+		this.channelNumber = varIntensityChannel;
+		this.summary_type = varIntensitySummaryType;
 		
 		this.tags_exist = false;
 		for(Node node: stGraph.getFrame(0).vertexSet()){
@@ -176,10 +202,12 @@ public class CellColorTagOverlay extends StGraphOverlay {
 			n = n.getFirst();
 		
 		n.setColorTag(tag);
+		updateMeasurementGeometry(n);
 		
 		while(n.hasNext()){
 			n = n.getNext();
 			n.setColorTag(tag);
+			updateMeasurementGeometry(n);
 		}
 		
 		if(n.hasObservedDivision()){
@@ -191,11 +219,21 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		}
 	}
 	
+	private void updateMeasurementGeometry(Node n) {
+		int buffer_width = this.bufferWidth.getValue();
+		Geometry buffer_geo = n.getGeometry().buffer(buffer_width);
+		Shape buffer_shape = writer.toShape(buffer_geo);
+		this.cell_rings.put(n, buffer_shape);
+	}
+	
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		for(Node cell: frame_i.vertexSet())
 			if(cell.hasColorTag()){
 				g.setColor(cell.getColorTag());
+				if(cell_rings.containsKey(cell) && showIntensity.getValue())
+					g.draw(cell_rings.get(cell));
+				
 				if(drawColorTag.getValue()){
 					g.setStroke(new BasicStroke(3));
 					g.draw(writer.toShape(cell.getGeometry()));
@@ -494,6 +532,16 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		JButton Roi_Button = new JButton(button_text);
         Roi_Button.addActionListener(this);
         optionPanel.add(Roi_Button,gbc);
+	}
+	
+	@Override
+	public void variableChanged(EzVar<Integer> source, Integer newValue) {
+		
+		for(Node n: cell_rings.keySet())
+			updateMeasurementGeometry(n);
+		
+		painterChanged();
+		
 	}
 	
 }

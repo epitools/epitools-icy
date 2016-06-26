@@ -163,6 +163,14 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarFile					varSurfaceFile;
 	EzVarBoolean					varLoadAllSurfaceFiles;
 
+	private EzVarBoolean varColorTagShowIntensity;
+
+	private EzVarInteger varColorTagBufferWidth;
+
+	private EzVarEnum<IntensitySummaryType> varColorTagIntensityMeasure;
+
+	private EzVarInteger varColorTagIntensityChannel;
+
 
 	
 	@Override
@@ -253,9 +261,25 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		//CellMarker mode
 		varCellColor = new EzVarEnum<CellColor>("Cell color", CellColor.values(), CellColor.GREEN);
 		varDrawColorTag = new EzVarBoolean("Only outline cells", false);
+		
+		varColorTagShowIntensity = new EzVarBoolean("Measure Intensity", false);
+		varColorTagBufferWidth = new EzVarInteger("Cell Intensity Buffer [px]", 1, 10, 1);
+		varColorTagIntensityChannel = new EzVarInteger("Intensity Channel",0,0,10,1);
+		varColorTagIntensityMeasure = new EzVarEnum<IntensitySummaryType>(
+				"Intensity Measurement", IntensitySummaryType.values(), IntensitySummaryType.Mean);
+		
+		EzGroup cellColorTagIntensity = new EzGroup("Cell Intensity",
+				varColorTagBufferWidth,
+				varColorTagIntensityChannel,
+				varColorTagIntensityMeasure);
+		
 		EzGroup groupMarker = new EzGroup("Overlay elements",
 				varCellColor,
-				varDrawColorTag);
+				varDrawColorTag,
+				varColorTagShowIntensity,
+				cellColorTagIntensity);
+		
+		varColorTagShowIntensity.addVisibilityTriggerTo(cellColorTagIntensity, true);
 		
 		//EdgeMarker mode
 		varEdgeColor = new EzVarEnum<CellColor>("Edge color", CellColor.values(), CellColor.CYAN);
@@ -550,7 +574,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				break;
 			}
 			sequence.addOverlay(
-					new CellColorTagOverlay(stGraph,varCellColor,varDrawColorTag,sequence));
+					new CellColorTagOverlay(stGraph,varCellColor,varDrawColorTag,sequence,
+							varColorTagShowIntensity, 
+							varColorTagBufferWidth, 
+							varColorTagIntensityMeasure, 
+							varColorTagIntensityChannel));
 			break;
 			
 		case EDGE_COLOR_TAG:

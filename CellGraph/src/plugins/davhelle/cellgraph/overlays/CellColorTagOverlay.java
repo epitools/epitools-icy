@@ -143,6 +143,7 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 		this.cell_rings = new HashMap<Node, Shape>();
 		this.showIntensity = varShowIntensity; 
 		this.bufferWidth = varBufferWidth;
+		this.bufferWidth.addVarChangeListener(this);
 		this.channelNumber = varIntensityChannel;
 		this.summary_type = varIntensitySummaryType;
 		
@@ -222,7 +223,9 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 	private void updateMeasurementGeometry(Node n) {
 		int buffer_width = this.bufferWidth.getValue();
 		Geometry buffer_geo = n.getGeometry().buffer(buffer_width);
-		Shape buffer_shape = writer.toShape(buffer_geo);
+		Geometry reduced_geo = n.getGeometry().buffer(-buffer_width);
+		Geometry final_geo = buffer_geo.difference(reduced_geo);
+		Shape buffer_shape = writer.toShape(final_geo);
 		this.cell_rings.put(n, buffer_shape);
 	}
 	

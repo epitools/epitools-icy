@@ -3,9 +3,11 @@ package plugins.davhelle.cellgraph.overlays;
 import icy.canvas.IcyCanvas;
 import icy.gui.dialog.ConfirmDialog;
 import icy.gui.dialog.OpenDialog;
+import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.roi.ROI;
 import icy.sequence.Sequence;
+import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
 
 import java.awt.BasicStroke;
@@ -33,6 +35,8 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
 import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
@@ -254,8 +258,34 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 		String cmd_string =e.getActionCommand(); 
 		
 		if(cmd_string.equals(EXPORT_FILE)){
-			BigXlsExporter xlsExport = new BigXlsExporter(stGraph, true, sequence);
-			xlsExport.writeXLSFile();
+			if(showIntensity.getValue()){
+				try {
+					String file_name = SaveDialog.chooseFile(
+							"Choose save location","/Users/davide/",
+							"test_file", XLSUtil.FILE_DOT_EXTENSION);
+					if(file_name == null)
+						return;
+					
+					//Open workbook
+					WritableWorkbook wb = XLSUtil.createWorkbook(file_name);
+					String sheetName = String.format("Area and Intensity",0);
+					WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
+					
+					//TODO Write single sheet workbook with area and intensity 
+					writeFrameSheet(sheet,stGraph.getFrame(0));
+					
+					//Close workbook
+					XLSUtil.saveAndClose(wb);
+					new AnnounceFrame("XLS file exported successfully to: "+file_name,10);
+				} catch (WriteException writeException) {
+					IcyExceptionHandler.showErrorMessage(writeException, true, true);
+				} catch (IOException ioException) {
+					IcyExceptionHandler.showErrorMessage(ioException, true, true);
+				}
+			}else{
+				BigXlsExporter xlsExport = new BigXlsExporter(stGraph, true, sequence);
+				xlsExport.writeXLSFile();
+			}
 		}else if (cmd_string.equals(CONVERT_ROI)){
 			convertROI();
 		}else if (cmd_string.equals(ERASE_TAGS)){

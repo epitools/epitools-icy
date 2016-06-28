@@ -6,6 +6,7 @@ import icy.gui.dialog.OpenDialog;
 import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.roi.ROI;
+import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
 import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
@@ -45,11 +46,14 @@ import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.IntensityReader;
 import plugins.davhelle.cellgraph.io.IntensitySummaryType;
+import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.misc.CellColor;
+import plugins.davhelle.cellgraph.misc.ShapeRoi;
 import plugins.davhelle.cellgraph.nodes.Division;
-import plugins.davhelle.cellgraph.nodes.Edge;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.kernel.roi.roi2d.ROI2DArea;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -108,6 +112,7 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 	private EzVarBoolean showIntensity;
 	private EzVarEnum<IntensitySummaryType> summary_type;
 	private HashMap<Node,Shape> cell_rings;
+	private ROI2DArea[] nanAreaRoi;
 	
 	/**
 	 * Description string for GUI use
@@ -158,7 +163,9 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 				break;
 			}
 		}
-
+		
+		this.nanAreaRoi = new ROI2DArea[stGraph.size()];
+		
 	}
 	
 	@Override
@@ -238,15 +245,17 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 		for(Node cell: frame_i.vertexSet())
 			if(cell.hasColorTag()){
 				g.setColor(cell.getColorTag());
+				
 				if(cell_rings.containsKey(cell) && showIntensity.getValue())
 					g.draw(cell_rings.get(cell));
-				
-				if(drawColorTag.getValue()){
-					g.setStroke(new BasicStroke(3));
-					g.draw(writer.toShape(cell.getGeometry()));
-					g.setStroke(new BasicStroke(1));
-				} else {
-					g.fill(writer.toShape(cell.getGeometry()));
+				else{
+					if(drawColorTag.getValue()){
+						g.setStroke(new BasicStroke(3));
+						g.draw(writer.toShape(cell.getGeometry()));
+						g.setStroke(new BasicStroke(1));
+					} else {
+						g.fill(writer.toShape(cell.getGeometry()));
+					}
 				}
 			}
 
@@ -260,6 +269,11 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 		if(cmd_string.equals(EXPORT_FILE)){
 			if(showIntensity.getValue()){
 				try {
+					
+					for(int i=0; i < stGraph.size(); i++)
+						this.nanAreaRoi[i] = EdgeOrientationOverlay.computeNanAreaROI(
+								sequence,i,0,channelNumber.getValue());
+					
 					String file_name = SaveDialog.chooseFile(
 							"Choose save location","/Users/davide/",
 							"test_file", XLSUtil.FILE_DOT_EXTENSION);
@@ -441,32 +455,75 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 	
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		//old write out method for simpler file. Keep as reference
-		int color_no = 0;
-		HashMap<Color, Integer> row_no = new HashMap<Color, Integer>();
-		HashMap<Color, Integer> col_no = new HashMap<Color, Integer>();
-
+		
+		int col_no = 0;
+		
 		for(Node node: frame.vertexSet()){
-
+			
 			if(node.hasColorTag()){
-				Color cell_color = node.getColorTag();
-				if(!row_no.containsKey(cell_color)){
-					row_no.put(cell_color, 1);
-					col_no.put(cell_color, color_no);
-					XLSUtil.setCellString(sheet, color_no++, 0, getColorName(cell_color));
+				
+				int row_no = 0;
+				int col_area = col_no * 2;
+				int col_intensity = col_area + 1;
+				col_no++;
+				
+				String colorTag = CellColorTagOverlay.getColorName(node.getColorTag());
+				
+				String header = String.format("[%s - %d]",colorTag,node.getTrackID());
+				XLSUtil.setCellString(sheet, col_area, row_no, header);
+				XLSUtil.setCellString(sheet, col_intensity, row_no++, header);
+				
+				XLSUtil.setCellString(sheet, col_area, row_no, "[area - px]");
+				XLSUtil.setCellString(sheet, col_intensity, row_no++, "[intensity]");
+				
+				double area = node.getGeometry().getArea();
+				double intensity = getCellIntensity(node);
+				XLSUtil.setCellNumber(sheet, col_area, row_no, area);
+				XLSUtil.setCellNumber(sheet, col_intensity, row_no++, intensity);
+				
+				while(node.hasNext()){
+					node = node.getNext();
+					
+					area = node.getGeometry().getArea();
+					intensity = getCellIntensity(node);
+					XLSUtil.setCellNumber(sheet, col_area, row_no, area);
+					XLSUtil.setCellNumber(sheet, col_intensity, row_no++, intensity);
 				}
-
-				int x = col_no.get(cell_color).intValue();
-				int y = row_no.get(cell_color).intValue();
-
-				XLSUtil.setCellNumber(sheet, x, y, node.getGeometry().getArea());
-
-				row_no.put(cell_color, y+1);
+				
 			}
 		}
 		
 	}
 	
+	private double getCellIntensity(Node node) {
+		
+		assert(cell_rings.containsKey(node));
+		
+		Shape cell_shape = cell_rings.get(node);
+
+		int z=0;
+		int t=node.getFrameNo();
+		int c=channelNumber.getValue();
+		
+		ROI cell_roi_wo_nan = null;
+		try{
+			ShapeRoi cell_roi = new ShapeRoi(cell_shape);
+			cell_roi_wo_nan = ROIUtil.subtract(cell_roi, nanAreaRoi[t]);
+		}catch(Exception ex){
+			Point centroid = node.getGeometry().getCentroid();
+			System.out.printf("Problems at %.2f %.2f",centroid.getX(),centroid.getY());
+			return -1.0;
+		}
+		
+		//TODO possibly use getIntensityInfo here
+		
+		double mean_intensity = 
+				IntensityReader.measureRoiIntensity(
+						sequence, cell_roi_wo_nan, z, t, c, summary_type.getValue());
+		
+		return mean_intensity;
+	}
+
 	/**
 	 * source: http://stackoverflow.com/a/12828811
 	 * 

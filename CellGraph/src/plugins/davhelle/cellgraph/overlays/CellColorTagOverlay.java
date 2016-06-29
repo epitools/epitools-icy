@@ -34,7 +34,10 @@ import javax.swing.JPanel;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.format.Colour;
 import jxl.read.biff.BiffException;
+import jxl.write.WritableCell;
+import jxl.write.WritableCellFormat;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
@@ -51,6 +54,7 @@ import plugins.davhelle.cellgraph.io.IntensitySummaryType;
 import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.misc.CellColor;
 import plugins.davhelle.cellgraph.misc.ShapeRoi;
+import plugins.davhelle.cellgraph.misc.JxlUtils;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
 import plugins.kernel.roi.roi2d.ROI2DArea;
@@ -481,6 +485,20 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 				XLSUtil.setCellNumber(sheet, col_area, row_no, area);
 				XLSUtil.setCellNumber(sheet, col_intensity, row_no++, intensity);
 				
+				WritableCell c = sheet.getWritableCell(col_area,0);
+
+				WritableCellFormat newFormat = new WritableCellFormat();
+
+				Color c_awt = node.getColorTag();
+				Colour c_jxl = JxlUtils.getNearestColour(c_awt);
+				try {
+					newFormat.setBackground(c_jxl);
+				} catch (WriteException e) {
+					e.printStackTrace();
+				}
+				
+				c.setCellFormat(newFormat);
+				
 				while(node.hasNext()){
 					node = node.getNext();
 					
@@ -493,7 +511,7 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 			}
 		}
 		
-	}
+	}	
 	
 	private double getCellIntensity(Node node) {
 		

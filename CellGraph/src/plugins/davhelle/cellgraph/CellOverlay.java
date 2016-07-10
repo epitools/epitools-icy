@@ -29,6 +29,7 @@ import plugins.davhelle.cellgraph.overlays.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.overlays.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.overlays.BorderOverlay;
 import plugins.davhelle.cellgraph.overlays.CellColorTagOverlay;
+import plugins.davhelle.cellgraph.overlays.CellIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.CentroidOverlay;
 import plugins.davhelle.cellgraph.overlays.CorrectionOverlay;
 import plugins.davhelle.cellgraph.overlays.DisplacementOverlay;
@@ -125,6 +126,10 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	//CellMarker
 	EzVarEnum<CellColor>		varCellColor;
 	EzVarBoolean 				varDrawColorTag;
+	private EzVarBoolean varColorTagShowIntensity;
+	private EzVarInteger varColorTagBufferWidth;
+	private EzVarEnum<IntensitySummaryType> varColorTagIntensityMeasure;
+	private EzVarInteger varColorTagIntensityChannel;
 
 	//EdgeMarker
 	EzVarEnum<CellColor> 		varEdgeColor;
@@ -146,6 +151,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarInteger 				varIntegerChannel;
 	EzVarEnum<IntensitySummaryType>	varIntensityMeasure_EI;
 	private EzVarBoolean varBooleanMeasureAll;
+
+	//Cell intensity
+	private EzVarInteger varCellIntensityBufferWidth;
+	private EzVarEnum<IntensitySummaryType> varCellIntensityMeasure;
+	private EzVarInteger varCellIntensityChannel;
 	
 	//Graph Export
 	EzVarEnum<ExportFieldType>  varExportType;
@@ -163,13 +173,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarFile					varSurfaceFile;
 	EzVarBoolean					varLoadAllSurfaceFiles;
 
-	private EzVarBoolean varColorTagShowIntensity;
-
-	private EzVarInteger varColorTagBufferWidth;
-
-	private EzVarEnum<IntensitySummaryType> varColorTagIntensityMeasure;
-
-	private EzVarInteger varColorTagIntensityChannel;
+	
 
 
 	
@@ -341,6 +345,16 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varAddRoi
 				);
 		
+		varCellIntensityBufferWidth = new EzVarInteger("Cell Intensity Buffer [px]", 1, 10, 1);
+		varCellIntensityChannel = new EzVarInteger("Intensity Channel",0,0,10,1);
+		varCellIntensityMeasure = new EzVarEnum<IntensitySummaryType>(
+				"Intensity Measurement", IntensitySummaryType.values(), IntensitySummaryType.Mean);
+		
+		EzGroup groupCellIntensity = new EzGroup("Overlay elements",
+				varCellIntensityBufferWidth,
+				varCellIntensityChannel,
+				varCellIntensityMeasure);
+		
 		//Edge Orientation
 		varEdgeOrientationBuffer = new EzVarDouble("Edge buffer for intensity",3.0,1.0,10.0,1.0);
 		varIntensityMeasure_EO = new EzVarEnum<IntensitySummaryType>(
@@ -386,6 +400,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupDivisionOrientation, OverlayEnum.DIVISION_ORIENTATION);
 		varPlotting.addVisibilityTriggerTo(groupEdgeOrientation, OverlayEnum.EDGE_ORIENTATION);
 		varPlotting.addVisibilityTriggerTo(groupCellProjection, OverlayEnum.CELL_PROJECTION);
+		varPlotting.addVisibilityTriggerTo(groupCellIntensity, OverlayEnum.CELL_INTENSITY);
 		
 		return new EzGroup("1. SELECT OVERLAY TO ADD",
 				varPlotting,
@@ -400,6 +415,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupEdgeMarker,
 				groupTransitions,
 				groupEdgeIntensity,
+				groupCellIntensity,
 				groupDivisionOrientation,
 				groupEdgeOrientation,
 				groupCellProjection);
@@ -560,6 +576,16 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 							varAddRoi, varBooleanMeasureAll.getValue(),
 							varBooleanNormalize.getValue(),
 							varIntegerChannel.getValue()));
+			break;
+		
+		case CELL_INTENSITY:
+			sequence.addOverlay(
+					new CellIntensityOverlay(
+							stGraph,
+							varCellIntensityBufferWidth,
+							varCellIntensityMeasure, 
+							varCellIntensityChannel,
+							sequence, this.getUI()));
 			break;
 
 		case CELL_GRAPH_VIEW:	

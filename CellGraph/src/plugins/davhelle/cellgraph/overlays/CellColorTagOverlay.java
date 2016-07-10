@@ -487,10 +487,9 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 				XLSUtil.setCellNumber(sheet, col_area, row_no, area);
 				XLSUtil.setCellNumber(sheet, col_intensity, row_no, intensity);
 				
+				//Color first cell according to color TAG
 				WritableCell c = sheet.getWritableCell(col_area,0);
-
 				WritableCellFormat newFormat = new WritableCellFormat();
-
 				Color c_awt = node.getColorTag();
 				Colour c_jxl = JxlUtils.getNearestColour(c_awt);
 				try {
@@ -498,7 +497,6 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 				} catch (WriteException e) {
 					e.printStackTrace();
 				}
-				
 				c.setCellFormat(newFormat);
 				
 				//Later cells if tracked

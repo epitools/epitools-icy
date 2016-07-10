@@ -480,10 +480,12 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 				XLSUtil.setCellString(sheet, col_area, row_no, "[area - px]");
 				XLSUtil.setCellString(sheet, col_intensity, row_no++, "[intensity]");
 				
+				//First cell
+				row_no = node.getFrameNo() + 2;
 				double area = node.getGeometry().getArea();
 				double intensity = getCellIntensity(node);
 				XLSUtil.setCellNumber(sheet, col_area, row_no, area);
-				XLSUtil.setCellNumber(sheet, col_intensity, row_no++, intensity);
+				XLSUtil.setCellNumber(sheet, col_intensity, row_no, intensity);
 				
 				WritableCell c = sheet.getWritableCell(col_area,0);
 
@@ -499,8 +501,11 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 				
 				c.setCellFormat(newFormat);
 				
+				//Later cells if tracked
 				while(node.hasNext()){
 					node = node.getNext();
+				
+					row_no = node.getFrameNo() + 2;
 					
 					area = node.getGeometry().getArea();
 					intensity = getCellIntensity(node);

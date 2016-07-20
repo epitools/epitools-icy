@@ -99,6 +99,9 @@ public class IntensityReader {
 		
 		double numPixels = roi.getNumberOfPoints();
         int top_size = (int) Math.round(numPixels * topPercent);
+        //Safety fall back in case of a small ROI
+        if(top_size < 1)
+        	top_size = 1;
         double[] topIntensities = new double[top_size];
 
         // Iterate through the pixels of the rois and only keep the top most

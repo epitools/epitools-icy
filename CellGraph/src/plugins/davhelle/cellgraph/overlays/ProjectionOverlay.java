@@ -44,10 +44,11 @@ import com.vividsolutions.jts.math.Vector3D;
 public class ProjectionOverlay extends StGraphOverlay {
 	
 	public static final String DESCRIPTION = 
-			"Visualizes the z-component from the surface normal of every cell"+
-			" by reading the surface estimation saved by the projection module"+
-			" in EpiTools for Matlab.\n\n" +
-			"[Please verify the pixel size in the sequence properties to ensure correct scaling!]";
+			"Visualizes the z-component from the surface normal<br/>" +
+			" of every cell by reading the surface estimation <br/>" +
+			" saved by the projection module in EpiTools for Matlab.<br/><br/>" +
+			"[Please verify the pixel size in the sequence properties<br/>" +
+			" to ensure correct scaling!]";
 	
 	HashMap<Node,Coordinate> normal_map = new HashMap<Node,Coordinate>();
 

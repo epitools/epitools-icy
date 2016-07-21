@@ -30,7 +30,8 @@ public class VoronoiOverlay extends StGraphOverlay {
 	 * Description for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Overlay displays the voronoi diagram computed from the cell centroids";
+			"Overlay displays the voronoi diagram <br/>" +
+			"computed from the cell centroids";
 	/**
 	 * The voronoi tile geometry for every cell
 	 */

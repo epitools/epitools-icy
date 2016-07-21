@@ -22,7 +22,9 @@ public class BorderOverlay extends StGraphOverlay{
 		/**
 		 * Descriptor String for GUI use
 		 */
-		public static final String DESCRIPTION = "Overlay to show where the border of the segmentation was identified";
+		public static final String DESCRIPTION = 
+				"Overlay to show where the border of the segmentation <br/>" +
+				"was identified";
 
 		/**
 		 * @param spatioTemporalGraph graph to be analyzed

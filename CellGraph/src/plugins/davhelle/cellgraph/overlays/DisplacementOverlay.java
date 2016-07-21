@@ -36,11 +36,12 @@ public class DisplacementOverlay extends StGraphOverlay {
 	/**
 	 * Description string for GUI
 	 */
-	public static final String DESCRIPTION = "Overlay to highlight the spatial displacement from one frame to the next.\n\n" +
-			"Displacement Color code:\n" +
-			"* [white] cell centroid moves > [x] px\n" +
-			"* [green] cell centroid moves < [x] px\n" +
-			"* [none] next frame info not available\n";
+	public static final String DESCRIPTION = 
+			"Overlay to highlight the spatial displacement from one frame<br/>" +
+			"to the next. Displacement Color code:<br/><ul>" +
+			"<li> [white] cell centroid moves > [x] px\n" +
+			"<li> [green] cell centroid moves < [x] px\n" +
+			"<li> [none] next frame info not available</ul>";
 	
 	/**
 	 * JTS factory for building arrow object

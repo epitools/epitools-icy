@@ -21,8 +21,10 @@ public class AreaGradientOverlay extends StGraphOverlay{
 	 * Description string for GUI use
 	 */
 	public static final String DESCRIPTION = 
-			"Overlay to color cells according to their area size in a gradient fashion. " +
-			"Adjust the color scheme in the OptionPanel of the Layer menu.";
+			"Overlay to color cells according to their area size in a<br/>" +
+			"gradient fashion.<br/><br/>" +
+			"NOTE: Color scheme can be changed in the OptionPanel<br/>" +
+			"of the Layer menu.";
 	
 	/**
 	 * Overlay constructor that takes a value from the calling GUI to 

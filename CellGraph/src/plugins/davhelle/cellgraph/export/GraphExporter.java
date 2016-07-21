@@ -29,10 +29,10 @@ public class GraphExporter {
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"The loaded graph is saved as a GraphML file. This format is a" +
-			" xml based graph format. Bejond the spatial graph structure" +
+			"The loaded graph is saved as a GraphML file. This format is a<br/>" +
+			" xml based graph format. Bejond the spatial graph structure<br/>" +
 			" this format includes the following fields in the <vertex label>" +
-			" attribute in CSV format:\n\n" +
+			" attribute in CSV format:<br/><br/>" +
 			"* Cell tracking ID\n" + 
 			"* Centroid position x\n" +
 			"* Centroid position y\n" +

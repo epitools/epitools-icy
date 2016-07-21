@@ -93,14 +93,14 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	 * Description string for GUI use
 	 */
 	public static final String DESCRIPTION = 
-			"Overlay to interactively mark cells with a color of choice and export the selection.\n\n" +
-			"1. Run [>] to activate the marker\n" +
-			"2. Select the color to begin to mark with\n" + 
-			"3. Click on any cell to mark it\n" +
-			"4. Click again to remove or change color\n" +
-			"5. The XLS export in the layer menu will build\n" +
-			"   a spreadsheet with the marked cells.\n" +
-			"6. Remove the overlay (Layer > [x]) to stop";
+			"Overlay to interactively mark cells with a color of choice<br/>"+
+			"and export the selection.<br /><ol>" +
+			"<li>Run [>] to activate the marker" +
+			"<li>Select the color to begin to mark with" + 
+			"<li>Click on any cell to mark it" +
+			"<li>Click again to remove or change color" +
+			"<li>Export XLS through the layer menu" +
+			"<li>Remove the overlay (Layer > [x]) to stop</ol>";
 	
 	/**
 	 * Initialize the marker overlay

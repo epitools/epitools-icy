@@ -41,12 +41,14 @@ public class CorrectionOverlay extends StGraphOverlay {
 	/**
 	 * Description string for GUI use
 	 */
-	public static final String DESCRIPTION = "Overlay to evidence potential False positives (FP) and False Negatives (FN)\n\n" +
-			"* [RED] FP, i.e. over-segmentation\n" + 
-			"* [YELLOW] FN, i.e. under-segmentation\n" +
-			"* Click on any mark to cancel the evidence\n\n"+
-			"Useful in combination with CellEditor. Please note that it must be run on a different sequence than latter's [INPUT]" +
-			" (i.e. to avoid event conflict between the clicking events)";
+	public static final String DESCRIPTION = 
+			"Overlay to evidence potential errors in the segmentation<br/><ol>" +
+			"<li> [RED] FP, i.e. over-segmentation" + 
+			"<li> [YELLOW] FN, i.e. under-segmentation" +
+			"<li> Click on any mark to cancel the evidence</ol><br/>"+
+			"NOTE: Useful in combination with CellEditor but must be<br/>" +
+			"run on a different sequence than CellEditor's [INPUT] to<br/>" +
+			"avoid event conflict between the clicking events";
 	
 	/**
 	 * @param stGraph graph to analyze

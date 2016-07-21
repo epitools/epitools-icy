@@ -54,24 +54,24 @@ public class BigXlsExporter {
 	 * Description read by the GUI-Plugins
 	 */
 	public static final String DESCRIPTION = 
-			"Loaded graph is saved as one Excel Spreadsheet (.xls) with one " +
-			"worksheet for every frame." +
-			"Following fields are included:\n\n" +
-			"* Color Tag (if selected)\n"+
-			"* Cell tracking ID\n" +
-			"* Centroid position x\n" +
-			"* Centroid position y\n" +
-			"* Cell apical area\n" +
-			"* Polygon/Neighbor number\n" +
-			"* Voronoi cell area\n" +
-			"* Best fit ellipse major axis length\n" +
-			"* Best fit ellipse minor axis length\n" +
-			"* Best fit ellipse major axis angle\n" +
-			"* Divides during time lapse [T/F]\n" +
-			"* Time of division\n" +
-			"* Is eliminated during time lapse [T/F]\n" +
-			"* Time of elimination\n" +
-			"* Cell on segmentation border[T/F]";
+			"Loaded graph is saved as one Excel Spreadsheet (.xls) with one<br/>" +
+			"worksheet for every frame<br/>" +
+			"Following fields are included:<br/><ul>" +
+			"<li>Color Tag (if selected)"+
+			"<li>Cell tracking ID" +
+			"<li>Centroid position x" +
+			"<li>Centroid position y" +
+			"<li>Cell apical area" +
+			"<li>Polygon/Neighbor number" +
+			"<li>Voronoi cell area" +
+			"<li>Best fit ellipse major axis length" +
+			"<li>Best fit ellipse minor axis length" +
+			"<li>Best fit ellipse major axis angle" +
+			"<li>Divides during time lapse [T/F]" +
+			"<li>Time of division" +
+			"<li>Is eliminated during time lapse [T/F]" +
+			"<li>Time of elimination" +
+			"<li>Cell on segmentation border[T/F]</ul>";
 
 	/**
 	 * Spatio temporal graph to export

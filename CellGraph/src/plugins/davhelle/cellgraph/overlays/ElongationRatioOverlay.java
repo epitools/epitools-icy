@@ -27,7 +27,8 @@ public class ElongationRatioOverlay extends StGraphOverlay{
 	/**
 	 * Description string for GUI
 	 */
-	public static final String DESCRIPTION = "Color codes the cell according to their elongation ratio and "+
+	public static final String DESCRIPTION = 
+			"Color codes the cell according to their elongation ratio and<br/>"+
 			"writes the elongation factor within every cell";
 	/**
 	 * Elongation ratio for each node

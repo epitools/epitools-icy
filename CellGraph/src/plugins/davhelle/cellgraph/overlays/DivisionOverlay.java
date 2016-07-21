@@ -67,12 +67,13 @@ public class DivisionOverlay extends StGraphOverlay {
 	 * Description String for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Highlights the cells that underwent division or elimination during the time lapse.\n\n" +
-			"Color code:\n" +
-			"* [blue] dividing cell\n" +
-			"* [cyan] daughter cell\n" +
-			"* [red] eliminated cell\n" +
-			"* [magenta] dividing & eliminated daughter cell";
+			"Highlights the cells that underwent division or elimination<br/>" +
+			" during the time lapse.<br/><br/>" +
+			"Color code:<br/><ul>" +
+			"<li>[blue] dividing cell" +
+			"<li>[cyan] daughter cell" +
+			"<li>[red] eliminated cell" +
+			"<li>[magenta] elimination after division</ul>";
 	
 	/**
 	 * @param stGraph graph to analyze

@@ -324,7 +324,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		//Division orientation variable
 		varDoDetectionDistance = new EzVarInteger("Detection start",11,1,100,1);
+		varDoDetectionDistance.setToolTipText("# of frames before the division to measure longest axis be taken");
 		varDoDetectionLength = new EzVarInteger("Detection length",5,1,100,1);
+		varDoDetectionLength.setToolTipText("# of frames to average to measure the angle between longest axis and the new junction");
 		EzGroup groupDivisionOrientation = new EzGroup("Overlay elements",
 				varDoDetectionDistance,	
 				varDoDetectionLength);
@@ -342,8 +344,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		//Description label
 		varPlotting.addVarChangeListener(this);
 		varDescriptionLabel = new EzLabel(varPlotting.getValue().getDescription());
-		EzGroup groupDescription = new EzGroup("Overlay summary",
-				varDescriptionLabel);
+		EzLabel descriptionHeader = new EzLabel("<b><u>Selected overlay description:</u></b>");
+		super.addEzComponent(descriptionHeader);
+		super.addEzComponent(varDescriptionLabel);
+		
+//		EzGroup groupDescription = new EzGroup("Overlay summary",
+//				varDescriptionLabel);
 		
 		//Describe the visibility of each overlay parameters
 		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
@@ -360,9 +366,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupEdgeOrientation, OverlayEnum.EDGE_ORIENTATION);
 		varPlotting.addVisibilityTriggerTo(groupCellProjection, OverlayEnum.CELL_PROJECTION);
 		
+		
+		
 		return new EzGroup("1. SELECT OVERLAY TO ADD",
 				varPlotting,
-				groupDescription,
+				
 				groupCellMap,
 				groupPolygonClass,
 				groupVoronoiMap,
@@ -700,6 +708,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	@Override
 	public void variableChanged(EzVar<OverlayEnum> source, OverlayEnum newValue) {
 		varDescriptionLabel.setText(newValue.getDescription());		
+		//getUI().repack(true);
 	}
 	
 	@Override

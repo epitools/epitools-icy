@@ -27,7 +27,9 @@ public class PolygonClassOverlay extends StGraphOverlay{
 	/**
 	 * Description string for GUI
 	 */
-	public static final String DESCRIPTION = "Displays the number of neighbors each cell has with color code or number";
+	public static final String DESCRIPTION = 
+			"Displays the number of neighbors of each cell with<br/>" +
+			"color code or number";
 	
 	/**
 	 * Flag to display or not the polygon sidedness as number 

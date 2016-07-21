@@ -54,9 +54,10 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListener<Double> {
 
-	public static final String DESCRIPTION = "compute edge orientation based on" +
-			"MinimumBoundingCircle method from JTS library; Currently only working on" +
-			"single time points and only measuring intensities from the first channel";
+	public static final String DESCRIPTION = 
+			"Computes edge orientation based on MinimumBoundingCircle<br/>" +
+			"(method from JTS library); Currently only working on single<br/>" +
+			"time points.";
 
 	/**
 	 * JTS to AWT shape writer

@@ -41,7 +41,7 @@ import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 public class FlowOverlay extends StGraphOverlay {
 	
 	public static final String DESCRIPTION =
-			"Overlay representing the tracking positions of cell centers" +
+			"Overlay representing the tracking positions of cell centers<br/>" +
 			"as smooth line";
 	
 	HashMap<Node,LineString> flow = new HashMap<Node,LineString>();

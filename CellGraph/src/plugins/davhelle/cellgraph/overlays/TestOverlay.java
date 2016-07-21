@@ -24,8 +24,8 @@ import plugins.davhelle.cellgraph.nodes.Node;
 public class TestOverlay extends StGraphOverlay {
 	
 	public static final String DESCRIPTION = 
-			"Test overlay to try out new ideas. " +
-			"Modify cellgraph.overlays.TestOverlay.java " +
+			"Test overlay to try out new ideas.<br/>" +
+			"Modify cellgraph.overlays.TestOverlay.java<br/>" +
 			"to change the default behavior.";
 			
 	/**

@@ -30,8 +30,10 @@ public class GraphOverlay extends StGraphOverlay{
 	/**
 	 * Description string for GUI
 	 */
-	public static final String DESCRIPTION = "Shows the connectivity (neighbors) of each cell; " +
-			"The XLS export contains the vertex ids for every tracked edge in the graph.";
+	public static final String DESCRIPTION = 
+			"Shows the connectivity (neighbors) of each cell;<br/><br/>" +
+			"The XLS export [Layer Option Menu] contains the <br/>" +
+			"vertex ids for every tracked edge in the graph.";
 	
 	/**
 	 * JTS Geometry factory to generate segments to visualize connectivity

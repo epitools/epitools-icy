@@ -176,6 +176,23 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		EzGroup groupOverlays = initializeOverlayParameters();
 		super.addEzComponent(groupOverlays);
 		
+		//Description label
+		varPlotting.addVarChangeListener(this);
+		varDescriptionLabel = new EzLabel(varPlotting.getValue().getDescription()+"<br/><br/>");
+		EzVarBoolean varShowDescription = new EzVarBoolean("Show overlay description",true);
+		EzLabel descriptionHeader = new EzLabel("Description:"); //<font color=\"#4d4d4d\"></font>
+		
+		super.addEzComponent(descriptionHeader);
+		super.addEzComponent(varDescriptionLabel);
+		super.addEzComponent(varShowDescription);
+		
+		varShowDescription.addVisibilityTriggerTo(descriptionHeader, varShowDescription.getValue());
+		varShowDescription.addVisibilityTriggerTo(varDescriptionLabel, varShowDescription.getValue());
+		
+//		EzGroup groupDescription = new EzGroup("1b. OVERLAY DESCRIPTION",
+//				varShowDescription);
+//		super.addEzComponent(groupDescription);
+		
 		//Initialize visualization Parameters
 		varSequence = new EzVarSequence("Image to add overlay to");
 		varSequence.setToolTipText("Any image with same dimensions on which to add the overlay");
@@ -341,15 +358,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varLoadAllSurfaceFiles);
 		
 		
-		//Description label
-		varPlotting.addVarChangeListener(this);
-		varDescriptionLabel = new EzLabel(varPlotting.getValue().getDescription());
-		EzLabel descriptionHeader = new EzLabel("<b><u>Selected overlay description:</u></b>");
-		super.addEzComponent(descriptionHeader);
-		super.addEzComponent(varDescriptionLabel);
-		
-//		EzGroup groupDescription = new EzGroup("Overlay summary",
-//				varDescriptionLabel);
+
 		
 		//Describe the visibility of each overlay parameters
 		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
@@ -370,7 +379,6 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		
 		return new EzGroup("1. SELECT OVERLAY TO ADD",
 				varPlotting,
-				
 				groupCellMap,
 				groupPolygonClass,
 				groupVoronoiMap,

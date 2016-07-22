@@ -55,7 +55,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			
 			"(i) The color gradient is normalized by frame.<br/><br/>" + 
 			
-			"(w) [Measure all frames] can take very long!<br/><br/>";
+			"(w) [Measure all frames] can take very long!";
 
 	/**
 	 * JTS to AWT shape writer

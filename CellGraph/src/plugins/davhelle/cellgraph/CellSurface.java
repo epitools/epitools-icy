@@ -41,30 +41,49 @@ public class CellSurface extends EzPlug {
 	
 	@Override
 	protected void initialize() {
-		addEzComponent(varSequence);
+		
+		EzLabel description = new EzLabel(
+				"<ol><li> Verify [Pixel Size] in the Sequence Properties (Icy Side Bar)<br/>" +
+				"    to scale the surface correctly" +
+				" <li> Select [3DVTK mode] in the sequence viewer (2nd left icon)" +
+				" <li> Consider [Decimate] for better performance and less <br/>memory use.<br/>" +
+				"* By default two triangles for each pixel are generated <br/>" +
+				"(e.g. 1024*1024 = 2.1 million t.)<br/>" +
+				"* Decimate=0.9 reduces the t. by 90%</ol>" +
+				" [WARNING] - If the sequence is a z-stack we recommend <br/>" +
+				"removing the 3D mesh roi before leaving the 3DVTK mode.<br/>" +
+				" If left, the change to 2D mode starts computing an expensive<br/>" +
+				" 2D area roi representation.");
+		
+		EzVarBoolean varShowDescription = new EzVarBoolean("Show usage description",true);
+		EzLabel descriptionHeader = new EzLabel("Usage:"); 
+		
+		super.addEzComponent(descriptionHeader);
+		super.addEzComponent(description);
+		super.addEzComponent(varShowDescription);
+		
+		varShowDescription.addVisibilityTriggerTo(descriptionHeader, varShowDescription.getValue());
+		varShowDescription.addVisibilityTriggerTo(description, varShowDescription.getValue());
+
 		varSequence.setToolTipText("Display sequence and from which scaling information will be read");
 		
-		addEzComponent(varFile);
 		varFile.setToolTipText("Input first [.vtk] file from your epitools analysis");
 		
-		addEzComponent(varDoDecimation);
 		varDoDecimation.setToolTipText("Simplifies the geometry by merging triangles");
 		
-		addEzComponent(varDecimationFactor);
 		varDecimationFactor.setToolTipText("Degree of simplification, e.g. 0.9 = 90% less triangles");
 		varDoDecimation.addVisibilityTriggerTo(varDecimationFactor, true);
 
-		addEzComponent(varReadTimeSeriese);
 		varReadTimeSeriese.setToolTipText("Loads files for all frames based on [###.vtk] pattern");
 		
-		addEzComponent(new EzGroup("BEFORE RUNNING", new EzLabel(
-				" 1. Verify [Pixel Size] in the Sequence Properties (Icy Side Bar) to scale the surface correctly \n\n" +
-				" 2. Select [3DVTK mode] in the sequence viewer (2nd menu from the left)\n\n" +
-				" 3. Consider [Decimate] for better performance and less memory use. " +
-				"By default two triangles for each pixel are generated (e.g. 1024*1024 = 2.1 million t.)\n\n" +
-				" [WARNING] - If the sequence is a z-stack we recommend removing the 3D mesh roi before leaving the " +
-				"3DVTK mode. If left, the change to 2D mode starts computing an expensive 2D area roi representation.")));
-		
+		EzGroup paramGroup = new EzGroup("1. PARAMETERS",
+				varSequence,
+				varFile,
+				varDoDecimation,
+				varDecimationFactor,
+				varReadTimeSeriese);
+		super.addEzComponent(paramGroup);
+				
 	}
 
 	@Override

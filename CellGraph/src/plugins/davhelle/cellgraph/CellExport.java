@@ -95,11 +95,16 @@ public class CellExport extends EzPlug {
 		//addComponent(new JSeparator(JSeparator.VERTICAL));
 
 		//Export format description
+		EzLabel descriptionHeader = new EzLabel("Description:"); //<font color=\"#4d4d4d\"></font>
 		final EzLabel varExportDescription = new EzLabel(varExport.getValue().getDescription());
-		EzGroup groupDescription = new EzGroup("Format description",
-				varExportDescription);
-		addEzComponent(groupDescription);
+		EzVarBoolean varShowDescription = new EzVarBoolean("Show export description",true);
 		
+		super.addEzComponent(descriptionHeader);
+		super.addEzComponent(varExportDescription);
+		super.addEzComponent(varShowDescription);
+		varShowDescription.addVisibilityTriggerTo(descriptionHeader, varShowDescription.getValue());
+		varShowDescription.addVisibilityTriggerTo(varExportDescription, varShowDescription.getValue());
+
 		//Listener addition change according to selection
 		varExport.addVarChangeListener(new EzVarListener<ExportEnum>(){
 			public void variableChanged(EzVar<ExportEnum> source, ExportEnum newValue) {

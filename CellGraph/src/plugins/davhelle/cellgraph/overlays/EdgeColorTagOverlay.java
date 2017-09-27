@@ -586,7 +586,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 					}
 					
 					Geometry edgeRoi = measurement_geometries.get(edge);
-					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, edgeRoi.getLength());
+					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, edge.getGeometry().getLength());
 					
 					XLSUtil.setCellNumber(area_sheet, col_no, row_no, edgeRoi.getArea());
 					
@@ -606,7 +606,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 						}
 						
 						Geometry nextRoi = measurement_geometries.get(next);
-						XLSUtil.setCellNumber(roi_sheet, col_no, row_no, nextRoi.getLength());
+						XLSUtil.setCellNumber(roi_sheet, col_no, row_no, next.getGeometry().getLength());
 						XLSUtil.setCellNumber(area_sheet, col_no, row_no, nextRoi.getArea());
 
 						meanIntensity = computeIntensity(next);

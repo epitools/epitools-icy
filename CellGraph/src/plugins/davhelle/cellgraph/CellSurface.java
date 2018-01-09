@@ -5,6 +5,7 @@ import icy.sequence.Sequence;
 import java.io.File;
 
 import javax.vecmath.Point3d;
+import javax.vecmath.Tuple3d;
 
 import plugins.adufour.ezplug.EzGroup;
 import plugins.adufour.ezplug.EzLabel;
@@ -174,7 +175,7 @@ public class CellSurface extends EzPlug {
         }
         
         //Transform vtk data structure to dufour's polygonal mesh ROI
-        Point3d dim = new Point3d(
+        Tuple3d dim = new Point3d(
         		sequence.getPixelSizeX(), 
 			sequence.getPixelSizeY(),
 			sequence.getPixelSizeZ()); 

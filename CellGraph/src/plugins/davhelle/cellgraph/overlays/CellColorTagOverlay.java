@@ -3,9 +3,12 @@ package plugins.davhelle.cellgraph.overlays;
 import icy.canvas.IcyCanvas;
 import icy.gui.dialog.ConfirmDialog;
 import icy.gui.dialog.OpenDialog;
+import icy.gui.dialog.SaveDialog;
 import icy.gui.frame.progress.AnnounceFrame;
 import icy.roi.ROI;
+import icy.roi.ROIUtil;
 import icy.sequence.Sequence;
+import icy.system.IcyExceptionHandler;
 import icy.util.XLSUtil;
 
 import java.awt.BasicStroke;
@@ -14,6 +17,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D.Double;
@@ -30,19 +34,34 @@ import javax.swing.JPanel;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
+import jxl.format.Colour;
 import jxl.read.biff.BiffException;
+import jxl.write.WritableCell;
+import jxl.write.WritableCellFormat;
 import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import plugins.adufour.ezplug.EzVar;
 import plugins.adufour.ezplug.EzVarBoolean;
 import plugins.adufour.ezplug.EzVarEnum;
+import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.export.BigXlsExporter;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
+import plugins.davhelle.cellgraph.io.IntensityReader;
+import plugins.davhelle.cellgraph.io.IntensitySummaryType;
+import plugins.davhelle.cellgraph.overlays.EdgeOrientationOverlay;
 import plugins.davhelle.cellgraph.misc.CellColor;
+import plugins.davhelle.cellgraph.misc.ShapeRoi;
+import plugins.davhelle.cellgraph.misc.JxlUtils;
 import plugins.davhelle.cellgraph.nodes.Division;
 import plugins.davhelle.cellgraph.nodes.Node;
+import plugins.kernel.roi.roi2d.ROI2DArea;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
@@ -58,7 +77,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class CellColorTagOverlay extends StGraphOverlay {
+public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener<Integer>{
 	
 	private static final String EXPORT_FILE = "Export File";
 	private static final String CONVERT_ROI = "Convert ROI";
@@ -90,6 +109,16 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	private boolean tags_exist;
 	
 	/**
+	 * Mean Edge Intensities for every cell 
+	 */
+	private EzVarInteger bufferWidth;
+	private EzVarInteger channelNumber;
+	private EzVarBoolean showIntensity;
+	private EzVarEnum<IntensitySummaryType> summary_type;
+	private HashMap<Node,Shape> cell_rings;
+	private ROI2DArea[] nanAreaRoi;
+	
+	/**
 	 * Description string for GUI use
 	 */
 	public static final String DESCRIPTION = 
@@ -112,13 +141,24 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	 */
 	public CellColorTagOverlay(SpatioTemporalGraph stGraph, 
 			EzVarEnum<CellColor> varCellColor,
-			EzVarBoolean drawColorTag, Sequence sequence) {
+			EzVarBoolean drawColorTag, Sequence sequence,
+			EzVarBoolean varShowIntensity,
+			EzVarInteger varBufferWidth,
+			EzVarEnum<IntensitySummaryType> varIntensitySummaryType,
+			EzVarInteger varIntensityChannel) {
 		super("Cell Color Tag",stGraph);
 		this.factory = new GeometryFactory();
 		this.tag_color = varCellColor;
 		this.writer = new ShapeWriter();
 		this.sequence = sequence;
 		this.drawColorTag = drawColorTag;
+		
+		this.cell_rings = new HashMap<Node, Shape>();
+		this.showIntensity = varShowIntensity; 
+		this.bufferWidth = varBufferWidth;
+		this.bufferWidth.addVarChangeListener(this);
+		this.channelNumber = varIntensityChannel;
+		this.summary_type = varIntensitySummaryType;
 		
 		this.tags_exist = false;
 		for(Node node: stGraph.getFrame(0).vertexSet()){
@@ -127,7 +167,9 @@ public class CellColorTagOverlay extends StGraphOverlay {
 				break;
 			}
 		}
-
+		
+		this.nanAreaRoi = new ROI2DArea[stGraph.size()];
+		
 	}
 	
 	@Override
@@ -176,10 +218,12 @@ public class CellColorTagOverlay extends StGraphOverlay {
 			n = n.getFirst();
 		
 		n.setColorTag(tag);
+		updateMeasurementGeometry(n);
 		
 		while(n.hasNext()){
 			n = n.getNext();
 			n.setColorTag(tag);
+			updateMeasurementGeometry(n);
 		}
 		
 		if(n.hasObservedDivision()){
@@ -191,17 +235,31 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		}
 	}
 	
+	private void updateMeasurementGeometry(Node n) {
+		int buffer_width = this.bufferWidth.getValue();
+		Geometry buffer_geo = n.getGeometry().buffer(buffer_width);
+		Geometry reduced_geo = n.getGeometry().buffer(-buffer_width);
+		Geometry final_geo = buffer_geo.difference(reduced_geo);
+		Shape buffer_shape = writer.toShape(final_geo);
+		this.cell_rings.put(n, buffer_shape);
+	}
+	
 	@Override
 	public void paintFrame(Graphics2D g, FrameGraph frame_i) {
 		for(Node cell: frame_i.vertexSet())
 			if(cell.hasColorTag()){
 				g.setColor(cell.getColorTag());
-				if(drawColorTag.getValue()){
-					g.setStroke(new BasicStroke(3));
-					g.draw(writer.toShape(cell.getGeometry()));
-					g.setStroke(new BasicStroke(1));
-				} else {
-					g.fill(writer.toShape(cell.getGeometry()));
+				
+				if(cell_rings.containsKey(cell) && showIntensity.getValue())
+					g.draw(cell_rings.get(cell));
+				else{
+					if(drawColorTag.getValue()){
+						g.setStroke(new BasicStroke(3));
+						g.draw(writer.toShape(cell.getGeometry()));
+						g.setStroke(new BasicStroke(1));
+					} else {
+						g.fill(writer.toShape(cell.getGeometry()));
+					}
 				}
 			}
 
@@ -213,8 +271,39 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		String cmd_string =e.getActionCommand(); 
 		
 		if(cmd_string.equals(EXPORT_FILE)){
-			BigXlsExporter xlsExport = new BigXlsExporter(stGraph, true, sequence);
-			xlsExport.writeXLSFile();
+			if(showIntensity.getValue()){
+				try {
+					
+					for(int i=0; i < stGraph.size(); i++)
+						this.nanAreaRoi[i] = EdgeOrientationOverlay.computeNanAreaROI(
+								sequence,i,0,channelNumber.getValue());
+					
+					String file_name = SaveDialog.chooseFile(
+							"Choose save location","/Users/davide/",
+							"test_file", XLSUtil.FILE_DOT_EXTENSION);
+					if(file_name == null)
+						return;
+					
+					//Open workbook
+					WritableWorkbook wb = XLSUtil.createWorkbook(file_name);
+					String sheetName = String.format("Area and Intensity",0);
+					WritableSheet sheet = XLSUtil.createNewPage(wb, sheetName);
+					
+					//TODO Write single sheet workbook with area and intensity 
+					writeFrameSheet(sheet,stGraph.getFrame(0));
+					
+					//Close workbook
+					XLSUtil.saveAndClose(wb);
+					new AnnounceFrame("XLS file exported successfully to: "+file_name,10);
+				} catch (WriteException writeException) {
+					IcyExceptionHandler.showErrorMessage(writeException, true, true);
+				} catch (IOException ioException) {
+					IcyExceptionHandler.showErrorMessage(ioException, true, true);
+				}
+			}else{
+				BigXlsExporter xlsExport = new BigXlsExporter(stGraph, true, sequence);
+				xlsExport.writeXLSFile();
+			}
 		}else if (cmd_string.equals(CONVERT_ROI)){
 			convertROI();
 		}else if (cmd_string.equals(ERASE_TAGS)){
@@ -370,32 +459,92 @@ public class CellColorTagOverlay extends StGraphOverlay {
 	
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		//old write out method for simpler file. Keep as reference
-		int color_no = 0;
-		HashMap<Color, Integer> row_no = new HashMap<Color, Integer>();
-		HashMap<Color, Integer> col_no = new HashMap<Color, Integer>();
-
+		
+		int col_no = 0;
+		
 		for(Node node: frame.vertexSet()){
-
+			
 			if(node.hasColorTag()){
-				Color cell_color = node.getColorTag();
-				if(!row_no.containsKey(cell_color)){
-					row_no.put(cell_color, 1);
-					col_no.put(cell_color, color_no);
-					XLSUtil.setCellString(sheet, color_no++, 0, getColorName(cell_color));
+				
+				int row_no = 0;
+				int col_area = col_no * 2;
+				int col_intensity = col_area + 1;
+				col_no++;
+				
+				String colorTag = CellColorTagOverlay.getColorName(node.getColorTag());
+				
+				String header = String.format("[%s - %d]",colorTag,node.getTrackID());
+				XLSUtil.setCellString(sheet, col_area, row_no, header);
+				XLSUtil.setCellString(sheet, col_intensity, row_no++, header);
+				
+				XLSUtil.setCellString(sheet, col_area, row_no, "[area - px]");
+				XLSUtil.setCellString(sheet, col_intensity, row_no++, "[intensity]");
+				
+				//First cell
+				row_no = node.getFrameNo() + 2;
+				double area = node.getGeometry().getArea();
+				double intensity = getCellIntensity(node);
+				XLSUtil.setCellNumber(sheet, col_area, row_no, area);
+				XLSUtil.setCellNumber(sheet, col_intensity, row_no, intensity);
+				
+				//Color first cell according to color TAG
+				WritableCell c = sheet.getWritableCell(col_area,0);
+				WritableCellFormat newFormat = new WritableCellFormat();
+				Color c_awt = node.getColorTag();
+				Colour c_jxl = JxlUtils.getNearestColour(c_awt);
+				try {
+					newFormat.setBackground(c_jxl);
+				} catch (WriteException e) {
+					e.printStackTrace();
 				}
-
-				int x = col_no.get(cell_color).intValue();
-				int y = row_no.get(cell_color).intValue();
-
-				XLSUtil.setCellNumber(sheet, x, y, node.getGeometry().getArea());
-
-				row_no.put(cell_color, y+1);
+				c.setCellFormat(newFormat);
+				
+				//Later cells if tracked
+				while(node.hasNext()){
+					node = node.getNext();
+				
+					row_no = node.getFrameNo() + 2;
+					
+					area = node.getGeometry().getArea();
+					intensity = getCellIntensity(node);
+					XLSUtil.setCellNumber(sheet, col_area, row_no, area);
+					XLSUtil.setCellNumber(sheet, col_intensity, row_no++, intensity);
+				}
+				
 			}
 		}
 		
-	}
+	}	
 	
+	private double getCellIntensity(Node node) {
+		
+		assert(cell_rings.containsKey(node));
+		
+		Shape cell_shape = cell_rings.get(node);
+
+		int z=0;
+		int t=node.getFrameNo();
+		int c=channelNumber.getValue();
+		
+		ROI cell_roi_wo_nan = null;
+		try{
+			ShapeRoi cell_roi = new ShapeRoi(cell_shape);
+			cell_roi_wo_nan = ROIUtil.subtract(cell_roi, nanAreaRoi[t]);
+		}catch(Exception ex){
+			Point centroid = node.getGeometry().getCentroid();
+			System.out.printf("Problems at %.2f %.2f",centroid.getX(),centroid.getY());
+			return -1.0;
+		}
+		
+		//TODO possibly use getIntensityInfo here
+		
+		double mean_intensity = 
+				IntensityReader.measureRoiIntensity(
+						sequence, cell_roi_wo_nan, z, t, c, summary_type.getValue());
+		
+		return mean_intensity;
+	}
+
 	/**
 	 * source: http://stackoverflow.com/a/12828811
 	 * 
@@ -494,6 +643,16 @@ public class CellColorTagOverlay extends StGraphOverlay {
 		JButton Roi_Button = new JButton(button_text);
         Roi_Button.addActionListener(this);
         optionPanel.add(Roi_Button,gbc);
+	}
+	
+	@Override
+	public void variableChanged(EzVar<Integer> source, Integer newValue) {
+		
+		for(Node n: cell_rings.keySet())
+			updateMeasurementGeometry(n);
+		
+		painterChanged();
+		
 	}
 	
 }

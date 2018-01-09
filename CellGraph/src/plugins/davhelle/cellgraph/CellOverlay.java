@@ -28,6 +28,7 @@ import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.overlays.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.overlays.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.overlays.BorderOverlay;
+import plugins.davhelle.cellgraph.overlays.CellCloneOverlay;
 import plugins.davhelle.cellgraph.overlays.CellColorTagOverlay;
 import plugins.davhelle.cellgraph.overlays.CellIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.CentroidOverlay;
@@ -608,6 +609,12 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			sequence.addOverlay(
 					new GraphOverlay(
 							stGraph));
+			break;
+			
+		case CELL_CLONES:
+			
+			sequence.addOverlay(new CellCloneOverlay(stGraph, sequence));
+			
 			break;
 
 		case CELL_COLOR_TAG:

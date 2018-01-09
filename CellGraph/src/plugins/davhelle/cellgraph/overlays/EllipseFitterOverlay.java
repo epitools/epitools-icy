@@ -28,8 +28,9 @@ public class EllipseFitterOverlay extends StGraphOverlay {
 	/**
 	 * Description string for GUI
 	 */
-	public static final String DESCRIPTION = "Fits an ellipse to each cell geometry and displays the longest axis" +
-			"using the ImageJ(R) EllipseFitter Macro.";
+	public static final String DESCRIPTION = 
+			"Fits an ellipse to each cell geometry and displays the<br/>" +
+			" longest axis using the ImageJ(R) EllipseFitter Macro.";
 	
 	/**
 	 * Ellipse fit for every node

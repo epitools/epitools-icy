@@ -43,20 +43,20 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Transforms the edge geometries into ROIs and displays" +
-			" the underlying intensity (I). Save the intensities via" +
-			" the layer option menu as XLS.\n\n" +
+			"Transforms the edge geometries into ROIs and displays<br/>" +
+			" the underlying intensity (I). Save the intensities via<br/>" +
+			" the layer option menu as XLS.<br/><br/>" +
 			
-			"(i) [Measure relative intensity] computes a ratio by" +
-			" dividing the original value through intensities of" +
-			" neighboring edges and cells:\n\n" +
-			"  relative_edge_intensity = \n" +
-			"    (edge - avg_cell_background) / \n" +
-			"    (avg_neighbor_edges - avg_cell_background)\n\n" +
+			"(i) [Measure relative intensity] computes a ratio by<br/>" +
+			" dividing the original value through intensities of<br/>" +
+			" neighboring edges and cells:<br/><br/>" +
+			"  relative_edge_intensity = <br/>" +
+			"    (edge - avg_cell_background) / <br/>" +
+			"    (avg_neighbor_edges - avg_cell_background)<br/><br/>" +
 			
-			"(i) The color gradient is normalized by frame.\n\n" + 
+			"(i) The color gradient is normalized by frame.<br/><br/>" + 
 			
-			"(w) [Measure all frames] can take very long! ";
+			"(w) [Measure all frames] can take very long!";
 
 	/**
 	 * JTS to AWT shape writer

@@ -25,7 +25,8 @@ public class PolygonOverlay extends StGraphOverlay{
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Simple Overlay to show cells and their outlines in a color of choice";
+			"Simple Overlay to show cells and their outlines<br/>" +
+			" in a color of choice";
 	
 	/**
 	 * Color for polygon outlines

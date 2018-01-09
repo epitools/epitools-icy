@@ -28,7 +28,7 @@ public class AlwaysTrackedCellsOverlay extends StGraphOverlay {
 	 * Description string for GUI use
 	 */
 	public static final String DESCRIPTION = 
-			"Contours in ORANGE only the cells that have been " +
+			"Contours in ORANGE only the cells that have been<br/>" +
 			"continuously tracked throughout the time lapse";
 	
 	/**

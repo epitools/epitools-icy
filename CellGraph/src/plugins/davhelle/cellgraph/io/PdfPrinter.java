@@ -34,9 +34,9 @@ public class PdfPrinter {
 	 */
 	public static final String DESCRIPTION = 
 			"Exports a Vector graphic (PDF) file of the loaded graph structure.\n\n" +
-			" Currently the only the selected frame is exported with all" +
-			" overlays which are currently present on it. The underlying" +
-			" bit-map image is not included in the pdf but sets the" +
+			" Currently the only the selected frame is exported with all<br/>" +
+			" overlays which are currently present on it. The underlying<br/>" +
+			" bit-map image is not included in the pdf but sets the<br/>" +
 			" dimensions of the file.";
 
 	/**

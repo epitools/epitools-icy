@@ -34,19 +34,19 @@ public class TrackingOverlay extends StGraphOverlay{
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Overlay to review the tracking in case the default " +
-			"Overlay has been eliminated or to highlight different aspects\n\n" +
-			"The TrackColor that defines uniquely every cell can be used to" +
-			" either outline or fill the cell polygon." +
-			" The additional information is added complementarily.\n\n" +
-			"Additional color codes:\n" +
-			"* [red] cell missing in previous frame\n" +
-			"* [yellow] cell missing in next frame\n" +
-			"* [green] cell missing in previous&next\n" +
-			"* [blue] cell dividing in next frame\n" +
-			"* [magenta] brother cell missing\n" +
-			"* [cyan] cell eliminated in next frame\n" +
-			"* [gray] brother cell was eliminated\n";
+			"Overlay to review the tracking in case the default overlay<br/>" +
+			" has been eliminated or to highlight different aspects<br/><br/>" +
+			"The TrackColor that defines uniquely every cell can be used to<br/>" +
+			" either outline or fill the cell polygon. The additional<br/>" +
+			" information is added complementarily.<br/><br/>" +
+			"Additional color codes:<br/><ul>" +
+			"<li> [red] cell missing in previous frame" +
+			"<li> [yellow] cell missing in next frame" +
+			"<li> [green] cell missing in previous&next" +
+			"<li> [blue] cell dividing in next frame" +
+			"<li> [magenta] brother cell missing" +
+			"<li> [cyan] cell eliminated in next frame" +
+			"<li> [gray] brother cell was eliminated</ul>";
 	
 	/**
 	 * A Random bright color for each cell

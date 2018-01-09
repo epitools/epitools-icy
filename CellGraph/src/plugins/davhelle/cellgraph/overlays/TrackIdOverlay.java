@@ -26,7 +26,8 @@ public class TrackIdOverlay extends StGraphOverlay{
 	/**
 	 * Description string for GUI
 	 */
-	public static final String DESCRIPTION = "Overlay to paint the track id of each cell";
+	public static final String DESCRIPTION = 
+			"Overlay to paint the track id of each cell";
 	
 	/**
 	 * Initialize the Tracking ID overlay for the input graph

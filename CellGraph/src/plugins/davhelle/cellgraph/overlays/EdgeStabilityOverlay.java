@@ -27,7 +27,8 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Displays a color code for how stable edges are (green=stable, red=not stable)[time consuming!]";
+			"Displays a color code for how stable edges are<br/>" +
+			" (green=stable, red=not stable)[time consuming!]";
 	
 	/**
 	 * JTS to AWT converter

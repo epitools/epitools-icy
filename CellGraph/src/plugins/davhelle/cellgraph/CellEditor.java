@@ -75,7 +75,6 @@ public class CellEditor extends EzPlug{
 		varSync = new EzVarBoolean("Sync [Input] and [Output] viewers",false);
 		
 		EzLabel description = new EzLabel(
-				"[Click on the triangle above to minimize this description]\n\n" +
 				"CellEditor allows to edit skeletons in tiff format by drawing\n" +
 				"on an [Input] image and applies the changes automatically to\n" +
 				"the skeleton to edit [Output].\n\n"+
@@ -95,13 +94,19 @@ public class CellEditor extends EzPlug{
 				"* Use CorrectionOverlay from CellOverlay to visualize\n" +
 				"  potential segmentation errors.\n");
 		
-		EzGroup descriptionGroup = new EzGroup("Plugin Description",description);
+		EzVarBoolean varShowDescription = new EzVarBoolean("Show usage description",true);
+		EzLabel descriptionHeader = new EzLabel("Usage:"); 
 		
-		super.addEzComponent(descriptionGroup);
-		super.addEzComponent(varInputSeq);
-		super.addEzComponent(varOutputSeq);
-		super.addEzComponent(varSaveChanges);
-		super.addEzComponent(varSync);
+		super.addEzComponent(descriptionHeader);
+		super.addEzComponent(description);
+		super.addEzComponent(varShowDescription);
+		
+		varShowDescription.addVisibilityTriggerTo(descriptionHeader, varShowDescription.getValue());
+		varShowDescription.addVisibilityTriggerTo(description, varShowDescription.getValue());
+
+		EzGroup paramGroup = new EzGroup("1. PARAMETERS",
+				varInputSeq,varOutputSeq,varSaveChanges,varSync);
+		super.addEzComponent(paramGroup);
 	}
 
 	@Override

@@ -22,10 +22,12 @@ import plugins.davhelle.cellgraph.nodes.Node;
  */
 public class CsvTrackWriter {
 	
-	public static final String DESCRIPTION = "Exports the tracking of the loaded spatiotemporal graph" +
-			" as a CSV file containing the centroid positions of each cell over time. Furthermore" +
-			" division and elimination occurrences are stored. The CSV export is recommend for fast" +
-			" loading ones a stable tracking was found.";
+	public static final String DESCRIPTION = 
+			"Exports the tracking of the loaded spatiotemporal graph<br/>" +
+			" as a CSV file containing the centroid positions of each<br/>" +
+			" cell over time. Furthermore division and elimination <br/>" +
+			"occurrences are stored.<br/><br/>" +
+			" The CSV export is recommend for fast loading in CellGraph";
 	
 	/**
 	 * Graph to be written out

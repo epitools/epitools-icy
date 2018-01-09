@@ -58,10 +58,12 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	/**
 	 * Description String for GUI
 	 */
-	public static final String DESCRIPTION = "Interactive overlay to mark edges/junctions" +
-			" in the graph and follow them over time. See CELL_COLOR_TAG for usage help.\n\n" +
-			" All parameters are interactive and can be changed when the overlay is added\n\n" +
-			" Header in the Export XLS identifies the edge:\n\n" +
+	public static final String DESCRIPTION = 
+			" Interactive overlay to mark edges/junctions in the graph<br/>" +
+			" and follow them over time. See CELL_COLOR_TAG for usage help.<br/>" +
+			" All parameters are interactive and can be changed also after<br/>" +
+			" the overlay is added<br/><br>" +
+			" NOTE: Header in the Export XLS identifies the edge:<br/>" +
 			" [colorString] [tStart,xStart,yStart]";
 	
 	/**

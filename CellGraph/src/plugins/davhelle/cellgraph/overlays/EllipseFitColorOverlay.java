@@ -32,9 +32,12 @@ import com.vividsolutions.jts.geom.Coordinate;
  */
 public class EllipseFitColorOverlay extends StGraphOverlay{
 
-	public static final String DESCRIPTION = "To enable this plugin a Point ROI must be present on the image. "+
-	"The overlay computes the angle with respect to (wrt) the estimated ellipse and displays it as a color code. " +
-	"Red being the perpendicular case and Green the parallel case (Longest axis vs Segment joining ROI and Ellipse Centroid)";
+	public static final String DESCRIPTION = 
+			"To enable this plugin a Point ROI must be present on the<br/>" +
+			" image. The overlay computes the angle with respect to (wrt)<br/>" +
+			" the estimated ellipse and displays it as a color code. <br/><br/>" +
+			" Red being the perpendicular case and Green the parallel case<br/>" +
+			" (Longest axis vs Segment joining ROI and Ellipse Centroid)";
 	
 	/**
 	 * Ellipse fit for each node

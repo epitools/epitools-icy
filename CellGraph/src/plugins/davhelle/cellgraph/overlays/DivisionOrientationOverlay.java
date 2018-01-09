@@ -50,12 +50,12 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 	/**
 	 * Description String for GUI
 	 */
-	public static final String DESCRIPTION = "Color codes the dividing cells according to their new junction orientation" +
-			" (Longest axis of mother cell vs New junction). The more red the cells are the more the new junstion is " +
-			"perpendicular to the longest axis of the mother cell, the more green the cell the more parallel the new" +
-			"junction is.\n\n" +
-			"[Detection start] = how many frames before the division should the longest axis be taken\n\n" +
-			"[Detection length]= how many frames should be averaged for the longest axis and the new junction\n";
+	public static final String DESCRIPTION = 
+			"Color dividing cells with respect to their division axis<br/>" +
+			" (Longest axis of mother cell vs New junction). <br/><br/>" +
+			" The more red the cells are the more the new junstion is<br/>" +
+			" perpendicular to the longest axis of the mother cell, the<br/>" +
+			" more green the cell the more parallel the new junction is.";
 	
 	/**
 	 * @param spatioTemporalGraph graph to analyze

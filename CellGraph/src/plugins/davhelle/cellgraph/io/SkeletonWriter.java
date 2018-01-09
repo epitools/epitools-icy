@@ -26,9 +26,11 @@ public class SkeletonWriter {
 	/**
 	 * Description Sting for Export Plugin
 	 */
-	public static final String DESCRIPTION = "Export each frame of the spatiotemporal graph loaded as" +
-			" individual TIFF skeleton file. This skeleton reflext also modification such as"+
-			"small cell or border removal. Useful for further editing with CellEditor.";
+	public static final String DESCRIPTION = 
+			"Export each frame of the spatiotemporal graph loaded as<br/>" +
+			" individual TIFF skeleton file. This skeleton reflext <br/>" +
+			"also modification such as small cell or border removal.<br/><br/>" +
+			"NOTE: Useful for further editing with CellEditor.";
 	
 	/**
 	 * Sequence attached to stGraph

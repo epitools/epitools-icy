@@ -36,7 +36,8 @@ public class TransitionOverlay extends StGraphOverlay{
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Computes and displays the T1 transitions present in the time lapse [time consuming!]";
+			"Computes and displays the T1 transitions present<br/>" +
+			" in the time lapse [time consuming!]";
 	/**
 	 * List of all detected transitions
 	 */

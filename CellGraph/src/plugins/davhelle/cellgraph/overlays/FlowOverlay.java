@@ -5,7 +5,7 @@ import icy.util.XMLUtil;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -261,7 +261,7 @@ public class FlowOverlay extends StGraphOverlay {
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		// TODO Auto-generated method stub
 
 	}

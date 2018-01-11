@@ -20,7 +20,7 @@ import java.awt.Insets;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -591,7 +591,7 @@ public class CellColorTagOverlay extends StGraphOverlay implements EzVarListener
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		if(!tags_exist){
 			String s = "Click on a cell to color-tag it";
 			Color c = Color.WHITE;

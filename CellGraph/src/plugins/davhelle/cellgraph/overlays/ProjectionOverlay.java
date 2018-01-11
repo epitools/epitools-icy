@@ -8,7 +8,7 @@ import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,14 +28,14 @@ import com.vividsolutions.jts.math.Vector3D;
 /**
  * <b>ProjectionOverlay</b> visualizes as color gradient the magnitude of the z-component 
  * from the surface normal of every cell. <p> The overlay uses the estimated height map 
- * (e.g. from EpiTools for Matlab: x,y,z coordinates) to assign z-coordinates to all coordinates of the cellÕs
+ * (e.g. from EpiTools for Matlab: x,y,z coordinates) to assign z-coordinates to all coordinates of the cellï¿½s
  * polygon. To compute the apporximated 3D surface normal for every cells we use 
- * NewellÕs method [1]. The z-component of the surface normal is useful to estimate 
+ * Newellï¿½s method [1]. The z-component of the surface normal is useful to estimate 
  * the area projection bias through the proportional dependence between 3D and 
  * projected 2D area [2]. <p>All values can be exported in an excel sheet through the 
  * layer options menu in icy.
  * 
- * <p>[1] Sutherland, Evan E., Robert F. Sproull, and Robert a. Schumacker. 1974. ÒA Characterization of Ten Hidden-Surface Algorithms.Ó ACM Computing Surveys 6 (1): 1Ð55. doi:10.1145/356625.356626
+ * <p>[1] Sutherland, Evan E., Robert F. Sproull, and Robert a. Schumacker. 1974. ï¿½A Characterization of Ten Hidden-Surface Algorithms.ï¿½ ACM Computing Surveys 6 (1): 1ï¿½55. doi:10.1145/356625.356626
  * <p>[2] John M. Snyder and Alan H. Barr. 1987. Ray tracing complex models containing surface tessellations. ACM Computer Graphics 21 (4): 119-128. doi:10.1145/37401.37417
  * 
  * @author Davide Heller
@@ -271,7 +271,7 @@ public class ProjectionOverlay extends StGraphOverlay {
 	 * @see plugins.davhelle.cellgraph.overlays.StGraphOverlay#specifyLegend(java.awt.Graphics2D, java.awt.geom.Line2D.Double)
 	 */
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		int bin_no = 50;
 		double scaling_factor = super.getGradientScale();
 		double shift_factor = super.getGradientShift();

@@ -8,7 +8,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
-import java.awt.geom.Line2D.Double;
 import java.util.Map;
 
 import jxl.write.WritableSheet;
@@ -126,7 +125,7 @@ public class EllipseFitterOverlay extends StGraphOverlay {
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		String s = "EllipseFit: longest axis";
 		Color c = Color.GREEN;
 		int offset = 0;

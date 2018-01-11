@@ -11,7 +11,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -689,7 +689,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		if(!tags_exist){
 			String s = "Click on a junction to color-tag it";
 			Color c = Color.WHITE;

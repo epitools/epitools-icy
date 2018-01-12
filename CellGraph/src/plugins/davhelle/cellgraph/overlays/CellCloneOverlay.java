@@ -228,6 +228,8 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 		XLSUtil.setCellString(sheet, c++, r, "cell_count");
 		XLSUtil.setCellString(sheet, c++, r, "border_count");
 		XLSUtil.setCellString(sheet, c++, r, "neighbor_count");
+		XLSUtil.setCellString(sheet, c++, r, "detection_channel");
+		XLSUtil.setCellString(sheet, c++, r, "detection_threshold");
 		
 		for(VirtualClone clone: clones){
 			r = clone.getId();
@@ -245,6 +247,9 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 			Set<Node> neighbor_cells = clone.getNeighborCells();
 			XLSUtil.setCellNumber(sheet, c++, r, neighbor_cells.size());
 			
+			String channel_name = String.format("%d - %s", evidence_channel, sequence.getChannelName(evidence_channel));
+			XLSUtil.setCellString(sheet, c++, r, channel_name);
+			XLSUtil.setCellNumber(sheet, c++, r, this.detection_threshold.getValue());
 		}
 
 	}

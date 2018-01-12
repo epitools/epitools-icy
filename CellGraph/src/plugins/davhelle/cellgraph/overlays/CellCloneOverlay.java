@@ -1,6 +1,7 @@
 package plugins.davhelle.cellgraph.overlays;
 
 import icy.sequence.Sequence;
+import icy.util.XLSUtil;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -14,6 +15,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
@@ -35,6 +38,7 @@ import plugins.davhelle.cellgraph.nodes.Node;
 
 import com.vividsolutions.jts.awt.ShapeWriter;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * Overlay to detect groups of cell based on an intensity signal.
@@ -52,7 +56,7 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 	/**
 	 * Slider to adjust the detection_treshold from the layerOptionPanel
 	 */
-	JSlider segmentSlider;
+	JSlider thresholdSlider;
 	
 	/**
 	 * JTS class to convert JTS Geometries to AWT Shapes
@@ -153,8 +157,9 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 		ConnectivityInspector<Node, Edge> inspector = new ConnectivityInspector<Node, Edge>(subgraph);
 		
 		// create VirtualClones
+		int clone_id = 0;
 		for(Set<Node> clone: inspector.connectedSets()){
-			this.clones.add(new VirtualClone(clone));
+			this.clones.add(new VirtualClone(clone,clone_id++));
 		}
 		
 		long end = System.currentTimeMillis();
@@ -169,6 +174,8 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 		for(VirtualClone clone: clones){
 			g.setColor(Color.ORANGE);
 			g.draw(clone.getShape());
+			Point centroid = clone.getCentroid();
+			g.drawString(String.valueOf(clone.getId()), (int)centroid.getX(), (int)centroid.getY());
 		}
 
 	}
@@ -181,7 +188,28 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 
 	@Override
 	void writeFrameSheet(WritableSheet sheet, FrameGraph frame) {
-		// TODO Auto-generated method stub
+		
+		int c = 0;
+		int r = 0;
+		
+		XLSUtil.setCellString(sheet, c++, r, "id");
+		XLSUtil.setCellString(sheet, c++, r, "centroid_x");
+		XLSUtil.setCellString(sheet, c++, r, "centroid_y");
+		XLSUtil.setCellString(sheet, c++, r, "size_px");
+		XLSUtil.setCellString(sheet, c++, r, "perimeter_px");
+		XLSUtil.setCellString(sheet, c++, r, "cell_count");
+		
+		for(VirtualClone clone: clones){
+			r++;
+			c=0;
+			XLSUtil.setCellNumber(sheet, c++, r, clone.getId());
+			Point centroid = clone.getCentroid();
+			XLSUtil.setCellNumber(sheet, c++, r, centroid.getX());
+			XLSUtil.setCellNumber(sheet, c++, r, centroid.getY());
+			XLSUtil.setCellNumber(sheet, c++, r, clone.getSize());
+			XLSUtil.setCellNumber(sheet, c++, r, clone.getPerimeter());
+			XLSUtil.setCellNumber(sheet, c++, r, clone.getCellCount());
+		}
 
 	}
 	
@@ -193,13 +221,26 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 		GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2, 10, 2, 5);
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = 0;
         
-        segmentSlider = new JSlider(1, 255, this.detection_threshold);
-        segmentSlider.addChangeListener(this);
-		optionPanel.add(segmentSlider, gbc);
+        thresholdSlider = new JSlider(1, 255, this.detection_threshold);
+        thresholdSlider.addChangeListener(this);
+    	optionPanel.add(new JLabel("Detection threshold"), gbc);
+		optionPanel.add(thresholdSlider, gbc);
         
         gbc.weightx = 1;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
+        
+        //Excel output button
+        gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 10, 2, 5);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridy = 1;
+        optionPanel.add(new JLabel("Export data to Excel: "), gbc);
+        
+        JButton OKButton = new JButton("Choose File");
+        OKButton.addActionListener(this);
+        optionPanel.add(OKButton,gbc);
         
         return optionPanel;
 		
@@ -207,7 +248,7 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		 this.detection_threshold = segmentSlider.getValue();
+		 this.detection_threshold = thresholdSlider.getValue();
 		 detect_clones();
 		 painterChanged();
 	}

@@ -3,12 +3,14 @@ package plugins.davhelle.cellgraph.overlays;
 import icy.sequence.Sequence;
 import icy.util.XLSUtil;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +53,8 @@ import com.vividsolutions.jts.geom.Point;
  */
 public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 	
+	private static final BasicStroke BOLD_STROKE = new BasicStroke(2);
+
 	public static final String DESCRIPTION = "Cell clone overlay";
 	
 	/**
@@ -173,9 +177,12 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 		
 		for(VirtualClone clone: clones){
 			g.setColor(Color.ORANGE);
+			Stroke old = g.getStroke();
+			g.setStroke(BOLD_STROKE);
 			g.draw(clone.getShape());
 			Point centroid = clone.getCentroid();
 			g.drawString(String.valueOf(clone.getId()), (int)centroid.getX(), (int)centroid.getY());
+			g.setStroke(old);
 		}
 
 	}
@@ -198,6 +205,8 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 		XLSUtil.setCellString(sheet, c++, r, "size_px");
 		XLSUtil.setCellString(sheet, c++, r, "perimeter_px");
 		XLSUtil.setCellString(sheet, c++, r, "cell_count");
+		XLSUtil.setCellString(sheet, c++, r, "border_count");
+		XLSUtil.setCellString(sheet, c++, r, "neighbor_count");
 		
 		for(VirtualClone clone: clones){
 			r++;
@@ -209,6 +218,12 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 			XLSUtil.setCellNumber(sheet, c++, r, clone.getSize());
 			XLSUtil.setCellNumber(sheet, c++, r, clone.getPerimeter());
 			XLSUtil.setCellNumber(sheet, c++, r, clone.getCellCount());
+			
+			Set<Node> border_cells = clone.getBorderCells();
+			XLSUtil.setCellNumber(sheet, c++, r, border_cells.size());
+			Set<Node> neighbor_cells = clone.getNeighborCells();
+			XLSUtil.setCellNumber(sheet, c++, r, neighbor_cells.size());
+			
 		}
 
 	}

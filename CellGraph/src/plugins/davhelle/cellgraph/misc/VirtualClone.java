@@ -2,6 +2,7 @@ package plugins.davhelle.cellgraph.misc;
 
 import java.awt.Shape;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -26,7 +27,10 @@ import plugins.davhelle.cellgraph.overlays.CellCloneOverlay;
 public class VirtualClone {
 	
 	Set<Node> cells;
+	Set<Node> border_cells;
+	Set<Node> neighbor_cells;
 	Geometry geometry;
+	Geometry boundary;
 	Shape shape;
 	int clone_id;
 
@@ -51,6 +55,7 @@ public class VirtualClone {
 
 		//create union
 		this.geometry = CascadedPolygonUnion.union(Arrays.asList(cell_geometries));
+		this.boundary = geometry.getBoundary();
 		
 		//create shape
 		ShapeWriter writer = new ShapeWriter();
@@ -98,6 +103,52 @@ public class VirtualClone {
 	 */
 	public Point getCentroid(){
 		return this.geometry.getCentroid();
+	}
+	
+	/**
+	 * test node membership in clone
+	 * 
+	 * @param n node to test
+	 * @return true if the node n is part of the clone
+	 */
+	public boolean contains(Node n){
+		return this.cells.contains(n);
+	}
+	
+	/**
+	 * Computes cells that intersect the border (geometry) of
+	 * the clone. Computation is delayed to avoid computation
+	 * during threshold adjustment phase in {@link CellCloneOverlay}
+	 * 
+	 * @return clone cells intersecting the clone border
+	 */
+	public Set<Node> getBorderCells(){
+		if(border_cells == null){
+			border_cells = new HashSet<Node>();
+			for(Node n: this.cells)
+				if(this.boundary.intersects(n.getGeometry()))
+					border_cells.add(n);
+		}
+			
+		return border_cells;
+	}
+	
+	/**
+	 * Returns neighboring cells in the frameGraph, i.e. that intersect the clone geometry
+	 * but are not part of the clone.
+	 * 
+	 * @return cells neighboring the clone
+	 */
+	public Set<Node> getNeighborCells(){
+		if(neighbor_cells == null){
+			neighbor_cells = new HashSet<Node>();
+			for(Node n: getBorderCells())
+				for(Node neighbor: n.getNeighbors())
+					if(!cells.contains(neighbor))
+						neighbor_cells.add(neighbor);
+		}
+		
+		return neighbor_cells;
 	}
 	
 }

@@ -174,8 +174,8 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 		// find connected sets in remaining nodes
 		ConnectivityInspector<Node, Edge> inspector = new ConnectivityInspector<Node, Edge>(subgraph);
 		
-		// create VirtualClones
-		int clone_id = 0;
+		// create VirtualClones and number from 1
+		int clone_id = 1;
 		for(Set<Node> clone: inspector.connectedSets()){
 			this.clones.add(new VirtualClone(clone,clone_id++));
 		}
@@ -230,7 +230,7 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 		XLSUtil.setCellString(sheet, c++, r, "neighbor_count");
 		
 		for(VirtualClone clone: clones){
-			r++;
+			r = clone.getId();
 			c=0;
 			XLSUtil.setCellNumber(sheet, c++, r, clone.getId());
 			Point centroid = clone.getCentroid();

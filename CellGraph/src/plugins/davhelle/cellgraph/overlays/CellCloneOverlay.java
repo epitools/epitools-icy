@@ -206,7 +206,11 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 
 	@Override
 	public void specifyLegend(Graphics2D g, Line2D line) {
-		// TODO Auto-generated method stub
+		String s = "Cell Clones";
+		Color c = Color.ORANGE;
+		int offset = 0;
+
+		OverlayUtils.stringColorLegend(g, line, s, c, offset);
 
 	}
 

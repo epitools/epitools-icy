@@ -30,6 +30,11 @@ public class Cell implements Node {
 	private Polygon geometry;
 	
 	/**
+	 * Awt shape of geometry 
+	 */
+	private Shape shape;
+	
+	/**
 	 * Cache of centroid geometry to avoid redundant computation 
 	 */
 	private Point centroid;
@@ -165,8 +170,11 @@ public class Cell implements Node {
 
 	@Override
 	public Shape toShape() {
-		ShapeWriter writer = new ShapeWriter();
-		return writer.toShape(geometry);
+		if(shape == null){
+			ShapeWriter writer = new ShapeWriter();
+			shape = writer.toShape(geometry);
+		}
+		return shape;
 	}
 
 	@Override

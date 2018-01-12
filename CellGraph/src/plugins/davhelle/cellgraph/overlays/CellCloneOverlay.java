@@ -78,7 +78,7 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 	/**
 	 * Image channel to use for the detection
 	 */
-	int evidence_channel;
+	int detection_channel;
 	
 	/**
 	 * Detection threshold (intensity) to define the cells to be grouped into clones 
@@ -106,7 +106,7 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 		this.sequence = sequence;
 		this.writer = new ShapeWriter();
 		this.detection_threshold = threshold;
-		this.evidence_channel = channel;
+		this.detection_channel = channel;
 		
 		// Listen for changes from main GUI
 		this.detection_threshold.addVarChangeListener(this);
@@ -147,7 +147,7 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 
 				mean_intensity = 
 						IntensityReader.measureRoiIntensity(
-								sequence, cell_roi, 0, 0, evidence_channel, IntensitySummaryType.Mean);
+								sequence, cell_roi, 0, 0, detection_channel, IntensitySummaryType.Mean);
 				
 				mean_intensities.put(n, mean_intensity);
 			}
@@ -185,7 +185,7 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 		System.out.println(String.format(
 				"Found %d clones in %d ms on channel %d with threshold %d ",
 				clones.size(),end-start,
-				evidence_channel,detection_threshold.getValue()));
+				detection_channel,detection_threshold.getValue()));
 		
 	}
 
@@ -247,7 +247,7 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 			Set<Node> neighbor_cells = clone.getNeighborCells();
 			XLSUtil.setCellNumber(sheet, c++, r, neighbor_cells.size());
 			
-			String channel_name = String.format("%d - %s", evidence_channel, sequence.getChannelName(evidence_channel));
+			String channel_name = String.format("%d - %s", detection_channel, sequence.getChannelName(detection_channel));
 			XLSUtil.setCellString(sheet, c++, r, channel_name);
 			XLSUtil.setCellNumber(sheet, c++, r, this.detection_threshold.getValue());
 		}

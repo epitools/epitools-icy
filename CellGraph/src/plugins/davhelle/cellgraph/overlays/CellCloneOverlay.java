@@ -168,8 +168,8 @@ public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<In
 		Set<Node> difference = new HashSet<Node>(frame0.vertexSet());
 		difference.removeAll(detected_cells);
 		
-		if(subgraph.removeAllVertices(difference))
-			System.out.println(String.format("Removed %d nodes", difference.size()));
+		subgraph.removeAllVertices(difference);
+//			System.out.println(String.format("Removed %d nodes", difference.size()));
 		
 		// find connected sets in remaining nodes
 		ConnectivityInspector<Node, Edge> inspector = new ConnectivityInspector<Node, Edge>(subgraph);

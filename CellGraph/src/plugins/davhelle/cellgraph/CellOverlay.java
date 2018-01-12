@@ -174,7 +174,9 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarFile					varSurfaceFile;
 	EzVarBoolean					varLoadAllSurfaceFiles;
 
-	
+	//Cell Clone
+	EzVarInteger				varCloneChannel;
+	EzVarInteger				varCloneThreshold;
 
 
 	
@@ -399,8 +401,13 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varSurfaceFile,
 				varLoadAllSurfaceFiles);
 		
+		// Cell Clone
+		varCloneChannel = new EzVarInteger("Detection Channel",0,0,10,1); //TODO substitute with EzVarChannel
+		varCloneThreshold = new EzVarInteger("Detection Threshold",100,0,255,1);
+		EzGroup groupCellClones = new EzGroup("Overlay elements",
+				varCloneChannel,
+				varCloneThreshold);
 		
-
 		
 		//Describe the visibility of each overlay parameters
 		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
@@ -417,6 +424,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupEdgeOrientation, OverlayEnum.EDGE_ORIENTATION);
 		varPlotting.addVisibilityTriggerTo(groupCellProjection, OverlayEnum.CELL_PROJECTION);
 		varPlotting.addVisibilityTriggerTo(groupCellIntensity, OverlayEnum.CELL_INTENSITY);
+		varPlotting.addVisibilityTriggerTo(groupCellClones, OverlayEnum.CELL_CLONES);
 		
 		
 		
@@ -435,7 +443,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupCellIntensity,
 				groupDivisionOrientation,
 				groupEdgeOrientation,
-				groupCellProjection);
+				groupCellProjection,
+				groupCellClones);
 	}
 
 	@Override
@@ -612,8 +621,13 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			break;
 			
 		case CELL_CLONES:
-			
-			sequence.addOverlay(new CellCloneOverlay(stGraph, sequence));
+			if(varCloneChannel.getValue() >= sequence.getSizeC()){
+				new AnnounceFrame("Chosen channel number not available in selected sequence!");
+				break;
+			}
+			sequence.addOverlay(
+					new CellCloneOverlay(stGraph, sequence,
+							varCloneChannel.getValue(), varCloneThreshold));
 			
 			break;
 

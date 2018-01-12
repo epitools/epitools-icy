@@ -29,6 +29,9 @@ import jxl.write.WritableSheet;
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.ConnectivityInspector;
 
+import plugins.adufour.ezplug.EzVar;
+import plugins.adufour.ezplug.EzVarInteger;
+import plugins.adufour.ezplug.EzVarListener;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
 import plugins.davhelle.cellgraph.graphs.SpatioTemporalGraph;
 import plugins.davhelle.cellgraph.io.IntensityReader;
@@ -51,11 +54,16 @@ import com.vividsolutions.jts.geom.Point;
  * @author Davide Heller
  *
  */
-public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
+public class CellCloneOverlay extends StGraphOverlay implements EzVarListener<Integer>, ChangeListener {
 	
 	private static final BasicStroke BOLD_STROKE = new BasicStroke(2);
 
-	public static final String DESCRIPTION = "Cell clone overlay";
+	public static final String DESCRIPTION = 
+			"The CELL_CLONES overlay detects automatically groups<br/>" +
+			" of connected cells (clones) based on a chosen image<br/>" +
+			" channel and an intensity threshold.<br/>" +
+			" Dynamic threshold adjustment (slider) and excel output<br/>" +
+			" are available from the respective layer menu.";
 	
 	/**
 	 * Slider to adjust the detection_treshold from the layerOptionPanel
@@ -70,12 +78,12 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 	/**
 	 * Image channel to use for the detection
 	 */
-	int evidence_channel = 0;
+	int evidence_channel;
 	
 	/**
 	 * Detection threshold (intensity) to define the cells to be grouped into clones 
 	 */
-	int detection_threshold = 100;
+	EzVarInteger detection_threshold;
 	
 	/**
 	 * Set containing the virtual clones detected 
@@ -92,11 +100,17 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 	 */
 	Sequence sequence;
 	
-	public CellCloneOverlay(SpatioTemporalGraph stGraph, Sequence sequence) {
+	public CellCloneOverlay(SpatioTemporalGraph stGraph, Sequence sequence, int channel, EzVarInteger threshold) {
 		super("Cell clones", stGraph);
 		
 		this.sequence = sequence;
 		this.writer = new ShapeWriter();
+		this.detection_threshold = threshold;
+		this.evidence_channel = channel;
+		
+		// Listen for changes from main GUI
+		this.detection_threshold.addVarChangeListener(this);
+		
 		this.mean_intensities = new HashMap<Node, Double>();
 		
 		detect_clones();
@@ -138,7 +152,7 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 				mean_intensities.put(n, mean_intensity);
 			}
 
-			if(mean_intensity > detection_threshold)
+			if(mean_intensity > detection_threshold.getValue())
 				detected_cells.add(n);
 				
 		}
@@ -168,7 +182,10 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 		
 		long end = System.currentTimeMillis();
 		
-		System.out.println(String.format("Found %d clones in %d ms",clones.size(),end-start));
+		System.out.println(String.format(
+				"Found %d clones in %d ms on channel %d with threshold %d ",
+				clones.size(),end-start,
+				evidence_channel,detection_threshold.getValue()));
 		
 	}
 
@@ -238,7 +255,7 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridy = 0;
         
-        thresholdSlider = new JSlider(1, 255, this.detection_threshold);
+        thresholdSlider = new JSlider(0, 255, this.detection_threshold.getValue());
         thresholdSlider.addChangeListener(this);
     	optionPanel.add(new JLabel("Detection threshold"), gbc);
 		optionPanel.add(thresholdSlider, gbc);
@@ -263,9 +280,13 @@ public class CellCloneOverlay extends StGraphOverlay implements ChangeListener {
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		 this.detection_threshold = thresholdSlider.getValue();
-		 detect_clones();
-		 painterChanged();
+		 this.detection_threshold.setValue(thresholdSlider.getValue());
+	}
+
+	@Override
+	public void variableChanged(EzVar<Integer> source, Integer newValue) {
+		detect_clones();
+		painterChanged();
 	}
 
 }

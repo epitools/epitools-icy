@@ -29,9 +29,9 @@ To test the installation, a small example is included in the archive, load it by
 # Development
 ---
 
-I've been mostly developing CellGraph using the [method](http://icy.bioimageanalysis.org/index.php?display=startDevWithIcy) suggested by the icy developers, which is based on eclipse and allows launching the plugin directly from there.
+CellGraph was developed using the [method](http://icy.bioimageanalysis.org/index.php?display=startDevWithIcy) suggested by the icy developers, which is based on eclipse and allows launching the plugin directly from there.
 
-To get started developing, I would suggest the following (assuming you have icy and epitools already set up):
+To get started developing, we suggest editing the `TestOverlay`. Assuming you have icy and epitools already set up, follow these steps:
 
 1. Install eclipse and [icy4eclipse](http://icy.bioimageanalysis.org/index.php?display=startDevWithIcy)
 2. Pull the epitools plugin master branch from this repo
@@ -55,12 +55,12 @@ To get started developing, I would suggest the following (assuming you have icy 
 ---
 
 * Davide Heller - design & implementation
-* [EpiTools team](CellGraph/License.txt) - design
+* [EpiTools team](LICENSE.txt) - design
 
 
 # License
 ---
-CellGraph is distributed under the GPLv3 [license](CellGraph/License.txt)
+CellGraph is distributed under the GPLv3 [license](LICENSE.txt)
 
 
 # Support

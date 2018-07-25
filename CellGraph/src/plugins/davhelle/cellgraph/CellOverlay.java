@@ -325,6 +325,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		EzGroup groupEdgeTop = new EzGroup("Additional limitations",
 				varTopPercent,
 				varAddRoi);
+		
+		groupEdgeTop.setFoldedState(true);
 
 		varEdgeChannel = new EzVarInteger("Color Channel",0,0,10,1);
 		varIntensityMeasure_ECT = new EzVarEnum<IntensitySummaryType>(
@@ -333,6 +335,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		EzGroup groupEdgeMeasure = new EzGroup("Measurement parameters",
 				varEdgeChannel,
 				varIntensityMeasure_ECT);
+		
+		groupEdgeMeasure.setFoldedState(true);
 		
 		EzGroup groupEdgeMarker = new EzGroup("Overlay elements",
 				varEdgeColor,

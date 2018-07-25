@@ -62,9 +62,10 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 			" Interactive overlay to mark edges/junctions in the graph<br/>" +
 			" and follow them over time. See CELL_COLOR_TAG for usage help.<br/>" +
 			" All parameters are interactive and can be changed also after<br/>" +
-			" the overlay is added<br/><br>" +
+			" the overlay is added (click on the black triangle to expand).<br/><br>" +
 			" NOTE: Header in the Export XLS identifies the edge:<br/>" +
-			" [colorString] [tStart,xStart,yStart]";
+			" [colorString] [tStart,xStart,yStart]<br/><br>"
+			+ " WARNING: Length values do NOT include buffer size!";
 	
 	/**
 	 * JTS to AWT writer
@@ -147,6 +148,10 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 		
 		this.roi_mode = varVertexMode;
 		this.roi_mode.addVarChangeListener(this);
+		
+		if(this.roi_mode.getValue() != 0){
+			new AnnounceFrame("ROI modes > 0 are currently unstable for export; Please do not use for length measurements!");
+		}
 		
 		this.envelope_vertex_buffer = varVertexBuffer;
 		this.envelope_vertex_buffer.addVarChangeListener(this);
@@ -529,6 +534,10 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	 */
 	private void writeEdges(WritableWorkbook wb) {
 		
+		if(this.roi_mode.getValue() != 0){
+			new AnnounceFrame("WARNING: exporting with ROI modes != 0, length measurements are not correctly computed!");
+		}
+		
 		WritableSheet sheet = null; 
 		if(roi_mode.getValue() != 0)
 			sheet = XLSUtil.createNewPage(wb, "Edge ROI Length Mode=0");
@@ -701,6 +710,10 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 
 	@Override
 	public void variableChanged(EzVar<Integer> source, Integer newValue) {
+		
+		if(source.name == this.roi_mode.name && newValue != 0) {
+			new AnnounceFrame("ROI modes > 0 are currently unstable for export; Please do not use for length measurements!");
+		}
 		
 		for(Edge e: measurement_geometries.keySet())
 			for(int i=0; i<stGraph.size(); i++)

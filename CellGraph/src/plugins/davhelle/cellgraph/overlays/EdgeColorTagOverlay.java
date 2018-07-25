@@ -11,7 +11,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -586,7 +586,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 					}
 					
 					Geometry edgeRoi = measurement_geometries.get(edge);
-					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, edgeRoi.getLength());
+					XLSUtil.setCellNumber(roi_sheet, col_no, row_no, edge.getGeometry().getLength());
 					
 					XLSUtil.setCellNumber(area_sheet, col_no, row_no, edgeRoi.getArea());
 					
@@ -606,7 +606,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 						}
 						
 						Geometry nextRoi = measurement_geometries.get(next);
-						XLSUtil.setCellNumber(roi_sheet, col_no, row_no, nextRoi.getLength());
+						XLSUtil.setCellNumber(roi_sheet, col_no, row_no, next.getGeometry().getLength());
 						XLSUtil.setCellNumber(area_sheet, col_no, row_no, nextRoi.getArea());
 
 						meanIntensity = computeIntensity(next);
@@ -689,7 +689,7 @@ public class EdgeColorTagOverlay extends StGraphOverlay implements EzVarListener
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		if(!tags_exist){
 			String s = "Click on a junction to color-tag it";
 			Color c = Color.WHITE;

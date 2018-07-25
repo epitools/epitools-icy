@@ -219,7 +219,7 @@ public abstract class StGraphOverlay extends Overlay implements ActionListener{
 	 * @param g
 	 * @param line
 	 */
-	public abstract void specifyLegend(Graphics2D g, Line2D.Double line);
+	public abstract void specifyLegend(Graphics2D g, Line2D line);
 
 	@Override
 	public void actionPerformed(ActionEvent e) {

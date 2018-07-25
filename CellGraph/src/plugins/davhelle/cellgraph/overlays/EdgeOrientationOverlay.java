@@ -134,7 +134,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		
 		this.edgeOrientations = computeEdgeOrientations();
 		
-		computeNanAreaROI(sequence);
+		this.nanAreaRoi = computeNanAreaROI(sequence,0,0,0);
 		
 		bufferWidth.addVarChangeListener(this);
 		this.writer = new ShapeWriter();
@@ -148,12 +148,12 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	/**
 	 * @param sequence
 	 */
-	private void computeNanAreaROI(Sequence sequence) {
+	public static ROI2DArea computeNanAreaROI(Sequence sequence, int t, int z, int c) {
 		//from icy's tutorials
 
 		// consider first image and first channel only here
 		double[] doubleArray = Array1DUtil.arrayToDoubleArray(
-		     sequence.getDataXY(0, 0, 0), sequence.isSignedDataType());
+		     sequence.getDataXY(t, z, c), sequence.isSignedDataType());
 		boolean[] mask = new boolean[doubleArray.length];
 		
 		double threshold = 0.0;
@@ -162,7 +162,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 		     mask[i] = !(doubleArray[i] > threshold);
 		BooleanMask2D mask2d = new BooleanMask2D(sequence.getBounds2D(), mask); 
 		
-		nanAreaRoi = new ROI2DArea(mask2d);
+		return new ROI2DArea(mask2d);
 	}
 	
 	/**
@@ -389,7 +389,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Line2D.Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		// TODO Auto-generated method stub
 		
 	}

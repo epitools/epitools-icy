@@ -232,7 +232,7 @@ public class CellGraph extends EzPlug implements EzStoppable
 		varBooleanDrawDisplacement = new EzVarBoolean("Draw displacement", false);
 		varBooleanHighlightMistakesBoolean = new EzVarBoolean("Highlight mistakes", true);
 		varTrackingAlgorithm = new EzVarEnum<TrackingEnum>("Algorithm",TrackingEnum.values(), TrackingEnum.STABLE_MARRIAGE);
-		varBorderEliminationNo = new EzVarInteger("Cut N border lines in 1st frame",1,0,10,1);
+		varBorderEliminationNo = new EzVarInteger("Cut N border lines in 1st frame",0,0,10,1);
 		varBorderEliminationNo.setToolTipText("Restrict tracking by removing border cells in the 1st frame");
 		
 		varLambda1 = new EzVarDouble("Min. Distance weight", 1, 0, 10, 0.1);

@@ -26,7 +26,7 @@ public class OverlayUtils {
 	 */
 	public static void gradientColorLegend_ZeroOne(
 			Graphics2D g,
-			java.awt.geom.Line2D.Double line,
+			java.awt.geom.Line2D line,
 			String min_value,
 			String max_value,
 			int bin_no,
@@ -34,7 +34,7 @@ public class OverlayUtils {
 			double shift_factor
 			){
 		
-		double binWidth = (line.x2 - line.x1)/bin_no;
+		double binWidth = (line.getX2() - line.getX1())/bin_no;
 		int binHeight = 20;
 		double step = 1.0/bin_no;
 		
@@ -54,8 +54,8 @@ public class OverlayUtils {
 
 			g.setColor(hsbColor);
 
-			int x = (int)(binWidth*i + line.x1);
-			int y = (int)line.y1;
+			int x = (int)(binWidth*i + line.getX1());
+			int y = (int)line.getY1();
 			
 			g.fillRect(x,y,(int)binWidth,binHeight);
 			
@@ -66,16 +66,16 @@ public class OverlayUtils {
 		
 		g.setColor(Color.WHITE);
 		g.drawString(min_value, 
-				(float)line.x1, 
-				(float)line.y1 + 15);
+				(float)line.getX1(), 
+				(float)line.getY1() + 15);
 		
 		FontMetrics fm = g.getFontMetrics();
 		
 		g.setColor(Color.WHITE);
 		String s = max_value;
 		g.drawString(s, 
-				(float)line.x2 - fm.stringWidth(s), 
-				(float)line.y1 + 15);
+				(float)line.getX2() - fm.stringWidth(s), 
+				(float)line.getY1() + 15);
 	}
 	
 	/**
@@ -89,7 +89,7 @@ public class OverlayUtils {
 	 */
 	public static void stringColorLegend(
 			Graphics2D g,
-			java.awt.geom.Line2D.Double line,
+			java.awt.geom.Line2D line,
 			String s,
 			Color c,
 			int offset){
@@ -98,14 +98,14 @@ public class OverlayUtils {
 		
 		FontMetrics fm = g.getFontMetrics();
 		g.setColor(c);
-		g.fillRect((int)line.x1 - 2, (int)line.y1 - 2 + offset, fm.stringWidth(s) + 5, 15 + 2);
+		g.fillRect((int)line.getX1() - 2, (int)line.getY1() - 2 + offset, fm.stringWidth(s) + 5, 15 + 2);
 		
 		g.setColor(Color.BLACK);
-		g.drawRect((int)line.x1 - 2, (int)line.y1 - 2 + offset, fm.stringWidth(s) + 5, 15 + 2);
+		g.drawRect((int)line.getX1() - 2, (int)line.getY1() - 2 + offset, fm.stringWidth(s) + 5, 15 + 2);
 		
 		g.drawString(s, 
-				(float)line.x1, 
-				(float)line.y1 + 12 + offset);
+				(float)line.getX1(), 
+				(float)line.getY1() + 12 + offset);
 		
 	}
 	

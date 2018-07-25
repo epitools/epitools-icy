@@ -8,6 +8,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Shape;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -624,7 +625,7 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		
 		int binNo = 50;
 		

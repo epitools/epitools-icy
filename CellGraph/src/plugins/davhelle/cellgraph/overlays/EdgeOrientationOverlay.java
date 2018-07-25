@@ -389,7 +389,7 @@ public class EdgeOrientationOverlay extends StGraphOverlay implements EzVarListe
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Line2D.Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		// TODO Auto-generated method stub
 		
 	}

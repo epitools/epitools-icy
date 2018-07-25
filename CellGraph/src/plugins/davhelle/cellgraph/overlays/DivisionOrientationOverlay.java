@@ -195,7 +195,7 @@ public class DivisionOrientationOverlay extends StGraphOverlay {
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		
 		int binNo = 50;
 		String max = String.format("%.0f\u00b0",super.getGradientMaximum());

@@ -28,6 +28,7 @@ import plugins.davhelle.cellgraph.misc.VoronoiGenerator;
 import plugins.davhelle.cellgraph.overlays.AlwaysTrackedCellsOverlay;
 import plugins.davhelle.cellgraph.overlays.AreaGradientOverlay;
 import plugins.davhelle.cellgraph.overlays.BorderOverlay;
+import plugins.davhelle.cellgraph.overlays.CellCloneOverlay;
 import plugins.davhelle.cellgraph.overlays.CellColorTagOverlay;
 import plugins.davhelle.cellgraph.overlays.CellIntensityOverlay;
 import plugins.davhelle.cellgraph.overlays.CentroidOverlay;
@@ -173,7 +174,11 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 	EzVarFile					varSurfaceFile;
 	EzVarBoolean					varLoadAllSurfaceFiles;
 
-	
+	//Cell Clone
+	EzVarInteger				varCloneChannel;
+	EzVarInteger				varCloneThreshold;
+
+	private EzVarBoolean varRingMode;
 
 
 	
@@ -350,7 +355,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varBooleanMeasureAll = new EzVarBoolean("Measure all frames",false);
 		varBooleanNormalize = new EzVarBoolean("Measure relative intensity",false);
 		varFillingCheckbox = new EzVarBoolean("Fill edge masks", true);
-		varAddRoi = new EzVarBoolean("Change to ring mode",false);
+		varRingMode = new EzVarBoolean("Change to ring mode",false);
 		
 		EzGroup groupEdgeIntensity = new EzGroup("Edge Intensity elements",
 				varEnvelopeBuffer2,
@@ -359,7 +364,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varBooleanMeasureAll,
 				varBooleanNormalize,
 				varFillingCheckbox,
-				varAddRoi
+				varRingMode
 				);
 		
 		varCellIntensityBufferWidth = new EzVarInteger("Cell Intensity Buffer [px]", 1, 10, 1);
@@ -398,8 +403,13 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				varSurfaceFile,
 				varLoadAllSurfaceFiles);
 		
+		// Cell Clone
+		varCloneChannel = new EzVarInteger("Detection Channel",0,0,10,1); //TODO substitute with EzVarChannel
+		varCloneThreshold = new EzVarInteger("Detection Threshold",100,0,255,1);
+		EzGroup groupCellClones = new EzGroup("Overlay elements",
+				varCloneChannel,
+				varCloneThreshold);
 		
-
 		
 		//Describe the visibility of each overlay parameters
 		varPlotting.addVisibilityTriggerTo(groupCellMap, OverlayEnum.CELL_OUTLINE);
@@ -416,6 +426,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 		varPlotting.addVisibilityTriggerTo(groupEdgeOrientation, OverlayEnum.EDGE_ORIENTATION);
 		varPlotting.addVisibilityTriggerTo(groupCellProjection, OverlayEnum.CELL_PROJECTION);
 		varPlotting.addVisibilityTriggerTo(groupCellIntensity, OverlayEnum.CELL_INTENSITY);
+		varPlotting.addVisibilityTriggerTo(groupCellClones, OverlayEnum.CELL_CLONES);
 		
 		
 		
@@ -434,7 +445,8 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 				groupCellIntensity,
 				groupDivisionOrientation,
 				groupEdgeOrientation,
-				groupCellProjection);
+				groupCellProjection,
+				groupCellClones);
 	}
 
 	@Override
@@ -589,7 +601,7 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 							varFillingCheckbox,
 							varEnvelopeBuffer2,
 							varIntensityMeasure_EI,
-							varAddRoi, varBooleanMeasureAll.getValue(),
+							varRingMode, varBooleanMeasureAll.getValue(),
 							varBooleanNormalize.getValue(),
 							varIntegerChannel.getValue()));
 			break;
@@ -608,6 +620,17 @@ public class CellOverlay extends EzPlug implements EzVarListener<OverlayEnum>{
 			sequence.addOverlay(
 					new GraphOverlay(
 							stGraph));
+			break;
+			
+		case CELL_CLONES:
+			if(varCloneChannel.getValue() >= sequence.getSizeC()){
+				new AnnounceFrame("Chosen channel number not available in selected sequence!");
+				break;
+			}
+			sequence.addOverlay(
+					new CellCloneOverlay(stGraph, sequence,
+							varCloneChannel.getValue(), varCloneThreshold));
+			
 			break;
 
 		case CELL_COLOR_TAG:

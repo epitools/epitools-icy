@@ -5,6 +5,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 import java.util.Map;
 
 import jxl.write.WritableSheet;
@@ -105,7 +106,7 @@ public class VoronoiAreaDifferenceOverlay extends StGraphOverlay{
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		
 		String min_value = String.format("%.0f", super.getGradientMinimum());
 		String max_value = String.format("%.0f", super.getGradientMaximum());

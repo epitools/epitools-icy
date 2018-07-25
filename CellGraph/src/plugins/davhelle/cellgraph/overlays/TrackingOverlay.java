@@ -5,7 +5,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -244,7 +244,7 @@ public class TrackingOverlay extends StGraphOverlay{
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		
 		String s = "Missing in previous frame";
 		Color c = Color.RED;

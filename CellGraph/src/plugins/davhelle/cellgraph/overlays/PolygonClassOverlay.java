@@ -5,7 +5,7 @@ import icy.util.XLSUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -141,9 +141,9 @@ public class PolygonClassOverlay extends StGraphOverlay{
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line)  {
+	public void specifyLegend(Graphics2D g, Line2D line)  {
 		
-		int binWidth = (int)((line.x2 - line.x1)/7);
+		int binWidth = (int)((line.getX2() - line.getX1())/7);
 		
 		for(int i=0; i<7; i++){
 
@@ -173,8 +173,8 @@ public class PolygonClassOverlay extends StGraphOverlay{
 				continue;
 			}
 
-			int x = binWidth*i + (int)line.x1;
-			int y = (int)line.y1;
+			int x = binWidth*i + (int)line.getX1();
+			int y = (int)line.getY1();
 			
 			g.fillRect(x,y,binWidth,binWidth);
 			g.setColor(Color.white);

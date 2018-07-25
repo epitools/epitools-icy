@@ -3,6 +3,7 @@ package plugins.davhelle.cellgraph.overlays;
 import icy.util.XLSUtil;
 
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 
 import jxl.write.WritableSheet;
 import plugins.davhelle.cellgraph.graphs.FrameGraph;
@@ -86,7 +87,7 @@ public class AreaGradientOverlay extends StGraphOverlay{
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, java.awt.geom.Line2D.Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		
 		int bin_no = 50;
 		

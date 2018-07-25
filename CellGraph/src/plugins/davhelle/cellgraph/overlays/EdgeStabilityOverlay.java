@@ -2,7 +2,7 @@ package plugins.davhelle.cellgraph.overlays;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.Line2D.Double;
+import java.awt.geom.Line2D;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -254,7 +254,7 @@ public class EdgeStabilityOverlay extends StGraphOverlay {
 	}
 
 	@Override
-	public void specifyLegend(Graphics2D g, Double line) {
+	public void specifyLegend(Graphics2D g, Line2D line) {
 		
 		String s = "Stable Edges";
 		Color c = Color.GREEN;

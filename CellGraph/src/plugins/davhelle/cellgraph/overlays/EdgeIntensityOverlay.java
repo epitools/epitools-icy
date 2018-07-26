@@ -48,16 +48,14 @@ public class EdgeIntensityOverlay extends StGraphOverlay{
 			" the underlying intensity (I). Save the intensities via<br/>" +
 			" the layer option menu as XLS.<br/><br/>" +
 			
-			"(i) [Measure relative intensity] computes a ratio by<br/>" +
-			" dividing the original value through intensities of<br/>" +
-			" neighboring edges and cells:<br/><br/>" +
-			"  relative_edge_intensity = <br/>" +
-			"    (edge - avg_cell_background) / <br/>" +
-			"    (avg_neighbor_edges - avg_cell_background)<br/><br/>" +
-			
-			"(i) The color gradient is normalized by frame.<br/><br/>" + 
-			
-			"(w) [Measure all frames] can take very long!";
+			"[Measure relative intensity] computes a ratio between<br/>" +
+			" the original edge intensity (E) and the intensities of<br/>" +
+			" neighboring edges (NE) and cell backgrounds (CB):<br/><blockquote>" +
+			"  rel.intensity = (E - avg.CB) / (avg.NE - avg.CB)</blockquote>" +
+			"NOTE:<br/>" +
+			"- The color gradient is normalized by frame.<br/>" + 
+			"- [ring mode] edge union intersected with cell area<br/>"+
+			"- [Measure all frames] may take very long!";
 
 	/**
 	 * JTS to AWT shape writer

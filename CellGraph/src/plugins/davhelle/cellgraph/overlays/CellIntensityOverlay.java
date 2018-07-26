@@ -30,7 +30,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * Overlay to measure the intensity of individual cells.
+ * Overlay to measure the junction intensity for each cell.
  * Currently the measurement geometry is a difference
  * between the positive and negative buffer of the cell
  * geometry. The size of the buffer is set by the user.
@@ -45,7 +45,14 @@ public class CellIntensityOverlay extends StGraphOverlay implements EzVarListene
 	 * Description string for GUI
 	 */
 	public static final String DESCRIPTION = 
-			"Measures cell border intensity";
+			"Overlay to measure the junction intensity for each cell.<br/><br>" + 
+			"Currently the measurement geometry is the difference<br/>" + 
+			"between the positive and negative buffer of the cell<br/>" + 
+			"geometry. The size of the buffer is set by the user.<br/>" + 
+			"The end geometry is a ring geometry.<br/><br>" + 
+			"NOTE: more conservative measure available through: <br>"
+			+ "    EDGE_INTENSITY > ring_mode (i.e. edge union <br/>"
+			+ "intersected with cell geometry)";
 	
 	/**
 	 * JTS class to convert JTS Geometries to AWT Shapes

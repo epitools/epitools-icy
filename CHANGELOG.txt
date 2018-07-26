@@ -1,0 +1,109 @@
+2018-07-25 v0.9.1
+* IMPORTANT BUGFIX for EDGE_COLOR_TAG, the length computations in the CSV export were erroneously set to measure the perimeter of the edge BUFFER. This version corrects this behavior and measures only the length of the edge GEOMETRY (i.e. the BUFFER size is not added!). To reproduce the previous measurement, use a selection mode other than 0 and export.
+* Fixed regression in CellSurface due upstream update of ROI3DPolygonalMesh method
+* New Overlay: CELL_CLONE, interactively detect cell clones based on a secondary channel (see website for usage)
+* New Overlay: CELL_INTENSITY to compute the junction intensity for each cell
+* Added RingMode to EDGE_INTENSITY for measuring the intensity of the edge union
+* Added improved formatting for CELL_COLOR_TAG when intensity is exported
+* [DEV] change of signature for the stGraphOverlay class.specifyLegend. To avoid conflict with Double type the method signature was changed to expect Line2D
+* [DEV] added shape buffering to Cell class
+
+2016-07-22 v0.9.0
+* Fixed uncontrolled plugin shape due to new features in the EzPlug library
+* Updated descriptions for some plugins
+
+2016-04-22 v0.8.9
+* Added layer option panel for CellEditor with buttons to confirm or undo modifications
+* Added the possibility to Convert icy ROIs like rectangles&squares to CellColorTag
+* Added an import functionality for CellColorTag to use previous tags
+* Fixed missing labeling of excel sheets in EdgeColorTag
+
+2015-12-15 v0.8.8
+* Fixed excel sheet export on EDGE_INTENSITY overlay (sheet for single time points would be empty)
+* Fixed relative intensity option in EDGE_INTENSITY overlay (error on icy >= 1.7) 
+
+2015-11-11 v0.8.7
+* New Plugin: CellSurface to visualize the gridfit surface estimation from EpiTools for Matlab
+* New Overlay: Cell Projection to visualize the z-component of every cell by using the surface estimation from gridfit
+* Added option to automatically read all available time points for CellGraph
+* Developer: Added Test Overlay example overlay to experiment new ideas with ease.
+* Toolbar update: to add the icon of CellSurface to the EpiTools bar please update the Workspace file
+
+2015-10-12 v0.8.6
+* Added edge geometry selection mode in EdgeColorTag overlay: exclude, include or select the vertex geometry
+* Added option to analyze entire time-series in EdgeIntensity overlay
+* Added option to select channel to measure in EdgeColorTag and EdgeIntensity
+* Added cell major and minor axis data in XLS export for EdgeOrientation overlay
+* Developer: eclipse project files was added to git repository to allow easier import
+* Fix: Crash when attempting to put sequence with stGraph overlays into 3DVTK mode
+
+2015-08-10 v0.8.5
+* Added EdgeOrientation Plugin to retrieve the orientation of edges
+* Added Summary statics option for Intensity readout: Mean, Max, Min, SD, Sum
+
+2015-06-02 v0.8.4
+* All color gradient overlays now use the optionPanel for gradient control
+* Better description for Gradient controls in optionPanel
+* Fixed normalization procedure for color gradient, i.e (x - min)/(max - min) instead of (x - min)/max
+
+2015-06-01 v0.8.3
+* Changed default behavior of excluding outer most segmentation border on input
+* Changed default border exclusion behavior when LOAD_CSV_TRACKING option is used 
+
+2015-05-29 v0.8.2
+* Trial gradient control for Area Gradient Overlay from OptionLayerMenu instead of plugin
+* Updated to final MIT-like license
+
+2015-05-22 v0.8.1
+* Major code refactoring and documentation for upcoming release
+* Added icons to the plugins, to enable these please substitute the entire davhelle folder
+
+2015-04-29 v0.8.0
+* Added Legends for all overlays with hide/show option in the layer options menu
+* IntensityOverlay: added raw option and adjustable buffer
+* Removed MOSAIC tracking algorithm because of deprecated support
+* Expanded clicking area for EdgeMarker
+
+2015-04-13 v0.7.9
+* Bug-fix for folder selection in CellExport causing UIthreading Violation
+
+2015-04-11 v0.7.8
+* CellGraph gui simplification, no need to specify skeleton type anymore
+* CellExport now contains the WKT and CSV save option previously contained in CellGraph
+* CellExport can export the current graph as TIFF skeleton files compatible with CellEditor
+
+2015-04-10 v0.7.7
+* Removed deprecated internal wiki which was making the archive unnecessarily big
+
+2015-04-10 v0.7.6
+* Changed overlay names in CellOverlay for a better overview
+* Added EdgeTag Overlay to follow selected Edges over time and color code them as for CellTag. Export also measure intensity of underlying image
+
+2015-03-30 v0.7.5
+* Bug fix for PdfPrinter when selecting a frame no which is not in the graph but in the image sequence
+* CellFinder updated with better GUI description
+
+2015-03-27 v0.7.4
+* Solved ellipseFitter bug due to hardcoded image size parameters
+
+2015-03-27 v0.7.3
+* DivisionOrientation was extended with GUI commands to set the start/length of avg.
+* small changes in overlay names, e.g. CELL_OVERLAY -> CELL_OUTLINE
+
+2015-03-26 v0.7.2
+* CellTag/CellMarker now propagates the click through all cells for visual help
+* CellGraph now takes any file name without requirements when t is 1 (single time point)
+* Cell_Displacement overlay has now it's own menu and colors are explained
+* Cell_Tracking overlay menu contains color code explanation
+* Divisions and Elimination submenu was updated. Co-occurences of eliminations and divisions are now magenta (previously yellow) and are shown from the first frame onwards.
+
+2015-03-25 v0.7.1
+* PdfPrinter: export a vector graphic from all currently added Overlays to the image
+* CellMarkerOverlay now exports more fields including elongation and division
+* added Always_tracked_cells Overlay to visualize in Orange continuously tracked cells
+
+2015-03-24 v0.7.0
+* CellEditor: re-implemented, now independent of painter plugin and easier to use
+* CellExporter: new plugin collecting export options such as a single XLS file and GraphML
+* CellOverlay: adapted all overlays to support the side panel XLS export option
+* General GUI improvements to simplify and guide usage

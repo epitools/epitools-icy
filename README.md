@@ -1,13 +1,24 @@
 # Welcome to CellGraph (a.k.a. icy plugins for EpiTools)
 ---
 
-CellGraph is a plugin collection for the bioimaging framework [icy](http://icy.bioimageanalysis.org) and part of the EpiTools project. EpiTools is an open source image analysis toolkit for quantifying epithelial growth dynamics. To know more about the project please visit our project website or the related code repositories:
+CellGraph is a plugin collection for the bioimaging framework [icy](http://icy.bioimageanalysis.org) and allows to transform skeleton images into interactive overlays to explore and analyze your data (examples [here](https://epitools.github.io/wiki/Icy_Plugins/01_CellOverlay/)). CellGraph is part of the EpiTools project, an open source image analysis toolkit for quantifying epithelial growth dynamics. To know more about the project please visit our project website or the related code repositories:
 
 * EpiTools homepage: [https://epitools.github.io](https://epitools.github.io)
 * Image processing part (MATLAB): [https://github.com/epitools/epitools-matlab](https://github.com/epitools/epitools-matlab)
 
 If you like CellGraph and use it in your work, please cite our EpiTools paper in Developmental Cell (January 2016), freely available at [http://dx.doi.org/10.1016/j.devcel.2015.12.012](http://dx.doi.org/10.1016/j.devcel.2015.12.012)
 
+# Plugin subdivision
+---
+The plugins cover subsequent steps of the analysis: 
+
+1. [CellGraph](https://epitools.github.io/wiki/Icy_Plugins/02_CellGraph/) generates the spatiotemporal graph starting from input skeleton files
+2. [CellEditor](https://epitools.github.io/wiki/Icy_Plugins/04_CellEditor/) enables the user to interactively modify the skeleton images manually in case of any remaining segmentation mistakes 
+3. [CellOverlay](https://epitools.github.io/wiki/Icy_Plugins/01_CellOverlay/) interprets the data and outputs results in the form of graphical overlays (i.e. additional image layers) and tabular files
+4. [CellExporter](https://epitools.github.io/wiki/Icy_Plugins/03_CellExport/) allows the user to export the complete numerical data in various formats, such as Excel and GraphML
+5. [CellSurface](https://epitools.github.io/wiki/Icy_Plugins/05_CellSurface/) visualizes the VTK files exported by the [surface fitting](https://epitools.github.io/wiki/Analysis_Modules/00_projection/) in Matlab 
+
+Every plugin has a separate GUI and can be conveniently accessed through the [EpiTools toolbar]()
 
 # Installation
 ---

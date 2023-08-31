@@ -1,10 +1,12 @@
 # Welcome to CellGraph (a.k.a. icy plugins for EpiTools)
----
+
+ **THIS PROJECT IS NO LONGER MAINTAINED. 
+ REFER TO THE NEW NAPARI-EPITOOLS: [https://github.com/epitools/epitools](https://github.com/epitools/epitools)**
 
 CellGraph is a plugin collection for the bioimaging framework [icy](http://icy.bioimageanalysis.org) and allows to transform skeleton images into interactive overlays to explore and analyze your data (examples [here](https://epitools.github.io/wiki/Icy_Plugins/01_CellOverlay/)). CellGraph is part of the EpiTools project, an open source image analysis toolkit for quantifying epithelial growth dynamics. To know more about the project please visit our project website or the related code repositories:
 
 * EpiTools homepage: [https://epitools.github.io](https://epitools.github.io)
-* Image processing part (MATLAB): [https://github.com/epitools/epitools-matlab](https://github.com/epitools/epitools-matlab)
+* Image processing part (MATLAB): [https://github.com/epitools/epitools-matlab](https://github.com/epitools/epitools-matlab) **NO LONGER MAINTAINED** 
 
 If you like CellGraph and use it in your work, please cite our EpiTools paper in Developmental Cell (January 2016), freely available at [http://dx.doi.org/10.1016/j.devcel.2015.12.012](http://dx.doi.org/10.1016/j.devcel.2015.12.012)
 
